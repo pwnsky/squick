@@ -49,7 +49,6 @@ int main(int argc, const char *argv[])
 	else if (cmd == "init") {
 		init::Init i;
 		i.Exec();
-
 	}
 	else if (cmd == "diff") {
 

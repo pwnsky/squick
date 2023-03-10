@@ -31,6 +31,10 @@ file(GLOB squick_ctl_excel_zlib_h ${SolutionDir}/third_party/zlib/*.h)
 source_group("zlib" FILES ${squick_ctl_excel_zlib_c})
 source_group("zlib" FILES ${squick_ctl_excel_zlib_h})
 
+
+file(GLOB squick_ctl_third_party_common_hpp ${SolutionDir}/third_party/common/*.hpp)
+source_group("common" FILES ${squick_ctl_third_party_common_hpp})
+
 file(GLOB squick_ctl_excel_cc ./excel/*.cc)
 file(GLOB squick_ctl_excel_h ./excel/*.h)
 source_group("excel" FILES ${squick_ctl_excel_cc})
@@ -91,6 +95,8 @@ add_executable(${ProjectName}
 	${squick_ctl_patch_h}
 	${squick_ctl_patch_cc}
 
+
+	${squick_ctl_third_party_common_hpp}
 	)
 
 

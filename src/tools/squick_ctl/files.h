@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "third_party/common/lexical_cast.hpp"
@@ -19,6 +18,46 @@ class Files
 {
 public:
 
+	// 过滤后的文件
+	static std::vector<std::string> GetUnblackedFiles(const std::string &squick_path) {
+		std::vector<std::string> result;
+		auto files = Files::GetFileListInFolder(squick_path, 5);
+		// 黑名单过滤
+		for (auto& file : files) {
+			Files::StringReplace(file, "\\", "/");
+			Files::StringReplace(file, "//", "/");
+
+			if (Files::IsStartWith(file, squick_path + "/third_party")) {
+				continue;
+			}
+			else if (Files::IsStartWith(file, squick_path + "/.git")) {
+				continue;
+			}
+			else if (Files::IsStartWith(file, squick_path + "/bin")) {
+				continue;
+			}
+			else if (Files::IsStartWith(file, squick_path + "/cache")) {
+				continue;
+			}
+			else if (Files::IsStartWith(file, squick_path + "/client")) {
+				continue;
+			}
+			else if (Files::IsStartWith(file, squick_path + "/deploy")) {
+				continue;
+			}
+			else if (Files::IsStartWith(file, squick_path + "/src/www/admin/node_modules")) {
+				continue;
+			}
+			else if (Files::IsStartWith(file, squick_path + "/src/www/admin/dist")) {
+				continue;
+			}
+			result.push_back(file);
+
+		}
+		return result;
+	}
+
+
 	static void StringReplace(std::string & strBig, const std::string & strsrc, const std::string & strdst)
 	{
 		std::string::size_type pos = 0;
@@ -32,7 +71,24 @@ public:
 		}
 	}
 
+	static bool IsStartWith(const std::string& str, const std::string& substr) {
+		if (substr.size() > str.size()) {
+			return false;
+		}
+		size_t size = substr.size();
+		for (int i = 0; i < size; ++i) {
+			if (str[i] != substr[i]) {
+				return false;
+			}
+		}
 
+		return true;
+	}
+
+	static bool IsInclude(const std::string& str, const std::string& substr) {
+		return false;
+	}
+	
 	static std::string GetFileNameByPath(const std::string& filePath)
 	{
 		std::string fileName = filePath.substr(filePath.find_last_of('/') + 1, filePath.find_last_of('.') - filePath.find_last_of('/') - 1);
