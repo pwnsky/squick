@@ -1,15 +1,10 @@
-//
-// Created by James on 7/02/21.
-//
-
-#ifndef NFSTRUCTGENERATOR_H
-#define NFSTRUCTGENERATOR_H
+#pragma once
 
 #if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
 #include<direct.h>
 #endif
-#include "../i_generator.h"
-namespace squick::tools::file_process {
+#include "i_generator.h"
+namespace squick_ctl {
 class StructGenerator : public IGenerator
 {
 	
@@ -175,4 +170,4 @@ public:
 	}
 };
 }
-#endif //NFSTRUCTGENERATOR_H
+

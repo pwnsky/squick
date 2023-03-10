@@ -1,9 +1,8 @@
 #pragma once
 
-
 #include "config_generator_data.h"
 #include "config_generator_help.h"
-namespace squick::tools::file_process {
+namespace squick_ctl {
 class IGenerator
 {
 public:

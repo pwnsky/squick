@@ -9,7 +9,7 @@
 #include "third_party/rapidxml/rapidxml_utils.hpp"
 #include "third_party/common/lexical_cast.hpp"
 
-namespace squick::tools::file_process::mini_excel_reader {
+namespace squick_ctl::mini_excel_reader {
     struct Cell
     {
         std::string value;

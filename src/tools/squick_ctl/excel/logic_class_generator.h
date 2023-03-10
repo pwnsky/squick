@@ -1,11 +1,7 @@
-//
-// Created by James on 7/02/21.
-//
+#pragma once
 
-#ifndef NFLOGICCLASSGENERATOR_HPP
-#define NFLOGICCLASSGENERATOR_HPP
-#include "../i_generator.h"
-namespace squick::tools::file_process {
+#include "i_generator.h"
+namespace squick_ctl {
 class LogicClassGenerator : public IGenerator
 {
 
@@ -69,4 +65,3 @@ public:
 	}
 };
 }
-#endif //NFLOGICCLASSGENERATOR_HPP

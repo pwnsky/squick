@@ -1,11 +1,7 @@
-//
-// Created by James on 7/02/21.
-//
+#pragma once
 
-#ifndef NFSQLGENERATOR_H
-#define NFSQLGENERATOR_H
-#include "../i_generator.h"
-namespace squick::tools::file_process {
+#include "i_generator.h"
+namespace squick_ctl {
 class SQLGenerator : public IGenerator
 {
 
@@ -167,4 +163,3 @@ public:
 	}
 };
 }
-#endif //NFSQLGENERATOR_H

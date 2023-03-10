@@ -1,13 +1,8 @@
-//
-// Created by i0gan 2022-09-19
-//
+#pragma once
 
-#ifndef NFCPPGENERATOR_HPP
-#define NFCPPGENERATOR_HPP
+#include "i_generator.h"
 
-#include "../i_generator.h"
-
-namespace squick::tools::file_process {
+namespace squick_ctl {
 class CPPGenerator : public IGenerator
 {
 public:
@@ -218,4 +213,3 @@ public:
 	}
 };
 }
-#endif //NFCPPGENERATOR_HPP

@@ -10,9 +10,7 @@
 //#include "config_generator.h"
 
 
-namespace squick {
-namespace tools {
-namespace file_process {
+namespace squick_ctl {
 Test::Test() {
 
 }
@@ -677,4 +675,4 @@ void ConfigGenerator::ProcessRefFiles()
 }
 
 
-}}}
+}

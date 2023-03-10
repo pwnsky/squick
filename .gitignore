@@ -76,5 +76,5 @@ push.sh
 third_party/lua/src/*.a
 third_party/lua/src/*.dll
 third_party/lua/src/*.exe
-tools/xlsx2need.exe
+tools/bin
 third_party/lua/src/liblua.so

@@ -26,23 +26,17 @@ Squick是游戏服务器快速相对较成熟开发方案，支持局部热重�
 ## 特性
 
 - 采用动态连链接库方式动态加载插件，开发拓展插件，让开发服务器变成开发插件
+- 通过squick_ctl工具来实现生成和管理不同的项目，解耦squick代码与真正的项目代码。
 - 插件化管理方式，可对插件进行加载与卸载实现不用关掉程序，就可以实现热重载功能。
-- 遵守谷歌C++编程规范
-- 事件和属性驱动，让开发变得更简单
-- Excel文档配置
-- 日志捕获系统
-- 支持部分不用停服即可热更，动态实现替换插件
-- 默认拥有服务器插件：代理服务器、世界服务器、导航系统、数据库服务器、中心服务器、登录服务器
+- 日志捕获系统，在linux环境下程序崩溃时，自动dump stack调用链。
 - 分布式服务、各服务之间通过网络来进行沟通，可通过分布式+集群方式减轻服务器压力
-- 拥有协程异步、事件与属性驱动，提升开发效率
 - Lua热更新、热重载、lua脚本可管理c++插件以及lua插件。通过lua可以动态热更新c++层面的插件(.so文件)，实现lua热更以及c++ native层的热热更新。
-- 采用Redis + Mysql作为数据库，通过数据库服务器，让数据灵活存储。
-- 拥有后台管理系统，采用 vue-element-admin 前端框架编写后台管理系统前端，master server作为后台管理系统接口服务。
-- 跨平台编译：支持Windows编译与Linux编译
+- 采用Redis + Mysql作为数据库，通过数据库服务器，让数据灵活存储。跨
+- 平台编译：支持Windows编译与Linux编译
 - 一个物理机上单个进程启动全部服务器，方便开发调试。
 - 一个物理机上启动多个独立进程的服务器，轻量化部署。
 - 不同物理机上启动单个或多个服务器，分布式部署。（支持Windows机器与Linux机器连接）
-- Go + Gin 来做后台GM
+- Go + Gin 来做后台GM。
 
 
 
@@ -167,11 +161,11 @@ awake -> init -> after_init -> before_destry -> destry
 
 ### Property
 
-表示一维数据, 通常用来表示Entity附带的任意一维数据结构, 当前可以为常用内置数据类型(`bool` `int` `float` `string` `GUID`). 例如`PlayerEnity`附带的HP MP等数据.
+表示一维数据, 通常用来表示Object附带的任意一维数据结构, 当前可以为常用内置数据类型(`bool` `int` `float` `string` `GUID`). 例如`玩家对象`附带的血量，名称等数据.
 
 ### Record
 
-表示二维数据, 通常用来表示Entity附带的任意二维数据结构,结构与Microsoft Excel的二维结构类似, 包含`Row`和`Column`, 并且结构可以通过Excel动态传入, Table中任意Cell可以为常用内置数据类型(`bool` `int` `float` `string` `GUID`). 例如`PlayerEnity`附带的`ItemTable`.
+表示二维数据, 通常用来表示Object附带的任意二维数据结构,结构与Excel的二维结构类似, 包含`Row`和`Column`, 并且结构可以通过Excel动态传入, 记录值可以为常用内置数据类型(`bool` `int` `float` `string` `GUID`). 例如`玩家对象的`附带的`背包物体`.
 
 ### Object
 
@@ -241,11 +235,15 @@ https://github.com/niXman/mingw-builds-binaries/releases
 
 
 
-### 2. 主工程编译
+### 2 squick_ctl工具编译
+
+首先第一次编译时，先编译squick_ctl工具，进入到工具目录下({project_path}/tools)，点击build_squick_ctl.bat即可编译。编译完毕后，点击 generate_config.bat 生成相应的配置文件和代码文件。
+
+
+
+### 3. 主工程编译
 
 编译完或者处理第三方依赖库后，就可以直接对主工程源码进行编译了。
-
-首先第一次编译时，先编译配置表工具，进入到工具目录下({project_path}/tools)，点击build_tools.bat即可编译。
 
 之后再点击 generate_vs_project.bat 生成 vs项目工程在 {project_path}/cache下，打开{project_path}/cache/Project.sln 进行全部编译。将squick_exe项目设置为启动项，并修改工作目录为 {project_path}/bin，也可以设定相应参数调试不同服务器，之后就可以采用VS来启动调试全部服务器了。
 
@@ -317,7 +315,7 @@ bash open_explorer.sh
 
 已测试：测试时间：2022-11-19 22:13
 
-采用的是ubuntu:20.04环境来进行编译的。采用该方法，是为了验证编译环境或快速部署。编译的工程文件是从github中新下载下来的，下载到容器里的/root目录。
+采用的是ubuntu:20.04环境来进行编译的。采用该方法，是为了验证编译环境或快速搭建开发环境。编译的工程文件是从github中新下载下来的，下载到容器里的/root目录。
 
 docker安装方法，这里就不用说了，只需一步就可以搭建编译环境以及编译。一键编译。
 
@@ -419,7 +417,7 @@ nodejs npm libjsoncpp-dev uuid-dev zlib1g-dev
 bash build_third_party.sh
 ```
 
-**编译tools**
+**编译squick_ctl**
 
 ```
 bash build_tools.sh
@@ -517,7 +515,7 @@ docker pull mysql
 
 
 
-## 修改配置文件
+## 生成配置文件
 
 采用Office软件打开{project_path}/resource/excel/squick/DB.xlsx，修改里面的IP为你搭建redis的ip，默认为127.0.0.1。修改完毕之后，需要重新生产配置文件，需执行一个脚本进行生成。linux执行如下：
 
@@ -575,7 +573,31 @@ single_start.bat
 
 
 
+## squick_ctl
 
+squick_ctl 是squick的项目管理工具，为了方便让Squick核心代码与项目工程代码实现解耦管理，提供了部分命令在工程中使用，例如squick工程的初始化，squick核心代码更新，squick核心代码打patch，对比等等，类似于git的操作对版本进行管控，但我们的目的不是为了版本的管控，而是让项目代码与squick代码进行在管理层面进行解耦。除此之外也提供了其他命令，比如excel命令，会根据excel文件生成squick所需要的配置文件。
+
+
+
+提供的命令如下: 
+
+命令:
+
+squick_ctl excel: 将excel文件转化称配置文件。
+
+squick_ctl init: 自动根据squick_version.txt拉取squick代码，计算squick代码的所有文件hash，并生成squick_files.txt
+
+squick_ctl patch: 将当前的更改patch到代码中。
+
+squick_ctl add: 将获取改动的文件保存到diff文件夹下。
+
+squick_ctl diff: 显示所改动的文件
+
+squick_ctl version: 获取squick代码的版本号
+
+squick_ctl update: 更新除了改动文件的squick所有文件 (谨慎使用)
+
+squick_ctl pull: 拉去当前squick版本下的代码
 
 
 

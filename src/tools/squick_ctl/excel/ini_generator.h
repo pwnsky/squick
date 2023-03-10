@@ -1,11 +1,8 @@
-//
-// Created by James on 7/02/21.
-//
 
-#ifndef NFINIGENERATOR_H
-#define NFINIGENERATOR_H
-#include "../i_generator.h"
-namespace squick::tools::file_process {
+#pragma once
+
+#include "i_generator.h"
+namespace squick_ctl {
 class IniGenerator : public IGenerator
 {
 public:
@@ -91,4 +88,3 @@ public:
 	}
 };
 }
-#endif //NFINIGENERATOR_H

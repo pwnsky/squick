@@ -4,21 +4,19 @@
 #include "third_party/common/lexical_cast.hpp"
 #include "mini_excel_reader.h"
 //#include "generator.h"
-#include "generator/cpp_generator.h"
-#include "generator/java_generator.h"
-#include "generator/ts_generator.h"
-#include "generator/cs_generator.h"
-#include "generator/sql_generator.h"
-#include "generator/struct_generator.h"
-#include "generator/ini_generator.h"
-#include "generator/pb_generator.h"
-#include "generator/logic_class_generator.h"
+#include "cpp_generator.h"
+#include "java_generator.h"
+#include "ts_generator.h"
+#include "cs_generator.h"
+#include "sql_generator.h"
+#include "struct_generator.h"
+#include "ini_generator.h"
+#include "pb_generator.h"
+#include "logic_class_generator.h"
 
 
 
-namespace squick {
-namespace tools {
-namespace file_process {
+namespace squick_ctl {
 class Test {
 	public:
 	Test();
@@ -70,4 +68,4 @@ private:
 	std::vector<IGenerator*> mxGenerators;
 };
 
-}}}
+}

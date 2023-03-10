@@ -12,6 +12,5 @@ echo $build_path
 cd ${project_path}
 mkdir -p "${build_path}/tools"
 cd "${build_path}/tools"
-cmake ${project_path}/src/tools/xlsx2need
+cmake ${project_path}/src/tools/squick_ctl
 make -j $(nproc)
-cp ${build_path}/tools/xlsx2need ${project_path}/tools

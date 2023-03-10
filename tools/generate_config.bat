@@ -20,7 +20,7 @@ mkdir %config_path%\excel
 mkdir %config_path%\struct
 mkdir %config_path%\ini
 
-.\xlsx2need %excel_path_gen% %config_path_gen%
+.\bin\squick_ctl %excel_path_gen% %config_path_gen%
 
 rem 拷贝 \proto\excel.h 
 copy ..\config\excel\excel.h %struct_path%
@@ -48,3 +48,5 @@ copy ..\src\lua\proto\code.lua %client_config_path%\lua
 rem 拷贝到client
 copy  %client_config_path%\lua\enum.lua ..\..\client\Content\Script\Proto
 copy  %client_config_path%\lua\code.lua ..\..\client\Content\Script\Proto
+
+pause

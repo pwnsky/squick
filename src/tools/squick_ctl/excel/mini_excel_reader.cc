@@ -10,7 +10,7 @@
 #ifndef PATH_MAX
 #define PATH_MAX 260
 #endif
-namespace squick::tools::file_process::mini_excel_reader {
+namespace squick_ctl::mini_excel_reader {
 
 
 	struct ZipEntryInfo

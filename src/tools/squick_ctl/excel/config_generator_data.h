@@ -2,7 +2,7 @@
 
 #include <map>
 #include <list>
-namespace squick::tools::file_process {
+namespace squick_ctl {
 class ClassProperty
 {
 public:

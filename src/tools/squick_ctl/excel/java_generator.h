@@ -1,11 +1,7 @@
-//
-// Created by James on 7/02/21.
-//
+#pragma once
 
-#ifndef NFJAVAGENERATOR_H
-#define NFJAVAGENERATOR_H
-#include "../i_generator.h"
-namespace squick::tools::file_process {
+#include "i_generator.h"
+namespace squick_ctl {
 class JAVAGenerator : public IGenerator
 {
 public:
@@ -131,4 +127,3 @@ public:
 	}
 };
 }
-#endif //NFJAVAGENERATOR_H

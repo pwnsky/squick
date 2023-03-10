@@ -1,19 +1,25 @@
-#include "config_generator.h"
+#include "excel/config_generator.h"
 #include <iostream>
 #include <chrono>
 #include <string>
 
 #include <squick/core/platform.h>
 
-using namespace squick::tools::file_process;
+using namespace squick_ctl;
 
 int main(int argc, const char *argv[])
 {
 	if(argc < 3) {
-		std::cout << "Usague: ./xlsx2need [excel path] [out path]\n";
-		std::cout << "Example: ./xlsx2need ../resource/excel ../config\n";
+		std::cout << "Usague: squick_ctl [cmd]\n"
+			<< "     excel:  \n"
+			<< "     init \n"
+			<< "     diff \n"
+			<< "     add \n"
+			<< "     patch \n";
+		std::cout << "Example: squick_ctl excel ../resource/excel ../config\n";
 		return 1;
 	}
+
 	std::string excelPath = argv[1];
 	std::string outPath = argv[2];
 	std::cout << "Excel path: " << excelPath << std::endl;

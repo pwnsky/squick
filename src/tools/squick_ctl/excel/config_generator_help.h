@@ -14,7 +14,7 @@
 #endif
 
 
-namespace squick::tools::file_process {
+namespace squick_ctl {
 class ConfigGeneratorHelp
 {
 public:

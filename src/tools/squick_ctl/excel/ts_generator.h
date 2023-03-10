@@ -1,43 +1,30 @@
-//
-// Created by James on 7/02/21.
-//
+#pragma once
 
-#ifndef NFCSGENERATOR_H
-#define NFCSGENERATOR_H
-#include "../i_generator.h"
-namespace squick::tools::file_process {
-class CSGenerator : public IGenerator
+#include "i_generator.h"
+namespace squick_ctl {
+class TSGenerator : public IGenerator
 {
 public:
-	CSGenerator(const std::string &excelPath, const std::string &outPath)
+	TSGenerator(const std::string &excelPath, const std::string &outPath)
 	{
 		SetPath(excelPath, outPath);
 	}
 
 	virtual bool Generate(const std::map<std::string, ClassData *> &classData) override
 	{
-		FILE* csWriter = fopen( (outPath + "/excel/Excel.cs").c_str(), "w");
+
+		FILE* csWriter = fopen( (outPath + "/excel/excel.ts").c_str(), "w");
 
 		std::string strFileHead = "// -------------------------------------------------------------------------\n";
 		strFileHead = strFileHead
-		              + "//    @FileName         :    Excel.cs\n"
+		              + "//    @FileName         :    excel.ts\n"
 		              + "//    @Author           :    I0gan\n"
 		              + "//    @Module           :    Excel\n"
-		              + "// -------------------------------------------------------------------------\n\n"
-		              + "using System;\n"
-		              //+ "using System.Collections.Concurrent;\n"
-		              + "using System.Collections.Generic;\n"
-		              + "using System.Linq;\n"
-		              + "using System.Text;\n"
-		              + "using System.Threading;\n"
-		              //+ "using System.Threading.Tasks;\n\n"
-		              + "namespace Excel\n{\n";
-
+		              + "// -------------------------------------------------------------------------\n\n";
 		fwrite(strFileHead.c_str(), strFileHead.length(), 1, csWriter);
-		/////////////////////////////////////////////////////
-
 
 		ClassData* pBaseObject = classData.at("IObject");
+		std::string allClassNames = "export const Excel={\n\t\t";
 		for (std::map<std::string, ClassData*>::const_iterator it = classData.begin(); it != classData.end(); ++it)
 		{
 			const std::string& className = it->first;
@@ -48,13 +35,16 @@ public:
 				continue;
 			}
 
-			// cs
+			// ts
 			std::string strPropertyInfo;
+			if(it != classData.begin()){
+				allClassNames+=',';
+			}
+			allClassNames+=className;
 
-			strPropertyInfo += "\tpublic class " + className + "\n\t{\n";
+			strPropertyInfo += "\tclass " + className + "\n\t{\n";
 			strPropertyInfo += "\t\t//Class name\n\t";
-			strPropertyInfo += "\tpublic static readonly String ThisName = \"" + className + "\";\n";
-
+			strPropertyInfo += "\tpublic static  ThisName = \"" + className + "\";\n";
 			if (className != "IObject")
 			{
 				//add base class properties
@@ -66,7 +56,7 @@ public:
 					const std::string& propertyName = itProperty->first;
 					ClassProperty* pClassProperty = itProperty->second;
 
-					strPropertyInfo += "\t\tpublic static readonly String " + propertyName + " = \"" + propertyName + "\";";
+					strPropertyInfo += "\t\tpublic static " + propertyName + " = \"" + propertyName + "\";";
 					strPropertyInfo += "// " + pClassProperty->descList["Type"] + "\n";
 				}
 			}
@@ -79,9 +69,10 @@ public:
 				const std::string& propertyName = itProperty->first;
 				ClassProperty* pClassProperty = itProperty->second;
 
-				strPropertyInfo += "\t\tpublic static readonly String " + propertyName + " = \"" + propertyName + "\";";
+				strPropertyInfo += "\t\tpublic static " + propertyName + " = \"" + propertyName + "\";";
 				strPropertyInfo += "// " + pClassProperty->descList["Type"] + "\n";
 			}
+
 
 			//include property, come from
 
@@ -98,10 +89,9 @@ public:
 					const std::string& propertyName = itProperty->first;
 					ClassProperty* pClassProperty = itProperty->second;
 
-					strPropertyInfo += "\t\tpublic static readonly String " + propertyName + " = \"" + propertyName + "\";";
+					strPropertyInfo += "\t\tpublic static " + propertyName + " = \"" + propertyName + "\";";
 					strPropertyInfo += "// " + pClassProperty->descList["Type"] + "\n";
 				}
-
 			}
 
 			fwrite(strPropertyInfo.c_str(), strPropertyInfo.length(), 1, csWriter);
@@ -116,11 +106,11 @@ public:
 				const std::string& recordName = itRecord->first;
 				ClassRecord* pClassRecord = itRecord->second;
 
-				std::cout << "save for cs ---> " << className << "::" << recordName << std::endl;
+				std::cout << "save for ts ---> " << className << "::" << recordName << std::endl;
 
-				strRecordInfo += "\t\tpublic class " + recordName + "\n\t\t{\n";
+				strRecordInfo += "\t\tpublic static " + recordName + " = \n\t\t{\n";
 				strRecordInfo += "\t\t\t//Class name\n\t";
-				strRecordInfo += "\t\tpublic static readonly String ThisName = \"" + recordName + "\";\n";
+				strRecordInfo += "\t\t\"ThisName\":\"" + recordName + "\",\n";
 
 				//col
 				for (int i = 0; i < pClassRecord->colList.size(); ++i)
@@ -128,12 +118,16 @@ public:
 					for (std::map<std::string, ClassRecord::RecordColDesc*>::iterator itCol = pClassRecord->colList.begin();
 					     itCol != pClassRecord->colList.end(); ++itCol)
 					{
+
 						const std::string& colTag = itCol->first;
 						ClassRecord::RecordColDesc* pRecordColDesc = itCol->second;
 
 						if (pRecordColDesc->index == i)
 						{
-							strRecordInfo += "\t\t\tpublic const int " + colTag + " = " + std::to_string(pRecordColDesc->index) + ";//" + pRecordColDesc->type + "\n";
+							if(i!= 0){
+								strRecordInfo+=",\n";
+							}
+							strRecordInfo += "\t\t\t\"" + colTag + "\":" + std::to_string(pRecordColDesc->index);
 						}
 					}
 				}
@@ -142,13 +136,12 @@ public:
 				strRecordInfo += "\n\t\t}\n";
 
 			}
-			//include record
 
 			for (std::string item : pClassDta->includes)
 			{
 				auto includeClass = classData.at(item);
 
-				strPropertyInfo += "\t\t// Include Record, come from " + includeClass->xStructData.className + " \n";
+				strRecordInfo += "\t\t// Include Record, come from " + includeClass->xStructData.className + " \n";
 
 				for (std::map<std::string, ClassRecord*>::iterator itRecord = includeClass->xStructData.xRecordList.begin();
 				     itRecord != includeClass->xStructData.xRecordList.end(); ++itRecord)
@@ -156,9 +149,9 @@ public:
 					const std::string& recordName = itRecord->first;
 					ClassRecord* pClassRecord = itRecord->second;
 
-					strRecordInfo += "\t\tpublic class " + recordName + "\n\t\t{\n";
+					strRecordInfo += "\t\tpublic static " + recordName + " = \n\t\t{\n";
 					strRecordInfo += "\t\t\t//Class name\n\t";
-					strRecordInfo += "\t\tpublic static readonly String ThisName = \"" + recordName + "\";\n";
+					strRecordInfo += "\t\t\"ThisName\":\"" + recordName + "\",\n";
 
 					//col
 					for (int i = 0; i < pClassRecord->colList.size(); ++i)
@@ -166,12 +159,16 @@ public:
 						for (std::map<std::string, ClassRecord::RecordColDesc*>::iterator itCol = pClassRecord->colList.begin();
 						     itCol != pClassRecord->colList.end(); ++itCol)
 						{
+
 							const std::string& colTag = itCol->first;
 							ClassRecord::RecordColDesc* pRecordColDesc = itCol->second;
 
 							if (pRecordColDesc->index == i)
 							{
-								strRecordInfo += "\t\t\tpublic const int " + colTag + " = " + std::to_string(pRecordColDesc->index) + ";//" + pRecordColDesc->type + "\n";
+								if (i != 0) {
+									strRecordInfo += ",\n";
+								}
+								strRecordInfo += "\t\t\t\"" + colTag + "\":" + std::to_string(pRecordColDesc->index);
 							}
 						}
 					}
@@ -193,15 +190,11 @@ public:
 			fwrite(strClassEnd.c_str(), strClassEnd.length(), 1, csWriter);
 
 		}
-
-		std::string strFileEnd = "\n}";
-		fwrite(strFileEnd.c_str(), strFileEnd.length(), 1, csWriter);
-
+		allClassNames+="}\n";
+		fwrite(allClassNames.c_str(), allClassNames.length(), 1, csWriter);
 		fclose(csWriter);
 
 		return false;
 	}
 };
 }
-
-#endif //NFCSGENERATOR_H
