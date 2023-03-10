@@ -4,7 +4,7 @@ Squick是游戏服务器快速相对较成熟开发方案，支持局部热重�
 
 客户端Demo: [SquickClient](https://github.com/pwnsky/SquickClient)
 
-快速入手Squick，请查看[文档](./docs/README.md)
+[快速开始](#快速开始)
 
 **讨论QQ群：739065686**
 
