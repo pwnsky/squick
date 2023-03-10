@@ -7,35 +7,67 @@
 
 using namespace squick_ctl;
 
+void help() {
+	std::cout << "Usague: squick_ctl [cmd]\n"
+		<< "     excel:  \n"
+		<< "     init \n"
+		<< "     diff \n"
+		<< "     add \n"
+		<< "     patch \n";
+	std::cout << "Example: squick_ctl excel ../resource/excel ../config\n";
+}
+
 int main(int argc, const char *argv[])
 {
-	if(argc < 3) {
-		std::cout << "Usague: squick_ctl [cmd]\n"
-			<< "     excel:  \n"
-			<< "     init \n"
-			<< "     diff \n"
-			<< "     add \n"
-			<< "     patch \n";
-		std::cout << "Example: squick_ctl excel ../resource/excel ../config\n";
+	if(argc < 2) {
+		help();
 		return 1;
 	}
 
-	std::string excelPath = argv[1];
-	std::string outPath = argv[2];
-	std::cout << "Excel path: " << excelPath << std::endl;
-	std::cout << "Out path: " << outPath << std::endl;
-	auto t1 = SquickGetTimeMS();
+	const std::string cmd = argv[1];
 
-	ConfigGenerator fp(excelPath, outPath);
-	fp.SetUTF8(false);//set it true to convert UTF8 to GBK which is to show Chinese words in Squick
-	fp.LoadDataFromExcel();
+	if (cmd == "excel") {
+		if (argc < 4) {
+			help();
+			return 1;
+		}
+		std::string excelPath = argv[2];
+		std::string outPath = argv[3];
+		std::cout << "Excel path: " << excelPath << std::endl;
+		std::cout << "Out path: " << outPath << std::endl;
+		auto t1 = SquickGetTimeMS();
 
-	fp.PrintData();
+		ConfigGenerator fp(excelPath, outPath);
+		fp.SetUTF8(false);//set it true to convert UTF8 to GBK which is to show Chinese words in Squick
+		fp.LoadDataFromExcel();
+		fp.PrintData();
+		fp.GenerateData();
+		auto t2 = SquickGetTimeMS();
+		std::cout << "Timespan: " << (t2 - t1) << " ms" << std::endl;
+	}
+	else if (cmd == "init") {
+		
+	}
+	else if (cmd == "diff") {
 
-	fp.GenerateData();
+	}
+	else if (cmd == "update") {
 
-	auto t2 = SquickGetTimeMS();
-	std::cout << "Timespan: "  << (t2 - t1) << " ms" << std::endl;
+	}
+	else if (cmd == "version") {
+
+	}
+	else if (cmd == "add") {
+
+	}
+	else if (cmd == "patch") {
+
+	}
+	else {
+		help();
+	}
+
+	
 
 	return 0;
 }

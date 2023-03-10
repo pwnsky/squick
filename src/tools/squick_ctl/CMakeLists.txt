@@ -36,6 +36,38 @@ file(GLOB squick_ctl_excel_h ./excel/*.h)
 source_group("excel" FILES ${squick_ctl_excel_cc})
 source_group("excel" FILES ${squick_ctl_excel_h})
 
+
+file(GLOB squick_ctl_init_cc ./init/*.cc)
+file(GLOB squick_ctl_init_h ./init/*.h)
+source_group("init" FILES ${squick_ctl_init_cc})
+source_group("init" FILES ${squick_ctl_init_h})
+
+file(GLOB squick_ctl_diff_cc ./diff/*.cc)
+file(GLOB squick_ctl_diff_h ./diff/*.h)
+source_group("diff" FILES ${squick_ctl_diff_cc})
+source_group("diff" FILES ${squick_ctl_diff_h})
+
+file(GLOB squick_ctl_add_cc ./add/*.cc)
+file(GLOB squick_ctl_add_h ./add/*.h)
+source_group("add" FILES ${squick_ctl_add_cc})
+source_group("add" FILES ${squick_ctl_add_h})
+
+file(GLOB squick_ctl_patch_cc ./patch/*.cc)
+file(GLOB squick_ctl_patch_h ./patch/*.h)
+source_group("patch" FILES ${squick_ctl_patch_cc})
+source_group("patch" FILES ${squick_ctl_patch_h})
+
+
+file(GLOB squick_ctl_update_cc ./update/*.cc)
+file(GLOB squick_ctl_update_h ./update/*.h)
+source_group("update" FILES ${squick_ctl_update_cc})
+source_group("update" FILES ${squick_ctl_update_h})
+
+file(GLOB squick_ctl_pull_cc ./pull/*.cc)
+file(GLOB squick_ctl_pull_h ./pull/*.h)
+source_group("pull" FILES ${squick_ctl_pull_cc})
+source_group("pull" FILES ${squick_ctl_pull_h})
+
 add_executable(${ProjectName}
 	${squick_ctl_cc}
 	${squick_ctl_h}
@@ -46,6 +78,18 @@ add_executable(${ProjectName}
 	${squick_ctl_excel_minizip_h}
 	${squick_ctl_excel_zlib_c} 
 	${squick_ctl_excel_zlib_h}
+
+	${squick_ctl_init_h}
+	${squick_ctl_init_cc}
+
+	${squick_ctl_diff_h}
+	${squick_ctl_diff_cc}
+
+	${squick_ctl_add_h}
+	${squick_ctl_add_cc}
+
+	${squick_ctl_patch_h}
+	${squick_ctl_patch_cc}
 
 	)
 
