@@ -20,7 +20,7 @@ mkdir %config_path%\excel
 mkdir %config_path%\struct
 mkdir %config_path%\ini
 
-.\bin\squick_ctl %excel_path_gen% %config_path_gen%
+.\bin\squick_ctl excel %excel_path_gen% %config_path_gen%
 
 rem 拷贝 \proto\excel.h 
 copy ..\config\excel\excel.h %struct_path%
