@@ -3,7 +3,6 @@
 #include <squick/core/platform.h>
 #include "third_party/common/lexical_cast.hpp"
 #include "mini_excel_reader.h"
-//#include "generator.h"
 #include "cpp_generator.h"
 #include "java_generator.h"
 #include "ts_generator.h"

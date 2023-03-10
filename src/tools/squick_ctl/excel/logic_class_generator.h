@@ -26,7 +26,7 @@ public:
 		strElementData += "\t<Class Id=\"" + pBaseObject->xStructData.className + "\"\t";
 
 		std::string path = pBaseObject->filePath;
-		ConfigGeneratorHelp::StringReplace(path, strExcelIniPath, "");
+		Files::StringReplace(path, strExcelIniPath, "");
 
 		strElementData += "Path=\"config/struct" + path + ".xml\"\t";
 		strElementData += "InstancePath=\"config/ini" + path + ".xml\"\t>\n"; // 已修复bug
@@ -48,7 +48,7 @@ public:
 			strElementData += "\t\t<Class Id=\"" + pClassDta->xStructData.className + "\"\t";
 
 			std::string path = pClassDta->filePath;
-			ConfigGeneratorHelp::StringReplace(path, strExcelIniPath, "");
+			Files::StringReplace(path, strExcelIniPath, "");
 
 			strElementData += "Path=\"config/struct" + path + ".xml\"\t";
 			strElementData += "InstancePath=\"config/ini" + path + ".xml\"\t/>\n";

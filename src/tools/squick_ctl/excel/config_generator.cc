@@ -44,27 +44,27 @@ bool ConfigGenerator::LoadDataFromExcel()
 {
 	LoadDataFromExcel(strExcelIniPath + "/common/IObject.xlsx", "IObject");
 	
-	auto fileList = ConfigGeneratorHelp::GetFileListInFolder(strExcelIniPath, 1);
+	auto fileList = Files::GetFileListInFolder(strExcelIniPath, 1);
 	
 	///////////////////////////////////
 
 	for (auto filePath : fileList)
 	{
-		ConfigGeneratorHelp::StringReplace(filePath, "\\", "/");
-		ConfigGeneratorHelp::StringReplace(filePath, "//", "/");
+		Files::StringReplace(filePath, "\\", "/");
+		Files::StringReplace(filePath, "//", "/");
 		//std::cout << "Open Excel : " << filePath << std::endl;
 		if ((int)(filePath.find("$")) != -1)
 		{
 			continue;
 		}
 
-		auto strExt = ConfigGeneratorHelp::GetFileNameExtByPath(filePath);
+		auto strExt = Files::GetFileNameExtByPath(filePath);
 		if (strExt != ".xlsx")
 		{
 			continue;
 		}
 
-		auto fileName = ConfigGeneratorHelp::GetFileNameByPath(filePath);
+		auto fileName = Files::GetFileNameByPath(filePath);
 		if (fileName == "IObject")
 		{
 			continue;
@@ -104,10 +104,10 @@ bool ConfigGenerator::LoadDataFromExcel(const std::string & filePath, const std:
 	mxClassData[pClassData->xStructData.className] = pClassData;
 
 	pClassData->filePath = filePath;
-	ConfigGeneratorHelp::StringReplace(pClassData->filePath, ConfigGeneratorHelp::GetFileNameExtByPath(filePath), "");
+	Files::StringReplace(pClassData->filePath, Files::GetFileNameExtByPath(filePath), "");
 
 	pClassData->fileFolder = pClassData->filePath;
-	ConfigGeneratorHelp::StringReplace(pClassData->fileFolder, fileName, "");
+	Files::StringReplace(pClassData->fileFolder, fileName, "");
 	///////////////////////////////////////
 	//load
 
@@ -126,13 +126,13 @@ bool ConfigGenerator::LoadDataFromExcel(const std::string & filePath, const std:
 
 	//load parts
 
-	auto fileList = ConfigGeneratorHelp::GetFileListInFolder(pClassData->filePath, 0);
+	auto fileList = Files::GetFileListInFolder(pClassData->filePath, 0);
 	for (auto filePath : fileList)
 	{
-		ConfigGeneratorHelp::StringReplace(filePath, "\\", "/");
-		ConfigGeneratorHelp::StringReplace(filePath, "//", "/");
+		Files::StringReplace(filePath, "\\", "/");
+		Files::StringReplace(filePath, "//", "/");
 
-		std::string fileName = ConfigGeneratorHelp::GetFileNameByPath(filePath);
+		std::string fileName = Files::GetFileNameByPath(filePath);
 		if (!fileName.empty())
 		{
 			std::string compareName = fileName;

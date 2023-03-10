@@ -4,6 +4,7 @@
 #include <string>
 
 #include <squick/core/platform.h>
+#include "init/init.h"
 
 using namespace squick_ctl;
 
@@ -46,7 +47,9 @@ int main(int argc, const char *argv[])
 		std::cout << "Timespan: " << (t2 - t1) << " ms" << std::endl;
 	}
 	else if (cmd == "init") {
-		
+		init::Init i;
+		i.Exec();
+
 	}
 	else if (cmd == "diff") {
 

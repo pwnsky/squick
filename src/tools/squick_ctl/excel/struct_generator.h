@@ -30,14 +30,14 @@ public:
 
 			std::cout << "save for struct ---> " << className << std::endl;
 			std::string path = pClassDta->filePath;
-			ConfigGeneratorHelp::StringReplace(path, strExcelIniPath, "");
+			Files::StringReplace(path, strExcelIniPath, "");
 			std::string fileName = strXMLStructPath + path + ".xml";
 
 			FILE* structWriter = fopen(fileName.c_str(), "w+");
 			if (structWriter == nullptr)
 			{
 				std::string folder = pClassDta->fileFolder;
-				ConfigGeneratorHelp::StringReplace(folder, strExcelIniPath, "");
+				Files::StringReplace(folder, strExcelIniPath, "");
 				std::string fileFolder = strXMLStructPath + folder;
 
 #if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
@@ -143,7 +143,7 @@ public:
 					auto includeClass = classData.at(item);
 
 					std::string path = includeClass->filePath;
-					ConfigGeneratorHelp::StringReplace(path, strExcelIniPath, "");
+					Files::StringReplace(path, strExcelIniPath, "");
 					std::string fileName = "config/struct" + path + ".xml";
 
 					strFileIncludeBody += "\t\t<Include Id=\"" + fileName + "\" />";

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "config_generator_data.h"
-#include "config_generator_help.h"
+#include "../files.h"
 namespace squick_ctl {
 class IGenerator
 {

@@ -15,7 +15,7 @@
 
 
 namespace squick_ctl {
-class ConfigGeneratorHelp
+class Files
 {
 public:
 
@@ -116,7 +116,6 @@ public:
 
 		sort(result.begin(), result.end());
 	}
-
 #endif
 		return result;
 	}
