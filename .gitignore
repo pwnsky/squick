@@ -1,0 +1,80 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+
+
+# Compiled Static libraries
+*.lai
+*.la
+*.zip
+*.gz
+*.tar
+
+# Executables
+*.out
+*.app
+
+# Visaul Studio
+*.iobj
+*.ipdb
+*.idb
+*.pdb
+*.tlog
+*.log
+*.ilk
+*.user
+*.exp
+*.vc.db
+*.*.manifest
+*.cache
+*.bsc
+
+# Generated source code
+/src/squick/struct/*.pb.h
+/src/squick/struct/*.pb.cc
+/src/squick/struct/excel.h
+/src/squick/struct/*.cs
+/src/lua/config
+/src/lua/proto
+# Codeblocks
+*.layout
+*.depend
+
+# CMake
+#[cC][mM]ake[lL]ists.txt
+/config/ini
+/config/struct
+/config/excel
+/cache/
+/deploy/
+/data/
+/bin/
+/client/
+/tools/xlsx2need
+
+/third_party/build
+/third_party/lib
+/third_party/lua/src/luac
+/third_party/lua/src/lua
+/resource/lua_excel
+/.idea/*
+
+/Temp
+/temp
+/*.opendb
+/pvp
+
+/.vs/
+# Editor
+.idea
+.vscode
+push.sh
+third_party/lua/src/*.a
+third_party/lua/src/*.dll
+third_party/lua/src/*.exe
+tools/xlsx2need.exe
+third_party/lua/src/liblua.so

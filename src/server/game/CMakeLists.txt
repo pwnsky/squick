@@ -1,0 +1,5 @@
+add_subdirectory(client)
+add_subdirectory(server)
+add_subdirectory(lua)
+add_subdirectory(play)
+add_subdirectory(lobby)

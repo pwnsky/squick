@@ -1,0 +1,15 @@
+<XML>
+    <DBServer>
+		<Plugin Name="core/net" />
+		<Plugin Name="core/kernel" />
+		<Plugin Name="core/config" />
+		<Plugin Name="core/log" />	
+		<Plugin Name="core/actor" />
+		<Plugin Name="core/nosql" />
+		<Plugin Name="core/security" />
+		
+		<Plugin Name="server/db/client" />
+		<Plugin Name="server/db/server" />
+		<Plugin Name="server/db/logic" />
+    </DBServer>
+</XML>

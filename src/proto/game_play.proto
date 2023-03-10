@@ -1,0 +1,7 @@
+// 游戏玩法
+syntax = "proto3";
+package SquickStruct; 
+import "base.proto";
+
+// 游戏对局定义
+// 30000 ~ 40000

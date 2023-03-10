@@ -1,0 +1,15 @@
+<XML>
+    <GatewayServer>
+		<Plugin Name="core/net" />
+		<Plugin Name="core/kernel" />
+		<Plugin Name="core/config" />
+		<Plugin Name="core/log" />
+		<Plugin Name="core/actor" />
+		<Plugin Name="core/security" />
+        <Plugin Name="core/lua" />
+		
+		<Plugin Name="server/gateway/server" />
+		<Plugin Name="server/gateway/lua" />
+		<Plugin Name="server/gateway/client" />
+    </GatewayServer>
+</XML>

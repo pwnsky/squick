@@ -1,0 +1,105 @@
+// 游戏玩法基本RPC
+syntax = "proto3";
+package SquickStruct; 
+import "base.proto";
+
+// 20000 ~ 30000
+enum GameBaseRPC {
+    GAME_BASE_RPC_NONE   = 0;
+
+    REQ_GAME_START = 20015; // 预留测试用
+	ACK_GAME_START = 20016; // 
+	REQ_GAME_JOIN = 20017;  // 请求加入游戏
+	ACK_GAME_JOIN = 20018;
+	ACK_GAME_OVER = 20019;    // 游戏结束
+	REQ_GAME_RESTART = 20020; // 重新开始游戏
+	ACK_GAME_RESTART = 20021;
+
+    // 场景对象
+	ACK_PLAYER_ENTER						= 20100;			// 对象在服务端上创建成功
+	ACK_PLAYER_LEAVE						= 20102;			// 
+
+	ACK_OBJECT_PROPERTY_ENTRY				= 20200;			// 对象属性
+	ACK_PROPERTY_INT						= 20201;			//
+	ACK_PROPERTY_FLOAT					    = 20202;			//
+	ACK_PROPERTY_STRING						= 20203;			//
+	ACK_PROPERTY_OBJECT						= 20204;			//
+	ACK_PROPERTY_VECTOR2        			= 20205;
+	ACK_PROPERTY_VECTOR3        			= 20206;
+	ACK_PROPERTY_CLEAR          			= 20207;            // 属性清除
+
+	ACK_ADD_ROW								= 20220;
+	ACK_REMOVE_ROW							= 20221;
+	ACK_SWAP_ROW							= 20222;
+
+    ACK_OBJECT_RECORD_ENTRY					= 20230;			// 对象记录值
+	ACK_RECORD_INT							= 20231;
+	ACK_RECORD_FLOAT						= 20232;
+	ACK_RECORD_STRING						= 20233;
+	ACK_RECORD_OBJECT						= 20234;
+	ACK_RECORD_VECTOR2						= 20235;
+	ACK_RECORD_VECTOR3						= 20236;
+	ACK_RECORD_CLEAR						= 20237; // 记录值清除
+	ACK_RECORD_SORT							= 20238;
+	ACK_DATA_FINISHED						= 20300; // 服务端发送对象数据完成
+	
+
+	REQ_MOVE								= 21000; // 移动
+	ACK_MOVE								= 21001; 
+}
+
+// 进入游戏
+message ReqGameJoin
+{
+}
+
+message AckGameJoin
+{
+	int32 code = 1;
+}
+
+message AckGameStart
+{
+    int32 code = 1;
+}
+
+// 重新开局
+message ReqGameRestart
+{
+}
+
+message AckGameRestart
+{
+    int32	code = 1;
+}
+
+
+message PlayerBaseInfo
+{
+	Ident   guid = 1;
+	int32   index = 2;
+}
+
+message AckPlayerEnterList // 同场景同房间 玩家进入时列表
+{
+    repeated PlayerBaseInfo list = 1;
+}
+
+message AckPlayerLeaveList //同场景同房间 离开时列表
+{
+    repeated Ident list = 1;
+}
+
+message TransformSyncUnit
+{
+	Ident owner = 1; //
+    Vector3 position = 2;
+    Vector3 rotation = 3;
+    int32 object_id = 4;
+}
+
+message ReqAckObjectTransformSync
+{
+    int32 sequence = 1;
+    repeated TransformSyncUnit sync_unit = 2;
+}
