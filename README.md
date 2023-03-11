@@ -584,17 +584,19 @@ squick_ctl 是squick的项目管理工具，为了方便让Squick核心代码与
 ```
 project：
 .gitignore : 忽略squick文件夹
-diff: 在该目录下已更改的文件：通过squick_ctl add 命令提交squick目录下已更改的文件
-squick: 核心文件，
-squick_files.txt : 记录了squick最初代码的所有文件hash
+files: 在该目录下已更改的文件：通过squick_ctl add 命令提交squick目录下已更改的文件或增加的文件
+squick: 项目的全部文件，包含了suqikc和我们自己项目的文件
+base.json : 记录了squick最初代码的所有文件hash
+chnaged.json : 已更改的所有文件hash
 ```
 
-在我们的项目工程中，在项目工程仓库中也只有：
+在我们的git远程项目工程中也只有：
 
 ```
 .gitignore
-diff
-squick_files.txt
+files
+base.json
+chnaged.json
 ```
 
 这些文件或文件夹，没有squick的代码，这样对于后期升级squick核心代码的时候就比较方便了，diff下存储的就是我们改动的代码，只要我们动的核心文件不是升级中改动的文件，squick核心代码就可以升级了，采用squick update命令即可实现，该命令也会校验文件是否冲突，如果出现文件冲突，那么说明升级的文件和我们改动的文件是同一个文件，可能强制升级之后会出现报错。
@@ -607,7 +609,7 @@ squick_files.txt
 
 squick_ctl excel: 将excel文件转化称配置文件。
 
-squick_ctl init: 初始化工程，通过squick_path环境变量拷贝squick代码到当前工程，并计算squick代码的所有文件hash，并生成squick_files.txt
+squick_ctl init: 初始化工程，通过squick_path环境变量拷贝squick代码到当前工程，并计算squick代码的所有文件hash，并生成base.json
 
 squick_ctl patch: 将diff下的代码patch到squick代码中。
 
