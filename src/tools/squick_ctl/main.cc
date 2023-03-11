@@ -5,6 +5,8 @@
 
 #include <squick/core/platform.h>
 #include "init/init.h"
+#include "diff/diff.h"
+#include "add/add.h"
 
 using namespace squick_ctl;
 
@@ -51,7 +53,8 @@ int main(int argc, const char *argv[])
 		i.Exec();
 	}
 	else if (cmd == "diff") {
-
+		diff::Diff d;
+		d.Exec();
 	}
 	else if (cmd == "update") {
 
@@ -60,7 +63,8 @@ int main(int argc, const char *argv[])
 
 	}
 	else if (cmd == "add") {
-
+		add::Add a;
+		a.Exec();
 	}
 	else if (cmd == "patch") {
 

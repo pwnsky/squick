@@ -95,11 +95,23 @@ public:
 		return fileName;
 	}
 
+	static std::string GetFilePathByPath(const std::string& filePath)
+	{
+		int pos = filePath.find_last_of('/');
+		if (pos < 0) {
+			return ".";
+		}
+		std::string path = filePath.substr(0, pos);
+		return path;
+	}
+
 	static std::string GetFileNameExtByPath(const std::string& filePath)
 	{
 		std::string ext = filePath.substr(filePath.find_last_of('.'), filePath.length() - filePath.find_last_of('.'));
 		return ext;
 	}
+
+
 
 	static std::vector<std::string> GetFileListInFolder(std::string folderPath, int depth)
 	{

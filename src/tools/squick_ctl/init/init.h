@@ -73,13 +73,12 @@ namespace squick_ctl::init {
 			}
 
 			j_all["files"] = j_files;
-
-
-			fstream file;
-			file.open("squick_base.txt", ios::out);
+			
+			fstream base;
+			base.open("base.json", ios::out);
 			std::string outContent = j_all.dump();
-			file.write(outContent.c_str(), outContent.size());
-			file.close();
+			base.write(outContent.c_str(), outContent.size());
+			base.close();
 
 
 			fstream gitignore_file;
@@ -90,19 +89,19 @@ namespace squick_ctl::init {
 			gitignore_file.close();
 
 			
-			system("mkdir squick_diff");
-			fstream squick_diff_keep;
-			squick_diff_keep.open("squick_diff/.gitkeep", ios::out);
-			squick_diff_keep.close();
+			system("mkdir files");
+			fstream files_keep;
+			files_keep.open("files/.gitkeep", ios::out);
+			files_keep.close();
 
-
+			
 			// readme
 			fstream readme_file;
 			readme_file.open("README.md", ios::out);
 			std::string readme_file_content;
 			readme_file_content = "# Squick project \n";
-			readme_file_content += " manage by squick_ctl\n";
-			readme_file_content += " ref: https://github.com/pwnsky/suiqck";
+			readme_file_content += " managed by squick_ctl\n";
+			readme_file_content += " Github: https://github.com/pwnsky/squick";
 
 			readme_file.write(readme_file_content.c_str(), readme_file_content.size());
 			readme_file.close();

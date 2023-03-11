@@ -72,6 +72,7 @@ file(GLOB squick_ctl_pull_h ./pull/*.h)
 source_group("pull" FILES ${squick_ctl_pull_cc})
 source_group("pull" FILES ${squick_ctl_pull_h})
 
+
 add_executable(${ProjectName}
 	${squick_ctl_cc}
 	${squick_ctl_h}
