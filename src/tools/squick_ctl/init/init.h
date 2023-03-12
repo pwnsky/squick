@@ -84,7 +84,9 @@ namespace squick_ctl::init {
 			fstream gitignore_file;
 			gitignore_file.open(".gitignore", ios::out);
 			std::string gitignore_file_content;
-			gitignore_file_content = "/squick\n";
+			gitignore_file_content = "/squick\n"
+				"/backup\n"
+				;
 			gitignore_file.write(gitignore_file_content.c_str(), gitignore_file_content.size());
 			gitignore_file.close();
 

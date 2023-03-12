@@ -75,7 +75,11 @@ namespace squick_ctl::add {
 				}
 			}
 
+
+
 			// ----------- above code from diff.h
+			// 在执行Clean的时候，先将files下的所有文件做一个备份，防止在更新squick所有文件的时候，将files目录下的所有文件给删除了。
+			Backup();
 
 			// 清除
 			Clean();
@@ -161,6 +165,18 @@ namespace squick_ctl::add {
 			system(cmd.c_str());
 			cmd = "cp " + sourcePath + " " + targetPath;
 			system(cmd.c_str());
+#endif
+		}
+
+
+		
+		void Backup() {
+#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+			system("mkdir backup");
+			system("xcopy /s /e /y files backup");
+#else
+			system("mkdir -p backup");
+			system("cp -r files/squick backup");
 #endif
 		}
 	};

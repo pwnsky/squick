@@ -12,12 +12,10 @@
 #include <corecrt_io.h>
 #endif
 
-
 namespace squick_ctl {
 class Files
 {
 public:
-
 	// 过滤后的文件
 	static std::vector<std::string> GetUnblackedFiles(const std::string &squick_path) {
 		std::vector<std::string> result;
@@ -51,8 +49,13 @@ public:
 			else if (Files::IsStartWith(file, squick_path + "/src/www/admin/dist")) {
 				continue;
 			}
+			else if (Files::IsStartWith(file, squick_path + "/src/www/server/build")) {
+				continue;
+			}
+			else if (Files::IsStartWith(file, squick_path + "/.vscode")) {
+				continue;
+			}
 			result.push_back(file);
-
 		}
 		return result;
 	}

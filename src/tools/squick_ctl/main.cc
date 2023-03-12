@@ -69,6 +69,9 @@ int main(int argc, const char *argv[])
 	else if (cmd == "patch") {
 
 	}
+	else if (cmd == "pull") {
+
+	}
 	else {
 		help();
 	}
