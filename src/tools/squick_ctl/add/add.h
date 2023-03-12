@@ -92,7 +92,7 @@ namespace squick_ctl::add {
 				Copy(f.first);
 			}
 
-			record["added"] = recordAdded;
+			//record["added"] = recordAdded;
 
 			json recordReduced;
 			cout << "\n\n Reduced files: " << reducedFilesMap.size() << endl;
@@ -118,7 +118,7 @@ namespace squick_ctl::add {
 
 				Copy(f.first);
 			}
-			record["changed"] = recordChanged;
+			//record["changed"] = recordChanged;
 			
 			fstream base;
 			base.open("changed.json", ios::out);
