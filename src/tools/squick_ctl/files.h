@@ -55,6 +55,18 @@ public:
 			else if (Files::IsStartWith(file, squick_path + "/.vscode")) {
 				continue;
 			}
+			else if (Files::IsStartWith(file, squick_path + "/tools/bin")) {
+				continue;
+			}
+			else if (Files::IsStartWith(file, squick_path + "/src/squick/struct/")) {
+				int pos = file.find(".");
+				if (pos > 0) {
+					string sub = file.substr(pos, file.length() - pos); // PB文件
+					if (sub.find("pb") > 0) {
+						continue;
+					}
+				}
+			}
 			result.push_back(file);
 		}
 		return result;
