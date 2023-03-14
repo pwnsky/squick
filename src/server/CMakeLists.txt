@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-add_subdirectory(db)
+add_subdirectory(db_proxy)
 add_subdirectory(login)
 add_subdirectory(game)
 add_subdirectory(master)

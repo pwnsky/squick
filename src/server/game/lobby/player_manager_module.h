@@ -1,7 +1,7 @@
 #pragma once
 
 #include <squick/core/consistent_hash.h>
-#include <squick/plugin/no_sql/export.h>
+//#include <squick/plugin/no_sql/export.h>
 #include <squick/plugin/net/export.h>
 #include <squick/plugin/kernel/export.h>
 #include <squick/plugin/config/export.h>

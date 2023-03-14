@@ -11,7 +11,7 @@ set excel_path_gen=../resource/excel
 set struct_path=..\src\squick\struct
 set lua_proto_path=
 set client_config_path=..\client
-
+set lua_src_path=..\src\lua
 
 rem 生成配置文件
 start .\proto2code.bat
@@ -20,7 +20,7 @@ mkdir %config_path%\excel
 mkdir %config_path%\struct
 mkdir %config_path%\ini
 
-.\bin\squick_ctl excel %excel_path_gen% %config_path_gen%
+.\bin\sqkctl excel %excel_path_gen% %config_path_gen%
 
 rem 拷贝 \proto\excel.h 
 copy ..\config\excel\excel.h %struct_path%
@@ -39,6 +39,7 @@ xcopy /s /e /y %config_path%\excel %client_config_path%\excel
 rd /s/q %config_path%\excel
 
 rem 生成Lua文件
+mkdir ..\src\lua\proto
 python proto_enum_to_lua.py
 python proto_to_lua_str.py
 

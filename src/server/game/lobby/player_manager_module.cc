@@ -1,5 +1,5 @@
 #include "player_manager_module.h"
-#include <server/db/logic/common_redis_module.h>
+#include <server/db_proxy/logic/common_redis_module.h>
 
 namespace game::player {
 	bool PlayerManagerModule::Start()

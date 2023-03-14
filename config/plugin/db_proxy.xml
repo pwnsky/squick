@@ -1,17 +1,16 @@
 <XML>
-	<WorldServer>
+    <DBServer>
 		<Plugin Name="core/net" />
 		<Plugin Name="core/kernel" />
 		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />	
-		<Plugin Name="core/security" />
 		<Plugin Name="core/actor" />
-		<Plugin Name="core/lua" />
 		<Plugin Name="core/redis" />
+		<Plugin Name="core/mysql" />
+		<Plugin Name="core/security" />
 		
-		<Plugin Name="server/world/client" />
-		<Plugin Name="server/world/server" />
+		<Plugin Name="server/db_proxy/client" />
+		<Plugin Name="server/db_proxy/server" />
 		<Plugin Name="server/db_proxy/logic" />
-
-	</WorldServer>
+    </DBServer>
 </XML>

@@ -5,7 +5,7 @@
 
 bool LoginLogicModule::Start()
 {
-	m_pAccountRedisModule = pPluginManager->FindModule<IAccountRedisModule>();
+	//m_pAccountRedisModule = pPluginManager->FindModule<IAccountRedisModule>();
 	m_pNetModule = pPluginManager->FindModule<INetModule>();
 	m_pLogModule = pPluginManager->FindModule<ILogModule>();
 

@@ -4,15 +4,16 @@
 		<Plugin Name="core/kernel" />
 		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />
-		<Plugin Name="core/nosql" />	
 		<Plugin Name="core/actor" />
 		<Plugin Name="core/lua" />
+		<Plugin Name="core/redis" />
+		<Plugin Name="core/mysql" />
 
 		<Plugin Name="server/login/server" />
 		<Plugin Name="server/login/client" />
 		<Plugin Name="server/login/logic" />
 		<Plugin Name="server/login/http_server" />
-		<Plugin Name="server/db/logic" />
+		<Plugin Name="server/db_proxy/logic" />
 
 	</LoginServer>
 

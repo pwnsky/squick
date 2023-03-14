@@ -17,7 +17,7 @@ mkdir -p $config_path/excel
 mkdir -p $config_path/struct
 mkdir -p $config_path/ini
 
-./bin/squick_ctl excel $excel_path $config_path
+./bin/sqkctl excel $excel_path $config_path
 cp -a $config_path/excel/excel.h $struct_path
 
 mkdir -p $client_config_path/ini

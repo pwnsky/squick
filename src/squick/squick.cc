@@ -11,8 +11,7 @@ int main(int argc, char* argv[])
 	void *libLoad = (void *)&SquickStruct::_Ident_default_instance_;
 	
 	//std::cout << libLoad << std::endl;
-
-
+	
 	std::vector<SQUICK_SHARE_PTR<PluginServer>> serverList; // 服务器列表
 
 	std::string strArgvList;
@@ -37,11 +36,11 @@ int main(int argc, char* argv[])
 		
 		serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=master id=3 plugin=master.xml")));
 		serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=world id=7 plugin=world.xml")));
-		serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=db id=8 plugin=db.xml")));
+		serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=db_proxy id=8 plugin=db_proxy.xml")));
 		serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=login id=4 plugin=login.xml")));
 		serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=game id=16001 plugin=game.xml")));
 		serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=gateway id=10 plugin=gateway.xml")));
-		//serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=pvp_manager id=11 plugin=pvp_manager.xml")));
+		serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=gameplay_manager id=11 plugin=gameplay_manager.xml")));
 		serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=proxy id=5 plugin=proxy.xml")));
 		
 	}

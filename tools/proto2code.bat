@@ -19,6 +19,6 @@ for %%f in (%proto_path%\*.proto) do  %proto_bin% --cpp_out=dllexport_decl="WIN_
 rem 删除多余的proto
 del /f /q /s %csharp_out_path%\Server.cs
 del /f /q /s %csharp_out_path%\GameManager.cs
-del /f /q /s %csharp_out_path%\Db.cs
+del /f /q /s %csharp_out_path%\DbProxy.cs
 
 pause

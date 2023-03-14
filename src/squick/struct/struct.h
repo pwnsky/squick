@@ -13,7 +13,7 @@
 #include "game_manager.pb.h"
 #include "server.pb.h"
 #include "proxy.pb.h"
-#include "db.pb.h"
+#include "db_proxy.pb.h"
 #include "excel.h"
 #include "game_play.pb.h"
 

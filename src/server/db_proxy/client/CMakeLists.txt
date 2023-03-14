@@ -1,0 +1,6 @@
+set(ProjectName "db_proxy_client")
+file(GLOB soruces *.cc)
+file(GLOB headers *.h)
+add_library(${ProjectName} SHARED ${soruces} ${headers})
+LinkSquick(${ProjectName})
+SquickOut(${ProjectName} "server/db_proxy" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/db_proxy "client")
