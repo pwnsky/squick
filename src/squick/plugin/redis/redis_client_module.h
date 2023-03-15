@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_DATANOSQL_MODULE_H
-#define SQUICK_DATANOSQL_MODULE_H
+#pragma once
 
 #include "redis_client.h"
 #include <squick/core/platform.h>
@@ -54,5 +51,3 @@ protected:
 	NFConsistentHashMapEx<std::string, IRedisClient> mxNoSqlDriver;
 
 };
-
-#endif

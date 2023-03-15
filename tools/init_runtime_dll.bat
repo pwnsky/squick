@@ -7,9 +7,5 @@ rem Description: Copy Windows dependency library
 set project_path=%~dp0\..
 
 cd %project_path%\bin
-xcopy /s /e /y lib .
-copy ..\third_party\build\bin\libprotobufd.dll .
-copy ..\third_party\build\lib\event.dll event.dll
-copy ..\third_party\build\lib\event_core.dll event_core.dll
-copy ..\third_party\build\lib\event_extra.dll event_extra.dll
+xcopy /s /e /y ..\third_party\build\lib\*.dll .
 pause

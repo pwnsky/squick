@@ -1,7 +1,7 @@
 
 
 #include "plugin.h"
-
+#include "mysql_client_module.h"
 
 SQUICK_EXPORT void SquickPluginLoad(IPluginManager* pm)
 {
@@ -28,10 +28,10 @@ const std::string MysqlPlugin::GetPluginName()
 
 void MysqlPlugin::Install()
 {
-	//REGISTER_MODULE(pPluginManager, IMysqlPlugin, NoSqlModule)
+	REGISTER_MODULE(pPluginManager, IMysqlModule, MysqlModule)
 }
 
 void MysqlPlugin::Uninstall()
 {
-	//UNREGISTER_MODULE(pPluginManager, INoSqlModule, NoSqlModule)
+	UNREGISTER_MODULE(pPluginManager, IMysqlModule, MysqlModule)
 }
