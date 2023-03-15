@@ -6,6 +6,7 @@
 # Description: 生成Linux部署文件
 
 echo "Generating linux deploy files"
+bash init_runtime_dll.sh
 
 cd ..
 rm -rf deploy
@@ -14,7 +15,7 @@ mkdir deploy/src
 
 cp -r bin deploy
 cp -r config deploy
-cp -r resource/script/* deploy
+cp -r resource/script/*.sh deploy
 cp -r src/proto deploy/src
 cp -r src/lua deploy/src
 

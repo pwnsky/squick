@@ -30,6 +30,7 @@ cp -a $config_path/struct $client_config_path
 rm -rf $config_path/excel
 
 # 生成Lua文件
+mkdir -p ../src/lua/proto
 python3 proto_enum_to_lua.py
 python3 proto_to_lua_str.py
 cp "../src/lua/proto/enum.lua" $client_config_path/lua/

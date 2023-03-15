@@ -36,3 +36,4 @@ time build_squick $@
 echo "Copying third_paty lib"
 cd $project_path
 cp third_party/build/lib/libprotobuf.so ./bin/libprotobuf.so.32
+cp third_party/build/lib/libmysqlcppconn8.so ./bin/libmysqlcppconn8.so.2
