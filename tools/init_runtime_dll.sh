@@ -5,4 +5,5 @@
 # Github: https://github.com/i0gan/Squick
 # Description: Build deploy files
 
+mkdir -p ../bin
 cp ../third_party/build/lib/*.so ../bin

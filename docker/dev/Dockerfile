@@ -12,7 +12,9 @@ RUN apt update && apt-get install -y git cmake unzip automake make g++ libtool l
 RUN apt-get install -y nodejs npm libjsoncpp-dev uuid-dev zlib1g-dev
 
 # The tools for development
-RUN apt-get install -y vim git
+RUN apt-get install -y vim git python3 python3-pip
+
+RUN pip3 install xlrd==1.2.0
 
 # Clean pakage
 RUN apt clean

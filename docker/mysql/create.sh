@@ -11,7 +11,7 @@ mysql_data_path=${project_path}/data/mysql/data
 mysql_log_path=${project_path}/data/mysql/log
 mysql_files_path=${project_path}/data/mysql/files
 
-docker run  --restart=always  --name squick_mysql  -v `pwd`/conf:/etc/mysql  -v $mysql_data_path:/var/lib/mysql  -v $mysql_log_path:/var/log  -v $mysql_files_path:/var/lib/mysql-files -p 10086:3306  -e MYSQL_ROOT_PASSWORD='pwnsky_squick' -d mysql:8.0
+docker run  --restart=always  --name squick-mysql  -v `pwd`/conf:/etc/mysql  -v $mysql_data_path:/var/lib/mysql  -v $mysql_log_path:/var/log  -v $mysql_files_path:/var/lib/mysql-files -p 10086:3306  -e MYSQL_ROOT_PASSWORD='pwnsky_squick' -d mysql:8.0
 
 # ref: https://blog.csdn.net/piaomiao_/article/details/119241127
 

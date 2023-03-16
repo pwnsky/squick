@@ -7,4 +7,4 @@ project_path=`pwd`
 
 docker stop squick-dev
 docker rm squick-dev
-docker run -d --name=squick -v $project_path:/mnt --net=host i0gan/squick-dev:1.0 /mnt/docker/dev/service.sh
+docker run -d --name=squick-dev -v $project_path:/mnt --net=host i0gan/squick-dev:1.0 /mnt/docker/dev/service.sh
