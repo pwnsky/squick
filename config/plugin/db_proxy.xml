@@ -6,11 +6,11 @@
 		<Plugin Name="core/log" />	
 		<Plugin Name="core/actor" />
 		<Plugin Name="core/redis" />
-		<Plugin Name="core/mysql" />
 		<Plugin Name="core/security" />
 		
 		<Plugin Name="server/db_proxy/client" />
 		<Plugin Name="server/db_proxy/server" />
 		<Plugin Name="server/db_proxy/logic" />
+		<Plugin Name="server/db_proxy/mysql" />
     </DBServer>
 </XML>

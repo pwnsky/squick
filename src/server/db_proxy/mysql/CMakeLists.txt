@@ -1,7 +1,8 @@
-set(ProjectName "core_mysql")
+set(ProjectName "db_proxy_mysql")
 file(GLOB soruces *.cc)
 file(GLOB headers *.h)
 add_library(${ProjectName} SHARED ${soruces} ${headers})
+
 	
 if (APPLE)
 	
@@ -13,4 +14,4 @@ else()
 endif()
 
 LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "squick/plugin" ${SQUICK_BUILD_PLUGIN_CORE_PATH} "mysql")
+SquickOut(${ProjectName} "server/db_proxy" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/db_proxy "mysql")
