@@ -18,7 +18,8 @@ cp -r config deploy
 cp -r resource/script/*.sh deploy
 cp -r src/proto deploy/src
 cp -r src/lua deploy/src
+cp -r docker deploy
+cp -r kubernetes deploy
 
 echo "Generated all files!"
 
-#cd deploy/bin
