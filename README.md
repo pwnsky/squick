@@ -2,7 +2,17 @@
 
 Squick是游戏服务器快速相对较成熟开发方案，支持局部热重载、插件化开发、与客户端实现帧同步，可快速开发各种游戏项目等。
 
-客户端Demo: [SquickClient](https://github.com/pwnsky/SquickClient)
+该框架遵循Apache2.0协议，可以随意商用。
+
+目前已有三款商业游戏正在采用该框架研发当中，之后核心引擎会不断完善。
+
+第一款: Unity研发的多人卡牌VR游戏，拥有每个玩家的面具、手同步，棋子，丧尸同步等，该游戏核心玩法已基本完成。
+
+第二款：采用UE4研发的多人射击游戏，gameplay部分采用UE4来进行开发的，采用Squick来管理UE4的专用服务器以及游戏大厅逻辑。
+
+第三款：采用Unity开发的休闲类游戏盒子，里面包含了很多小游戏，Squick负责玩家的数据存储以及部分对战功能。
+
+客户端SDK: [SquickClient](https://github.com/pwnsky/SquickClient)
 
 [快速开始](#快速开始)
 
@@ -31,160 +41,17 @@ Squick是游戏服务器快速相对较成熟开发方案，支持局部热重�
 - 日志捕获系统，在linux环境下程序崩溃时，自动dump stack调用链。
 - 分布式服务、各服务之间通过网络来进行沟通，可通过分布式+集群方式减轻服务器压力
 - Lua热更新、热重载、lua脚本可管理c++插件以及lua插件。通过lua可以动态热更新c++层面的插件(.so文件)，实现lua热更以及c++ native层的热更新。
-- 采用Redis + Mysql作为数据库，通过数据库服务器，让数据灵活存储。跨
+- 支持 Redis + Mysql作为数据库
 - 平台编译：支持Windows编译与Linux编译
 - 一个物理机上单个进程启动全部服务器，方便开发调试。
 - 一个物理机上启动多个独立进程的服务器，轻量化部署。
 - 不同物理机上启动单个或多个服务器，分布式部署。（支持Windows机器与Linux机器连接）
-- Go + Gin 来做后台GM。
-- K8S分布式管理
+- Go的Gin框架来做后台系统。
+- 支持 kubernetes 部署
 
 
 
-
-
-## Squick核心架构
-
-程序结构
-
-![img](./docs/images/squick.png)
-
-采用加载不同插件方式来实现不同服务功能，都可适合小、中、大型团队人员进行同时开发，各自只需将自己的功能封装到自己的插件里，通过模块接口实现跨插件调用，提高开发效率。
-
-
-
-
-
-## 项目结构
-
-该工程项目结构如下：
-
-```
-deploy:   // 服务端生成可部署文件
-config:   // 服务端配置
-data:     // 服务程序储存数据
-bin:      // 服务端程序
-tools:    // 工具
-src:          // 主要源码文件夹
-	lua:      // lua脚本代码
-    server:   // 各服务器代码
-    squick:   // 核心代码
-    tester:   // 测试代码
-    tools:    // 工具代码
-    tutorial: // 教学示例代码
-    test:     // 测试代码
-    proto:   // protobuf代码
-    www:          // 网站系统代码
-    	admin:    // 后台前端代码
-    	server:   // web服务端代码
-    	website:  // 官网前端代码
-third_party:  // 第三方代码
-cache:        // 编译时的临时文件
-others:       // 其他
-```
-
-
-
-## 代码命名规范
-
-遵循google c++开发规范。
-
-ref: https://blog.csdn.net/qq_41854911/article/details/125115692
-
-
-
-## 插件系统
-
-Squick当前所有重要插件如下：
-
-
-
-![img](./docs/images/plugins.png)
-
-
-
-插件与模块的关系
-
-![img](./docs/images/plugin_and_module.png)
-
-每一个插件为一个动态链接库文件（.so文件），将功能代码封装为插件的模块，可通过插件来加载各个插件的功能模块。
-
-每个插件可以包含一个或多个模块
-
-
-
-
-
-## 热更新基本原理
-
-#### Lua脚本热更新
-
-程序会监控支持热重载的lua脚本的更新日期，新更改的文件或增加的文件，会对这些lua脚本重新加载，而数据全存储在数据库服务器上，从而达到动态更新服务端逻辑。只能对登录服务器、游戏服务器、世界服务器进行热重载。
-
-#### c++插件 热更新
-
-在更新新插件时，通过中央服务器对每一个子被更新的服务器进行进程环境保护，缓存代理服务器上客户端的请求包，等待被更新的服务端计算完毕之后，对其响应包进行缓存，在被监控的服务器处于安全空闲状态的时候，将其被更新的插件的所有模块安全卸载掉，重新加载新的插件进来，通知中央服务器然后继续运行，中央服务器再通知所有代理服务器，继续转发请求包。
-
-
-## 插件状态调用顺序
-
-``` 
-SquickPluginLoad -> 插件构造函数 -> Install -> Uninstall -> 插件析构函数-> SquickPluginUnload
-```
-
-## c++模块状态调用顺序
-
-```
-模块构造函数 -> Awake -> Start -> AfterStart -> ReadyUpdate -> Update -> BeforeDestory -> Destory -> Finalize -> 模块析构函数
-```
-
-### Lua模块调用状态顺序
-
-```
-awake -> init -> after_init -> before_destry -> destry
-```
-
-
-
-## 概念
-
-### Module
-
-表示一类逻辑业务的合集, 相对来说功能比较集中, 可以做到低耦合, 并且可以通过`IOP`(面向接口编程)的方式来给其他模块提供耦合功能.例如LogModule等。
-
-### Plugin
-
-表示一系列Module的集合, 按照更大的业务来分类, 例如GameLogic插件, Navimesh插件等。
-
-### Application
-
-表示一个独立的完整功能的进程, 可以包含大量插件, 例如squick.exe启动时，加载各个插件来执行。
-
-### Property
-
-表示一维数据, 通常用来表示Object附带的任意一维数据结构, 当前可以为常用内置数据类型(`bool` `int` `float` `string` `GUID`). 例如`玩家对象`附带的血量，名称等数据。
-
-### Record
-
-表示二维数据, 通常用来表示Object附带的任意二维数据结构,结构与Excel的二维结构类似, 包含`Row`和`Column`, 并且结构可以通过Excel动态传入, 记录值可以为常用内置数据类型(`bool` `int` `float` `string` `GUID`). 例如`玩家对象的`附带的`背包物体`。
-
-### Object
-
-表示游戏内动态创建的任意对象, 该对象可携带有`Property`和`Record`。
-
-### GUID
-
-用于区别玩家连接或游戏对象的唯一ID。
-
-### Event
-
-游戏逻辑监听和产生事件, 用来解耦游戏逻辑。
-
-
-
-# 安装Squick
-
-
+# 安装
 
 ## Windows上开发和编译
 
@@ -210,7 +77,7 @@ awake -> init -> after_init -> before_destry -> destry
 
 #### 1. 直接用编译好的lib
 
-将 https://github.com/pwnsky/SquickThirdPartyBuild/Windows 拷贝为  {project_path}/build 即可不用编译第三方源码
+将 https://github.com/pwnsky/SquickThirdPartyBuild/tree/main/Windows/ 下的build拷贝到 {project_path}/third_party 目录下即可不用编译第三方源码
 
 
 
@@ -247,7 +114,7 @@ https://github.com/niXman/mingw-builds-binaries/releases
 编译完成后文件目录大致如下
 
 ```
-.
+bin
 ├── event.dll
 ├── event_core.dll
 ├── event_extra.dll
@@ -272,6 +139,8 @@ https://github.com/niXman/mingw-builds-binaries/releases
 
 ### 在Windows平台上实现跨平台编译
 
+#### 1. 安装wsl子系统
+
 如果想在自己的Windows上实现跨平台编译Linux程序，也不想安装虚拟机来进行开发，推荐你安装WSL2，安装一个Ubuntu 20系统，之后采用linux子系统 选择[直接编译 ](#直接编译)了。
 
 那么如果你想更改代码，又用不来vim，你在wsl里项目根目录下运行
@@ -284,9 +153,13 @@ bash open_explorer.sh
 
 
 
+#### 2. 采用clang++
+
+
+
+
+
 ## Linux上开发和编译
-
-
 
 你可以直接任意选择你自己喜欢的开发方式，可以采用CMake生成 Qt工程，或直接采用Ridder打开CMake工程，以下提供了三种编译方式。
 
@@ -536,7 +409,7 @@ generate_config.bat
 
 
 
-## 程序打包
+## 打包
 
 打包可分为Windows打包和Linux打包
 
@@ -548,11 +421,15 @@ generate_config.bat
 
 ### Linux
 
-点击generate_deploy.sh
+```
+bash generate_deploy.sh
+```
+
+运行后，所有打包的文件会保存在 {project_path}/deploy 下。
 
 
 
-## 启动squick服务器
+## 启动
 
 在 {project_path}/deploy目录下，单个进程启动所有服务器命令如下：
 
@@ -568,15 +445,100 @@ window执行
 single_start.bat
 ```
 
+看到了启动各个服务器的界面，说明你已经完成编译以及启动了。
+
+除此之外，还支持命令启动独立的服务器，比如：
+
+```
+squick plugin=master.xml server=master id=3
+```
 
 
 
 
 
+## 项目工程目录与文件介绍
 
-## 创建Squick新项目
+该工程项目结构如下：
+
+```
+deploy:   // 服务端生成可部署文件
+config:   // 服务端配置
+data:     // 服务程序储存数据
+bin:      // 服务端程序
+tools:    // 工具
+src:          // 主要源码文件夹
+	lua:      // lua脚本代码
+    server:   // 各服务器代码
+    squick:   // 核心代码
+    tester:   // 测试代码
+    tools:    // 工具代码
+    tutorial: // 教学示例代码
+    test:     // 测试代码
+    proto:   // protobuf代码
+    www:          // 网站系统代码
+    	admin:    // 后台前端代码
+    	server:   // web服务端代码
+    	website:  // 官网前端代码
+third_party:  // 第三方代码
+cache:        // 编译时的临时文件
+others:       // 其他
+```
+
+deploy: 服务端生成可独立运行的文件集，其中包含了可执行的文件、脚本、配置文件等等，用于直接上传到服务器上运行，好比Unity或UE4打包出来的文件一样。
+
+config: 配置文件，里面包含了日志配置文件、插件配置文件、Excel生成的配置表等等。如下：
+
+```
+struct: sqkctl将{project_path}/resource/excel 下的所有xlsx文件转化成的xml文件，主要记录配置表中字段的属性，其中包含了，名称、描述等这些信息。
+ini: sqkctl将{project_path}/resource/excel 下的所有xlsx文件转化成的xml文件，主要记录配置表中目前有哪些内容。
+plugin: 各种服务器的插件配置文件
+log: 服务器的日志配置文件
+```
+
+更新中...
+
+src/lua:
+
+```
+```
+
+src/server:
+
+```
+```
 
 
+
+src/tools:
+
+```
+```
+
+
+
+
+
+## 创建新项目
+
+在空白目录下，输入
+
+```
+sqkctl init
+```
+
+会在当前目录下初始化工程，如下：
+
+```
+.gitignore
+squick
+files
+base.json
+chnaged.json
+README.md
+```
+
+之后就可以基于squick目录下的工程来改动为自己的工程了。
 
 
 
@@ -588,10 +550,6 @@ single_start.bat
 
 ```
 ```
-
-
-
-
 
 
 
@@ -960,6 +918,123 @@ gameplay对局结束或者玩家全部离线退出房间时，由gameplay_manage
 # 后台管理系统
 
 后台服务端基于Go语言的Gin框架来做，前端采用vue2的antd。
+
+
+
+
+
+## 热更新基本原理
+
+#### Lua脚本热更新
+
+为服务器增加http接口，通过调用该接口，服务器会通过lua模块重新加载lua脚本，从而达到动态更新服务端逻辑。只能对登录服务器、游戏服务器、世界服务器进行热重载。
+
+#### c++插件 热更新
+
+目前还暂未实现，当然也没有必要。
+
+在更新新插件时，通过中央服务器对每一个子被更新的服务器进行进程环境保护，缓存代理服务器上客户端的请求包，等待被更新的服务端计算完毕之后，对其响应包进行缓存，在被监控的服务器处于安全空闲状态的时候，将其被更新的插件的所有模块安全卸载掉，重新加载新的插件进来，通知中央服务器然后继续运行，中央服务器再通知所有代理服务器，继续转发请求包。
+
+
+## 插件状态调用顺序
+
+``` 
+SquickPluginLoad -> 插件构造函数 -> Install -> Uninstall -> 插件析构函数-> SquickPluginUnload
+```
+
+## c++模块状态调用顺序
+
+```
+模块构造函数 -> Awake -> Start -> AfterStart -> ReadyUpdate -> Update -> BeforeDestory -> Destory -> Finalize -> 模块析构函数
+```
+
+### Lua模块调用状态顺序
+
+```
+awake -> init -> after_init -> before_destry -> destry
+```
+
+
+
+## 基本概念
+
+### Module
+
+表示一类逻辑业务的合集, 相对来说功能比较集中, 可以做到低耦合, 并且可以通过`IOP`(面向接口编程)的方式来给其他模块提供耦合功能.例如LogModule等。
+
+### Plugin
+
+表示一系列Module的集合, 按照更大的业务来分类, 例如GameLogic插件, Navimesh插件等。
+
+### Application
+
+表示一个独立的完整功能的进程, 可以包含大量插件, 例如squick.exe启动时，加载各个插件来执行。
+
+### Property
+
+表示一维数据, 通常用来表示Object附带的任意一维数据结构, 当前可以为常用内置数据类型(`bool` `int` `float` `string` `GUID`). 例如`玩家对象`附带的血量，名称等数据。
+
+### Record
+
+表示二维数据, 通常用来表示Object附带的任意二维数据结构,结构与Excel的二维结构类似, 包含`Row`和`Column`, 并且结构可以通过Excel动态传入, 记录值可以为常用内置数据类型(`bool` `int` `float` `string` `GUID`). 例如`玩家对象的`附带的`背包物体`。
+
+### Object
+
+表示游戏内动态创建的任意对象, 该对象可携带有`Property`和`Record`。
+
+### GUID
+
+用于区别玩家连接或游戏对象的唯一ID。
+
+### Event
+
+游戏逻辑监听和产生事件, 用来解耦游戏逻辑。
+
+
+
+
+
+## Squick核心架构
+
+程序结构
+
+![img](./docs/images/squick.png)
+
+采用加载不同插件方式来实现不同服务功能，都可适合小、中、大型团队人员进行同时开发，各自只需将自己的功能封装到自己的插件里，通过模块接口实现跨插件调用，提高开发效率。
+
+
+
+
+
+
+
+## 代码命名规范
+
+遵循google c++开发规范。
+
+ref: https://blog.csdn.net/qq_41854911/article/details/125115692
+
+
+
+## 插件系统
+
+Squick当前所有重要插件如下：
+
+
+
+![img](./docs/images/plugins.png)
+
+
+
+插件与模块的关系
+
+![img](./docs/images/plugin_and_module.png)
+
+每一个插件为一个动态链接库文件（.so文件），将功能代码封装为插件的模块，可通过插件来加载各个插件的功能模块。
+
+每个插件可以包含一个或多个模块
+
+
 
 
 
