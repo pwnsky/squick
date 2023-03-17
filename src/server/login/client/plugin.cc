@@ -1,38 +1,29 @@
 #include "plugin.h"
 #include "master_module.h"
 
+namespace login::client {
+    SQUICK_EXPORT void SquickPluginLoad(IPluginManager* pm) {
+        CREATE_PLUGIN(pm, Plugin)
+    };
 
+    SQUICK_EXPORT void SquickPluginUnload(IPluginManager* pm) {
+        DESTROY_PLUGIN(pm, Plugin)
+    };
 
-SQUICK_EXPORT void SquickPluginLoad(IPluginManager* pm)
-{
+    const int Plugin::GetPluginVersion() {
+        return 0;
+    }
 
-    CREATE_PLUGIN(pm, LoginNet_ClientPlugin)
+    const std::string Plugin::GetPluginName() {
+        return GET_CLASS_NAME(Plugin);
+    }
 
-};
+    void Plugin::Install() {
+        REGISTER_MODULE(pPluginManager, IMasterModule, MasterModule)
+    }
 
-SQUICK_EXPORT void SquickPluginUnload(IPluginManager* pm)
-{
-    DESTROY_PLUGIN(pm, LoginNet_ClientPlugin)
-};
+    void Plugin::Uninstall() {
+        UNREGISTER_MODULE(pPluginManager, IMasterModule, MasterModule)
+    }
 
-
-
-const int LoginNet_ClientPlugin::GetPluginVersion()
-{
-    return 0;
-}
-
-const std::string LoginNet_ClientPlugin::GetPluginName()
-{
-	return GET_CLASS_NAME(LoginNet_ClientPlugin);
-}
-
-void LoginNet_ClientPlugin::Install()
-{
-    REGISTER_MODULE(pPluginManager, ILoginToMasterModule, LoginToMasterModule)
-}
-
-void LoginNet_ClientPlugin::Uninstall()
-{
-    UNREGISTER_MODULE(pPluginManager, ILoginToMasterModule, LoginToMasterModule)
 }

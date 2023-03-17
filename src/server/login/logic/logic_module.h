@@ -2,20 +2,19 @@
 
 #include "squick/struct/struct.h"
 #include "squick/core/map.h"
-#include <squick/plugin/kernel/i_kernel_module.h>
-//#include "squick/base/login_net_server.h"
-#include <squick/plugin/log/i_log_module.h>
-#include <squick/plugin/net/i_net_module.h>
+#include <squick/plugin/kernel/export.h>
+#include <squick/plugin/log/export.h>
+#include <squick/plugin/net/export.h>
 
 #include "i_logic_module.h"
-//#include <server/db/logic/i_account_redis_module.h>
 
 
-class LoginLogicModule
-    : public ILoginLogicModule
+namespace login::logic {
+class LogicModule
+    : public ILogicModule
 {
 public:
-    LoginLogicModule(IPluginManager* p)
+    LogicModule(IPluginManager* p)
     {
         pPluginManager = p;
     }
@@ -35,3 +34,5 @@ protected:
 	//IAccountRedisModule* m_pAccountRedisModule;
 private:
 };
+
+}

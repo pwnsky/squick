@@ -11,7 +11,7 @@
 		<Plugin Name="server/login/server" />
 		<Plugin Name="server/login/client" />
 		<Plugin Name="server/login/logic" />
-		<Plugin Name="server/login/http_server" />
+		<Plugin Name="server/login/http" />
 		<Plugin Name="server/db_proxy/logic" />
 		
 	</LoginServer>

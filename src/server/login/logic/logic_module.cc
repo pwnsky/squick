@@ -2,8 +2,8 @@
 #include "plugin.h"
 #include "logic_module.h"
 
-
-bool LoginLogicModule::Start()
+namespace login::logic {
+bool LogicModule::Start()
 {
 	//m_pAccountRedisModule = pPluginManager->FindModule<IAccountRedisModule>();
 	m_pNetModule = pPluginManager->FindModule<INetModule>();
@@ -12,12 +12,12 @@ bool LoginLogicModule::Start()
     return true;
 }
 
-bool LoginLogicModule::Destory()
+bool LogicModule::Destory()
 {
     return true;
 }
 
-void LoginLogicModule::OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len)
+void LogicModule::OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len)
 {
 	std::cout << "OnLoginProcess... \n";
 	Guid nPlayerID;
@@ -85,23 +85,24 @@ void LoginLogicModule::OnLoginProcess(const SQUICK_SOCKET sockIndex, const int m
 	}*/
 }
 
-bool LoginLogicModule::ReadyUpdate()
+bool LogicModule::ReadyUpdate()
 {
 	m_pNetModule->RemoveReceiveCallBack(SquickStruct::REQ_LOGIN);
-	m_pNetModule->AddReceiveCallBack(SquickStruct::REQ_LOGIN, this, &LoginLogicModule::OnLoginProcess);
+	m_pNetModule->AddReceiveCallBack(SquickStruct::REQ_LOGIN, this, &LogicModule::OnLoginProcess);
 
     return true;
 }
 
-bool LoginLogicModule::Update()
+bool LogicModule::Update()
 {
-
-
     return true;
 }
 
 
-bool LoginLogicModule::AfterStart()
+bool LogicModule::AfterStart()
 {
     return true;
+}
+
+
 }

@@ -3,9 +3,11 @@
 #include <squick/core/guid.h>
 #include <string>
 
-class ILoginNet_ServerModule
+namespace login::server {
+class IServerModule
     : public IModule
 {
 public:
 };
 
+}

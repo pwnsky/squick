@@ -2,7 +2,8 @@
 #include "plugin.h"
 #include "server_module.h"
 
-bool LoginNet_ServerModule::Start()
+namespace login::server {
+bool ServerModule::Start()
 {
 	this->pPluginManager->SetAppType(SQUICK_SERVER_TYPES::SQUICK_ST_LOGIN);
 
@@ -12,29 +13,26 @@ bool LoginNet_ServerModule::Start()
 	m_pClassModule = pPluginManager->FindModule<IClassModule>();
 	m_pElementModule = pPluginManager->FindModule<IElementModule>();
 	m_pNetClientModule = pPluginManager->FindModule<INetClientModule>();
-	m_pLoginToMasterModule = pPluginManager->FindModule<ILoginToMasterModule>();
+	m_pLoginToMasterModule = pPluginManager->FindModule<client::IMasterModule>();
 	m_pThreadPoolModule = pPluginManager->FindModule<IThreadPoolModule>();
 
 	return true;
 }
 
-bool LoginNet_ServerModule::Destory()
+bool ServerModule::Destory()
 {
 	return true;
 }
 
-bool LoginNet_ServerModule::BeforeDestory()
+bool ServerModule::BeforeDestory()
 {
 	return true;
 }
 
-bool LoginNet_ServerModule::AfterStart()
+bool ServerModule::AfterStart()
 {
-	m_pNetModule->AddReceiveCallBack(SquickStruct::STS_HEART_BEAT, this, &LoginNet_ServerModule::OnHeartBeat);
-	m_pNetModule->AddReceiveCallBack(SquickStruct::REQ_LOGIN, this, &LoginNet_ServerModule::OnLoginProcess);
-	m_pNetModule->AddReceiveCallBack(SquickStruct::REQ_LOGOUT, this, &LoginNet_ServerModule::OnLogOut);
-	m_pNetModule->AddReceiveCallBack(this, &LoginNet_ServerModule::InvalidMessage);
-	m_pNetModule->AddEventCallBack(this, &LoginNet_ServerModule::OnSocketClientEvent);
+	m_pNetModule->AddReceiveCallBack(this, &ServerModule::InvalidMessage);
+	m_pNetModule->AddEventCallBack(this, &ServerModule::OnSocketClientEvent);
 	m_pNetModule->ExpandBufferSize();
 
 	SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
@@ -70,12 +68,12 @@ bool LoginNet_ServerModule::AfterStart()
 }
 
 
-bool LoginNet_ServerModule::Update()
+bool ServerModule::Update()
 {
 	return true;
 }
 
-void LoginNet_ServerModule::OnClientConnected(const SQUICK_SOCKET nAddress)
+void ServerModule::OnClientConnected(const SQUICK_SOCKET nAddress)
 {
 	NetObject* pObject = m_pNetModule->GetNet()->GetNetObject(nAddress);
 	if (pObject)
@@ -86,7 +84,7 @@ void LoginNet_ServerModule::OnClientConnected(const SQUICK_SOCKET nAddress)
 	}
 }
 
-void LoginNet_ServerModule::OnClientDisconnect(const SQUICK_SOCKET nAddress)
+void ServerModule::OnClientDisconnect(const SQUICK_SOCKET nAddress)
 {
 	NetObject* pObject = m_pNetModule->GetNet()->GetNetObject(nAddress);
 	if (pObject)
@@ -96,56 +94,12 @@ void LoginNet_ServerModule::OnClientDisconnect(const SQUICK_SOCKET nAddress)
 	}
 }
 
-void LoginNet_ServerModule::OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len)
-{
-	Guid nPlayerID;
-	SquickStruct::ReqLogin xMsg;
-	if (!m_pNetModule->ReceivePB( msgID, msg, len, xMsg, nPlayerID))
-	{
-		return;
-	}
 
-	NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(sockIndex);
-	if (pNetObject)
-	{
-		if (pNetObject->GetConnectKeyState() == 0)
-		{
-			std::ostringstream strLog;
-			strLog << "登录, Account = " << xMsg.account() << " Password = " << xMsg.password();
-			std::cout << " 登录: " << xMsg.account() << " / " << xMsg.password() << std::endl;
-			//Normally, you could check the account and password is correct or not, but for our situation, it will correct by default as here is the tutorial code.
-			int loginResult = 0;//0 means successful, else means error code from account platform.
-			if (0 != loginResult)
-			{
-				strLog << "Check password failed, Account = " << xMsg.account() << " Password = " << xMsg.password();
-				m_pLogModule->LogError(Guid(0, sockIndex), strLog, __FUNCTION__, __LINE__);
-
-				SquickStruct::AckLogin xMsg;
-				xMsg.set_code(0);
-
-				//m_pNetModule->SendMsgPB(SquickStruct::EGameMsgID::ACK_LOGIN, xMsg, sockIndex);
-				return;
-			}
-
-			pNetObject->SetConnectKeyState(1);
-			pNetObject->SetAccount(xMsg.account());
-
-			SquickStruct::AckLogin xData;
-			xData.set_code(0);
-
-			//The login server responds the login result to the player by sock id.
-			m_pNetModule->SendMsgPB(SquickStruct::ProxyRPC::ACK_LOGIN, xData, sockIndex);
-
-			m_pLogModule->LogInfo(Guid(0, sockIndex), "Login succeeded :", xMsg.account().c_str());
-		}
-	}
-}
-
-void LoginNet_ServerModule::OnSelectWorldProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len)
+void ServerModule::OnSelectWorldProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len)
 {
 }
 
-void LoginNet_ServerModule::OnSocketClientEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet* pNet)
+void ServerModule::OnSocketClientEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet* pNet)
 {
 	if (eEvent & SQUICK_NET_EVENT_EOF)
 	{
@@ -169,7 +123,7 @@ void LoginNet_ServerModule::OnSocketClientEvent(const SQUICK_SOCKET sockIndex, c
 	}
 }
 
-void LoginNet_ServerModule::SynWorldToClient(const SQUICK_SOCKET nFD)
+void ServerModule::SynWorldToClient(const SQUICK_SOCKET nFD)
 {
 	SquickStruct::AckServerList xData;
 
@@ -178,29 +132,17 @@ void LoginNet_ServerModule::SynWorldToClient(const SQUICK_SOCKET nFD)
 	while (pWorldData)
 	{
 		SquickStruct::ServerInfo* pServerInfo = xData.add_info();
-
 		pServerInfo->set_name(pWorldData->server_name());
 		pServerInfo->set_status(pWorldData->server_state());
 		pServerInfo->set_server_id(pWorldData->server_id());
 		pServerInfo->set_wait_count(0);
-
 		pWorldData = xWorldMap.NextNude();
 	}
 }
 
-void LoginNet_ServerModule::OnViewWorldProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len)
-{
-}
-
-void LoginNet_ServerModule::OnHeartBeat(const SQUICK_SOCKET sockIndex, const int msgID, const char * msg, const uint32_t len)
-{
-}
-
-void LoginNet_ServerModule::OnLogOut(const SQUICK_SOCKET sockIndex, const int msgID, const char * msg, const uint32_t len)
-{
-}
-
-void LoginNet_ServerModule::InvalidMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char * msg, const uint32_t len)
+void ServerModule::InvalidMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char * msg, const uint32_t len)
 {
 	printf("Net || umsgID=%d\n", msgID);
+}
+
 }

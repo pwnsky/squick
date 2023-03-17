@@ -1,35 +1,30 @@
+#include "http_module.h"
+#include "struct.h"
 
-
-#include "request_login.h"
-#include "response_login.h"
-#include "response_world_list.h"
-#include "request_select_world.h"
-#include "http_server_module.h"
-
-bool LoginNet_HttpServerModule::Start()
+namespace login::http {
+bool HttpModule::Start()
 {
 	m_pHttpNetModule = pPluginManager->FindModule<IHttpServerModule>();
 	m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-	m_pLoginServerModule = pPluginManager->FindModule<ILoginNet_ServerModule>();
+	m_pLoginServerModule = pPluginManager->FindModule<server::IServerModule>();
 	m_pLogicClassModule = pPluginManager->FindModule<IClassModule>();
 	m_pElementModule = pPluginManager->FindModule<IElementModule>();
-	m_pLoginToMasterModule = pPluginManager->FindModule<ILoginToMasterModule>();
+	m_pLoginToMasterModule = pPluginManager->FindModule<client::IMasterModule>();
 	m_pNetClientModule = pPluginManager->FindModule<INetClientModule>();
 	
 	return true;
 }
-bool LoginNet_HttpServerModule::Destory()
+bool HttpModule::Destory()
 {
 	return true;
 }
 
-bool LoginNet_HttpServerModule::AfterStart()
+bool HttpModule::AfterStart()
 {
-	m_pHttpNetModule->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &LoginNet_HttpServerModule::OnLogin);
-	m_pHttpNetModule->AddRequestHandler("/world", HttpType::SQUICK_HTTP_REQ_GET, this, &LoginNet_HttpServerModule::OnWorldView);
-	m_pHttpNetModule->AddRequestHandler("/world", HttpType::SQUICK_HTTP_REQ_CONNECT, this, &LoginNet_HttpServerModule::OnWorldSelect);
-
-	m_pHttpNetModule->AddNetFilter("/world", this, &LoginNet_HttpServerModule::OnFilter);
+	m_pHttpNetModule->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnLogin);
+	m_pHttpNetModule->AddRequestHandler("/world", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnWorldView);
+	m_pHttpNetModule->AddRequestHandler("/world", HttpType::SQUICK_HTTP_REQ_CONNECT, this, &HttpModule::OnWorldSelect);
+	m_pHttpNetModule->AddNetFilter("/world", this, &HttpModule::OnFilter);
 
 	SQUICK_SHARE_PTR<IClass> xLogicClass = m_pLogicClassModule->GetElement(excel::Server::ThisName());
 	if (xLogicClass)
@@ -55,13 +50,13 @@ bool LoginNet_HttpServerModule::AfterStart()
 	return true;
 }
 
-bool LoginNet_HttpServerModule::Update()
+bool HttpModule::Update()
 {
     //m_pHttpNetModule->Update();
 	return true;
 }
 
-bool LoginNet_HttpServerModule::OnLogin(SQUICK_SHARE_PTR<HttpRequest> req)
+bool HttpModule::OnLogin(SQUICK_SHARE_PTR<HttpRequest> req)
 {
 	std::string strResponse;
 	ResponseLogin xResponsetLogin;
@@ -69,8 +64,7 @@ bool LoginNet_HttpServerModule::OnLogin(SQUICK_SHARE_PTR<HttpRequest> req)
 	RequestLogin xRequestLogin;
 	ajson::load_from_buff(xRequestLogin, req->body.c_str());
 	if (xRequestLogin.user.empty()
-		|| xRequestLogin.password.empty())
-	{
+		|| xRequestLogin.password.empty()) {
 		xResponsetLogin.code = IResponse::ResponseType::RES_TYPE_FAILED;
 		xResponsetLogin.jwt = "";
 
@@ -78,13 +72,10 @@ bool LoginNet_HttpServerModule::OnLogin(SQUICK_SHARE_PTR<HttpRequest> req)
 		ajson::save_to(ss, xResponsetLogin);
 		strResponse = ss.str();
 	}
-	else
-	{
+	else {
 		Guid xGUIDKey = m_pKernelModule->CreateGUID();
-
 		xResponsetLogin.code = IResponse::ResponseType::RES_TYPE_SUCCESS;
 		xResponsetLogin.jwt = xGUIDKey.ToString();
-
 		mToken[xRequestLogin.user] = xGUIDKey.ToString();
 
 		ajson::string_stream ss;
@@ -95,7 +86,7 @@ bool LoginNet_HttpServerModule::OnLogin(SQUICK_SHARE_PTR<HttpRequest> req)
 	return m_pHttpNetModule->ResponseMsg(req, strResponse, WebStatus::WEB_OK);
 }
 
-bool LoginNet_HttpServerModule::OnWorldView(SQUICK_SHARE_PTR<HttpRequest> req)
+bool HttpModule::OnWorldView(SQUICK_SHARE_PTR<HttpRequest> req)
 {
 	std::string strResponse;
 	ResponseWorldList xResponsetWorldList;
@@ -123,7 +114,7 @@ bool LoginNet_HttpServerModule::OnWorldView(SQUICK_SHARE_PTR<HttpRequest> req)
 	return m_pHttpNetModule->ResponseMsg(req, strResponse, WebStatus::WEB_OK);
 }
 
-bool LoginNet_HttpServerModule::OnWorldSelect(SQUICK_SHARE_PTR<HttpRequest> req)
+bool HttpModule::OnWorldSelect(SQUICK_SHARE_PTR<HttpRequest> req)
 {
 	std::string strResponse;
 	IResponse xResponse;
@@ -165,12 +156,12 @@ bool LoginNet_HttpServerModule::OnWorldSelect(SQUICK_SHARE_PTR<HttpRequest> req)
 	return m_pHttpNetModule->ResponseMsg(req, strResponse, WebStatus::WEB_OK);
 }
 
-bool LoginNet_HttpServerModule::OnCommonQuery(SQUICK_SHARE_PTR<HttpRequest> req)
+bool HttpModule::OnCommonQuery(SQUICK_SHARE_PTR<HttpRequest> req)
 {
 	return m_pHttpNetModule->ResponseMsg(req, "OnCommonQuery", WebStatus::WEB_ERROR);
 }
 
-std::string LoginNet_HttpServerModule::GetUserID(SQUICK_SHARE_PTR<HttpRequest> req)
+std::string HttpModule::GetUserID(SQUICK_SHARE_PTR<HttpRequest> req)
 {
 	auto it = req->headers.find("user");
 	if (it != req->headers.end())
@@ -181,7 +172,7 @@ std::string LoginNet_HttpServerModule::GetUserID(SQUICK_SHARE_PTR<HttpRequest> r
 	return "";
 }
 
-std::string LoginNet_HttpServerModule::GetUserJWT(SQUICK_SHARE_PTR<HttpRequest> req)
+std::string HttpModule::GetUserJWT(SQUICK_SHARE_PTR<HttpRequest> req)
 {
 	auto it = req->headers.find("jwt");
 	if (it != req->headers.end())
@@ -192,7 +183,7 @@ std::string LoginNet_HttpServerModule::GetUserJWT(SQUICK_SHARE_PTR<HttpRequest> 
 	return "";
 }
 
-bool LoginNet_HttpServerModule::CheckUserJWT(const std::string & user, const std::string & jwt)
+bool HttpModule::CheckUserJWT(const std::string & user, const std::string & jwt)
 {
 	auto it = mToken.find(user);
 	if (it != mToken.end())
@@ -203,7 +194,7 @@ bool LoginNet_HttpServerModule::CheckUserJWT(const std::string & user, const std
 	return false;
 }
 
-WebStatus LoginNet_HttpServerModule::OnFilter(SQUICK_SHARE_PTR<HttpRequest> req)
+WebStatus HttpModule::OnFilter(SQUICK_SHARE_PTR<HttpRequest> req)
 {
 	std::string user = GetUserID(req);
 	std::string jwt = GetUserJWT(req);
@@ -239,4 +230,7 @@ WebStatus LoginNet_HttpServerModule::OnFilter(SQUICK_SHARE_PTR<HttpRequest> req)
 
 	return WebStatus::WEB_OK;
 	*/
+}
+
+
 }

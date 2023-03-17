@@ -2,7 +2,7 @@
 
 #include <squick/core/base.h>
 
-namespace login::logic {
+namespace login::http {
     class Plugin : public IPlugin {
     public:
         Plugin(IPluginManager* p) {

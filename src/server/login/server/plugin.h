@@ -1,20 +1,17 @@
 #pragma once
 
-#include <squick/core/i_plugin.h>
-#include <squick/core/i_plugin_manager.h>
+#include <squick/core/base.h>
 
-class LoginNet_ServerPlugin : public IPlugin
-{
+namespace login::server {
+class Plugin : public IPlugin {
 public:
-    LoginNet_ServerPlugin(IPluginManager* p)
-    {
+    Plugin(IPluginManager* p) {
         pPluginManager = p;
     }
     virtual const int GetPluginVersion();
-
     virtual const std::string GetPluginName();
-
     virtual void Install();
-
     virtual void Uninstall();
 };
+
+}

@@ -11,8 +11,6 @@ SQUICK_EXPORT void SquickPluginUnload(IPluginManager* pm) {
 	DESTROY_PLUGIN(pm, Plugin)
 };
 
-//////////////////////////////////////////////////////////////////////////
-
 const int Plugin::GetPluginVersion() {
 	return 0;
 }

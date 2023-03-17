@@ -13,12 +13,10 @@
 namespace gateway::server {
 class IServerModule : public IModule
 {
-
 };
 
 class ServerModule
-	: public IServerModule
-{
+	: public IServerModule {
 public:
 	ServerModule(IPluginManager* p)
 	{

@@ -2,30 +2,31 @@
 #include "master_module.h"
 #include "plugin.h"
 #include <squick/struct/struct.h>
+namespace login::client {
 
-bool LoginToMasterModule::Start()
+bool MasterModule::Start()
 {
 	m_pNetClientModule = pPluginManager->FindModule<INetClientModule>();
 	m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
 	m_pLogModule = pPluginManager->FindModule<ILogModule>();
 	m_pClassModule = pPluginManager->FindModule<IClassModule>();
 	m_pElementModule = pPluginManager->FindModule<IElementModule>();
-	m_pLoginNet_ServerModule = pPluginManager->FindModule<ILoginNet_ServerModule>();
+	m_pLoginNet_ServerModule = pPluginManager->FindModule<server::IServerModule>();
 
     return true;
 }
 
-bool LoginToMasterModule::Destory()
+bool MasterModule::Destory()
 {
     return true;
 }
 
-bool LoginToMasterModule::AfterStart()
+bool MasterModule::AfterStart()
 {
 	//m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER, SquickStruct::ACK_CONNECT_WORLD, this, &LoginToMasterModule::OnSelectServerResultProcess);
-	m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER, SquickStruct::STS_NET_INFO, this, &LoginToMasterModule::OnWorldInfoProcess);
+	m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER, SquickStruct::STS_NET_INFO, this, &MasterModule::OnWorldInfoProcess);
 	
-	m_pNetClientModule->AddEventCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER, this, &LoginToMasterModule::OnSocketMSEvent);
+	m_pNetClientModule->AddEventCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER, this, &MasterModule::OnSocketMSEvent);
 
 	m_pNetClientModule->ExpandBufferSize();
 
@@ -65,19 +66,19 @@ bool LoginToMasterModule::AfterStart()
     return true;
 }
 
-bool LoginToMasterModule::BeforeDestory()
+bool MasterModule::BeforeDestory()
 {
 
     return false;
 }
 
-bool LoginToMasterModule::Update()
+bool MasterModule::Update()
 {
 	ServerReport();
 	return true;
 }
 
-void LoginToMasterModule::Register(INet* pNet)
+void MasterModule::Register(INet* pNet)
 {
     SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
     if (xLogicClass)
@@ -121,7 +122,7 @@ void LoginToMasterModule::Register(INet* pNet)
     }
 }
 
-void LoginToMasterModule::ServerReport()
+void MasterModule::ServerReport()
 {
 	if (mLastReportTime + 10 > pPluginManager->GetNowTime())
 	{
@@ -162,11 +163,11 @@ void LoginToMasterModule::ServerReport()
 	}
 }
 
-void LoginToMasterModule::OnSelectServerResultProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len)
+void MasterModule::OnSelectServerResultProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len)
 {
 }
 
-void LoginToMasterModule::OnSocketMSEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet* pNet)
+void MasterModule::OnSocketMSEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet* pNet)
 {
     if (eEvent & SQUICK_NET_EVENT_EOF)
     {
@@ -187,7 +188,7 @@ void LoginToMasterModule::OnSocketMSEvent(const SQUICK_SOCKET sockIndex, const S
     }
 }
 
-void LoginToMasterModule::OnWorldInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len)
+void MasterModule::OnWorldInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len)
 {
     Guid nPlayerID ;
     SquickStruct::ServerInfoReportList xMsg;
@@ -214,12 +215,14 @@ void LoginToMasterModule::OnWorldInfoProcess(const SQUICK_SOCKET sockIndex, cons
     m_pLogModule->LogInfo(Guid(0, xMsg.server_list_size()), "", "WorldInfo");
 }
 
-INetClientModule* LoginToMasterModule::GetClusterModule()
+INetClientModule* MasterModule::GetClusterModule()
 {
 	return m_pNetClientModule;
 }
 
-MapEx<int, SquickStruct::ServerInfoReport>& LoginToMasterModule::GetWorldMap()
+MapEx<int, SquickStruct::ServerInfoReport>& MasterModule::GetWorldMap()
 {
     return mWorldMap;
+}
+
 }

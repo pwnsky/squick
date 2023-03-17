@@ -1,28 +1,23 @@
 #pragma once
-
 #include "squick/core/map.h"
-#include "squick/struct/struct.h"
-#include <squick/plugin/kernel/i_kernel_module.h>
-#include <squick/plugin/kernel/i_thread_pool_module.h>
-#include <squick/plugin/log/i_log_module.h>
-#include <squick/plugin/net/i_net_module.h>
-#include <squick/plugin/config/i_class_module.h>
-#include <squick/plugin/config/i_element_module.h>
 
-
-#include <squick/core/i_plugin_manager.h>
+#include <squick/plugin/kernel/export.h>
+#include <squick/plugin/log/export.h>
+#include <squick/plugin/net/export.h>
+#include <squick/plugin/config/export.h>
+#include <squick/core/base.h>
 
 #include "i_server_module.h"
 #include "../logic/i_logic_module.h"
 #include "../client/i_master_module.h"
 
+#include "squick/struct/struct.h"
 
-class LoginNet_ServerModule
-    : public ILoginNet_ServerModule
-{
+namespace login::server {
+class ServerModule
+    : public IServerModule {
 public:
-    LoginNet_ServerModule(IPluginManager* p)
-    {
+    ServerModule(IPluginManager* p) {
         pPluginManager = p;
     }
 
@@ -42,13 +37,7 @@ protected:
 protected:
     void OnClientDisconnect(const SQUICK_SOCKET nAddress);
     void OnClientConnected(const SQUICK_SOCKET nAddress);
-
-    void OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len);
     void OnSelectWorldProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len);
-    void OnViewWorldProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len);
-
-	void OnHeartBeat(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len);
-	void OnLogOut(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len);
 	void InvalidMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len);
 
 protected:
@@ -66,6 +55,8 @@ private:
     IElementModule* m_pElementModule;
     IKernelModule* m_pKernelModule;
     ILogModule* m_pLogModule;
-	ILoginToMasterModule* m_pLoginToMasterModule;
+	client::IMasterModule* m_pLoginToMasterModule;
     IThreadPoolModule* m_pThreadPoolModule;
 };
+
+}

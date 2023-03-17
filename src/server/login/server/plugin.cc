@@ -1,42 +1,29 @@
-
-
 #include "plugin.h"
 #include "server_module.h"
 
-//
-//
-
-SQUICK_EXPORT void SquickPluginLoad(IPluginManager* pm)
-{
-    CREATE_PLUGIN(pm, LoginNet_ServerPlugin)
-
+namespace login::server {
+SQUICK_EXPORT void SquickPluginLoad(IPluginManager* pm) {
+    CREATE_PLUGIN(pm, Plugin)
 };
 
-SQUICK_EXPORT void SquickPluginUnload(IPluginManager* pm)
-{
-    DESTROY_PLUGIN(pm, LoginNet_ServerPlugin)
+SQUICK_EXPORT void SquickPluginUnload(IPluginManager* pm) {
+    DESTROY_PLUGIN(pm, Plugin)
 };
 
-
-
-//////////////////////////////////////////////////////////////////////////
-
-const int LoginNet_ServerPlugin::GetPluginVersion()
-{
+const int Plugin::GetPluginVersion() {
     return 0;
 }
 
-const std::string LoginNet_ServerPlugin::GetPluginName()
-{
-	return GET_CLASS_NAME(LoginNet_ServerPlugin);
+const std::string Plugin::GetPluginName() {
+	return GET_CLASS_NAME(Plugin);
 }
 
-void LoginNet_ServerPlugin::Install()
-{
-    REGISTER_MODULE(pPluginManager, ILoginNet_ServerModule, LoginNet_ServerModule)
+void Plugin::Install() {
+    REGISTER_MODULE(pPluginManager, IServerModule, ServerModule)
 }
 
-void LoginNet_ServerPlugin::Uninstall()
-{
-    UNREGISTER_MODULE(pPluginManager, ILoginNet_ServerModule, LoginNet_ServerModule)
+void Plugin::Uninstall() {
+    UNREGISTER_MODULE(pPluginManager, IServerModule, ServerModule)
+}
+
 }

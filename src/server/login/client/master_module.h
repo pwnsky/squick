@@ -1,22 +1,21 @@
 #pragma once
 
-#include <squick/plugin/kernel/i_kernel_module.h>
+#include <squick/plugin/kernel/export.h>
 
 #include <squick/plugin/log/i_log_module.h>
-#include <squick/plugin/config/i_class_module.h>
-#include <squick/plugin/config/i_element_module.h>
-#include <squick/plugin/net/i_net_module.h>
+#include <squick/plugin/config/export.h>
+#include <squick/plugin/net/export.h>
 
 #include "../server/i_server_module.h"
 #include "../logic/i_logic_module.h"
 #include "i_master_module.h"
 
-
-class LoginToMasterModule
-    : public ILoginToMasterModule
+namespace login::client {
+class MasterModule
+    : public IMasterModule
 {
 public:
-    LoginToMasterModule(IPluginManager* p)
+    MasterModule(IPluginManager* p)
     {
         m_bIsUpdate = true;
         pPluginManager = p;
@@ -54,10 +53,12 @@ private:
 	INT64 mLastReportTime;
     MapEx<int, SquickStruct::ServerInfoReport> mWorldMap;
 
-    ILoginNet_ServerModule* m_pLoginNet_ServerModule;
+    server::IServerModule* m_pLoginNet_ServerModule;
     IElementModule* m_pElementModule;
     IKernelModule* m_pKernelModule;
     IClassModule* m_pClassModule;
     ILogModule* m_pLogModule;
 	INetClientModule* m_pNetClientModule;
 };
+
+}

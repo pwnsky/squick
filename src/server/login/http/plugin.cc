@@ -1,7 +1,7 @@
 #include "plugin.h"
-#include "logic_module.h"
+#include "http_module.h"
 
-namespace login::logic {
+namespace login::http {
     SQUICK_EXPORT void SquickPluginLoad(IPluginManager* pm) {
         CREATE_PLUGIN(pm, Plugin)
     };
@@ -19,11 +19,11 @@ namespace login::logic {
     }
 
     void Plugin::Install() {
-        REGISTER_MODULE(pPluginManager, ILogicModule, LogicModule)
+        REGISTER_MODULE(pPluginManager, IHttpModule, HttpModule)
     }
 
     void Plugin::Uninstall() {
-        UNREGISTER_MODULE(pPluginManager, ILogicModule, LogicModule)
+        UNREGISTER_MODULE(pPluginManager, IHttpModule, HttpModule)
     }
 
 }

@@ -3,9 +3,7 @@
 #include "player.h"
 
 namespace game::player {
-
-class IPlayerManagerModule : public IModule
-{
+class IPlayerManagerModule : public IModule {
 public:
 	virtual Player* GetPlayer(const Guid& clientID) = 0;
 	virtual int GetPlayerRoomID(const Guid& clientID) = 0;
