@@ -7,6 +7,7 @@
 #include "init/init.h"
 #include "diff/diff.h"
 #include "add/add.h"
+#include "patch/patch.h"
 
 using namespace sqkctl;
 
@@ -72,7 +73,8 @@ int main(int argc, const char *argv[])
 		a.Exec();
 	}
 	else if (cmd == "patch") {
-
+		patch::Patch p;
+		p.Exec();
 	}
 	else if (cmd == "pull") {
 

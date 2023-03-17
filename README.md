@@ -86,31 +86,25 @@ i0gan/squick-runtime # squick程序运行容器，版本 1.0
 
 ### 1. 第三方库编译
 
-这里提供两种方法，推荐第一种，直接采用编译好的lib
+这里提供两种方法，用已编译第三方库的文件和源码编译第三方库，推荐第一种。
 
-#### 1. 直接用编译好的lib
+#### 1. 用已编译第三方库的文件（推荐）
 
 将 https://github.com/pwnsky/SquickThirdPartyBuild/tree/main/Windows/ 下的build拷贝到 {project_path}/third_party 目录下即可不用编译第三方源码
 
+#### 2. 源码编译第三方库（不推荐）
 
-
-#### 2. 源码编译
-
-需下载依赖包，并安装到Windows中
+不推荐采用源码编译第三方库，需要搭建boost环境，也需下载依赖包，并安装到Windows中。
 
 **Win64 OpenSSL v3.0.7**
 
 [EXE](http://slproweb.com/download/Win64OpenSSL-3_0_7.exe) | [MSI](http://slproweb.com/download/Win64OpenSSL-3_0_7.msi)
 
-
-
-**MinGW**
-
-编译lua需要，能编译出dll，但由于vc与gcc某些函数不兼容，导致squick程序的lua插件不能链接到该dll，需暂时借助第三方编译好的lua.lib来完成链接。
+在编译Lua库的时候，虽然MinGW能编译Lua出dll，但由于vc与gcc某些函数不兼容，导致squick程序的lua插件不能链接到该dll，需暂时借助第三方编译好的lua.lib来完成链接。
 
 https://github.com/niXman/mingw-builds-binaries/releases
 
-
+点击{project_path}/tools/build_third_party.bat 即可编译
 
 ### 2 sqkctl工具编译
 
@@ -122,7 +116,7 @@ https://github.com/niXman/mingw-builds-binaries/releases
 
 编译完或者处理第三方依赖库后，就可以直接对主工程源码进行编译了。
 
-之后再点击 generate_vs_project.bat 生成 vs项目工程在 {project_path}/cache下，打开{project_path}/cache/Project.sln 进行全部编译。将squick_exe项目设置为启动项，并修改工作目录为 {project_path}/bin，也可以设定相应参数调试不同服务器，之后就可以采用VS来启动调试全部服务器了。
+之后再点击 generate_vs_project.bat 生成 vs项目工程在 {project_path}/cache下，打开{project_path}/cache/Project.sln 进行全部编译。将squick_exe项目设置为启动项，并修改调试的工作目录为 {project_path}/bin，也可以设定相应参数调试不同服务器，之后就可以采用VS来启动调试全部服务器了。
 
 编译完成后文件目录大致如下
 

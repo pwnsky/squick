@@ -16,63 +16,6 @@ namespace sqkctl {
 class Files
 {
 public:
-	// 过滤后的文件
-	static std::vector<std::string> GetUnblackedFiles(const std::string &squick_path) {
-		std::vector<std::string> result;
-		auto files = Files::GetFileListInFolder(squick_path, 5);
-		// 黑名单过滤
-		for (auto& file : files) {
-			Files::StringReplace(file, "\\", "/");
-			Files::StringReplace(file, "//", "/");
-
-			if (Files::IsStartWith(file, squick_path + "/third_party")) {
-				continue;
-			}
-			else if (Files::IsStartWith(file, squick_path + "/.git")) {
-				continue;
-			}
-			else if (Files::IsStartWith(file, squick_path + "/bin")) {
-				continue;
-			}
-			else if (Files::IsStartWith(file, squick_path + "/cache")) {
-				continue;
-			}
-			else if (Files::IsStartWith(file, squick_path + "/client")) {
-				continue;
-			}
-			else if (Files::IsStartWith(file, squick_path + "/deploy")) {
-				continue;
-			}
-			else if (Files::IsStartWith(file, squick_path + "/src/www/admin/node_modules")) {
-				continue;
-			}
-			else if (Files::IsStartWith(file, squick_path + "/src/www/admin/dist")) {
-				continue;
-			}
-			else if (Files::IsStartWith(file, squick_path + "/src/www/server/build")) {
-				continue;
-			}
-			else if (Files::IsStartWith(file, squick_path + "/.vscode")) {
-				continue;
-			}
-			else if (Files::IsStartWith(file, squick_path + "/tools/bin")) {
-				continue;
-			}
-			else if (Files::IsStartWith(file, squick_path + "/src/squick/struct/")) {
-				int pos = file.find(".");
-				if (pos > 0) {
-					string sub = file.substr(pos, file.length() - pos); // PB文件
-					if (sub.find("pb") > 0) {
-						continue;
-					}
-				}
-			}
-			result.push_back(file);
-		}
-		return result;
-	}
-
-
 	static void StringReplace(std::string & strBig, const std::string & strsrc, const std::string & strdst)
 	{
 		std::string::size_type pos = 0;
@@ -128,7 +71,7 @@ public:
 
 
 
-	static std::vector<std::string> GetFileListInFolder(std::string folderPath, int depth)
+	static std::vector<std::string> GetFileListInFolder(std::string folderPath, int depth = 5)
 	{
 		depth--;
 

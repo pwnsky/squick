@@ -1,5 +1,5 @@
 #pragma once
-#include "../files.h"
+#include "../squick_files.h"
 #include <third_party/common/md5.hpp>
 #include <third_party/nlohmann/json.hpp>
 #include <fstream>
@@ -9,8 +9,6 @@ namespace sqkctl::add {
 
 	class Add {
 	public:
-
-		
 		int Exec() {
 
 			ifstream file;
@@ -42,7 +40,7 @@ namespace sqkctl::add {
 			// get current squick dir files
 			map<string, string> currentFilesMap;
 			string squick_path = "squick";
-			auto cfiles = Files::GetUnblackedFiles(squick_path);
+			auto cfiles = SquickFiles::GetFiles(squick_path);
 			for (auto fn : cfiles) {
 				currentFilesMap[fn] = md5file(fn.c_str());
 			}
@@ -79,10 +77,10 @@ namespace sqkctl::add {
 
 			// ----------- above code from diff.h
 			// 在执行Clean的时候，先将files下的所有文件做一个备份，防止在更新squick所有文件的时候，将files目录下的所有文件给删除了。
-			Backup();
+			SquickFiles::BackupFiles();
 
 			// 清除
-			Clean();
+			SquickFiles::CleanFiles();
 
 			json record;
 			json recordAdded;
@@ -93,7 +91,7 @@ namespace sqkctl::add {
 				jf["md5"] = f.second;
 				recordAdded.push_back(jf);
 				cout << "   " << f.first << endl;
-				Copy(f.first);
+				SquickFiles::CopySquickToFiles(f.first);
 			}
 
 			//record["added"] = recordAdded;
@@ -120,7 +118,7 @@ namespace sqkctl::add {
 				recordChanged.push_back(jf);
 				cout << "   " << f.first << endl;
 
-				Copy(f.first);
+				SquickFiles::CopySquickToFiles(f.first);
 			}
 			//record["changed"] = recordChanged;
 			
@@ -133,51 +131,7 @@ namespace sqkctl::add {
 			cout << " Add files to files directory finished!\n";
 		}
 	private:
-		void Clean() {
-			// files目录下的所有文件
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
-			system("del /f /q /s  files\\*");
-			system("del /f /q /s  changed.json");
-#else
-			system("rm -rf files/*");
-			system("rm -rf changed.json");
-#endif
-		}
-
-		void Copy(const std::string &file) {
-			// 将文件复制到 files 下
-			string  cmd = "";
-			string targetPath = "files/" + Files::GetFilePathByPath(file);
-			string sourcePath = file;
-
-			sourcePath = "\"" + sourcePath + "\"";
-			targetPath = "\"" + targetPath + "\"";
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
-			Files::StringReplace(targetPath, "/", "\\");
-			Files::StringReplace(sourcePath, "/", "\\");
-			cmd = "mkdir " + targetPath;
-			system(cmd.c_str());
-			cmd = "copy " + sourcePath + " " + targetPath;
-			//cout << " cmd: " << cmd << "\n";
-			system(cmd.c_str());
-#else
-			cmd = "mkdir -p " + targetPath;
-			system(cmd.c_str());
-			cmd = "cp " + sourcePath + " " + targetPath;
-			system(cmd.c_str());
-#endif
-		}
 
 
-		
-		void Backup() {
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
-			system("mkdir backup");
-			system("xcopy /s /e /y files backup");
-#else
-			system("mkdir -p backup");
-			system("cp -r files/squick backup");
-#endif
-		}
 	};
 }

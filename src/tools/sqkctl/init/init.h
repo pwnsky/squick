@@ -1,10 +1,10 @@
 #pragma once
 
 #include <iostream>
-#include "../files.h"
 #include <third_party/common/md5.hpp>
 #include <third_party/nlohmann/json.hpp>
 #include<fstream> 
+#include "../squick_files.h"
 using namespace nlohmann;
 using namespace std;
 namespace sqkctl::init {
@@ -17,8 +17,7 @@ namespace sqkctl::init {
 		~Init() {
 
 		}
-
-
+		
 		bool IsEmptyFolder() {
 			auto allfiles = Files::GetFileListInFolder(".", 1);
 			return allfiles.size() == 0;
@@ -59,12 +58,10 @@ namespace sqkctl::init {
 			string copy_cmd = "cp -r " + std::string(squick_install_path) + "/* ./squick";
 #endif
 			system(copy_cmd.c_str());
-
-
-
+			
 			j_all["version"] = squick_version;
 			string squick_path = "squick";
-			auto files = Files::GetUnblackedFiles(squick_path);
+			auto files = SquickFiles::GetFiles(squick_path);
 			for (auto file : files) {
 				json jf;
 				jf["path"] = file;
@@ -83,27 +80,64 @@ namespace sqkctl::init {
 
 			fstream gitignore_file;
 			gitignore_file.open(".gitignore", ios::out);
-			std::string gitignore_file_content;
-			gitignore_file_content = "/squick\n"
-				"/backup\n"
-				;
+			std::string gitignore_file_content = R"(/squick
+/backup
+sqkctl
+sqkctl.exe
+)";
 			gitignore_file.write(gitignore_file_content.c_str(), gitignore_file_content.size());
 			gitignore_file.close();
 
+			// submodule
+			fstream submodule_file;
+			submodule_file.open(".gitignore", ios::out);
+			std::string submodule_file_content = R"(
+[submodule "squick"]
+	path = squick
+	url = https://github.com/pwnsky/squick.git
+)";
+			submodule_file.write(gitignore_file_content.c_str(), gitignore_file_content.size());
+			submodule_file.close();
 			
-			system("mkdir files");
-			fstream files_keep;
-			files_keep.open("files/.gitkeep", ios::out);
-			files_keep.close();
 
-			
 			// readme
 			fstream readme_file;
 			readme_file.open("README.md", ios::out);
-			std::string readme_file_content;
-			readme_file_content = "# Squick project \n";
-			readme_file_content += " managed by squick_ctl\n";
-			readme_file_content += " Github: https://github.com/pwnsky/squick";
+			std::string readme_file_content = R"(
+# Squick Project
+
+## 1 拉取项目
+
+```
+git clone https://xxx.com/xxx/xxx.git
+cd server
+git submodule init
+git submodule update
+```
+
+
+## 2 安装编译squick
+
+请查看 https://github.com/pwnsky/squick/tree/main#%E5%AE%89%E8%A3%85
+
+将所有文件编译完毕后，拷贝sqkctl文件到项目根目录下
+
+```
+cp {project_path}/squick/tools/bin/sqkctl {project_path}
+```
+
+
+
+## 3 恢复工程文件
+
+在安装好squick之后，采用工具sqkctl恢复全部文件，执行命令如下：
+
+```
+cd {project_path}
+sqkctl patch
+```
+
+)";
 
 			readme_file.write(readme_file_content.c_str(), readme_file_content.size());
 			readme_file.close();
