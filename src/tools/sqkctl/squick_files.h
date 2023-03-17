@@ -124,7 +124,7 @@ namespace sqkctl {
 			cmd = "mkdir " + targetPath;
 			system(cmd.c_str());
 			cmd = "copy " + sourcePath + " " + targetPath;
-			cout << " cmd: " << cmd << "\n";
+			//cout << " cmd: " << cmd << "\n";
 			system(cmd.c_str());
 #else
 			cmd = "mkdir -p " + targetPath;
