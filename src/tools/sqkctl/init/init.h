@@ -51,11 +51,12 @@ namespace sqkctl::init {
 
 
 			cout << " Squick install path: " << squick_install_path << std::endl;
-			system("mkdir squick");
+			
 #if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
-			string copy_cmd = "xcopy /s /e /y " + std::string(squick_install_path) + " squick";
+			system("mkdir squick");
+			string copy_cmd = "xcopy /s /e /y /h " + std::string(squick_install_path) + " squick";
 #else
-			string copy_cmd = "cp -r " + std::string(squick_install_path) + "/* ./squick";
+			string copy_cmd = "cp -r " + std::string(squick_install_path) + " ./squick";
 #endif
 			system(copy_cmd.c_str());
 			
