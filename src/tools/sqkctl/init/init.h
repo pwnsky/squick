@@ -80,8 +80,8 @@ namespace sqkctl::init {
 
 			fstream gitignore_file;
 			gitignore_file.open(".gitignore", ios::out);
-			std::string gitignore_file_content = R"(/squick
-/backup
+			std::string gitignore_file_content =
+R"(/backup
 sqkctl
 sqkctl.exe
 )";
@@ -91,19 +91,20 @@ sqkctl.exe
 			// submodule
 			fstream submodule_file;
 			submodule_file.open(".gitmodules", ios::out);
-			std::string submodule_file_content = R"(
-[submodule "squick"]
+			std::string submodule_file_content = 
+R"([submodule "squick"]
 	path = squick
 	url = https://github.com/pwnsky/squick.git
 )";
-			submodule_file.write(gitignore_file_content.c_str(), gitignore_file_content.size());
+			submodule_file.write(submodule_file_content.c_str(), submodule_file_content.size());
 			submodule_file.close();
 			
 
 			// readme
 			fstream readme_file;
 			readme_file.open("README.md", ios::out);
-			std::string readme_file_content = R"(
+			std::string readme_file_content =
+R"(
 # Squick Project
 
 ## 1 拉取项目
