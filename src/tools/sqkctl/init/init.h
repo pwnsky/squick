@@ -90,7 +90,7 @@ sqkctl.exe
 
 			// submodule
 			fstream submodule_file;
-			submodule_file.open(".gitignore", ios::out);
+			submodule_file.open(".gitmodules", ios::out);
 			std::string submodule_file_content = R"(
 [submodule "squick"]
 	path = squick
