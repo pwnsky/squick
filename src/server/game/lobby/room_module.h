@@ -23,7 +23,7 @@ class RoomModule : public IRoomModule {
   public:
     RoomModule(IPluginManager *p) {
         pPluginManager = p;
-        m_bIsUpdate = true;
+        m_bIsUpdate = false;
     }
 
     virtual bool Start();

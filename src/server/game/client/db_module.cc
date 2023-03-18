@@ -39,11 +39,11 @@ void GameServerToDBModule::OnSocketWSEvent(const SQUICK_SOCKET sockIndex, const 
 }
 
 void GameServerToDBModule::TransPBToProxy(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    m_pNetClientModule->SendBySuitWithOutHead(SQUICK_SERVER_TYPES::SQUICK_ST_DB, sockIndex, msgID, std::string(msg, len));
+    m_pNetClientModule->SendBySuitWithOutHead(SQUICK_SERVER_TYPES::SQUICK_ST_DB_PROXY, sockIndex, msgID, std::string(msg, len));
 
     return;
 }
 
 void GameServerToDBModule::TransmitToDB(const int nHashKey, const int msgID, const google::protobuf::Message &xData) {
-    m_pNetClientModule->SendSuitByPB(SQUICK_SERVER_TYPES::SQUICK_ST_DB, nHashKey, msgID, xData);
+    m_pNetClientModule->SendSuitByPB(SQUICK_SERVER_TYPES::SQUICK_ST_DB_PROXY, nHashKey, msgID, xData);
 }

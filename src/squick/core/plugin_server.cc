@@ -4,6 +4,7 @@
 #include "squick/core/exception.h"
 
 PluginServer::PluginServer(const std::string &strArgv) {
+    std::cout << "Start Server: " << strArgv << std::endl;
     this->strArgvList = strArgv;
 
 #if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN

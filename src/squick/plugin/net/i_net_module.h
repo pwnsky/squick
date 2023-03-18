@@ -20,11 +20,12 @@ enum SQUICK_SERVER_TYPES {
     SQUICK_ST_PROXY = 5,        //
     SQUICK_ST_GAME = 6,         //
     SQUICK_ST_WORLD = 7,        //
-    SQUICK_ST_DB = 8,           //
+    SQUICK_ST_DB_PROXY = 8,           //
     SQUICK_ST_MAX = 9,          //
     SQUICK_ST_GATEWAY = 10,     //
-    SQUICK_ST_PVP_MANAGER = 11, //
-    SQUICK_ST_MICRO = 12,       // 微服务
+    SQUICK_ST_GAMEPLAY_MANAGER = 11, //
+    SQUICK_ST_GAMEPLAY = 12, //
+    SQUICK_ST_MICRO = 13,       // 微服务
 };
 
 ////////////////////////////////////////////////////////////////////////////

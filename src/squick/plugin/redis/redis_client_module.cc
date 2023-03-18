@@ -25,16 +25,16 @@ bool NoSqlModule::AfterStart() {
     m_pElementModule = pPluginManager->FindModule<IElementModule>();
     m_pLogModule = pPluginManager->FindModule<ILogModule>();
 
-    SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::DB::ThisName());
+    SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Redis::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
         for (int i = 0; i < strIdList.size(); ++i) {
             const std::string &strId = strIdList[i];
 
-            const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::DB::ServerID());
-            const int nPort = m_pElementModule->GetPropertyInt32(strId, excel::DB::Port());
-            const std::string &ip = m_pElementModule->GetPropertyString(strId, excel::DB::IP());
-            const std::string &strAuth = m_pElementModule->GetPropertyString(strId, excel::DB::Auth());
+            const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::Redis::ServerID());
+            const int nPort = m_pElementModule->GetPropertyInt32(strId, excel::Redis::Port());
+            const std::string &ip = m_pElementModule->GetPropertyString(strId, excel::Redis::IP());
+            const std::string &strAuth = m_pElementModule->GetPropertyString(strId, excel::Redis::Auth());
 
             if (this->AddConnectSql(strId, ip, nPort, strAuth)) {
                 std::ostringstream strLog;

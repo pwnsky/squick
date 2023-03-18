@@ -392,7 +392,7 @@ void MasterNet_ServerModule::OnServerReport(const SQUICK_SOCKET nFd, const int m
             mGatewayMap.AddElement(msg.server_id(), pServerData);
         }
     } break;
-    case SQUICK_SERVER_TYPES::SQUICK_ST_PVP_MANAGER: {
+    case SQUICK_SERVER_TYPES::SQUICK_ST_GAMEPLAY_MANAGER: {
         pServerData = mPvpManagerMap.GetElement(msg.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ServerData>(new ServerData());

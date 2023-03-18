@@ -90,7 +90,7 @@ void DBToWorldModule::Register(INet *pNet) {
 
             const int serverType = m_pElementModule->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == SQUICK_SERVER_TYPES::SQUICK_ST_DB && pPluginManager->GetAppID() == serverID) {
+            if (serverType == SQUICK_SERVER_TYPES::SQUICK_ST_DB_PROXY && pPluginManager->GetAppID() == serverID) {
                 const int nPort = m_pElementModule->GetPropertyInt32(strId, excel::Server::Port());
                 const int maxConnect = m_pElementModule->GetPropertyInt32(strId, excel::Server::MaxOnline());
                 const int nCpus = m_pElementModule->GetPropertyInt32(strId, excel::Server::CpuCount());

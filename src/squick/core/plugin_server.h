@@ -1,6 +1,5 @@
 
-#ifndef SQUICK_SERVER_H
-#define SQUICK_SERVER_H
+#pragma once
 
 #include "platform.h"
 #include "plugin_manager.h"
@@ -54,5 +53,3 @@ class PluginServer {
     void StartDaemon();
     static bool GetFileContent(IPluginManager *p, const std::string &strFilePath, std::string &content);
 };
-
-#endif

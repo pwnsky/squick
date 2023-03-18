@@ -5,8 +5,8 @@
 
 #include "data_list.h"
 #include "list.h"
-#include "platform.h"
 #include "map_ex.h"
+#include "platform.h"
 typedef std::function<int(const Guid &, const std::string &, const SquickData &, const SquickData &, const INT64)> PROPERTY_EVENT_FUNCTOR;
 typedef SQUICK_SHARE_PTR<PROPERTY_EVENT_FUNCTOR> PROPERTY_EVENT_FUNCTOR_PTR;
 

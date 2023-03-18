@@ -6,9 +6,7 @@
 //
 
 SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){
-
     CREATE_PLUGIN(pm, MasterNet_ServerPlugin)
-
 };
 
 SQUICK_EXPORT void SquickPluginUnload(IPluginManager *pm){DESTROY_PLUGIN(pm, MasterNet_ServerPlugin)};

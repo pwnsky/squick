@@ -3,7 +3,6 @@
 
 #include "i_generator.h"
 
-
 namespace sqkctl {
 class IniGenerator : public IGenerator {
   public:

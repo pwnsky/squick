@@ -2,7 +2,7 @@
 #include <iostream>
 #include <squick/core/base.h>
 #include <squick/struct/struct.h>
-
+#include <squick/core/plugin_server.h>
 int main(int argc, char *argv[]) {
     // std::cout << "__cplusplus:" << __cplusplus << std::endl;
 
@@ -32,15 +32,16 @@ int main(int argc, char *argv[]) {
                 "Examples: ./squick plugin=test.xml server=defualt id=1\n";
         "\n";*/
 
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=master id=3 plugin=master.xml")));
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=world id=7 plugin=world.xml")));
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=db_proxy id=8 plugin=db_proxy.xml")));
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=login id=4 plugin=login.xml")));
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=game id=16001 plugin=game.xml")));
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=gateway id=10 plugin=gateway.xml")));
+        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=master id=1 plugin=master.xml")));
+        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=login id=2 plugin=login.xml")));
+        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=world id=3 plugin=world.xml")));
+        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=db_proxy id=4 plugin=db_proxy.xml")));
+        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=gateway id=5 plugin=gateway.xml")));
+        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=game id=10 plugin=game.xml")));
+        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=game id=11 plugin=game.xml")));
         serverList.push_back(
-            SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=gameplay_manager id=11 plugin=gameplay_manager.xml")));
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=proxy id=5 plugin=proxy.xml")));
+            SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=gameplay_manager id=20 plugin=gameplay_manager.xml")));
+        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=proxy id=6 plugin=proxy.xml")));
 
     } else {
         serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList)));

@@ -219,7 +219,7 @@ void GameServerToWorldModule::OnServerInfoProcess(const SQUICK_SOCKET sockIndex,
 
         if (SQUICK_SERVER_TYPES::SQUICK_ST_WORLD == xServerData.eServerType) {
             m_pNetClientModule->AddServer(xServerData);
-        } else if (SQUICK_SERVER_TYPES::SQUICK_ST_DB == xServerData.eServerType) {
+        } else if (SQUICK_SERVER_TYPES::SQUICK_ST_DB_PROXY == xServerData.eServerType) {
             m_pNetClientModule->AddServer(xServerData);
         }
     }
