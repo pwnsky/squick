@@ -2,13 +2,9 @@
 
 #include <iostream>
 #include <squick/core/i_module.h>
-#include <squick/plugin/net/i_net_module.h>
 #include <squick/plugin/net/i_net_client_module.h>
+#include <squick/plugin/net/i_net_module.h>
 
-class IWorldToMasterModule
-	: public  IModule
-{
-public:
+class IWorldToMasterModule : public IModule {
+  public:
 };
-
-

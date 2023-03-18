@@ -5,20 +5,16 @@
 
 namespace game::play {
 //////////////////////////////////////////////////////////////////////////
-class Plugin : public IPlugin
-{
-public:
-	Plugin(IPluginManager* p)
-	{
-		pPluginManager = p;
-	}
-	virtual const int GetPluginVersion();
+class Plugin : public IPlugin {
+  public:
+    Plugin(IPluginManager *p) { pPluginManager = p; }
+    virtual const int GetPluginVersion();
 
-	virtual const std::string GetPluginName();
+    virtual const std::string GetPluginName();
 
-	virtual void Install();
+    virtual void Install();
 
-	virtual void Uninstall();
+    virtual void Uninstall();
 };
 
-}
+} // namespace game::play

@@ -5,17 +5,13 @@
 
 namespace gameplay_manager::server {
 //////////////////////////////////////////////////////////////////////////
-class Plugin : public IPlugin
-{
-public:
-	Plugin(IPluginManager* p)
-	{
-		pPluginManager = p;
-	}
-	virtual const int GetPluginVersion();
-	virtual const std::string GetPluginName();
-	virtual void Install();
-	virtual void Uninstall();
+class Plugin : public IPlugin {
+  public:
+    Plugin(IPluginManager *p) { pPluginManager = p; }
+    virtual const int GetPluginVersion();
+    virtual const std::string GetPluginName();
+    virtual void Install();
+    virtual void Uninstall();
 };
 
-}
+} // namespace gameplay_manager::server

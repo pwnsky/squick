@@ -4,16 +4,13 @@
 #include <squick/core/i_plugin_manager.h>
 
 namespace game::server {
-class Plugin : public IPlugin
-{
-public:
-    Plugin(IPluginManager* p) {
-        pPluginManager = p;
-    }
+class Plugin : public IPlugin {
+  public:
+    Plugin(IPluginManager *p) { pPluginManager = p; }
     virtual const int GetPluginVersion();
     virtual const std::string GetPluginName();
     virtual void Install();
     virtual void Uninstall();
 };
 
-}
+} // namespace game::server

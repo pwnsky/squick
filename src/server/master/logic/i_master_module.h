@@ -4,7 +4,4 @@
 #include <iostream>
 #include <squick/core/i_module.h>
 
-class IMasterModule
-    : public IModule
-{
-};
+class IMasterModule : public IModule {};

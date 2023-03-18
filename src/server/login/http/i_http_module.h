@@ -2,7 +2,6 @@
 
 #include <squick/core/base.h>
 namespace login::http {
-class IHttpModule : public IModule {
-};
+class IHttpModule : public IModule {};
 
-}
+} // namespace login::http
