@@ -11,20 +11,11 @@ IN THIS PLUGIN:
 YOU WILL KNOW HOW TO USE THE "INavigationModule" TO FIND THE PATH FOR AI OBJECT
 */
 
-class IHelloWorld6
-	: public IModule
-{
+class IHelloWorld6 : public IModule {};
 
-};
-
-class HelloWorld6
-    : public IHelloWorld6
-{
-public:
-    HelloWorld6(IPluginManager* p)
-    {
-        pPluginManager = p;
-    }
+class HelloWorld6 : public IHelloWorld6 {
+  public:
+    HelloWorld6(IPluginManager *p) { pPluginManager = p; }
 
     virtual bool Start();
     virtual bool AfterStart();
@@ -34,8 +25,8 @@ public:
     virtual bool BeforeDestory();
     virtual bool Destory();
 
-protected:
-	INavigationModule* m_pNavigationModule;
+  protected:
+    INavigationModule *m_pNavigationModule;
 };
 
 #endif

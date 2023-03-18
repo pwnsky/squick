@@ -5,5 +5,5 @@ import "base.proto";
 // 5000 ~ 6000
 
 enum GatewayRPC {
-  GATEWAY_RPC_NONE = 0;
+    GATEWAY_RPC_NONE = 0;
 }

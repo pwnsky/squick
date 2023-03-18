@@ -4,13 +4,9 @@
 #include <squick/core/i_plugin_manager.h>
 
 //////////////////////////////////////////////////////////////////////////
-class NetPlugin : public IPlugin
-{
-public:
-	NetPlugin(IPluginManager* p)
-    {
-        pPluginManager = p;
-    }
+class NetPlugin : public IPlugin {
+  public:
+    NetPlugin(IPluginManager *p) { pPluginManager = p; }
 
     virtual const int GetPluginVersion();
 

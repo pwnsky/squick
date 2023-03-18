@@ -1,12 +1,9 @@
 #pragma once
 
+#include "third_party/ajson/ajson.hpp"
 #include <map>
 #include <string>
-#include "third_party/ajson/ajson.hpp"
 
-class IRequest
-{
-public:
-	
-
+class IRequest {
+  public:
 };

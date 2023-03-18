@@ -5,20 +5,19 @@
 #include <iostream>
 #include <string>
 
-class SpaceNode
-{
-public:
-//interface
-    //scale
-    //rotate
-    //move
-    //CollideWithNode
-	/*
-    SpaceNode xParentNode;
-    List<SpaceNode> xNodeList;
-    int nMask;
-    Vector3 vCenter;
-	*/
+class SpaceNode {
+  public:
+    // interface
+    // scale
+    // rotate
+    // move
+    // CollideWithNode
+    /*
+SpaceNode xParentNode;
+List<SpaceNode> xNodeList;
+int nMask;
+Vector3 vCenter;
+    */
 };
 
 #endif

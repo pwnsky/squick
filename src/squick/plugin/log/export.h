@@ -5,5 +5,5 @@
 // Github: https://github.com/i0gan/Squick
 // Description: Export current plugin's all modules in a single header file
 
-#include "i_log_module.h"
 #include "easylogging++.h"
+#include "i_log_module.h"

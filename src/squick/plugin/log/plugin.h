@@ -3,15 +3,10 @@
 #include <squick/core/i_plugin.h>
 #include <squick/core/i_plugin_manager.h>
 
-
 //////////////////////////////////////////////////////////////////////////
-class LogPlugin : public IPlugin
-{
-public:
-    LogPlugin(IPluginManager* p)
-    {
-        pPluginManager = p;
-    }
+class LogPlugin : public IPlugin {
+  public:
+    LogPlugin(IPluginManager *p) { pPluginManager = p; }
 
     virtual const int GetPluginVersion();
 

@@ -5,13 +5,9 @@
 #include <squick/core/i_plugin_manager.h>
 
 //////////////////////////////////////////////////////////////////////////
-class NavigationPlugin : public IPlugin
-{
-public:
-	NavigationPlugin(IPluginManager* p)
-    {
-        pPluginManager = p;
-    }
+class NavigationPlugin : public IPlugin {
+  public:
+    NavigationPlugin(IPluginManager *p) { pPluginManager = p; }
 
     virtual const int GetPluginVersion();
 

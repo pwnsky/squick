@@ -5,5 +5,5 @@ import "base.proto";
 
 // 35000 ~ 40000
 enum GameManagerRPC {
-  GAME_MANAGER_RPC_NONE = 0;
+    GAME_MANAGER_RPC_NONE = 0;
 }

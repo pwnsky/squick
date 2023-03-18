@@ -6,4 +6,3 @@
 // Description: Export current plugin's all modules in a single header file
 
 #include "lua_script_module.h"
-

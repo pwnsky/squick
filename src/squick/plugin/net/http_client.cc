@@ -6,23 +6,18 @@
 #define snprintf _snprintf
 #endif
 
-bool HttpClient::Update()
-{
-    if (m_pBase)
-    {
+bool HttpClient::Update() {
+    if (m_pBase) {
         event_base_loop(m_pBase, EVLOOP_ONCE | EVLOOP_NONBLOCK);
     }
 
     return true;
 }
 
-bool HttpClient::Start()
-{
-    for (int i = 0; i < 1024; ++i)
-    {
+bool HttpClient::Start() {
+    for (int i = 0; i < 1024; ++i) {
         mlHttpObject.push_back(new HttpObject(this, nullptr, nullptr, Guid()));
     }
-
 
 #if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
     WORD wVersionRequested;
@@ -45,34 +40,29 @@ bool HttpClient::Start()
 #endif
 
     m_pSslCtx = SSL_CTX_new(SSLv23_client_method());
-    if (!m_pSslCtx)
-    {
-		//LOG(ERROR) << "SSL_CTX_new err. " << __FUNCTION__ << " " << __LINE__;
+    if (!m_pSslCtx) {
+        // LOG(ERROR) << "SSL_CTX_new err. " << __FUNCTION__ << " " << __LINE__;
         return false;
     }
 
 #endif
 
     m_pBase = event_base_new();
-    if (m_pBase == nullptr)
-    {
-		//LOG(ERROR) << "event_base_new err " << __FUNCTION__ << " " << __LINE__;
+    if (m_pBase == nullptr) {
+        // LOG(ERROR) << "event_base_new err " << __FUNCTION__ << " " << __LINE__;
         return false;
     }
     return true;
 }
 
-bool HttpClient::Final()
-{
-    if (m_pBase)
-    {
+bool HttpClient::Final() {
+    if (m_pBase) {
         event_base_free(m_pBase);
         m_pBase = nullptr;
     }
 
 #if SQUICK_ENABLE_SSL
-    if (m_pSslCtx)
-    {
+    if (m_pSslCtx) {
         SSL_CTX_free(m_pSslCtx);
         m_pSslCtx = nullptr;
     }
@@ -95,289 +85,236 @@ bool HttpClient::Final()
     return true;
 }
 
-bool HttpClient::MakeRequest(const std::string& strUri,
-                                HTTP_RESP_FUNCTOR_PTR pCB,
-                                const std::string& strPostData,
-                                const std::map<std::string, std::string>& xHeaders,
-                                const HttpType eHttpType,
-                                const std::string& strMemoData,
-                                const Guid id)
-{
-    struct evhttp_uri* http_uri = evhttp_uri_parse(strUri.c_str());
-    if (http_uri == NULL)
-    {
-		//LOG(ERROR) << "evhttp_uri_parse err. " << __FUNCTION__ << " " << __LINE__;
+bool HttpClient::MakeRequest(const std::string &strUri, HTTP_RESP_FUNCTOR_PTR pCB, const std::string &strPostData,
+                             const std::map<std::string, std::string> &xHeaders, const HttpType eHttpType, const std::string &strMemoData, const Guid id) {
+    struct evhttp_uri *http_uri = evhttp_uri_parse(strUri.c_str());
+    if (http_uri == NULL) {
+        // LOG(ERROR) << "evhttp_uri_parse err. " << __FUNCTION__ << " " << __LINE__;
         return false;
     }
 
-    const char*  scheme = evhttp_uri_get_scheme(http_uri);
-    if (scheme == NULL)
-    {
-		//LOG(ERROR) << "scheme == NULL err. " << __FUNCTION__ << " " << __LINE__;
+    const char *scheme = evhttp_uri_get_scheme(http_uri);
+    if (scheme == NULL) {
+        // LOG(ERROR) << "scheme == NULL err. " << __FUNCTION__ << " " << __LINE__;
         return false;
     }
 
     std::string lowwerScheme(scheme);
-    std::transform(lowwerScheme.begin(), lowwerScheme.end(), lowwerScheme.begin(), (int (*)(int)) std::tolower);
-    if (lowwerScheme.compare("https") != 0 && lowwerScheme.compare("http") != 0)
-    {
-        if (http_uri)
-        {
+    std::transform(lowwerScheme.begin(), lowwerScheme.end(), lowwerScheme.begin(), (int (*)(int))std::tolower);
+    if (lowwerScheme.compare("https") != 0 && lowwerScheme.compare("http") != 0) {
+        if (http_uri) {
             evhttp_uri_free(http_uri);
         }
 
-		//LOG(ERROR) << "scheme == NULL err. " << __FUNCTION__ << " " << __LINE__;
+        // LOG(ERROR) << "scheme == NULL err. " << __FUNCTION__ << " " << __LINE__;
         return false;
     }
 
     bool isHttps = false;
-    if (lowwerScheme.compare("https") == 0)
-    {
+    if (lowwerScheme.compare("https") == 0) {
         isHttps = true;
     }
 
-    const char* host = evhttp_uri_get_host(http_uri);
-    if (host == NULL)
-    {
-        if (http_uri)
-        {
+    const char *host = evhttp_uri_get_host(http_uri);
+    if (host == NULL) {
+        if (http_uri) {
             evhttp_uri_free(http_uri);
         }
 
-		//LOG(ERROR) << "url must have a host err. " << __FUNCTION__ << " " << __LINE__;
+        // LOG(ERROR) << "url must have a host err. " << __FUNCTION__ << " " << __LINE__;
         return false;
     }
 
     int port = evhttp_uri_get_port(http_uri);
-    if (port == -1)
-    {
+    if (port == -1) {
         port = isHttps ? 443 : 80;
     }
 
-    const char* path = evhttp_uri_get_path(http_uri);
-    if(path == NULL)
-    {
-		//LOG(ERROR) << "path == NUL err. " << __FUNCTION__ << " " << __LINE__;
+    const char *path = evhttp_uri_get_path(http_uri);
+    if (path == NULL) {
+        // LOG(ERROR) << "path == NUL err. " << __FUNCTION__ << " " << __LINE__;
         return false;
     }
 
-    if (strlen(path) == 0)
-    {
+    if (strlen(path) == 0) {
         path = "/";
     }
 
     char uri[512] = {0};
 
-    const char* query = evhttp_uri_get_query(http_uri);
-    if (query == NULL)
-    {
+    const char *query = evhttp_uri_get_query(http_uri);
+    if (query == NULL) {
         snprintf(uri, sizeof(uri) - 1, "%s", path);
-    }
-	else
-    {
+    } else {
         snprintf(uri, sizeof(uri) - 1, "%s?%s", path, query);
     }
 
     uri[sizeof(uri) - 1] = '\0';
     //-------we do not verify peer--------//
-    //like the curl SSL_VERIFYPEER is set false
+    // like the curl SSL_VERIFYPEER is set false
 
-    //if (1 != SSL_CTX_load_verify_locations(ssl_ctx, crt, NULL)) {
+    // if (1 != SSL_CTX_load_verify_locations(ssl_ctx, crt, NULL)) {
     //	err_openssl("SSL_CTX_load_verify_locations");
     //	goto error;
-    //}
-    //SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_PEER, NULL);
-    //SSL_CTX_set_cert_verify_callback(ssl_ctx, cert_verify_callback,(void *)host);
+    // }
+    // SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_PEER, NULL);
+    // SSL_CTX_set_cert_verify_callback(ssl_ctx, cert_verify_callback,(void *)host);
 
-    struct bufferevent* bev = NULL;
-
+    struct bufferevent *bev = NULL;
 
 #if SQUICK_ENABLE_SSL
     SSL *pSSL = SSL_new(m_pSslCtx);
-    if (pSSL == NULL)
-    {
-        if (http_uri)
-        {
+    if (pSSL == NULL) {
+        if (http_uri) {
             evhttp_uri_free(http_uri);
         }
 
-		//LOG(ERROR) << "SSL_new err. " << __FUNCTION__ << " " << __LINE__;
+        // LOG(ERROR) << "SSL_new err. " << __FUNCTION__ << " " << __LINE__;
         return false;
     }
 #endif
 
-    if (!isHttps)
-    {
+    if (!isHttps) {
         bev = bufferevent_socket_new(m_pBase, -1, BEV_OPT_CLOSE_ON_FREE);
-    } 
-	else
-    {
+    } else {
 #if SQUICK_ENABLE_SSL
-        bev = bufferevent_openssl_socket_new(m_pBase, -1, pSSL,
-            BUFFEREVENT_SSL_CONNECTING,
-            BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
+        bev = bufferevent_openssl_socket_new(m_pBase, -1, pSSL, BUFFEREVENT_SSL_CONNECTING, BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
 #endif
     }
 
-    if (bev == NULL)
-    {
-        if (http_uri)
-        {
+    if (bev == NULL) {
+        if (http_uri) {
             evhttp_uri_free(http_uri);
         }
 
-		//LOG(ERROR) << " bev == NUL err. " << __FUNCTION__ << " " << __LINE__;
+        // LOG(ERROR) << " bev == NUL err. " << __FUNCTION__ << " " << __LINE__;
         return false;
     }
 
 #if SQUICK_ENABLE_SSL
-    if (isHttps)
-    {
+    if (isHttps) {
         bufferevent_openssl_set_allow_dirty_shutdown(bev, 1);
     }
 #endif
 
-    struct evhttp_connection* evcon = evhttp_connection_base_bufferevent_new(m_pBase, NULL, bev, host, port);
-    if (evcon == NULL)
-    {
-        if (http_uri)
-        {
+    struct evhttp_connection *evcon = evhttp_connection_base_bufferevent_new(m_pBase, NULL, bev, host, port);
+    if (evcon == NULL) {
+        if (http_uri) {
             evhttp_uri_free(http_uri);
         }
 
-		//LOG(ERROR) << " evcon == NUL err. " << __FUNCTION__ << " " << __LINE__;
+        // LOG(ERROR) << " evcon == NUL err. " << __FUNCTION__ << " " << __LINE__;
         return false;
     }
 
-    if (m_nRetry > 0)
-    {
+    if (m_nRetry > 0) {
         evhttp_connection_set_retries(evcon, m_nRetry);
     }
-    if (m_nTimeOut >= 0)
-    {
+    if (m_nTimeOut >= 0) {
         evhttp_connection_set_timeout(evcon, m_nTimeOut);
     }
 
-    HttpObject* pHttpObj = nullptr;
-    if (mlHttpObject.size() > 0)
-    {
+    HttpObject *pHttpObj = nullptr;
+    if (mlHttpObject.size() > 0) {
         pHttpObj = mlHttpObject.front();
         mlHttpObject.pop_front();
         pHttpObj->m_pHttpClient = this;
         pHttpObj->m_pBev = bev;
         pHttpObj->m_pCB = pCB;
-		pHttpObj->mID = id;
+        pHttpObj->mID = id;
         pHttpObj->strMemo = strMemoData;
-    }
-    else
-    {
-        pHttpObj = new HttpObject(this, bev, pCB, id,strMemoData);
+    } else {
+        pHttpObj = new HttpObject(this, bev, pCB, id, strMemoData);
     }
 
-    if (pHttpObj == nullptr)
-    {
-		//LOG(ERROR) << "pHttpObj == nullptr err. " << __FUNCTION__ << " " << __LINE__;
+    if (pHttpObj == nullptr) {
+        // LOG(ERROR) << "pHttpObj == nullptr err. " << __FUNCTION__ << " " << __LINE__;
         return false;
     }
 
     // Fire off the request
-    struct evhttp_request* req = evhttp_request_new(OnHttpReqDone, pHttpObj);
-    if (req == NULL)
-    {
-        if (http_uri)
-        {
+    struct evhttp_request *req = evhttp_request_new(OnHttpReqDone, pHttpObj);
+    if (req == NULL) {
+        if (http_uri) {
             evhttp_uri_free(http_uri);
         }
 
-		//LOG(ERROR) << "req == NULL err. " << __FUNCTION__ << " " << __LINE__;
+        // LOG(ERROR) << "req == NULL err. " << __FUNCTION__ << " " << __LINE__;
         return false;
     }
 
-    struct evkeyvalq* output_headers = evhttp_request_get_output_headers(req);
-    if(output_headers == NULL)
-    {
-		//LOG(ERROR) << "output_headers == NULL err. " << __FUNCTION__ << " " << __LINE__;
+    struct evkeyvalq *output_headers = evhttp_request_get_output_headers(req);
+    if (output_headers == NULL) {
+        // LOG(ERROR) << "output_headers == NULL err. " << __FUNCTION__ << " " << __LINE__;
         return false;
     }
 
     evhttp_add_header(output_headers, "Host", host);
     evhttp_add_header(output_headers, "Connection", "close");
-    //evhttp_add_header(output_headers, "Connection", "keep-alive");
+    // evhttp_add_header(output_headers, "Connection", "keep-alive");
 
     std::map<std::string, std::string>::const_iterator it = xHeaders.cbegin();
-    while (it != xHeaders.cend())
-    {
+    while (it != xHeaders.cend()) {
         evhttp_add_header(output_headers, it->first.c_str(), it->second.c_str());
         it++;
     }
 
     size_t len = strPostData.length();
-    if (len > 0)
-    {
-        struct evbuffer* output_buffer = evhttp_request_get_output_buffer(req);
-        if (output_buffer == NULL)
-        {
-			//LOG(ERROR) << "output_buffer == NUL err. " << __FUNCTION__ << " " << __LINE__;
+    if (len > 0) {
+        struct evbuffer *output_buffer = evhttp_request_get_output_buffer(req);
+        if (output_buffer == NULL) {
+            // LOG(ERROR) << "output_buffer == NUL err. " << __FUNCTION__ << " " << __LINE__;
             return false;
         }
 
         evbuffer_add(output_buffer, strPostData.c_str(), len);
         char buf[256] = {0};
-        evutil_snprintf(buf, sizeof(buf) - 1, "%lu", (unsigned long) len);
+        evutil_snprintf(buf, sizeof(buf) - 1, "%lu", (unsigned long)len);
         evhttp_add_header(output_headers, "Content-Length", buf);
     }
 
     int r_ = evhttp_make_request(evcon, req, (evhttp_cmd_type)eHttpType, uri);
-    if (r_ != 0)
-    {
+    if (r_ != 0) {
 
-        if (http_uri)
-        {
+        if (http_uri) {
             evhttp_uri_free(http_uri);
         }
 
-		//LOG(ERROR) << " evhttp_make_request() failed" << " " << __FUNCTION__ << " " << __LINE__;
-        
-		return false;
+        // LOG(ERROR) << " evhttp_make_request() failed" << " " << __FUNCTION__ << " " << __LINE__;
+
+        return false;
     }
 
-    if (http_uri)
-    {
+    if (http_uri) {
         evhttp_uri_free(http_uri);
     }
 
     return true;
 }
 
-bool HttpClient::DoGet(const std::string& strUri, HTTP_RESP_FUNCTOR_PTR pCB,
-                               const std::map<std::string, std::string>& xHeaders, const Guid id)
-{
+bool HttpClient::DoGet(const std::string &strUri, HTTP_RESP_FUNCTOR_PTR pCB, const std::map<std::string, std::string> &xHeaders, const Guid id) {
     std::string memo;
-    return MakeRequest(strUri, pCB, "", xHeaders, HttpType::SQUICK_HTTP_REQ_GET,memo);
+    return MakeRequest(strUri, pCB, "", xHeaders, HttpType::SQUICK_HTTP_REQ_GET, memo);
 }
 
-bool HttpClient::DoPost(const std::string& strUri, const std::string& strPostData, const std::string& strMemoData, HTTP_RESP_FUNCTOR_PTR pCB,
-                                const std::map<std::string, std::string>& xHeaders, const Guid id)
-{
+bool HttpClient::DoPost(const std::string &strUri, const std::string &strPostData, const std::string &strMemoData, HTTP_RESP_FUNCTOR_PTR pCB,
+                        const std::map<std::string, std::string> &xHeaders, const Guid id) {
     return MakeRequest(strUri, pCB, strPostData, xHeaders, HttpType::SQUICK_HTTP_REQ_POST, strMemoData);
 }
 
-void HttpClient::OnHttpReqDone(struct evhttp_request* req, void* ctx)
-{
-    HttpObject* pHttpObj = (HttpObject*) (ctx);
-    if (pHttpObj ==NULL)
-    {
-		//LOG(ERROR) << "pHttpObj ==NULL" << " " << __FUNCTION__ << " " << __LINE__;
+void HttpClient::OnHttpReqDone(struct evhttp_request *req, void *ctx) {
+    HttpObject *pHttpObj = (HttpObject *)(ctx);
+    if (pHttpObj == NULL) {
+        // LOG(ERROR) << "pHttpObj ==NULL" << " " << __FUNCTION__ << " " << __LINE__;
         return;
     }
     std::string strResp;
 
-    if (req == NULL)
-    {
+    if (req == NULL) {
         /* If req is NULL, it means an error occurred, but
-        * sadly we are mostly left guessing what the error
-        * might have been.  We'll do our best... */
-        struct bufferevent* bev = (struct bufferevent*) pHttpObj->m_pBev;
+         * sadly we are mostly left guessing what the error
+         * might have been.  We'll do our best... */
+        struct bufferevent *bev = (struct bufferevent *)pHttpObj->m_pBev;
         unsigned long oslerr = 0;
         int printed_err = 0;
         int errcode = EVUTIL_SOCKET_ERROR();
@@ -385,7 +322,7 @@ void HttpClient::OnHttpReqDone(struct evhttp_request* req, void* ctx)
         std::string strErrMsg = "";
         fprintf(stderr, "some request failed - no idea which one though!\n");
         /* Print out the OpenSSL error queue that libevent
-        * squirreled away for us, if any. */
+         * squirreled away for us, if any. */
 
         char buffer[1024] = {0};
         int nread = 0;
@@ -399,22 +336,19 @@ void HttpClient::OnHttpReqDone(struct evhttp_request* req, void* ctx)
         }
 #endif
         /* If the OpenSSL error queue was empty, maybe it was a
-        * socket error; let's try printing that. */
-        if (!printed_err)
-        {
+         * socket error; let's try printing that. */
+        if (!printed_err) {
             char tmpBuf[1024] = {0};
-            snprintf(tmpBuf, 1024, "socket error = %s (%d)\n",
-                     evutil_socket_error_to_string(errcode),
-                     errcode);
+            snprintf(tmpBuf, 1024, "socket error = %s (%d)\n", evutil_socket_error_to_string(errcode), errcode);
             strErrMsg += std::string(tmpBuf);
         }
 
         strResp = strErrMsg;
 
-        HttpClient* pHttpClient = (HttpClient*)(pHttpObj->m_pHttpClient);
+        HttpClient *pHttpClient = (HttpClient *)(pHttpObj->m_pHttpClient);
         pHttpClient->mlHttpObject.push_back(pHttpObj);
-        
-		//LOG(ERROR) << strErrMsg << __FUNCTION__ << " " << __LINE__;
+
+        // LOG(ERROR) << strErrMsg << __FUNCTION__ << " " << __LINE__;
         return;
     }
 
@@ -422,53 +356,43 @@ void HttpClient::OnHttpReqDone(struct evhttp_request* req, void* ctx)
     char buffer[4096] = {0};
     int nread = 0;
 
-    while ((nread = evbuffer_remove(evhttp_request_get_input_buffer(req),
-                                    buffer, sizeof(buffer)))
-           > 0)
-    {
-        //TODO it's not good idea,to append or memcpy
+    while ((nread = evbuffer_remove(evhttp_request_get_input_buffer(req), buffer, sizeof(buffer))) > 0) {
+        // TODO it's not good idea,to append or memcpy
         strResp += std::string(buffer, nread);
     }
 
-    if (req->evcon)
-    {
+    if (req->evcon) {
         evhttp_connection_free(req->evcon);
     }
 
-    if (req->output_headers)
-    {
+    if (req->output_headers) {
         evhttp_clear_headers(req->output_headers);
     }
 
-    if (pHttpObj)
-    {
-        if (pHttpObj->m_pBev)
-        {
+    if (pHttpObj) {
+        if (pHttpObj->m_pBev) {
 #if SQUICK_ENABLE_SSL
-            SSL* pSSL = bufferevent_openssl_get_ssl(pHttpObj->m_pBev);
+            SSL *pSSL = bufferevent_openssl_get_ssl(pHttpObj->m_pBev);
             SSL_free(pSSL);
 #endif
         }
     }
 
 #if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
-			SQUICK_CRASH_TRY
+    SQUICK_CRASH_TRY
 #endif
 
-    if (pHttpObj->m_pCB)
-    {
-        if (pHttpObj->m_pCB.get())
-        {
+    if (pHttpObj->m_pCB) {
+        if (pHttpObj->m_pCB.get()) {
             HTTP_RESP_FUNCTOR fun(*pHttpObj->m_pCB.get());
-            fun(pHttpObj->mID, nRespCode, strResp,pHttpObj->strMemo);
+            fun(pHttpObj->mID, nRespCode, strResp, pHttpObj->strMemo);
         }
     }
 
 #if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
-			SQUICK_CRASH_END
+    SQUICK_CRASH_END
 #endif
-    
 
-    HttpClient* pHttpClient = (HttpClient*)(pHttpObj->m_pHttpClient);
+    HttpClient *pHttpClient = (HttpClient *)(pHttpObj->m_pHttpClient);
     pHttpClient->mlHttpObject.push_back(pHttpObj);
 }

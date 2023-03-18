@@ -4,60 +4,60 @@ import "base.proto";
 
 // 6000 ~ 7000
 enum LoginRPC {
-  LOGIN_RPC_NONE = 0;
-  REQ_LOGIN = 8010;  //
-  ACK_LOGIN = 8011;  //
-  REQ_LOGOUT = 8012; //
-  ACK_LOGOUT = 8013; //
+    LOGIN_RPC_NONE = 0;
+    REQ_LOGIN = 8010;  //
+    ACK_LOGIN = 8011;  //
+    REQ_LOGOUT = 8012; //
+    ACK_LOGOUT = 8013; //
 
-  REQ_PROXY_CONNECT_KEY = 8020; //
-  ACK_PROXY_CONNECT_KEY = 8021;
+    REQ_PROXY_CONNECT_KEY = 8020; //
+    ACK_PROXY_CONNECT_KEY = 8021;
 
-  REQ_REFRASH_TOKEN = 8030;
-  ACK_REFRASH_TOKEN = 8031;
+    REQ_REFRASH_TOKEN = 8030;
+    ACK_REFRASH_TOKEN = 8031;
 }
 
 enum LoginType {
-  AccountPasswordLogin = 0;
-  EmailPasswordLogin = 1;
-  EmailVerifyCodeLogin = 2;
-  PhonePasswordLogin = 3;
-  PhoneVerifyCodeLogin = 4;
-  WechatLogin = 5;
-  QQLogin = 6;
-  VisitorLogin = 7;
-  TokenLogin = 8;
+    AccountPasswordLogin = 0;
+    EmailPasswordLogin = 1;
+    EmailVerifyCodeLogin = 2;
+    PhonePasswordLogin = 3;
+    PhoneVerifyCodeLogin = 4;
+    WechatLogin = 5;
+    QQLogin = 6;
+    VisitorLogin = 7;
+    TokenLogin = 8;
 }
 
 enum ClientPlatform {
-  Windows = 0;
-  Linux = 1;
-  Mac = 2;
-  Android = 3;
-  IOS = 4;
-  Web = 5;
+    Windows = 0;
+    Linux = 1;
+    Mac = 2;
+    Android = 3;
+    IOS = 4;
+    Web = 5;
 }
 
 message ReqLogin {
-  LoginType type = 1;
-  bytes account = 2;
-  bytes password = 3;
-  bytes token = 4;
-  bytes signature = 5;
-  bytes version = 6;
-  ClientPlatform platform = 9;
-  bytes device = 10;
-  bytes extra = 11; // 第三方登录需要
-  bytes email = 12;
-  bytes phone = 13;
-  bytes verify_code = 14;
+    LoginType type = 1;
+    bytes account = 2;
+    bytes password = 3;
+    bytes token = 4;
+    bytes signature = 5;
+    bytes version = 6;
+    ClientPlatform platform = 9;
+    bytes device = 10;
+    bytes extra = 11; // 第三方登录需要
+    bytes email = 12;
+    bytes phone = 13;
+    bytes verify_code = 14;
 }
 
 message AckLogin {
-  int32 code = 1;
-  bytes token = 2; // 该token可用于RPC和http
-  Ident guid = 3;  // 玩家Guid
-  int32 time = 4;  // token过期倒计时
+    int32 code = 1;
+    bytes token = 2; // 该token可用于RPC和http
+    Ident guid = 3;  // 玩家Guid
+    int32 time = 4;  // token过期倒计时
 }
 
 message ReqLogout {}
@@ -67,9 +67,9 @@ message AckLogout { int32 code = 1; }
 message ReqProxyConnectKey {}
 
 message AckProxyConnectKey {
-  int32 code = 1;
-  Ident guid = 2;
-  bytes key = 3;
-  bytes ip = 4;
-  int32 port = 5;
+    int32 code = 1;
+    Ident guid = 2;
+    bytes key = 3;
+    bytes ip = 4;
+    int32 port = 5;
 }

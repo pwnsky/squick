@@ -5,10 +5,6 @@
 #include <iostream>
 #include <string>
 
-
-class Math
-{
-
-};
+class Math {};
 
 #endif

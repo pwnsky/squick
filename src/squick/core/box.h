@@ -11,22 +11,16 @@ class Box;
 class Plane;
 class Vector3;
 
-class Box
-{
-    Vector3 GetCorner(int i) const
-    {
-        if(i < 8)
-        {
+class Box {
+    Vector3 GetCorner(int i) const {
+        if (i < 8) {
             return mvCorner[i];
         }
     }
 
-    Vector3 Corner(int i) const
-    {
-        return GetCorner(i);
-    }
+    Vector3 Corner(int i) const { return GetCorner(i); }
 
-private:
+  private:
     Vector3 mvCorner[8];
 
     Vector3 mvRadius[3];

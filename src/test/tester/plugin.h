@@ -5,13 +5,9 @@
 #include <squick/core/i_plugin.h>
 #include <squick/core/i_plugin_manager.h>
 
-class TestPlugin : public IPlugin
-{
-public:
-	TestPlugin(IPluginManager* p)
-    {
-        pPluginManager = p;
-    }
+class TestPlugin : public IPlugin {
+  public:
+    TestPlugin(IPluginManager *p) { pPluginManager = p; }
     virtual const int GetPluginVersion();
 
     virtual const std::string GetPluginName();

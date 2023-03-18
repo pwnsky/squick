@@ -1,111 +1,103 @@
 #pragma once
 
+#include "../squick_files.h"
+#include <fstream>
 #include <iostream>
 #include <third_party/common/md5.hpp>
 #include <third_party/nlohmann/json.hpp>
-#include<fstream> 
-#include "../squick_files.h"
 using namespace nlohmann;
 using namespace std;
 namespace sqkctl::init {
-	class Init {
-	public:
-		Init() {
-			std::cout << "Init\n";
-		}
+class Init {
+  public:
+    Init() { std::cout << "Init\n"; }
 
-		~Init() {
+    ~Init() {}
 
-		}
-		
-		bool IsEmptyFolder() {
-			auto allfiles = Files::GetFileListInFolder(".", 1);
-			return allfiles.size() == 0;
-		}
+    bool IsEmptyFolder() {
+        auto allfiles = Files::GetFileListInFolder(".", 1);
+        return allfiles.size() == 0;
+    }
 
-		// White
-		int Exec() {
-			// 校验当前文件夹下是否为空
+    // White
+    int Exec() {
+        // 校验当前文件夹下是否为空
 
-			if (!IsEmptyFolder()) {
-				cout << "Current folder is not empty\n";
-				return 1;
-			}
+        if (!IsEmptyFolder()) {
+            cout << "Current folder is not empty\n";
+            return 1;
+        }
 
-			cout << "Start to copy squick files into here\n";
-			
-			json j_all;
-			json j_files;
-			
+        cout << "Start to copy squick files into here\n";
 
-			const char* squick_install_path = getenv("squick_path");
-			if (squick_install_path == NULL) {
-				cout << " Squick path is not set\n";
-				return 2;
-			}
+        json j_all;
+        json j_files;
 
-			const char* squick_version = getenv("squick_version");
-			if (squick_version == NULL) {
-				squick_version = "1.0.0";
-			}
+        const char *squick_install_path = getenv("squick_path");
+        if (squick_install_path == NULL) {
+            cout << " Squick path is not set\n";
+            return 2;
+        }
 
+        const char *squick_version = getenv("squick_version");
+        if (squick_version == NULL) {
+            squick_version = "1.0.0";
+        }
 
-			cout << " Squick install path: " << squick_install_path << std::endl;
-			
+        cout << " Squick install path: " << squick_install_path << std::endl;
+
 #if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
-			system("mkdir squick");
-			string copy_cmd = "xcopy /s /e /y /h " + std::string(squick_install_path) + " squick";
+        system("mkdir squick");
+        string copy_cmd = "xcopy /s /e /y /h " + std::string(squick_install_path) + " squick";
 #else
-			string copy_cmd = "cp -r " + std::string(squick_install_path) + " ./squick";
+        string copy_cmd = "cp -r " + std::string(squick_install_path) + " ./squick";
 #endif
-			system(copy_cmd.c_str());
-			
-			j_all["version"] = squick_version;
-			string squick_path = "squick";
-			auto files = SquickFiles::GetFiles(squick_path);
-			for (auto file : files) {
-				json jf;
-				jf["path"] = file;
-				jf["md5"] = md5file(file.c_str());
-				j_files.push_back(jf);
-			}
+        system(copy_cmd.c_str());
 
-			j_all["files"] = j_files;
-			
-			fstream base;
-			base.open("base.json", ios::out);
-			std::string outContent = j_all.dump();
-			base.write(outContent.c_str(), outContent.size());
-			base.close();
+        j_all["version"] = squick_version;
+        string squick_path = "squick";
+        auto files = SquickFiles::GetFiles(squick_path);
+        for (auto file : files) {
+            json jf;
+            jf["path"] = file;
+            jf["md5"] = md5file(file.c_str());
+            j_files.push_back(jf);
+        }
 
+        j_all["files"] = j_files;
 
-			fstream gitignore_file;
-			gitignore_file.open(".gitignore", ios::out);
-			std::string gitignore_file_content =
-R"(/backup
+        fstream base;
+        base.open("base.json", ios::out);
+        std::string outContent = j_all.dump();
+        base.write(outContent.c_str(), outContent.size());
+        base.close();
+
+        fstream gitignore_file;
+        gitignore_file.open(".gitignore", ios::out);
+        std::string gitignore_file_content =
+            R"(/backup
 sqkctl
 sqkctl.exe
 )";
-			gitignore_file.write(gitignore_file_content.c_str(), gitignore_file_content.size());
-			gitignore_file.close();
+        gitignore_file.write(gitignore_file_content.c_str(), gitignore_file_content.size());
+        gitignore_file.close();
 
-			// submodule
-			fstream submodule_file;
-			submodule_file.open(".gitmodules", ios::out);
-			std::string submodule_file_content = 
-R"([submodule "squick"]
+        // submodule
+        fstream submodule_file;
+        submodule_file.open(".gitmodules", ios::out);
+        std::string submodule_file_content =
+            R"([submodule "squick"]
 	path = squick
 	url = https://github.com/pwnsky/squick.git
 )";
-			submodule_file.write(submodule_file_content.c_str(), submodule_file_content.size());
-			submodule_file.close();
-			
+        submodule_file.write(submodule_file_content.c_str(), submodule_file_content.size());
+        submodule_file.close();
 
-			// readme
-			fstream readme_file;
-			readme_file.open("README.md", ios::out);
-			std::string readme_file_content =
-R"(
+        // readme
+        fstream readme_file;
+        readme_file.open("README.md", ios::out);
+        std::string readme_file_content =
+            R"(
 # Squick Project
 
 ## 1 拉取项目
@@ -141,12 +133,10 @@ sqkctl patch
 
 )";
 
-			readme_file.write(readme_file_content.c_str(), readme_file_content.size());
-			readme_file.close();
+        readme_file.write(readme_file_content.c_str(), readme_file_content.size());
+        readme_file.close();
+    }
 
-		}
-
-	private:
-
-	};
-}
+  private:
+};
+} // namespace sqkctl::init
