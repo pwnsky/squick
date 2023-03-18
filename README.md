@@ -162,8 +162,13 @@ bash open_explorer.sh
 
 #### 2. 采用clang++
 
+install: https://github.com/llvm/llvm-project
 
+verion: LLVM-16.0.0-rc4-win64
 
+##### Clang-format 格式化代码
+
+ref: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 
 
 ## Linux上开发和编译

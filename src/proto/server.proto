@@ -1,205 +1,194 @@
 // 各服务器之间的通信RPC
 syntax = "proto3";
-package SquickStruct; 
+package SquickStruct;
 import "base.proto";
 
 // Servers RPC 0 ~ 5000
 enum ServerRPC {
-    
-	SERVER_RPC_NONE						    = 0;
-	WORLD_TO_MASTER_REGISTERED				= 1;
-	WORLD_TO_MASTER_UNREGISTERED			= 2;
-	WORLD_TO_MASTER_REFRESH					= 3;
+  SERVER_RPC_NONE = 0;
+  WORLD_TO_MASTER_REGISTERED = 1;
+  WORLD_TO_MASTER_UNREGISTERED = 2;
+  WORLD_TO_MASTER_REFRESH = 3;
 
-	LOGIN_TO_MASTER_REGISTERED				= 4;
-	LOGIN_TO_MASTER_UNREGISTERED			= 5;
-	LOGIN_TO_MASTER_REFRESH					= 6;
+  LOGIN_TO_MASTER_REGISTERED = 4;
+  LOGIN_TO_MASTER_UNREGISTERED = 5;
+  LOGIN_TO_MASTER_REFRESH = 6;
 
-	PROXY_TO_WORLD_REGISTERED				= 7;
-	PROXY_TO_WORLD_UNREGISTERED				= 8;
-	PROXY_TO_WORLD_REFRESH					= 9;
+  PROXY_TO_WORLD_REGISTERED = 7;
+  PROXY_TO_WORLD_UNREGISTERED = 8;
+  PROXY_TO_WORLD_REFRESH = 9;
 
-	PROXY_TO_GAME_REGISTERED				= 10;
-	PROXY_TO_GAME_UNREGISTERED				= 11;
-	PROXY_TO_GAME_REFRESH					= 12;
+  PROXY_TO_GAME_REGISTERED = 10;
+  PROXY_TO_GAME_UNREGISTERED = 11;
+  PROXY_TO_GAME_REFRESH = 12;
 
-	GAME_TO_WORLD_REGISTERED				= 13;
-	GAME_TO_WORLD_UNREGISTERED				= 14;
-	GAME_TO_WORLD_REFRESH					= 15;
+  GAME_TO_WORLD_REGISTERED = 13;
+  GAME_TO_WORLD_UNREGISTERED = 14;
+  GAME_TO_WORLD_REFRESH = 15;
 
-	DB_TO_WORLD_REGISTERED					= 16;
-	DB_TO_WORLD_UNREGISTERED				= 17;
-	DB_TO_WORLD_REFRESH						= 18;
+  DB_TO_WORLD_REGISTERED = 16;
+  DB_TO_WORLD_UNREGISTERED = 17;
+  DB_TO_WORLD_REFRESH = 18;
 
-	GAMEPLAY_MANAGER_TO_WORLD_REGISTERED       = 19; // 将GAMEPLAY管理服务器注册到 World 服务器
-	GAMEPLAY_MANAGER_TO_WORLD_UNREGISTERED     = 20;
-	GAMEPLAY_MANAGER_TO_WORLD_REFRESH          = 21;
+  GAMEPLAY_MANAGER_TO_WORLD_REGISTERED =
+      19;  // 将GAMEPLAY管理服务器注册到 World 服务器
+  GAMEPLAY_MANAGER_TO_WORLD_UNREGISTERED = 20;
+  GAMEPLAY_MANAGER_TO_WORLD_REFRESH = 21;
 
-	GAMEPLAY_MANAGER_TO_GAME_REGISTERED         = 22; // 将GAME_PLAY管理服务器注册到 GAME 服务器, GAME_PLAY Manager
-	GAMEPLAY_MANAGER_TO_GAME_UNREGISTERED       = 23;
-	GAMEPLAY_MANAGER_TO_GAME_REFRESH            = 24;
+  GAMEPLAY_MANAGER_TO_GAME_REGISTERED =
+      22;  // 将GAME_PLAY管理服务器注册到 GAME 服务器, GAME_PLAY Manager
+  GAMEPLAY_MANAGER_TO_GAME_UNREGISTERED = 23;
+  GAMEPLAY_MANAGER_TO_GAME_REFRESH = 24;
 
+  // GAME_PLAY Manager API
+  // GAME_PLAY 管理服 接口
+  REQ_GAMEPLAY_CREATE = 30;  // 创建 GAME_PLAY 对战服实例
+  ACK_GAMEPLAY_CREATE = 31;
+  REQ_GAMEPLAY_DESTROY = 32;
+  ACK_GAMEPLAY_DESTROY = 33;
+  REQ_GAMEPLAY_LIST = 34;  //
+  ACK_GAMEPLAY_LIST = 35;
 
-	// GAME_PLAY Manager API
-	// GAME_PLAY 管理服 接口
-    REQ_GAMEPLAY_CREATE                 = 30; // 创建 GAME_PLAY 对战服实例
-	ACK_GAMEPLAY_CREATE                 = 31; 
-    REQ_GAMEPLAY_DESTROY                = 32; 
-	ACK_GAMEPLAY_DESTROY                = 33; 
-    REQ_GAMEPLAY_LIST                   = 34; // 
-	ACK_GAMEPLAY_LIST                   = 35; 
+  // Game Play Manager API
+  // Game Play 接口, 由Game Play -> Game Play Manager -> Game
+  // 在Game Play游戏中，以Game服务器为主，Game
+  // Play服务器只负责当前对局网络同步和数据结算，不做其他逻辑功能
+  REQ_GAMEPLAY_STATUS = 50;
+  ACK_GAMEPLAY_STATUS = 51;
+  REQ_GAMEPLAY_DATA = 52;  // 创建完毕Game Play服务器后， Game
+                           // Play服务器向Game服务器初始化对战服数据和各玩家数据
+  ACK_GAMEPLAY_DATA = 53;
+  REQ_GAMEPLAY_PREPARED = 54;  // Game Play服务器初始化数据完成
+  ACK_GAMEPLAY_PREPARED = 55;
+  REQ_GAMEPLAY_OVER = 56;
+  ACK_GAMEPLAY_OVER = 57;
 
-	// Game Play Manager API
-	// Game Play 接口, 由Game Play -> Game Play Manager -> Game
-	// 在Game Play游戏中，以Game服务器为主，Game Play服务器只负责当前对局网络同步和数据结算，不做其他逻辑功能
-	REQ_GAMEPLAY_STATUS                    = 50; 
-	ACK_GAMEPLAY_STATUS                    = 51; 
-	REQ_GAMEPLAY_DATA                      = 52; // 创建完毕Game Play服务器后， Game Play服务器向Game服务器初始化对战服数据和各玩家数据
-	ACK_GAMEPLAY_DATA                      = 53; 
-	REQ_GAMEPLAY_PREPARED                  = 54; // Game Play服务器初始化数据完成
-	ACK_GAMEPLAY_PREPARED                  = 55; 
-	REQ_GAMEPLAY_OVER                      = 56; 
-	ACK_GAMEPLAY_OVER                      = 57;
-	
-	REQ_GAMEPLAY_CONNECT_GAME_SERVER       = 60; // Game Play Server 请求连接 Game Server
-	ACK_GAMEPLAY_CONNECT_GAME_SERVER       = 61; 
+  REQ_GAMEPLAY_CONNECT_GAME_SERVER =
+      60;  // Game Play Server 请求连接 Game Server
+  ACK_GAMEPLAY_CONNECT_GAME_SERVER = 61;
 
-	CLOSE_SOCKET							= 100;         // want to close some one
-	STS_NET_INFO							= 101;
-	STS_SERVER_REPORT						= 102;  // 服务端报告服务状态
-	STS_HEART_BEAT							= 103;  // 服务端之间心跳包
+  CLOSE_SOCKET = 100;  // want to close some one
+  STS_NET_INFO = 101;
+  STS_SERVER_REPORT = 102;  // 服务端报告服务状态
+  STS_HEART_BEAT = 103;     // 服务端之间心跳包
 
-	ACK_PLAYER_ONLINE                       = 110;
-	ACK_PLAYER_OFFLINE                      = 111;
+  ACK_PLAYER_ONLINE = 110;
+  ACK_PLAYER_OFFLINE = 111;
 }
 
 // 服务器类型
 // c++代码对应在 squick/plugin/net/i_net_module.h :  SQUICK_SERVER_TYPES
-enum ServerType
-{
-    SQUICK_ST_NONE          = 0;    // NONE
-    SQUICK_ST_REDIS         = 1;    // 
-    SQUICK_ST_MYSQL         = 2;    //
-    SQUICK_ST_MASTER        = 3;    // 不支持横向拓展
-    SQUICK_ST_LOGIN         = 4;    //
-    SQUICK_ST_PROXY         = 5;    // 支持横向拓展
-    SQUICK_ST_GAME          = 6;    // 支持横向拓展
-	SQUICK_ST_WORLD			= 7;    // 支持横向拓展
-	SQUICK_ST_DB			= 8;    // 暂不支持横向拓展
-	SQUICK_ST_MAX			= 9;    //
-	SQUICK_ST_GATEWAY		= 10;   // 支持横向拓展
-	SQUICK_ST_GAME_PLAY_MANAGER	= 11; // Game Play管理服务器 支持横向拓展
-    SQUICK_ST_MICRO         = 12;   // 微服务，支持横向拓展
+enum ServerType {
+  SQUICK_ST_NONE = 0;                // NONE
+  SQUICK_ST_REDIS = 1;               //
+  SQUICK_ST_MYSQL = 2;               //
+  SQUICK_ST_MASTER = 3;              // 不支持横向拓展
+  SQUICK_ST_LOGIN = 4;               //
+  SQUICK_ST_PROXY = 5;               // 支持横向拓展
+  SQUICK_ST_GAME = 6;                // 支持横向拓展
+  SQUICK_ST_WORLD = 7;               // 支持横向拓展
+  SQUICK_ST_DB = 8;                  // 暂不支持横向拓展
+  SQUICK_ST_MAX = 9;                 //
+  SQUICK_ST_GATEWAY = 10;            // 支持横向拓展
+  SQUICK_ST_GAME_PLAY_MANAGER = 11;  // Game Play管理服务器 支持横向拓展
+  SQUICK_ST_MICRO = 12;              // 微服务，支持横向拓展
 };
 
-
-enum ServerState
-{
-	SERVER_CRASH = 0;
-	SERVER_NORMAL = 1;
-	SERVER_BUSY = 2;
-	SERVER_FIRE = 3;
-	SERVER_MAINTEN = 4;
+enum ServerState {
+  SERVER_CRASH = 0;
+  SERVER_NORMAL = 1;
+  SERVER_BUSY = 2;
+  SERVER_FIRE = 3;
+  SERVER_MAINTEN = 4;
 }
 
-message ServerInfo
-{
-    int32  		server_id = 1;
-    bytes 	    name = 2;
-	int32		wait_count = 3;
-	ServerState	status = 4;
+message ServerInfo {
+  int32 server_id = 1;
+  bytes name = 2;
+  int32 wait_count = 3;
+  ServerState status = 4;
 }
 
-message ServerInfoReport
-{
-	int32   server_id = 1;
-	bytes   server_name = 2;
-	bytes   server_ip = 3;
-	int32   server_port = 4;
-	int32   server_max_online = 5;
-	int32   server_cur_count = 6;
-	ServerState  server_state = 7;
-	int32   server_type = 8;
+message ServerInfoReport {
+  int32 server_id = 1;
+  bytes server_name = 2;
+  bytes server_ip = 3;
+  int32 server_port = 4;
+  int32 server_max_online = 5;
+  int32 server_cur_count = 6;
+  ServerState server_state = 7;
+  int32 server_type = 8;
 }
 
-message ServerInfoReportList
-{
-	repeated ServerInfoReport server_list = 1;
+message ServerInfoReportList {
+  repeated ServerInfoReport server_list = 1;
 }
 
-message ServerHeartBeat
-{
-	int32 count = 1;
+message ServerHeartBeat {
+  int32 count = 1;
 }
 
-message ReqServerList
-{
-	ServerType type = 1;
+message ReqServerList {
+  ServerType type = 1;
 }
 
-message AckServerList
-{
-	ServerType type = 1;
-	repeated ServerInfo info = 2;
+message AckServerList {
+  ServerType type = 1;
+  repeated ServerInfo info = 2;
 }
 
-
-// --------------------------------------------------------- 
+// ---------------------------------------------------------
 // GamePlay服务器在GamePlay Manager服务器上 请求连接 Game Server
 // ACK_CONNECT_GAME_SERVER                = 61;
 message ReqGameplayConnectGameServer {
-    bytes id = 1;
-    bytes key = 2;
-    bytes name = 3;
-    bytes security_code = 4;
-    int32 platform_type = 5;
-    int32 game_id = 6;
+  bytes id = 1;
+  bytes key = 2;
+  bytes name = 3;
+  bytes security_code = 4;
+  int32 platform_type = 5;
+  int32 game_id = 6;
 }
 
-//  
+//
 message AckGameplayConnectGameServer {
-    int32 code = 1;
+  int32 code = 1;
 }
 
 // 在Game服务器上请求 GamePlay Manager 服务器创建GamePlay服务器实例
-message ReqGameplayCreate { 
-    bytes id = 1;
-    bytes key = 2;
-    int32 game_id = 3;
-    int32 room_id = 4;
+message ReqGameplayCreate {
+  bytes id = 1;
+  bytes key = 2;
+  int32 game_id = 3;
+  int32 room_id = 4;
 }
 
 // 不用 GamePlay Manager 不用响应也行
 message AckGameplayCreate {
-    int32 code = 1;
+  int32 code = 1;
 }
 
-message AckGameplayDestroyed { 
-}
-
+message AckGameplayDestroyed {}
 
 message ReqGameplayData {
-    bytes id = 1;  // instance id
-    bytes key = 2; 
-    int32 room_id = 3;
+  bytes id = 1;  // instance id
+  bytes key = 2;
+  int32 room_id = 3;
 }
 
 // 发送每个玩家的数据
-message AckGameplayData {
-
-}
+message AckGameplayData {}
 
 // 初始化数据完成，广播所有玩家加入游戏
 message ReqGameplayPrepared {
-    int32 code = 1; // Game Play服务器状态, 0 正常, 1 不正常
-    bytes id = 2;   // instance id
-    bytes key = 3;  
-    int32 room_id = 4;
-    bytes ip = 5;   // Game Play 服务器IP
-	int32 port = 6; // Game Play 服务器端口
-    bytes name = 7; // Game Play 服务器名称
+  int32 code = 1;  // Game Play服务器状态, 0 正常, 1 不正常
+  bytes id = 2;    // instance id
+  bytes key = 3;
+  int32 room_id = 4;
+  bytes ip = 5;    // Game Play 服务器IP
+  int32 port = 6;  // Game Play 服务器端口
+  bytes name = 7;  // Game Play 服务器名称
 }
 
 message AckGameplayPrepared {
-    int32 code = 1;
+  int32 code = 1;
 }

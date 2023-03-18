@@ -1,3 +1,9 @@
+rem Author: i0gan
+rem Email : l418894113@gmail.com
+rem Date  : 2022-12-14
+rem Github: https://github.com/pwnsky/squick
+rem Description: Build squick all files
+
 set build_version="debug"
 set project_path= %~dp0\..
 set build_path=%project_path%\cache
