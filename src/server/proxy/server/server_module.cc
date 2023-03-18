@@ -22,8 +22,8 @@ bool ServerModule::Start()
 
 bool ServerModule::AfterStart()
 {
-	m_pNetModule->AddReceiveCallBack(SquickStruct::ProxyRPC::REQ_LOGIN, this, &ServerModule::OnReqLogin);
-    m_pNetModule->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ENTER, this, &ServerModule::OnReqEnterGameServer);
+	//m_pNetModule->AddReceiveCallBack(SquickStruct::ProxyRPC::REQ_LOGIN, this, &ServerModule::OnReqLogin);
+    //m_pNetModule->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ENTER, this, &ServerModule::OnReqEnterGameServer);
 	m_pNetModule->AddReceiveCallBack(this, &ServerModule::OnOtherMessage);
     
     // 绑定Call back以及转发去向
@@ -143,6 +143,7 @@ void ServerModule::OnOtherMessage(const SQUICK_SOCKET sockIndex, const int msgID
 void ServerModule::OnReqLogin(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len)
 {
     Guid nPlayerID;
+    /*
     SquickStruct::ReqLogin xMsg;
     if (!m_pNetModule->ReceivePB( msgID, msg, len, xMsg, nPlayerID))
     {
@@ -176,7 +177,7 @@ void ServerModule::OnReqLogin(const SQUICK_SOCKET sockIndex, const int msgID, co
     } else {
         //if verify failed then close this connect
 		m_pNetModule->GetNet()->CloseNetObject(sockIndex);
-    }
+    }*/
 }
 
 void ServerModule::OnSocketClientEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet* pNet)

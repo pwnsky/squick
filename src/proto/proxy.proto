@@ -6,8 +6,8 @@ import "base.proto";
 // 8000 ~ 10000
 enum ProxyRPC {
   PROXY_RPC_NONE = 0;
-  REQ_HEARTBEAT = 8001;  // 心跳包
-  ACK_HEARTBEAT = 8002;  // 代理服务器响应
+  REQ_HEARTBEAT = 8001; // 心跳包
+  ACK_HEARTBEAT = 8002; // 代理服务器响应
 
   REQ_CONNECT_PROXY = 8003;
   ACK_CONNECT_PROXY = 8004;
@@ -22,19 +22,11 @@ message ReqConnectProxy {
   bytes key = 2;
 }
 
-message AckConnectProxy {
-  int32 code = 1;
-}
+message AckConnectProxy { int32 code = 1; }
 
 message ReqDisconnectProxy {}
-message AckDisconnectProxy {
-  int32 code = 1;
-}
+message AckDisconnectProxy { int32 code = 1; }
 
-message ReqHeartBeat {
-  int32 index = 1;
-}
+message ReqHeartBeat { int32 index = 1; }
 
-message AckHeartBeat {
-  int32 index = 1;
-}
+message AckHeartBeat { int32 index = 1; }

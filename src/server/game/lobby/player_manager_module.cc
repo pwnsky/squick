@@ -35,7 +35,7 @@ namespace game::player {
 	{
 		m_pNetModule->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ENTER, this, &PlayerManagerModule::OnReqPlayerEnter);
 		m_pNetModule->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_LEAVE, this, &PlayerManagerModule::OnReqPlayerLeave);
-		m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_DB, SquickStruct::DbRPC::ACK_PLAYER_DATA_LOAD, this, &PlayerManagerModule::OnAckPlayerDataLoad);
+		m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_DB, SquickStruct::DbProxyRPC::ACK_PLAYER_DATA_LOAD, this, &PlayerManagerModule::OnAckPlayerDataLoad);
 
 		return true;
 	}
@@ -69,7 +69,7 @@ namespace game::player {
 			return;
 		}
 
-		m_pNetClientModule->SendBySuitWithOutHead(SQUICK_SERVER_TYPES::SQUICK_ST_DB, sockIndex, SquickStruct::DbRPC::REQ_PLAYER_DATA_LOAD, std::string(msg, len));
+		m_pNetClientModule->SendBySuitWithOutHead(SQUICK_SERVER_TYPES::SQUICK_ST_DB, sockIndex, SquickStruct::DbProxyRPC::REQ_PLAYER_DATA_LOAD, std::string(msg, len));
 	}
 
 	// 返回角色数据
@@ -224,7 +224,7 @@ namespace game::player {
 			if (xRecordManager) {
 				CommonRedisModule::ConvertRecordManagerToPB(xRecordManager, xDataPack.mutable_record(), false, true);
 			}
-			m_pNetClientModule->SendSuitByPB(SQUICK_SERVER_TYPES::SQUICK_ST_DB, self.GetData(), SquickStruct::DbRPC::REQ_PLAYER_DATA_SAVE, xDataPack);
+			m_pNetClientModule->SendSuitByPB(SQUICK_SERVER_TYPES::SQUICK_ST_DB, self.GetData(), SquickStruct::DbProxyRPC::REQ_PLAYER_DATA_SAVE, xDataPack);
 		}
 	}
 

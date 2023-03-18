@@ -60,12 +60,12 @@ bool DBNet_ServerModule::AfterStart()
         }
     }
 
-	m_pNetModule->AddReceiveCallBack(SquickStruct::DbRPC::REQ_PLAYER_LIST, this, &DBNet_ServerModule::OnRequireRoleListProcess);
+	m_pNetModule->AddReceiveCallBack(SquickStruct::DbProxyRPC::REQ_PLAYER_LIST, this, &DBNet_ServerModule::OnRequireRoleListProcess);
 	
-	m_pNetModule->AddReceiveCallBack(SquickStruct::DbRPC::REQ_PLAYER_CREATE, this, &DBNet_ServerModule::OnCreateRoleGameProcess);
-	m_pNetModule->AddReceiveCallBack(SquickStruct::DbRPC::REQ_PLAYER_DELETE, this, &DBNet_ServerModule::OnDeleteRoleGameProcess);
-	m_pNetModule->AddReceiveCallBack(SquickStruct::DbRPC::REQ_PLAYER_DATA_LOAD, this, &DBNet_ServerModule::OnLoadRoleDataProcess);
-	m_pNetModule->AddReceiveCallBack(SquickStruct::DbRPC::REQ_PLAYER_DATA_SAVE, this, &DBNet_ServerModule::OnSaveRoleDataProcess);
+	m_pNetModule->AddReceiveCallBack(SquickStruct::DbProxyRPC::REQ_PLAYER_CREATE, this, &DBNet_ServerModule::OnCreateRoleGameProcess);
+	m_pNetModule->AddReceiveCallBack(SquickStruct::DbProxyRPC::REQ_PLAYER_DELETE, this, &DBNet_ServerModule::OnDeleteRoleGameProcess);
+	m_pNetModule->AddReceiveCallBack(SquickStruct::DbProxyRPC::REQ_PLAYER_DATA_LOAD, this, &DBNet_ServerModule::OnLoadRoleDataProcess);
+	m_pNetModule->AddReceiveCallBack(SquickStruct::DbProxyRPC::REQ_PLAYER_DATA_SAVE, this, &DBNet_ServerModule::OnSaveRoleDataProcess);
 
     return true;
 }
@@ -226,7 +226,7 @@ void DBNet_ServerModule::OnLoadRoleDataProcess(const SQUICK_SOCKET sockIndex, co
 	//PlayerRedisModule* pPlayerRedisModule = (PlayerRedisModule*)m_pPlayerRedisModule;
 	//pPlayerRedisModule->LoadPlayerData(roleID, xPlayerData);
 
-	m_pNetModule->SendMsgPB(SquickStruct::DbRPC::ACK_PLAYER_DATA_LOAD, xPlayerData, sockIndex, clientID);
+	m_pNetModule->SendMsgPB(SquickStruct::DbProxyRPC::ACK_PLAYER_DATA_LOAD, xPlayerData, sockIndex, clientID);
 }
 
 void DBNet_ServerModule::OnSaveRoleDataProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char * msg, const uint32_t len)

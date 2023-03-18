@@ -5,12 +5,12 @@ import "base.proto";
 // 6000 ~ 7000
 enum LoginRPC {
   LOGIN_RPC_NONE = 0;
-  REQ_LOGIN = 8010;   //
-  ACK_LOGIN = 8011;   //
-  REQ_LOGOUT = 8012;  //
-  ACK_LOGOUT = 8013;  //
+  REQ_LOGIN = 8010;  //
+  ACK_LOGIN = 8011;  //
+  REQ_LOGOUT = 8012; //
+  ACK_LOGOUT = 8013; //
 
-  REQ_PROXY_CONNECT_KEY = 8020;  //
+  REQ_PROXY_CONNECT_KEY = 8020; //
   ACK_PROXY_CONNECT_KEY = 8021;
 
   REQ_REFRASH_TOKEN = 8030;
@@ -47,7 +47,7 @@ message ReqLogin {
   bytes version = 6;
   ClientPlatform platform = 9;
   bytes device = 10;
-  bytes extra = 11;  // 第三方登录需要
+  bytes extra = 11; // 第三方登录需要
   bytes email = 12;
   bytes phone = 13;
   bytes verify_code = 14;
@@ -55,16 +55,14 @@ message ReqLogin {
 
 message AckLogin {
   int32 code = 1;
-  bytes token = 2;  // 该token可用于RPC和http
-  Ident guid = 3;   // 玩家Guid
-  int32 time = 4;   // token过期倒计时
+  bytes token = 2; // 该token可用于RPC和http
+  Ident guid = 3;  // 玩家Guid
+  int32 time = 4;  // token过期倒计时
 }
 
 message ReqLogout {}
 
-message AckLogout {
-  int32 code = 1;
-}
+message AckLogout { int32 code = 1; }
 
 message ReqProxyConnectKey {}
 

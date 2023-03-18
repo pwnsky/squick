@@ -215,18 +215,14 @@ message ObjectPropertyList {
   repeated PropertyVector3 property_vector3_list = 7;
 }
 
-message MultiObjectPropertyList {
-  repeated ObjectPropertyList multi_player_property = 1;
-}
+message MultiObjectPropertyList { repeated ObjectPropertyList multi_player_property = 1; }
 
 message ObjectRecordList {
   Ident player_id = 1;
   repeated ObjectRecordBase record_list = 2;
 }
 
-message MultiObjectRecordList {
-  repeated ObjectRecordList multi_player_record = 1;
-}
+message MultiObjectRecordList { repeated ObjectRecordList multi_player_record = 1; }
 
 ///////////////////////////////////////////////////////////////////
 // only be used between proxy-server and game-server
@@ -247,10 +243,10 @@ message ReqAckLagTest
 // Game command
 message ReqCommand {
   enum EGameCommandType {
-    EGCT_MODIY_PROPERTY = 0;  //[property_name,value]
-    EGCT_MODIY_ITEM = 1;      //[item_id,count]
-    EGCT_CREATE_OBJECT = 2;   //[object_index,count]
-    EGCT_ADD_ROLE_EXP = 3;    //
+    EGCT_MODIY_PROPERTY = 0; //[property_name,value]
+    EGCT_MODIY_ITEM = 1;     //[item_id,count]
+    EGCT_CREATE_OBJECT = 2;  //[object_index,count]
+    EGCT_ADD_ROLE_EXP = 3;   //
   }
   Ident control_id = 1;
   EGameCommandType command_id = 2;

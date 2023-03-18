@@ -19,6 +19,7 @@ bool LogicModule::Destory()
 
 void LogicModule::OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len)
 {
+	/*
 	std::cout << "OnLoginProcess... \n";
 	Guid nPlayerID;
 	SquickStruct::ReqLogin xMsg;
@@ -27,7 +28,7 @@ void LogicModule::OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID,
 	    m_pLogModule->LogError("Failed to ReceivePB for message id:" + std::to_string(msgID));
 		return;
 	}
-	/*
+	
 	NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(sockIndex);
 	if (pNetObject)
 	{
@@ -87,8 +88,8 @@ void LogicModule::OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID,
 
 bool LogicModule::ReadyUpdate()
 {
-	m_pNetModule->RemoveReceiveCallBack(SquickStruct::REQ_LOGIN);
-	m_pNetModule->AddReceiveCallBack(SquickStruct::REQ_LOGIN, this, &LogicModule::OnLoginProcess);
+	//m_pNetModule->RemoveReceiveCallBack(SquickStruct::REQ_LOGIN);
+	//m_pNetModule->AddReceiveCallBack(SquickStruct::REQ_LOGIN, this, &LogicModule::OnLoginProcess);
 
     return true;
 }
