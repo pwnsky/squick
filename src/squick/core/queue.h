@@ -3,93 +3,67 @@
 #ifndef SQUICK_QUEUE_H
 #define SQUICK_QUEUE_H
 
-#include <list>
-#include <thread>
-#include <mutex>
-#include <atomic>
 #include "platform.h"
 #include "third_party/concurrentqueue/concurrentqueue.h"
+#include <atomic>
+#include <list>
+#include <mutex>
+#include <thread>
 
-class Lock
-{
-public:
-    explicit Lock()
-    {
-        flag.clear();
-    }
+class Lock {
+  public:
+    explicit Lock() { flag.clear(); }
 
-    ~Lock()
-    {
-    }
+    ~Lock() {}
 
-    void lock()
-    {
+    void lock() {
         while (flag.test_and_set(std::memory_order_acquire))
             ;
     }
 
-    bool try_lock()
-    {
-        if (flag.test_and_set(std::memory_order_acquire))
-        {
+    bool try_lock() {
+        if (flag.test_and_set(std::memory_order_acquire)) {
             return false;
         }
 
         return true;
     }
 
-    void unlock()
-    {
-        flag.clear(std::memory_order_release);
-    }
+    void unlock() { flag.clear(std::memory_order_release); }
 
-protected:
+  protected:
     mutable std::atomic_flag flag = ATOMIC_FLAG_INIT;
 
-private:
-    Lock& operator=(const Lock& src);
+  private:
+    Lock &operator=(const Lock &src);
 };
 
-//read prior or write prior?
-//it's different for these two situations
+// read prior or write prior?
+// it's different for these two situations
 
-template<typename T>
-//class Queue : public Lock
-class Queue : public moodycamel::ConcurrentQueue<T>
-{
-public:
-    Queue()
-    {
+template <typename T>
+// class Queue : public Lock
+class Queue : public moodycamel::ConcurrentQueue<T> {
+  public:
+    Queue() {}
 
-    }
+    virtual ~Queue() {}
 
-    virtual ~Queue()
-    {
-    }
-
-    bool Push(const T& object)
-    {
-		this->enqueue(object);
+    bool Push(const T &object) {
+        this->enqueue(object);
 
         return true;
     }
 
-	bool PushBulk(const T& object)
-	{
-		this->enqueue(object);
+    bool PushBulk(const T &object) {
+        this->enqueue(object);
 
-		return true;
-	}
-
-    bool TryPop(T& object)
-    {
-		return this->try_dequeue(object);
+        return true;
     }
-	
-	bool TryPopBulk(T& object)
-	{
-		return this->try_dequeue(object);
-	}
+
+    bool TryPop(T &object) { return this->try_dequeue(object); }
+
+    bool TryPopBulk(T &object) { return this->try_dequeue(object); }
 };
 
 #endif

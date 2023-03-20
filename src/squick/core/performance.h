@@ -6,33 +6,24 @@
 #include <iostream>
 #include <time.h>
 
-class Performance
-{
-private:
-	int64_t time = 0;
-	int64_t checkTime = 0;
+class Performance {
+  private:
+    int64_t time = 0;
+    int64_t checkTime = 0;
 
-public:
-	Performance()
-	{
-		time = SquickGetTimeMS();
-	}
+  public:
+    Performance() { time = SquickGetTimeMS(); }
 
-	bool CheckTimePoint(const int milliSecond = 1)
-	{
-		checkTime = SquickGetTimeMS();
-		if (checkTime > milliSecond + time)
-		{
-			return true;
-		}
+    bool CheckTimePoint(const int milliSecond = 1) {
+        checkTime = SquickGetTimeMS();
+        if (checkTime > milliSecond + time) {
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	int64_t TimeScope()
-	{
-		return SquickGetTimeMS() - time;
-	}
+    int64_t TimeScope() { return SquickGetTimeMS() - time; }
 };
 
 #endif

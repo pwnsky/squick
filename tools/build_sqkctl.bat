@@ -1,7 +1,7 @@
 rem Author: i0gan
 rem Email : l418894113@gmail.com
 rem Date  : 2023-01-04
-rem Github: https://github.com/i0gan/Squick
+rem Github: https://github.com/pwnsky/squick
 rem Description: Build sqkctl tools
 
 set build_version="release"

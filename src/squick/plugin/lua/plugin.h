@@ -3,13 +3,9 @@
 #include <squick/core/i_plugin.h>
 #include <squick/core/i_plugin_manager.h>
 
-class LuaScriptPlugin : public IPlugin
-{
-public:
-    LuaScriptPlugin(IPluginManager* p)
-    {
-        pPluginManager = p;
-    }
+class LuaScriptPlugin : public IPlugin {
+  public:
+    LuaScriptPlugin(IPluginManager *p) { pPluginManager = p; }
 
     virtual const int GetPluginVersion();
 

@@ -2,13 +2,9 @@
 #include <squick/core/i_plugin.h>
 #include <squick/core/i_plugin_manager.h>
 
-class MasterServerPlugin : public IPlugin
-{
-public:
-    MasterServerPlugin(IPluginManager* p)
-    {
-        pPluginManager = p;
-    }
+class MasterServerPlugin : public IPlugin {
+  public:
+    MasterServerPlugin(IPluginManager *p) { pPluginManager = p; }
     virtual const int GetPluginVersion();
 
     virtual const std::string GetPluginName();

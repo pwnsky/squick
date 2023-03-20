@@ -1,81 +1,77 @@
 #ifndef _TINYXLSX_H_
 #define _TINYXLSX_H_
-#include <vector>
-#include <string>
-#include <squick/core/platform.h>
+#include "third_party/common/lexical_cast.hpp"
 #include "third_party/rapidxml/rapidxml.hpp"
 #include "third_party/rapidxml/rapidxml_iterators.hpp"
 #include "third_party/rapidxml/rapidxml_print.hpp"
 #include "third_party/rapidxml/rapidxml_utils.hpp"
-#include "third_party/common/lexical_cast.hpp"
+#include <squick/core/platform.h>
+#include <string>
+#include <vector>
 
 namespace sqkctl::mini_excel_reader {
-    struct Cell
-    {
-        std::string value;
-        std::string type;
-    };
+struct Cell {
+    std::string value;
+    std::string type;
+};
 
-    struct Range
-    {
-        int firstRow;
-        int lastRow;
-        int firstCol;
-        int lastCol;
-    };
+struct Range {
+    int firstRow;
+    int lastRow;
+    int firstCol;
+    int lastCol;
+};
 
-    class Sheet
-    {
-    public:
-        ~Sheet();
+class Sheet {
+  public:
+    ~Sheet();
 
-        bool visible() { return _visible; }
-        const std::string& getName() { return _name; }
-        Range& getDimension() { return _dimension; }
+    bool visible() { return _visible; }
+    const std::string &getName() { return _name; }
+    Range &getDimension() { return _dimension; }
 
-        Cell* getCell(int row, int col);
-    private:
-        friend class ExcelFile;
+    Cell *getCell(int row, int col);
 
-        int toIndex(int row, int col);
+  private:
+    friend class ExcelFile;
 
-        int _sheetId;
-        bool _visible;
-        Range _dimension;
+    int toIndex(int row, int col);
 
-        std::string _rid;
-        std::string _path;
-        std::string _name;
+    int _sheetId;
+    bool _visible;
+    Range _dimension;
 
-        std::vector<Cell*> _cells;
-    };
+    std::string _rid;
+    std::string _path;
+    std::string _name;
 
-    class Zip;
+    std::vector<Cell *> _cells;
+};
 
-    class ExcelFile
-    {
-    public:
-        ~ExcelFile();
-        bool open(const char* filename);
+class Zip;
 
-        Sheet* getSheet(const char* name);
-        std::vector<Sheet>& sheets() { return _sheets; }
+class ExcelFile {
+  public:
+    ~ExcelFile();
+    bool open(const char *filename);
 
-    private:
+    Sheet *getSheet(const char *name);
+    std::vector<Sheet> &sheets() { return _sheets; }
 
-        void readWorkBook(const char* filename);
-        void readWorkBookRels(const char* filename);
-        void readSharedStrings(const char* filename);
-        void readStyles(const char* filename);
-        void readSheet(Sheet& sh);
+  private:
+    void readWorkBook(const char *filename);
+    void readWorkBookRels(const char *filename);
+    void readSharedStrings(const char *filename);
+    void readStyles(const char *filename);
+    void readSheet(Sheet &sh);
 
-        void parseCell(const std::string& value, int& row, int& col);
-        void parseRange(const std::string& value, Range& range);
+    void parseCell(const std::string &value, int &row, int &col);
+    void parseRange(const std::string &value, Range &range);
 
-        std::vector<std::string> _sharedString;
-        std::vector<Sheet> _sheets;
-        Zip* _zip;
-    };
-}
+    std::vector<std::string> _sharedString;
+    std::vector<Sheet> _sheets;
+    Zip *_zip;
+};
+} // namespace sqkctl::mini_excel_reader
 
 #endif

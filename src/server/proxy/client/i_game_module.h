@@ -5,10 +5,8 @@
 #include <squick/plugin/net/i_net_client_module.h>
 
 namespace proxy::client {
-class IGameModule
-    : public  IModule
-{
-public:
+class IGameModule : public IModule {
+  public:
 };
 
-}
+} // namespace proxy::client

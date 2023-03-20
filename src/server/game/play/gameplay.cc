@@ -2,38 +2,21 @@
 #include <squick/struct/struct.h>
 namespace game::play {
 
-	Gameplay::Gameplay() {
+Gameplay::Gameplay() {}
 
-	}
+Gameplay::~Gameplay() {}
 
-	Gameplay::~Gameplay() {
+void Gameplay::Awake() {}
 
-	}
+void Gameplay::Start() {}
 
-	void Gameplay::Awake() {
-		
-	}
+void Gameplay::Update() {}
 
-	void Gameplay::Start() {
-	}
+void Gameplay::Destroy() {}
 
+void Gameplay::PlayerJoin(const Guid &player) {}
 
-	void Gameplay::Update() {
-		
-	}
+void Gameplay::PlayerQuit(const Guid &player) {}
 
-	void Gameplay::Destroy() {
-
-	}
-
-
-	void Gameplay::PlayerJoin(const Guid& player) {
-		
-	}
-
-	void Gameplay::PlayerQuit(const Guid& player) {
-	}
-
-	void Gameplay::AllPlayerJoined() {
-	}
-}
+void Gameplay::AllPlayerJoined() {}
+} // namespace game::play

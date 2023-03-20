@@ -1,18 +1,13 @@
 
 
-#include "property.h"
 #include "property_manager.h"
+#include "property.h"
 
-PropertyManager::~PropertyManager()
-{
-    ClearAll();
-}
+PropertyManager::~PropertyManager() { ClearAll(); }
 
-bool PropertyManager::RegisterCallback(const std::string& propertyName, const PROPERTY_EVENT_FUNCTOR_PTR& cb)
-{
+bool PropertyManager::RegisterCallback(const std::string &propertyName, const PROPERTY_EVENT_FUNCTOR_PTR &cb) {
     SQUICK_SHARE_PTR<IProperty> pProperty = this->GetElement(propertyName);
-    if (pProperty)
-    {
+    if (pProperty) {
         pProperty->RegisterCallback(cb);
         return true;
     }
@@ -20,12 +15,10 @@ bool PropertyManager::RegisterCallback(const std::string& propertyName, const PR
     return false;
 }
 
-SQUICK_SHARE_PTR<IProperty> PropertyManager::AddProperty(const Guid& self, SQUICK_SHARE_PTR<IProperty> pProperty)
-{
-    const std::string& propertyName = pProperty->GetKey();
+SQUICK_SHARE_PTR<IProperty> PropertyManager::AddProperty(const Guid &self, SQUICK_SHARE_PTR<IProperty> pProperty) {
+    const std::string &propertyName = pProperty->GetKey();
     SQUICK_SHARE_PTR<IProperty> pOldProperty = this->GetElement(propertyName);
-    if (!pOldProperty)
-    {
+    if (!pOldProperty) {
         SQUICK_SHARE_PTR<IProperty> pNewProperty(SQUICK_NEW Property(self, propertyName, pProperty->GetType()));
 
         pNewProperty->SetPublic(pProperty->GetPublic());
@@ -33,7 +26,7 @@ SQUICK_SHARE_PTR<IProperty> PropertyManager::AddProperty(const Guid& self, SQUIC
         pNewProperty->SetSave(pProperty->GetSave());
         pNewProperty->SetCache(pProperty->GetCache());
         pNewProperty->SetRef(pProperty->GetRef());
-		pNewProperty->SetUpload(pProperty->GetUpload());
+        pNewProperty->SetUpload(pProperty->GetUpload());
 
         this->AddElement(propertyName, pNewProperty);
     }
@@ -41,11 +34,9 @@ SQUICK_SHARE_PTR<IProperty> PropertyManager::AddProperty(const Guid& self, SQUIC
     return pOldProperty;
 }
 
-SQUICK_SHARE_PTR<IProperty> PropertyManager::AddProperty(const Guid& self, const std::string& propertyName, const DATA_TYPE varType)
-{
+SQUICK_SHARE_PTR<IProperty> PropertyManager::AddProperty(const Guid &self, const std::string &propertyName, const DATA_TYPE varType) {
     SQUICK_SHARE_PTR<IProperty> pProperty = this->GetElement(propertyName);
-    if (!pProperty)
-    {
+    if (!pProperty) {
         pProperty = SQUICK_SHARE_PTR<IProperty>(SQUICK_NEW Property(self, propertyName, varType));
 
         this->AddElement(propertyName, pProperty);
@@ -54,11 +45,9 @@ SQUICK_SHARE_PTR<IProperty> PropertyManager::AddProperty(const Guid& self, const
     return pProperty;
 }
 
-bool PropertyManager::SetProperty(const std::string& propertyName, const SquickData& TData)
-{
+bool PropertyManager::SetProperty(const std::string &propertyName, const SquickData &TData) {
     SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
-    if (pProperty)
-    {
+    if (pProperty) {
         pProperty->SetValue(TData);
 
         return true;
@@ -67,149 +56,121 @@ bool PropertyManager::SetProperty(const std::string& propertyName, const SquickD
     return false;
 }
 
-const Guid& PropertyManager::Self()
-{
-    return mSelf;
+const Guid &PropertyManager::Self() { return mSelf; }
+
+std::string PropertyManager::ToString() {
+    std::string s;
+    std::stringstream stream;
+    SQUICK_SHARE_PTR<IProperty> pProperty = First(s);
+    while (pProperty) {
+        stream << s << ":" << pProperty->ToString() << "|";
+        pProperty = Next(s);
+    }
+
+    return stream.str();
 }
 
-std::string PropertyManager::ToString()
-{
-	std::string s;
-	std::stringstream stream;
-	SQUICK_SHARE_PTR<IProperty> pProperty = First(s);
-	while (pProperty)
-	{
-		stream << s << ":" << pProperty->ToString() << "|";
-		pProperty = Next(s);
-	}
-
-	return stream.str();
-}
-
-bool PropertyManager::SetPropertyInt(const std::string& propertyName, const INT64 nValue)
-{
+bool PropertyManager::SetPropertyInt(const std::string &propertyName, const INT64 nValue) {
     SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
-    if (pProperty)
-    {
+    if (pProperty) {
         return pProperty->SetInt(nValue);
     }
 
     return false;
 }
 
-bool PropertyManager::SetPropertyFloat(const std::string& propertyName, const double dwValue)
-{
+bool PropertyManager::SetPropertyFloat(const std::string &propertyName, const double dwValue) {
     SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
-    if (pProperty)
-    {
+    if (pProperty) {
         return pProperty->SetFloat(dwValue);
     }
 
     return false;
 }
 
-bool PropertyManager::SetPropertyString(const std::string& propertyName, const std::string& value)
-{
+bool PropertyManager::SetPropertyString(const std::string &propertyName, const std::string &value) {
     SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
-    if (pProperty)
-    {
+    if (pProperty) {
         return pProperty->SetString(value);
     }
 
     return false;
 }
 
-bool PropertyManager::SetPropertyObject(const std::string& propertyName, const Guid& obj)
-{
+bool PropertyManager::SetPropertyObject(const std::string &propertyName, const Guid &obj) {
     SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
-    if (pProperty)
-    {
+    if (pProperty) {
         return pProperty->SetObject(obj);
     }
 
     return false;
 }
 
-bool PropertyManager::SetPropertyVector2(const std::string& propertyName, const Vector2& value)
-{
-	SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
-	if (pProperty)
-	{
-		return pProperty->SetVector2(value);
-	}
-
-	return false;
-}
-
-bool PropertyManager::SetPropertyVector3(const std::string& propertyName, const Vector3& value)
-{
-	SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
-	if (pProperty)
-	{
-		return pProperty->SetVector3(value);
-	}
-
-	return false;
-}
-
-INT64 PropertyManager::GetPropertyInt(const std::string& propertyName)
-{
+bool PropertyManager::SetPropertyVector2(const std::string &propertyName, const Vector2 &value) {
     SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
-	return pProperty ? pProperty->GetInt() : 0;
+    if (pProperty) {
+        return pProperty->SetVector2(value);
+    }
+
+    return false;
 }
 
-int PropertyManager::GetPropertyInt32(const std::string& propertyName)
-{
-	SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
-	return pProperty ? pProperty->GetInt32() : 0;
-}
-
-double PropertyManager::GetPropertyFloat(const std::string& propertyName)
-{
+bool PropertyManager::SetPropertyVector3(const std::string &propertyName, const Vector3 &value) {
     SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
-	return pProperty ? pProperty->GetFloat() : 0.0;
+    if (pProperty) {
+        return pProperty->SetVector3(value);
+    }
+
+    return false;
 }
 
-const std::string& PropertyManager::GetPropertyString(const std::string& propertyName)
-{
+INT64 PropertyManager::GetPropertyInt(const std::string &propertyName) {
     SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
-    if (pProperty)
-    {
+    return pProperty ? pProperty->GetInt() : 0;
+}
+
+int PropertyManager::GetPropertyInt32(const std::string &propertyName) {
+    SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
+    return pProperty ? pProperty->GetInt32() : 0;
+}
+
+double PropertyManager::GetPropertyFloat(const std::string &propertyName) {
+    SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
+    return pProperty ? pProperty->GetFloat() : 0.0;
+}
+
+const std::string &PropertyManager::GetPropertyString(const std::string &propertyName) {
+    SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
+    if (pProperty) {
         return pProperty->GetString();
     }
 
     return NULL_STR;
 }
 
-const Guid& PropertyManager::GetPropertyObject(const std::string& propertyName)
-{
+const Guid &PropertyManager::GetPropertyObject(const std::string &propertyName) {
     SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
-    if (pProperty)
-    {
+    if (pProperty) {
         return pProperty->GetObject();
     }
 
     return NULL_OBJECT;
 }
 
-const Vector2& PropertyManager::GetPropertyVector2(const std::string& propertyName)
-{
-	SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
-	if (pProperty)
-	{
-		return pProperty->GetVector2();
-	}
+const Vector2 &PropertyManager::GetPropertyVector2(const std::string &propertyName) {
+    SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
+    if (pProperty) {
+        return pProperty->GetVector2();
+    }
 
-	return NULL_VECTOR2;
+    return NULL_VECTOR2;
 }
 
-const Vector3& PropertyManager::GetPropertyVector3(const std::string& propertyName)
-{
-	SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
-	if (pProperty)
-	{
-		return pProperty->GetVector3();
-	}
+const Vector3 &PropertyManager::GetPropertyVector3(const std::string &propertyName) {
+    SQUICK_SHARE_PTR<IProperty> pProperty = GetElement(propertyName);
+    if (pProperty) {
+        return pProperty->GetVector3();
+    }
 
-	return NULL_VECTOR3;
+    return NULL_VECTOR3;
 }

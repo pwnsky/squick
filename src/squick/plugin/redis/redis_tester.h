@@ -5,18 +5,15 @@
 
 #include "redis_client.h"
 
-
-
-class RedisTester
-{
-public:
-    RedisTester(const std::string& ip, int port, const std::string& auth = "");
+class RedisTester {
+  public:
+    RedisTester(const std::string &ip, int port, const std::string &auth = "");
 
     bool RunTester();
     void Update();
-	bool IsConnect();
+    bool IsConnect();
 
-	bool Test_1();
+    bool Test_1();
 
     void TestHash();
     void TestKey();
@@ -24,10 +21,9 @@ public:
     void TestSet();
     void TestSort();
     void TestString();
-	void TestPubSub();
+    void TestPubSub();
 
     RedisClient mxRedisClient;
 };
 
-
-#endif //NFREDISPLUGIN_NFREDISTESTER_H
+#endif // NFREDISPLUGIN_NFREDISTESTER_H

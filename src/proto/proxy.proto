@@ -1,59 +1,32 @@
 // 代理服务器RPC
 syntax = "proto3";
-package SquickStruct; 
+package SquickStruct;
 import "base.proto";
 
-// 5000 ~ 10000
-enum ProxyRPC
-{
-    PROXY_RPC_NONE                          = 0;
-    REQ_HEARTBEAT						    = 5001; // 心跳包
-	ACK_HEARTBEAT						    = 5002; // 代理服务器响应
+// 8000 ~ 10000
+enum ProxyRPC {
+    PROXY_RPC_NONE = 0;
+    REQ_HEARTBEAT = 8001; // 心跳包
+    ACK_HEARTBEAT = 8002; // 代理服务器响应
 
-    REQ_LOGIN								= 5010;     //
-	ACK_LOGIN								= 5011;     //
-	REQ_LOGOUT								= 5012;		//
-    ACK_LOGOUT								= 5013;		//
+    REQ_CONNECT_PROXY = 8003;
+    ACK_CONNECT_PROXY = 8004;
+    REQ_DISCONNECT_PROXY = 8005;
+    ACK_DISCONNECT_PROXY = 8006;
 }
 
 ////////////////////////////////////////////////////
-message ReqLogin
-{
-    int32 type = 1;
-	bytes account = 2;
-	bytes password = 3;
-	bytes token = 4;
-    bytes signature = 5;
-    int32 version = 6;
-    int64 mac = 7;
-    int64 guid = 8;
-	int32 platform = 9;
-	bytes device = 10;
-	bytes extra = 11;
-	
+
+message ReqConnectProxy {
+    Ident guid = 1;
+    bytes key = 2;
 }
 
-message AckLogin {
-    int32 code = 1;
-    bytes token = 2;
-    Ident guid = 3;
-}
+message AckConnectProxy { int32 code = 1; }
 
-message ReqLogout
-{
-}
+message ReqDisconnectProxy {}
+message AckDisconnectProxy { int32 code = 1; }
 
-message AckLogout
-{
-    int32 code = 1;
-}
+message ReqHeartBeat { int32 index = 1; }
 
-message ReqHeartBeat
-{
-    int32 index = 1;
-}
-
-message AckHeartBeat
-{
-    int32 index = 1;
-}
+message AckHeartBeat { int32 index = 1; }

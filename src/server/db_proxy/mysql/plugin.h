@@ -2,13 +2,9 @@
 #include <squick/core/i_plugin_manager.h>
 
 //////////////////////////////////////////////////////////////////////////
-class MysqlPlugin : public IPlugin
-{
-public:
-    MysqlPlugin (IPluginManager* p)
-    {
-        pPluginManager = p;
-    }
+class MysqlPlugin : public IPlugin {
+  public:
+    MysqlPlugin(IPluginManager *p) { pPluginManager = p; }
 
     virtual const int GetPluginVersion();
 

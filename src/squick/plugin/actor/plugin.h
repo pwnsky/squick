@@ -3,13 +3,9 @@
 #include <squick/core/i_plugin_manager.h>
 
 //////////////////////////////////////////////////////////////////////////
-class ActorPlugin : public IPlugin
-{
-public:
-	ActorPlugin(IPluginManager* p)
-    {
-        pPluginManager = p;
-    }
+class ActorPlugin : public IPlugin {
+  public:
+    ActorPlugin(IPluginManager *p) { pPluginManager = p; }
 
     virtual const int GetPluginVersion();
 

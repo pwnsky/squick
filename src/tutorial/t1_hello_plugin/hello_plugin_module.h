@@ -1,17 +1,11 @@
 #pragma once
 
 #include <squick/core/base.h>
-class IHelloPlugin
-	: public IModule
-{
-};
+class IHelloPlugin : public IModule {};
 
-class HelloWorld1
-    : public IHelloPlugin
-{
-public:
-    HelloWorld1(IPluginManager* p)
-    {
+class HelloWorld1 : public IHelloPlugin {
+  public:
+    HelloWorld1(IPluginManager *p) {
         m_bIsUpdate = true;
         pPluginManager = p;
     }
@@ -24,7 +18,5 @@ public:
     virtual bool BeforeDestory();
     virtual bool Destory();
 
-protected:
-
+  protected:
 };
-

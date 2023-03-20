@@ -3,89 +3,58 @@
 #ifndef SQUICK_STRING_RING_BUFF_H
 #define SQUICK_STRING_RING_BUFF_H
 
-#include <list>
-#include <thread>
-#include <mutex>
-#include <atomic>
 #include "platform.h"
+#include <atomic>
+#include <list>
+#include <mutex>
+#include <thread>
 
-//template<typename T>
-class StringRingBuffer
-{
-public:
-    StringRingBuffer(unsigned int size = 1024 * 1024 * 1)
-        :m_capacity(size),
-        m_front(0),
-        m_rear(0)
-    {
-        //m_data = new T[m_capacity];
+// template<typename T>
+class StringRingBuffer {
+  public:
+    StringRingBuffer(unsigned int size = 1024 * 1024 * 1) : m_capacity(size), m_front(0), m_rear(0) {
+        // m_data = new T[m_capacity];
         m_data = new char[m_capacity];
     }
 
-    virtual ~StringRingBuffer()
-    {
-        //delete[] m_data;
+    virtual ~StringRingBuffer() {
+        // delete[] m_data;
     }
 
+    bool Empty() { return m_front == m_rear; }
 
-    bool Empty()
-    {
-        return m_front == m_rear;
-    }
-
-    unsigned int Size() const
-    {
-        if (m_rear > m_front)
-        {
+    unsigned int Size() const {
+        if (m_rear > m_front) {
             return m_rear - m_front;
-        }
-        else if (m_rear == m_front)
-        {
+        } else if (m_rear == m_front) {
             return 0;
         }
 
         return (m_rear + Capacity() - m_front);
     }
 
-    unsigned int Capacity() const
-    {
-        return m_capacity;
-    }
+    unsigned int Capacity() const { return m_capacity; }
 
-    bool Full(int newSize)
-    {
-        return (Size() + newSize) >= Capacity();
-    }
+    bool Full(int newSize) { return (Size() + newSize) >= Capacity(); }
 
-    bool Push(const char* src, int size)
-    {
-        while (Full(size))
-        {
+    bool Push(const char *src, int size) {
+        while (Full(size)) {
             resize();
         }
 
-        if (m_rear >= m_front)
-        {
-            if (m_rear + size >= Capacity())
-            {
+        if (m_rear >= m_front) {
+            if (m_rear + size >= Capacity()) {
                 int offset = Capacity() - m_rear;
                 memcpy(m_data + m_rear, src, offset);
                 memcpy(m_data, src + offset, (size_t)(size - offset));
-            }
-            else
-            {
+            } else {
                 memcpy(m_data + m_rear, src, size);
             }
-        }
-        else
-        {
-            if (m_rear + size < m_front)
-            {
+        } else {
+            if (m_rear + size < m_front) {
                 memcpy(m_data + m_rear, src, size);
-            }
-            else
-            {
-                //impassible!!!!
+            } else {
+                // impassible!!!!
             }
         }
 
@@ -94,37 +63,29 @@ public:
         return true;
     }
 
-    bool Pop(char* dst, int size, bool readOnly = false)
-    {
-        if (size <= 0 || Size() < size)
-        {
+    bool Pop(char *dst, int size, bool readOnly = false) {
+        if (size <= 0 || Size() < size) {
             return false;
         }
 
-        if (m_rear > m_front)
-        {
+        if (m_rear > m_front) {
             memcpy(dst, m_data + m_front, size);
-        }
-        else
-        {
+        } else {
             int tempOffset = Capacity() - m_front;
 
             memcpy(dst, m_data + m_front, tempOffset);
             memcpy(dst + tempOffset, m_data, (size_t)(size - tempOffset));
         }
 
-        if (!readOnly)
-        {
+        if (!readOnly) {
             m_front = (m_front + size) % Capacity();
         }
 
         return true;
     }
 
-    bool Erase(int size)
-    {
-        if (size <= 0 || Size() < size)
-        {
+    bool Erase(int size) {
+        if (size <= 0 || Size() < size) {
             return false;
         }
 
@@ -133,67 +94,56 @@ public:
         return true;
     }
 
-    //dangerous dark magic: zero copy pop
-    //you can use this function when you sure that the memory is stick.
-    //if you are failed in calling this function, plz use Pop function do it again.
-    bool ZeroCopyPop(char** dst, int size, bool readOnly = false)
-    {
-        if (size <= 0 || Size() < size)
-        {
+    // dangerous dark magic: zero copy pop
+    // you can use this function when you sure that the memory is stick.
+    // if you are failed in calling this function, plz use Pop function do it again.
+    bool ZeroCopyPop(char **dst, int size, bool readOnly = false) {
+        if (size <= 0 || Size() < size) {
             return false;
         }
 
-        if (m_front > m_rear)
-        {
-            //dont have a stick memory
-            //we apply a new stick memory for this copy
-
+        if (m_front > m_rear) {
+            // dont have a stick memory
+            // we apply a new stick memory for this copy
 
             return false;
         }
 
         *dst = m_data + m_front;
 
-        if (!readOnly)
-        {
+        if (!readOnly) {
             m_front = (m_front + size) % Capacity();
         }
 
         return true;
     }
 
-    void Print()
-    {
-        //std::cout << "-----------size:" << Size() << " capacity:" << Capacity() << " m_front:" << m_front << " m_rear:" << m_rear << std::endl;
+    void Print() {
+        // std::cout << "-----------size:" << Size() << " capacity:" << Capacity() << " m_front:" << m_front << " m_rear:" << m_rear << std::endl;
     }
 
-    void Sort()
-    {
-        //only when rear < front and only one element in buffer
+    void Sort() {
+        // only when rear < front and only one element in buffer
     }
 
-    void Clear()
-    {
+    void Clear() {
         m_front = 0;
         m_rear = 0;
     }
-private:
-    void resize()
-    {
-        //T* tmp = new T[m_capacity * 2];
-        char* tmp = new char[m_capacity * 2];
-        //memset(tmp, 0, sizeof(char) * m_capacity * 2);
-        if (m_rear < m_front)
-        {
+
+  private:
+    void resize() {
+        // T* tmp = new T[m_capacity * 2];
+        char *tmp = new char[m_capacity * 2];
+        // memset(tmp, 0, sizeof(char) * m_capacity * 2);
+        if (m_rear < m_front) {
             int oldSize = Size();
             int offset = m_capacity - m_front;
             memcpy(tmp, m_data + m_front, offset);
             memcpy(tmp + offset, m_data, m_rear);
             m_front = 0;
             m_rear = oldSize;
-        }
-        else
-        {
+        } else {
             memcpy(tmp, m_data, m_capacity);
         }
 
@@ -203,12 +153,12 @@ private:
         m_data = tmp;
     }
 
-private:
+  private:
     int m_capacity;
     int m_front;
     int m_rear;
-    //T* m_data;
-    char* m_data;
+    // T* m_data;
+    char *m_data;
 };
 
 /*
@@ -282,7 +232,8 @@ private:
         std::string str2 = "tgfddddddergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111";
         std::string str3 = "test1sdfsdfvxcvtest12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111";
         std::string str4 = "test1sdfdsfvcxvxtest12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111";
-        std::string str5 = "test1svdfvcvdfgvdfgfdtest12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111";
+        std::string str5 =
+   "test1svdfvcvdfgvdfgfdtest12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111";
 
         std::cout << "input1 ===> " << str1 << std::endl;
         std::cout << "input2 ===> " << str2 << std::endl;
@@ -340,7 +291,8 @@ private:
         std::string str2 = "tgfddddddergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111";
         std::string str3 = "test1sdfsdfvxcvtest12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111";
         std::string str4 = "test1sdfdsfvcxvxtest12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111";
-        std::string str5 = "test1svdfvcvdfgvdfgfdtest12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111";
+        std::string str5 =
+   "test1svdfvcvdfgvdfgfdtest12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111test12ergfdgfdgdgdsd111111";
 
         std::cout << "input1 ===> " << str1 << std::endl;
         std::cout << "input2 ===> " << str2 << std::endl;

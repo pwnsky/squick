@@ -2,14 +2,9 @@
 
 #include <squick/core/base.h>
 
-
-class Tutorial2 : public IPlugin
-{
-public:
-    Tutorial2(IPluginManager* p)
-    {
-        pPluginManager = p;
-    }
+class Tutorial2 : public IPlugin {
+  public:
+    Tutorial2(IPluginManager *p) { pPluginManager = p; }
     virtual const int GetPluginVersion();
 
     virtual const std::string GetPluginName();

@@ -2,13 +2,9 @@
 
 #include <squick/core/base.h>
 
-class T1_HelloPlugin : public IPlugin
-{
-public:
-    T1_HelloPlugin(IPluginManager* p)
-    {
-        pPluginManager = p;
-    }
+class T1_HelloPlugin : public IPlugin {
+  public:
+    T1_HelloPlugin(IPluginManager *p) { pPluginManager = p; }
 
     virtual const int GetPluginVersion();
 
@@ -18,4 +14,3 @@ public:
 
     virtual void Uninstall();
 };
-

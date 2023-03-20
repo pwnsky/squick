@@ -162,6 +162,13 @@ bash open_explorer.sh
 
 #### 2. 采用clang++
 
+install: https://github.com/llvm/llvm-project
+
+verion: LLVM-16.0.0-rc4-win64
+
+
+
+
 
 
 
@@ -1034,6 +1041,20 @@ docker cp deploy squick-runtime:/ # 拷贝部署文件到容器中
 ```
 
 
+
+
+
+## 格式化代码
+
+#### 格式化c++和proto代码
+
+ref: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+下载安装: https://github.com/llvm/llvm-project/releases/tag/llvmorg-16.0.0-rc4
+
+进入 {project_tools}/tools/format
+
+点击 clang_format.bat即可格式化src下的proto和c++代码
 
 
 

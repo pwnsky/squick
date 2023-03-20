@@ -2,18 +2,11 @@
 
 #include <squick/core/base.h>
 
-class IHelloProperty
-	: public IModule
-{
+class IHelloProperty : public IModule {};
 
-};
-
-class HelloProperty
-    : public IHelloProperty
-{
-public:
-    HelloProperty(IPluginManager* p)
-    {
+class HelloProperty : public IHelloProperty {
+  public:
+    HelloProperty(IPluginManager *p) {
         m_bIsUpdate = true;
         pPluginManager = p;
     }
@@ -26,10 +19,7 @@ public:
     virtual bool BeforeDestory();
     virtual bool Destory();
 
-protected:
-    int OnPropertyCallBackEvent(const Guid& self, const std::string& propertyName, const SquickData& oldVarList, const SquickData& newVarList, const int64_t reason);
-
-
-
+  protected:
+    int OnPropertyCallBackEvent(const Guid &self, const std::string &propertyName, const SquickData &oldVarList, const SquickData &newVarList,
+                                const int64_t reason);
 };
-

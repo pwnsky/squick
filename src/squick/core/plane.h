@@ -10,10 +10,9 @@ class Line;
 class Box;
 class Vector3;
 
-class Plane
-{
+class Plane {
 
-private:
+  private:
     Vector3 mvCorner[4];
 
     Vector3 mvRadius[2];

@@ -4,42 +4,55 @@ package SquickStruct;
 import "base.proto";
 
 // GameLobbyRPC RPC 10000 ~ 20000
-enum GameLobbyRPC
-{
-    LOBBY_RPC_NONE                          = 0;
-	
-    REQ_ENTER							    = 10100;			// 进入大厅
-	ACK_ENTER							    = 10101;			// 
+enum GameLobbyRPC {
+    LOBBY_RPC_NONE = 0;
 
-    REQ_LEAVE							    = 10102;			// 退出
-	ACK_LEAVE							    = 10103;			//
+    REQ_GAME_DATA = 10000;
+    ACK_GAME_DATA = 10001;
 
-	// 房间逻辑
-	REQ_ROOM_CREATE                         = 10200;
-	ACK_ROOM_CREATE                         = 10201;
+    REQ_ENTER = 10100; // 进入大厅
+    ACK_ENTER = 10101; //
 
-	REQ_ROOM_DETAILS                        = 10202;
-	ACK_ROOM_DETAILS                        = 10203;
+    REQ_LEAVE = 10102; // 退出
+    ACK_LEAVE = 10103; //
 
-	REQ_ROOM_JOIN                           = 10204;
-	ACK_ROOM_JOIN                           = 10205;
-	REQ_ROOM_QUIT                           = 10206; // 离开房间
-	ACK_ROOM_QUIT                           = 10207;
-	REQ_ROOM_LIST                           = 10208; // 获取房间列表
-	ACK_ROOM_LIST                           = 10209; // 
+    // 房间逻辑
+    REQ_ROOM_CREATE = 10200;
+    ACK_ROOM_CREATE = 10201;
 
-	REQ_ROOM_PLAYER_EVENT                   = 10210; // 在房间里互动以及事件，广播形式发送给房间内所有玩家
-	ACK_ROOM_PLAYER_EVENT                   = 10211; 
+    REQ_ROOM_DETAILS = 10202;
+    ACK_ROOM_DETAILS = 10203;
 
-	// 开始游戏
-	REQ_ROOM_GAME_PLAY_START                = 10220; // 请求多人在线游戏，需要提前创建好房间
-	ACK_ROOM_GAME_PLAY_START                = 10221; 
+    REQ_ROOM_JOIN = 10204;
+    ACK_ROOM_JOIN = 10205;
+    REQ_ROOM_QUIT = 10206; // 离开房间
+    ACK_ROOM_QUIT = 10207;
+    REQ_ROOM_LIST = 10208; // 获取房间列表
+    ACK_ROOM_LIST = 10209; //
+
+    REQ_ROOM_PLAYER_EVENT = 10210; // 在房间里互动以及事件，广播形式发送给房间内所有玩家
+    ACK_ROOM_PLAYER_EVENT = 10211;
+
+    // 开始游戏
+    REQ_ROOM_GAME_PLAY_START = 10220; // 请求多人在线游戏，需要提前创建好房间
+    ACK_ROOM_GAME_PLAY_START = 10221;
 }
 
 ////////////////////////////////////////////
-message ReqEnter {
-
+message ReqGameData {
+    Ident guid = 1;
+    int32 game = 3;
+    int32 proxy = 4;
+    bytes name = 5;
+    repeated PropertyInt property_int_list = 20;
+    repeated PropertyFloat property_float_list = 21;
+    repeated PropertyString property_string_list = 22;
+    repeated PropertyObject property_object_list = 23;
+    repeated PropertyVector2 property_vector2_list = 24;
+    repeated PropertyVector3 property_vector3_list = 25;
 }
+
+message ReqEnter { Ident object = 1; }
 
 message AckEnter {
     int32 code = 1;
@@ -47,147 +60,103 @@ message AckEnter {
     Ident object = 3; // 相当于是一个Player
 }
 
-message ReqLeave {
-}
-message AckLeave {
-}
+message ReqLeave {}
+message AckLeave {}
 
-message AckPlayerOnline
-{
-	Ident self = 1;
-	int32 game = 3;
-	int32 proxy = 4;
-	bytes name = 5;
-	
-	repeated PropertyInt property_int_list = 20;
-	repeated PropertyFloat property_float_list = 21;
-	repeated PropertyString property_string_list = 22;
-	repeated PropertyObject property_object_list = 23;
-	repeated PropertyVector2 property_vector2_list = 24;
-	repeated PropertyVector3 property_vector3_list = 25;
-}
-
-message AckPlayerOffline
-{
-	Ident self = 1;
-	Ident object = 2;
-	int32 game = 3;
-	int32 proxy = 4;
+message AckPlayerOffline {
+    Ident self = 1;
+    Ident object = 2;
+    int32 game = 3;
+    int32 proxy = 4;
 }
 
 // 客户端请求创建房间
-message ReqRoomCreate
-{
-	bytes name = 1;
-	int32 map_id = 2; // 地图id
+message ReqRoomCreate {
+    bytes name = 1;
+    int32 map_id = 2; // 地图id
 }
 
-message AckRoomCreate
-{
-	int32 code    = 1;
-	int32 room_id = 2;
+message AckRoomCreate {
+    int32 code = 1;
+    int32 room_id = 2;
 }
 
 // 请求加入房间
-message ReqRoomJoin
-{
-	int32 room_id = 1;
-}
+message ReqRoomJoin { int32 room_id = 1; }
 
-message AckRoomJoin
-{
-	int32 code = 1;
-}
+message AckRoomJoin { int32 code = 1; }
 
 // 请求退出房间
-message ReqRoomQuit
-{
-	int32 room_id = 1;
-}
+message ReqRoomQuit { int32 room_id = 1; }
 
-message AckRoomQuit
-{
-	int32 code = 1;
-}
+message AckRoomQuit { int32 code = 1; }
 
 enum RoomStatus {
-	ROOM_PREPARING = 0;    // 玩家准备中
-	ROOM_PREPARED = 1;     // 玩家已准备
-	ROOM_GAME_PLAYING = 2; // 游戏中
+    ROOM_PREPARING = 0;    // 玩家准备中
+    ROOM_PREPARED = 1;     // 玩家已准备
+    ROOM_GAME_PLAYING = 2; // 游戏中
 }
 
 message RoomSimple {
-	int32 id = 1;          // 房间id
-	bytes name = 2;        // 房间名称
-	bytes game_mode = 3;   // 游戏模式
-	RoomStatus status = 4; // 房间状态
-	int32 nplayers = 5;    // 当前房间内玩家人数
-	int32 max_players = 6; // 最多人数
+    int32 id = 1;          // 房间id
+    bytes name = 2;        // 房间名称
+    bytes game_mode = 3;   // 游戏模式
+    RoomStatus status = 4; // 房间状态
+    int32 nplayers = 5;    // 当前房间内玩家人数
+    int32 max_players = 6; // 最多人数
 }
 
 enum RoomPlayerStatus {
-	ROOM_PLAYER_STATUS_NOT_PREPARE = 0; // 未准备
-	ROOM_PLAYER_STATUS_PREPARED = 1;    // 已准备
+    ROOM_PLAYER_STATUS_NOT_PREPARE = 0; // 未准备
+    ROOM_PLAYER_STATUS_PREPARED = 1;    // 已准备
 }
 
 message RoomPlayer {
-	Ident guid = 1;
-	bytes name = 2;
-	RoomPlayerStatus status = 3;
+    Ident guid = 1;
+    bytes name = 2;
+    RoomPlayerStatus status = 3;
 }
-
 
 // 玩家获取房间列表
 message ReqRoomList {
-	int32 start = 1;
-	int32 limit = 2;
+    int32 start = 1;
+    int32 limit = 2;
 }
 
-message AckRoomList {
-	repeated RoomSimple list = 1;
-}
+message AckRoomList { repeated RoomSimple list = 1; }
 
 // 请求获取房间详细信息
-message ReqRoomDetails {
-	int32 room_id = 1;
-}
+message ReqRoomDetails { int32 room_id = 1; }
 
 message RoomDetails {
-	int32 id = 1;          // 房间id
-	bytes name = 2;        // 房间名称
-	Ident owner = 3;       // 房主
-	RoomStatus status = 4; // 房间状态
-	int32 nplayers = 5;    // 当前房间内玩家人数
-	int32 max_players = 6; // 最多人数
-	repeated RoomPlayer players = 7; // 房间内所有玩家
-	RoomGamePlay game_play = 8; // play信息
+    int32 id = 1;                    // 房间id
+    bytes name = 2;                  // 房间名称
+    Ident owner = 3;                 // 房主
+    RoomStatus status = 4;           // 房间状态
+    int32 nplayers = 5;              // 当前房间内玩家人数
+    int32 max_players = 6;           // 最多人数
+    repeated RoomPlayer players = 7; // 房间内所有玩家
+    RoomGamePlay game_play = 8;      // play信息
 }
 
-message AckRoomDetails {
-	RoomDetails room = 1;
-}
-
+message AckRoomDetails { RoomDetails room = 1; }
 
 // Game Play 响应结构
 message RoomGamePlay {
-	int32 id = 1;
-	bytes key = 2;
-	bytes name = 3;
-	bytes ip = 4;
-	int32 port = 5;
-	int32 scene = 6;
-	int32 mode = 7;
+    int32 id = 1;
+    bytes key = 2;
+    bytes name = 3;
+    bytes ip = 4;
+    int32 port = 5;
+    int32 scene = 6;
+    int32 mode = 7;
 }
 
 // 请求开始游戏
-message ReqRoomGamePlayStart {
-	int32 room_id = 1;
-}
+message ReqRoomGamePlayStart { int32 room_id = 1; }
 
 // 如果是已经在房间里的人，开始游戏创建PVP服务器后，会自动通知房间里的其他玩家。
 message AckRoomGamePlayStart {
-	int32 code = 1;
-	RoomGamePlay game_play = 2;
+    int32 code = 1;
+    RoomGamePlay game_play = 2;
 }
-
-
