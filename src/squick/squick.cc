@@ -1,8 +1,8 @@
 #include "squick.h"
 #include <iostream>
 #include <squick/core/base.h>
-#include <squick/struct/struct.h>
 #include <squick/core/plugin_server.h>
+#include <squick/struct/struct.h>
 int main(int argc, char *argv[]) {
     // std::cout << "__cplusplus:" << __cplusplus << std::endl;
 

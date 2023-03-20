@@ -19,7 +19,7 @@ bool MysqlModule::Start() {
 }
 
 bool MysqlModule::AfterStart() {
-    Connect("");
+    // Connect("");
     return true;
 }
 

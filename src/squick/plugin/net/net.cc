@@ -3,10 +3,13 @@
 #include <atomic>
 #include <string.h>
 
-#include "event2/bufferevent_struct.h"
-#include "event2/event.h"
+#include <event2/bufferevent.h>
+#include <event2/bufferevent_struct.h>
+#include <event2/event.h>
+
+#include <squick/core/exception.h>
+
 #include "net.h"
-#include "squick/core/exception.h"
 
 /*
 Any one who want to upgrade the networking library(libEvent), please change the size of evbuffer showed below:
