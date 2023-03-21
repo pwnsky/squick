@@ -84,6 +84,11 @@ bool PluginManager::LoadPluginConfig() {
     xDoc.parse<0>((char *)content.c_str());
 
     rapidxml::xml_node<> *pRoot = xDoc.first_node();
+    if (pRoot == nullptr) {
+        std::cout << "Cannot load plugin config from :" << strFilePath << std::endl;
+        std::cout << "Please check your working directory, make sure config file in the [../config/plugin/] directory.\n";
+        return false;
+    }
     rapidxml::xml_node<> *pAppNameNode = pRoot->first_node(appName.c_str());
     if (pAppNameNode) {
         for (rapidxml::xml_node<> *pPluginNode = pAppNameNode->first_node("Plugin"); pPluginNode; pPluginNode = pPluginNode->next_sibling("Plugin")) {
