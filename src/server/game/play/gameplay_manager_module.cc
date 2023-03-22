@@ -31,17 +31,33 @@ bool GameplayManagerModule::ReadyUpdate() { return true; }
 bool GameplayManagerModule::Destory() { return true; }
 
 bool GameplayManagerModule::Update() {
-    static int64_t timePassed = SquickGetTimeMS();
+    static int64_t lastGameplayUpdate = SquickGetTimeMS();
     int64_t nowTime = SquickGetTimeMS();
-    if (nowTime - timePassed >= 50) // 20fps刷新
+    if (nowTime - lastGameplayUpdate >= 50) // 20fps刷新
     {
-        timePassed = nowTime;
+        lastGameplayUpdate = nowTime;
         if (m_gameplay.size() > 0) {
             for (auto &game : m_gameplay) {
+                if (game.second == nullptr) {
+                    dout << "No this Gameplay: gameplayID: " << game.first << std::endl;
+                    gameplayWaitDestroy.push_back(game.first);
+                    continue;
+                }
+
                 if (game.second->GetStatus() == IGameplay::RUNNING) {
                     game.second->DoUpdate();
+                } else if (game.second->GetStatus() == IGameplay::GAMEOVER) {
+                    gameplayWaitDestroy.push_back(game.first);
                 }
             }
+        }
+
+        // 自动释放已经结束的gameplay
+        if (gameplayWaitDestroy.size() > 0) {
+            for (auto g : gameplayWaitDestroy) {
+                GameplayDestroy(g);
+            }
+            gameplayWaitDestroy.clear();
         }
     }
 
@@ -64,8 +80,10 @@ bool GameplayManagerModule::GameplayDestroy(int id) {
     dout << "Gameplay销毁\n";
     auto iter = m_gameplay.find(id);
     if (iter != m_gameplay.end()) {
-        iter->second->DoDestroy();
-        delete iter->second;
+        if (iter->second) {
+            iter->second->DoDestroy();
+            delete iter->second;
+        }
         m_gameplay.erase(iter);
         return true;
     } else {

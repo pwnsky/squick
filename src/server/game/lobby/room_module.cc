@@ -100,7 +100,7 @@ void RoomModule::OnReqRoomCreate(const SQUICK_SOCKET sockIndex, const int msgID,
     SquickStruct::AckRoomCreate ack;
     ack.set_room_id(roomID);
     ack.set_code(0);
-    m_pGameServerNet_ServerModule->SendMsgPBToGate(SquickStruct::ACK_ROOM_CREATE, ack, clientID);
+    SendToPlayer(SquickStruct::ACK_ROOM_CREATE, ack, clientID);
 }
 
 // 请求加入房间
@@ -209,6 +209,10 @@ void RoomModule::OnReqRoomDetails(const SQUICK_SOCKET sockIndex, const int msgID
         dout << "Error: room_id" << room_id << "房间不存在\n";
         return;
     }
+
+    SquickStruct::AckRoomDetails ack;
+    *ack.mutable_room() = *room;
+    SendToPlayer(SquickStruct::GameLobbyRPC::ACK_ROOM_DETAILS, ack, clientID);
 }
 
 void RoomModule::OnReqRoomQuit(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
@@ -314,10 +318,13 @@ void RoomModule::OnReqRoomGamePlayStart(const SQUICK_SOCKET sockIndex, const int
             room->mutable_game_play()->set_id(instance_id);
             room->mutable_game_play()->set_key(instance_key);
 
-            // 启动 Game Play 服务器
-            // m_pPvpManagerModule->PvpInstanceCreate(room_id, instance_id, instance_key);
-
+#ifdef SINGLE_GAMEPLAY
+            // 启动 独立的Gameplay服务器
+            m_pPvpManagerModule->PvpInstanceCreate(room_id, instance_id, instance_key);
+#else
+            // 启动 融合在game服务器上的gameplay
             m_pGameplayManagerModule->GameplayCreate(room_id, instance_key);
+#endif // SINGLE_GAMEPLAY
 
         } else {
             dout << "没有权限开始游戏! room_id " << room_id << " client_id: " << clientID.ToString() << "\n";
@@ -341,7 +348,7 @@ void RoomModule::OnReqRoomGamePlayStart(const SQUICK_SOCKET sockIndex, const int
     }
 }
 
-// 来自PVP Server初始化游戏数据
+// 来自Gameplay Server初始化游戏数据
 void RoomModule::OnReqGameplayData(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
     dout << "OnReqGameplayInit\n";
     Guid clientID;
@@ -366,7 +373,7 @@ void RoomModule::OnReqGameplayData(const SQUICK_SOCKET sockIndex, const int msgI
     }
 #endif // !SQUICK_DEV
 
-    // 发送房间内详细数据给PVP服务器
+    // 发送房间内详细数据给Gameplay服务器
     m_pGameServerNet_ServerModule->SendMsgPBToGameplay(SquickStruct::REQ_GAMEPLAY_DATA, *room, clientID);
 }
 
@@ -424,6 +431,10 @@ void RoomModule::GamePlayPrepared(int room_id, const string &name, const string 
 
     // 广播通知房间内的所有玩家加入 Game Play 服务器
     BroadcastToPlyaers(SquickStruct::ACK_ROOM_GAME_PLAY_START, ack, roomID);
+}
+
+void RoomModule::SendToPlayer(const uint16_t msgID, google::protobuf::Message &xMsg, const Guid &player) {
+    m_pGameServerNet_ServerModule->SendMsgPBToGate(msgID, xMsg, player);
 }
 
 // 广播发送给房间内所有玩家

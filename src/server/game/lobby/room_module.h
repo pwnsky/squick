@@ -16,6 +16,7 @@
 #include "../server/i_server_module.h"
 #include "i_player_manager_module.h"
 #include "i_room_module.h"
+#include <unordered_map>
 
 namespace game::player {
 
@@ -23,7 +24,7 @@ class RoomModule : public IRoomModule {
   public:
     RoomModule(IPluginManager *p) {
         pPluginManager = p;
-        m_bIsUpdate = false;
+        m_bIsUpdate = true;
     }
 
     virtual bool Start();
@@ -36,6 +37,9 @@ class RoomModule : public IRoomModule {
     virtual SquickStruct::RoomDetails *GetRoomByID(int room_id) override;
     virtual void BroadcastToPlyaers(const uint16_t msgID, google::protobuf::Message &xMsg, int roomdID) override;
     virtual void GamePlayPrepared(int room_id, const string &name, const string &ip, int port) override;
+
+  private:
+    inline void SendToPlayer(const uint16_t msgID, google::protobuf::Message &xMsg, const Guid &player);
 
   protected:
     void OnReqRoomCreate(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
@@ -53,7 +57,7 @@ class RoomModule : public IRoomModule {
 
     void CreateDevRoom();
 
-    std::map<int, SquickStruct::RoomDetails *> m_rooms;
+    std::unordered_map<int, SquickStruct::RoomDetails *> m_rooms;
 
   private:
     INetModule *m_pNetModule;

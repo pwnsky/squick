@@ -17,6 +17,7 @@ class IGameplay {
         CREATED,
         STOPED,
         RUNNING,
+        GAMEOVER,
         DESTROYING,
         DESTROYED,
     };
@@ -34,6 +35,8 @@ class IGameplay {
     virtual void Destroy() = 0;
 
     inline Status GetStatus() { return status; }
+
+    inline void SetStatus(Status status) { this->status = status; }
 
     inline void DoInit(int id, IGameplayManagerModule *playManager) {
         this->manager = playManager;
@@ -95,7 +98,8 @@ class IGameplay {
         pd.isOnline = true;
         index_id++;
         onlinePlayerCount++;
-        base_players.push_back(pd);
+
+        base_players[player] = pd;
 
         manager->m_pPlayerManagerModule->SetPlayerGameplayID(player, id);
 
@@ -105,7 +109,8 @@ class IGameplay {
 
         // 发送玩家列表
         SquickStruct::AckPlayerEnterList xPlayerEntryInfoList;
-        for (auto &player : base_players) {
+        for (auto &iter : base_players) {
+            auto &player = iter.second;
             const Guid &identOld = player.guid;
             if (identOld.IsNull()) {
                 continue;
@@ -125,7 +130,7 @@ class IGameplay {
         pEntryInfo->set_index(pd.index);
 
         // 广播新加入者
-        BroadcastToPlyaersExcept(GameBaseRPC::ACK_PLAYER_ENTER, xNewPlayerEntryInfoList, player);
+        BroadcastToPlayersExcept(GameBaseRPC::ACK_PLAYER_ENTER, xNewPlayerEntryInfoList, player);
 
         // 调用子类
         PlayerJoin(player);
@@ -135,17 +140,18 @@ class IGameplay {
     }
 
     // 玩家退出
-    void DoPlayerQuit(const Guid &player) {
-        for (auto iter = base_players.begin(); iter < base_players.end(); ++iter) {
-            if (iter->guid == player) {
-                // 暂时不删除
-                iter->isOnline = false;
-                onlinePlayerCount--;
-                dout << "Online Count: " << onlinePlayerCount << std::endl;
-                PlayerQuit(player);
-                break;
-            }
+    void DoPlayerQuit(const Guid &p) {
+        auto iter = base_players.find(p);
+        if (iter == base_players.end()) {
+            dout << "Error not found this player\n";
+            return;
         }
+        auto &player = iter->second;
+        // 暂时不删除
+        player.isOnline = false;
+        onlinePlayerCount--;
+        dout << "Online Count: " << onlinePlayerCount << std::endl;
+        PlayerQuit(player.guid);
     }
 
     void SendToPlayer(int msgID, google::protobuf::Message &xMsg, const Guid &player) {
@@ -154,8 +160,9 @@ class IGameplay {
     }
 
     //
-    void BroadcastToPlyaers(int msgID, google::protobuf::Message &xMsg) {
-        for (auto const &player : base_players) {
+    void BroadcastToPlayers(int msgID, google::protobuf::Message &xMsg) {
+        for (auto const &iter : base_players) {
+            auto &player = iter.second;
             if (player.isOnline == true) {
                 // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msgID << std::endl;
                 manager->m_pGameServerNet_ServerModule->SendMsgPBToGate(msgID, xMsg, player.guid);
@@ -163,8 +170,9 @@ class IGameplay {
         }
     }
 
-    void BroadcastToPlyaersExcept(int msgID, google::protobuf::Message &xMsg, const Guid &exceptPlayer) {
-        for (auto const &player : base_players) {
+    void BroadcastToPlayersExcept(int msgID, google::protobuf::Message &xMsg, const Guid &exceptPlayer) {
+        for (auto const &iter : base_players) {
+            auto &player = iter.second;
             if (player.guid == exceptPlayer) {
                 // dout << "BroadcastToPlyaersExcept: Except player:  " << exceptPlayer.ToString() << std::endl;
                 continue;
@@ -175,6 +183,32 @@ class IGameplay {
             }
         }
     }
+
+    // 广播给在游玩的玩家
+    void BroadcastToActivePlayers(int msgID, google::protobuf::Message &xMsg) {
+        for (auto const &iter : base_players) {
+            auto &player = iter.second;
+            if (player.isOnline && player.isActive) {
+                // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msgID << std::endl;
+                manager->m_pGameServerNet_ServerModule->SendMsgPBToGate(msgID, xMsg, player.guid);
+            }
+        }
+    }
+
+    // 广播给在游玩的玩家
+    void BroadcastToActivePlayersExcept(int msgID, google::protobuf::Message &xMsg, const Guid &exceptPlayer) {
+        for (auto const &iter : base_players) {
+            auto &player = iter.second;
+            if (player.guid == exceptPlayer) {
+                continue;
+            }
+            if (player.isOnline && player.isActive) {
+                // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msgID << std::endl;
+                manager->m_pGameServerNet_ServerModule->SendMsgPBToGate(msgID, xMsg, player.guid);
+            }
+        }
+    }
+
     inline int OnlinePlayerCount() { return onlinePlayerCount; }
 
     template <typename BaseType>
@@ -182,13 +216,23 @@ class IGameplay {
         return manager->AddReceiveCallBack(msgID, id, pBase, handleReceiver);
     }
 
-    inline bool CheckIsHaveThisPlayer(const Guid &player) {
-        for (auto &p : base_players) {
-            if (p.guid == player) {
+    inline bool CheckIsHaveThisPlayer(const Guid &p) {
+        for (auto &iter : base_players) {
+            auto &player = iter.second;
+            if (player.guid == p) {
                 return true;
             }
         }
         return false;
+    }
+
+    inline void SetPlayerActive(const Guid &player, bool isActive) {
+        auto iter = base_players.find(player);
+        if (iter == base_players.end()) {
+            dout << "Not found this player\n";
+            return;
+        }
+        iter->second.isActive = isActive;
     }
 
     struct BasePlayer {
@@ -196,6 +240,7 @@ class IGameplay {
         Guid guid;
         time_t enterTime = 0;
         bool isOnline = true;
+        bool isActive = true;
     };
 
     int GetID() { return id; }
@@ -205,7 +250,7 @@ class IGameplay {
     IGameplayManagerModule *manager = nullptr;
     int id = 0;
     Status status = Status::CREATING;
-    std::vector<BasePlayer> base_players;
+    map<Guid, BasePlayer> base_players;
     int index_id = 0;
 };
 } // namespace game::play

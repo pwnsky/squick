@@ -2,8 +2,8 @@
 
 #include "redis_client_module.h"
 #include <algorithm>
-#include <squick/struct/excel.h>
 #include <squick/core/base.h>
+#include <squick/struct/excel.h>
 
 IPluginManager *xPluginManager;
 NoSqlModule::NoSqlModule(IPluginManager *p) {
@@ -30,21 +30,20 @@ bool NoSqlModule::AfterStart() {
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
         for (int i = 0; i < strIdList.size(); ++i) {
-            const std::string& strId = strIdList[i];
+            const std::string &strId = strIdList[i];
             const int serverType = m_pElementModule->GetPropertyInt32(strId, excel::Server::Type());
             if ((DbType)serverType == DbType::Redis) {
                 const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::DB::ServerID());
                 const int nPort = m_pElementModule->GetPropertyInt32(strId, excel::DB::Port());
-                const std::string& ip = m_pElementModule->GetPropertyString(strId, excel::DB::IP());
-                const std::string& strAuth = m_pElementModule->GetPropertyString(strId, excel::DB::Auth());
+                const std::string &ip = m_pElementModule->GetPropertyString(strId, excel::DB::IP());
+                const std::string &strAuth = m_pElementModule->GetPropertyString(strId, excel::DB::Auth());
 
                 if (this->AddConnectSql(strId, ip, nPort, strAuth)) {
                     std::ostringstream strLog;
                     strLog << "Connected NoSqlServer[" << ip << "], Port = [" << nPort << "], Passsword = [" << strAuth << "]";
                     m_pLogModule->LogInfo(strLog, __FUNCTION__, __LINE__);
 
-                }
-                else {
+                } else {
                     std::ostringstream strLog;
                     strLog << "Cannot connect NoSqlServer[" << ip << "], Port = " << nPort << "], Passsword = [" << strAuth << "]";
                     m_pLogModule->LogInfo(strLog, __FUNCTION__, __LINE__);

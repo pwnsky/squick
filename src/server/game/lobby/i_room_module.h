@@ -3,6 +3,7 @@
 #include <squick/core/base.h>
 #include <squick/struct/struct.h>
 namespace game::player {
+struct Room {};
 class IRoomModule : public IModule {
   public:
     virtual SquickStruct::RoomDetails *GetRoomByID(int room_id) = 0;

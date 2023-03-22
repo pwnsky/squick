@@ -5,13 +5,13 @@
 #include <squick/core/guid.h>
 
 #include "i_net.h"
+#include <squick/core/base.h>
 #include <squick/core/i_module.h>
 #include <squick/core/i_plugin_manager.h>
 #include <squick/core/queue.h>
 #include <squick/core/vector4.h>
 #include <squick/plugin/log/i_log_module.h>
 #include <squick/struct/struct.h>
-#include <squick/core/base.h>
 
 ////////////////////////////////////////////////////////////////////////////
 

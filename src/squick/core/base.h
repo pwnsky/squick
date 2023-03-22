@@ -1,4 +1,4 @@
-#pragma
+#pragma once
 // Author: i0gan
 // Email : l418894113@gmail.com
 // Date  : 2022-12-03
@@ -9,7 +9,6 @@
 #include "i_plugin.h"
 #include "i_plugin_manager.h"
 #include <iostream>
-
 
 enum SQUICK_SERVER_TYPES {
     SQUICK_ST_NONE = 0,              // NONE
