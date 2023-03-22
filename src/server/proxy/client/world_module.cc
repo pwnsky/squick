@@ -6,9 +6,9 @@
 namespace proxy::client {
 bool WorldModule::Start() {
     m_pSecurityModule = pPluginManager->FindModule<ISecurityModule>();
-    m_pProxyLogicModule = pPluginManager->FindModule<IProxyLogicModule>();
+    logic_module_ = pPluginManager->FindModule<logic::ILogicModule>();
     m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pProxyServerNet_ServerModule = pPluginManager->FindModule<server::IServerModule>();
+    server_module_ = pPluginManager->FindModule<server::IServerModule>();
     m_pElementModule = pPluginManager->FindModule<IElementModule>();
     m_pLogModule = pPluginManager->FindModule<ILogModule>();
     m_pClassModule = pPluginManager->FindModule<IClassModule>();
@@ -248,7 +248,7 @@ bool WorldModule::VerifyConnectData(const std::string &account, const std::strin
 void WorldModule::LogServerInfo(const std::string &strServerInfo) { m_pLogModule->LogInfo(Guid(), strServerInfo, ""); }
 
 void WorldModule::OnOtherMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    m_pProxyServerNet_ServerModule->Transport(sockIndex, msgID, msg, len);
+    server_module_->Transport(sockIndex, msgID, msg, len);
 }
 
 } // namespace proxy::client

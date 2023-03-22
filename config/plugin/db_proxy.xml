@@ -12,5 +12,6 @@
 		<Plugin Name="server/db_proxy/server" />
 		<Plugin Name="server/db_proxy/logic" />
 		<Plugin Name="server/db_proxy/mysql" />
+		<Plugin Name="server/db_proxy/mongo" />
     </DBServer>
 </XML>

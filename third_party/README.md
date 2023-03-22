@@ -17,3 +17,5 @@
 | zlib | 1.2.8 | https://github.com/madler/zlib |
 | mysql-connector-cpp | 8.0.31 | https://github.com/mysql/mysql-connector-cpp |
 | easyloggingpp | v9.97.0 | https://github.com/amrayn/easyloggingpp |
+| mongo-c-driver | 1.23.2 | https://github.com/mongodb/mongo-c-driver |
+| mongo-cxx-driver | r3.7.1 | https://github.com/mongodb/mongo-cxx-driver |

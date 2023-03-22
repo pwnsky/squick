@@ -2,15 +2,11 @@
 
 #include <squick/struct/struct.h>
 
-#include <squick/plugin/kernel/i_kernel_module.h>
-
-#include <squick/plugin/config/i_class_module.h>
-#include <squick/plugin/config/i_element_module.h>
-#include <squick/plugin/log/i_log_module.h>
-#include <squick/plugin/net/i_net_module.h>
-
-#include <squick/plugin/net/i_net_client_module.h>
-#include <squick/plugin/security/i_security_module.h>
+#include <squick/plugin/kernel/export.h>
+#include <squick/plugin/config/export.h>
+#include <squick/plugin/log/export.h>
+#include <squick/plugin/net/export.h>
+#include <squick/plugin/security/export.h>
 
 #include "../logic/i_logic_module.h"
 #include "../server/i_server_module.h"
@@ -68,9 +64,9 @@ class WorldModule : public IWorldModule {
     INT64 mLastReportTime;
 
     ILogModule *m_pLogModule;
-    IProxyLogicModule *m_pProxyLogicModule;
+    logic::ILogicModule * logic_module_;
     IKernelModule *m_pKernelModule;
-    server::IServerModule *m_pProxyServerNet_ServerModule;
+    server::IServerModule *server_module_;
     IElementModule *m_pElementModule;
     IClassModule *m_pClassModule;
     INetClientModule *m_pNetClientModule;

@@ -8,9 +8,11 @@
 #include <squick/plugin/net/i_net_module.h>
 
 #include "i_logic_module.h"
-class ProxyLogicModule : public IProxyLogicModule {
+
+namespace proxy::logic {
+class LogicModule : public ILogicModule {
   public:
-    ProxyLogicModule(IPluginManager *p) { pPluginManager = p; }
+    LogicModule(IPluginManager *p) { pPluginManager = p; }
 
     virtual bool Start();
     virtual bool Destory();
@@ -29,3 +31,5 @@ class ProxyLogicModule : public IProxyLogicModule {
 
   private:
 };
+
+}
