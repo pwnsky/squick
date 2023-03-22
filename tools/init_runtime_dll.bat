@@ -8,5 +8,5 @@ set project_path=%~dp0\..
 
 cd %project_path%\bin
 xcopy /s /e /y ..\third_party\build\lib\*.dll .
-copy ..\third_party\build\bin\libprotobufd.dll .
+copy ..\third_party\build\bin\*.dll .
 pause
