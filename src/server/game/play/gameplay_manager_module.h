@@ -30,6 +30,7 @@ class GameplayManagerModule : public IGameplayManagerModule {
 
   private:
     std::map<int, IGameplay *> m_gameplay;
+    std::vector<int> gameplayWaitDestroy;
 };
 
 } // namespace game::play

@@ -171,8 +171,6 @@ verion: LLVM-16.0.0-rc4-win64
 
 
 
-
-
 ## Linux上开发和编译
 
 你可以直接任意选择你自己喜欢的开发方式，可以采用CMake生成 Qt工程，或直接采用Ridder打开CMake工程，以下提供了两种编译方式。
@@ -349,26 +347,15 @@ deploy/bin/
 
 ## 搭建数据库
 
-搭建数据库，推荐采用docker来创建数据库实例。
+数据库涉及三种类型的数据库，mysql、mongodb、redis，这三种数据库职责也不同。搭建数据库，推荐采用docker来创建数据库实例，如果没有安装docker，请通过你分支下的包管理命令进行安装。
 
-### 搭建Redis
+### 搭建Mysql玩家数据库
 
-这里采用docker来进行搭建，如果没有安装docker，请通过你分支下的包管理命令进行安装。
-
-拉取redis镜像并创建运行redis容器
-
-```
-docker pull redis
-docker run --name squick-redis -p 22222:6379  -d redis --requirepass pwnsky_squick # pwnsky_squick 是密码
-```
-
-
-
-### 搭建Mysql
+负责登录以及玩家的基本数据。
 
 ```
 docker pull mysql:8.0
-docker run --name squick-mysql -p 10086:3306 -e MYSQL_ROOT_PASSWORD=pwnsky_squick -d mysql:8.0
+docker run --name squick-mysql-player -p 10100:3306 -e MYSQL_ROOT_PASSWORD=pwnsky_squick -d mysql:8.0
 ```
 
 导入基本sql
@@ -377,6 +364,32 @@ docker run --name squick-mysql -p 10086:3306 -e MYSQL_ROOT_PASSWORD=pwnsky_squic
 ```
 
 
+
+### 搭建Mongo游戏数据库
+
+存储玩家游戏里的数据。
+
+
+
+拉取redis镜像并创建运行redis容器
+
+```
+docker pull mongodb
+docker run --name squick-mongodb-game -p 10200:6379  -d redis --requirepass pwnsky_squick
+```
+
+pwnsky_squick 是密码
+
+
+
+### 搭建Redis缓存数据库
+
+负责缓存Squick服务器之间的数据
+
+```
+docker pull redis
+docker run --name squick-redis-cache -p 10300:6379  -d redis --requirepass pwnsky_squick
+```
 
 
 
@@ -528,8 +541,6 @@ README.md
 ```
 
 之后就可以基于squick目录下的工程来改动为自己的工程了。
-
-
 
 
 
@@ -787,11 +798,11 @@ unreal | unet | tcp
 
 ### Master服务器
 
-启动后，等待World服务器、登录服务器进行连接，
+启动后，等待World服务器、登录服务器进行连接。
 
-### Db服务器
+### DB Proxy服务器
 
-自动给连接redis数据库
+自动给连接mysql玩家数据库和redis游戏数据库。
 
 ### World服务器
 
@@ -829,27 +840,27 @@ Game服务器自动连接World服务器，并等待Proxy服务器、Gameplay Man
 
 向网关服务器获取代理服务器，网关服务器会根据代理服务器的连接情况选择工作量最小的代理服务器给客户端
 
-**2 client <-> proxy <-> login** 
+**2 client <-> login** 
 
-玩家先进行登录验证，登录成功，会将玩家的验证token保存在代理服务器上，在代理服务器上也对该连接进行授权。
-
-若玩家出现离线重连，可以无需登录，直接对客户端的token进行验证，验证成功，对该连接socket进行授权。
+玩家先进行登录验证，通过mysql玩家数据库来进行验证，登录成功，会将玩家的验证token、proxy连接秘钥保存在redis缓存数据库里，返回proxy连接信息和连接秘钥给客户端。
 
 **3 client <-> proxy**
 
-客户端连接代理服务器，获取到世界服务器列表。
+客户端通过连接秘钥连接代理服务器，通过redis缓存数据库来进行验证，验证成功后，对该socket进行授权。
 
-玩家选择区服，也相当于选择一个世界服务器，发送给代理。
+若玩家出现离线重连，可以无需登录，直接通过proxy key来连接proxy。
+
+连接成功后，可获取到世界服务器列表，玩家选择区服，也相当于选择一个世界服务器，发送给代理。
 
 代理会根据世界服务器的服务器表根据负载均衡派发出一个工作量最小的游戏服务器给客户端。
 
 **4 client <-> proxy <-> game**
 
-在此之后，客户端可有权访问游戏服务器。Squick内核事件通知是需要基于对象之上才能够进行的，所以玩家初次进行服务器需要创建一个服务器上的对象，好比类似于创建一个游戏角色。
+在此之后，客户端可有权访问游戏服务器。
 
-**5 client <-> proxy <-> game <-> db**
+**5 client <-> proxy <-> game <-> db_proxy**
 
-在创建过程会根据玩家配置表生成内存对象，存储在redis中，创建成功依次响应客户端，游戏服务器上的玩家数据会每隔3分钟将数据同步给数据库服务器。
+在进入游戏之前，需要从redis游戏数据库先获取玩家的基本数据，才能正式进入游戏服。内核事件通知是需要基于对象之上才能够进行的，所以玩家初次进行服务器需要创建一个服务器上的对象，好比类似于创建一个游戏角色。在创建过程会根据玩家配置表生成内存对象，存储在redis游戏数据库中，创建成功依次响应客户端，游戏服务器上的玩家数据会每隔3分钟将数据同步给数据库服务器。
 
 **5 client <-> proxy <-> game**
 
@@ -859,7 +870,15 @@ Game服务器自动连接World服务器，并等待Proxy服务器、Gameplay Man
 
 
 
-## 玩家Gamplay开局流程
+## 玩家Gameplay开局流程
+
+这里分为两种类型的gameplay开局方式，一种是每一局，启动一个gameplay，第二种是充当一个模块运行在game服务器上。
+
+两种架构方式都有不同的特点。
+
+### 独立的gameplay服务器
+
+该方式可以自定义专用服务器，比如这个gameplay服务器可以由UE4、Unity3d或者自己写的服务器来作为一个独立的gameplay服务器，这种方式管理起来方便，可自定义强，部署方便，耦合度低。但这种方式也有缺点，消耗内存和cpu较高，服务器成本比较高。
 
 基于玩家登陆成功之后
 
@@ -893,13 +912,17 @@ gameplay对局结束或者玩家全部离线退出房间时，由gameplay_manage
 
 
 
+### 充当在game服务器上的模块
+
+该方式作为一个模块运行在game服务器之上，详情可以查看 src/server/game/play 下的代码。
+
+通关gameplay_manager模块来对gameplay进行管理，只需继承于igameplay就可以轻松的开发游戏的玩法部分。其中也封装了 玩家加入、玩家退出、玩家全部已加入、玩家断线重连，游戏结算自动销毁等等。该方式消耗内存低，占用cpu低，服务器成本低。
+
 
 
 # 后台管理系统
 
 后台服务端基于Go语言的Gin框架来做，前端采用vue2的antd。
-
-
 
 
 
