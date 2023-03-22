@@ -12,8 +12,8 @@ const int Plugin::GetPluginVersion() { return 0; }
 
 const std::string Plugin::GetPluginName() { return GET_CLASS_NAME(Plugin); }
 
-void Plugin::Install() { REGISTER_MODULE(pPluginManager, IProxyLogicModule, ProxyLogicModule) }
+void Plugin::Install() { REGISTER_MODULE(pPluginManager, ILogicModule, LogicModule) }
 
-void Plugin::Uninstall() { UNREGISTER_MODULE(pPluginManager, IProxyLogicModule, ProxyLogicModule) }
+void Plugin::Uninstall() { UNREGISTER_MODULE(pPluginManager, ILogicModule, LogicModule) }
 
 } // namespace proxy::logic
