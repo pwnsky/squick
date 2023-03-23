@@ -391,7 +391,7 @@ docker run -d --restart always --name squick_db_redis_1 -p 10300:6379 redis:7.0 
 
 ## 生成配置文件
 
-采用Office软件打开{project_path}/resource/excel/squick/DB.xlsx，修改里面的IP为你搭建redis的ip，默认为127.0.0.1。修改完毕之后，需要重新生产配置文件，需执行一个脚本进行生成。linux执行如下：
+采用Office软件打开{project_path}/resource/excel/server/DB.xlsx，修改里面的IP为你搭建的数据库ip，默认为127.0.0.1。修改完毕之后，需要重新生产配置文件，需执行一个脚本进行生成。linux执行如下：
 
 ```
 cd {project_path}/tools
@@ -415,13 +415,13 @@ generate_config.bat
 
 点击generate_deploy.bat
 
-
-
 ### Linux
 
 ```
 bash generate_deploy.sh
 ```
+
+
 
 运行后，所有打包的文件会保存在 {project_path}/deploy 下。
 
