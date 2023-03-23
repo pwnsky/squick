@@ -41,7 +41,7 @@ Squick是游戏服务器快速相对较成熟开发方案，支持局部热重�
 - 日志捕获系统，在linux环境下程序崩溃时，自动dump stack调用链。
 - 分布式服务、各服务之间通过网络来进行沟通，可通过分布式+集群方式减轻服务器压力
 - Lua热更新、热重载、lua脚本可管理c++插件以及lua插件。通过lua可以动态热更新c++层面的插件(.so文件)，实现lua热更以及c++ native层的热更新。
-- 支持 Redis + Mysql作为数据库
+- 支持 Mysql、MongoDb、Redis 分别作为玩家登录与管理数据库、玩家游戏逻辑的数据库，服务缓存数据库。
 - 平台编译：支持Windows编译与Linux编译
 - 一个物理机上单个进程启动全部服务器，方便开发调试。
 - 一个物理机上启动多个独立进程的服务器，轻量化部署。
@@ -355,10 +355,10 @@ deploy/bin/
 
 ```
 docker pull mysql:8.0
-docker run --name squick-mysql-player -p 10100:3306 -e MYSQL_ROOT_PASSWORD=pwnsky_squick -d mysql:8.0
+docker run -d --restart always --name squick_db_mysql_1 -p 10100:3306 -e MYSQL_ROOT_PASSWORD=pwnsky_squick  mysql:8.0
 ```
 
-导入基本sql
+pwnsky_squick 是密码, 导入基本sql
 
 ```
 ```
@@ -369,16 +369,12 @@ docker run --name squick-mysql-player -p 10100:3306 -e MYSQL_ROOT_PASSWORD=pwnsk
 
 存储玩家游戏里的数据。
 
-
-
-拉取redis镜像并创建运行redis容器
+拉取mongo镜像并创建运行mongo容器
 
 ```
-docker pull mongodb
-docker run --name squick-mongodb-game -p 10200:6379  -d redis --requirepass pwnsky_squick
+docker pull mongo:6.0.5
+docker run -d --restart always --name squick_db_mongo_1 -p 10200:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=pwnsky_squick mongo:6.0.5 mongod --auth
 ```
-
-pwnsky_squick 是密码
 
 
 
@@ -387,8 +383,8 @@ pwnsky_squick 是密码
 负责缓存Squick服务器之间的数据
 
 ```
-docker pull redis
-docker run --name squick-redis-cache -p 10300:6379  -d redis --requirepass pwnsky_squick
+docker pull redis:7.0
+docker run -d --restart always --name squick_db_redis_1 -p 10300:6379 redis:7.0 --requirepass pwnsky_squick
 ```
 
 
@@ -1087,5 +1083,19 @@ ref: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 
 date: 2023.03.10
 
-Intro: 文档完善、代码解耦
+Intro: 
+
+文档完善、代码解耦
+
+登录与代理服务器完善
+
+增加MongoDB作为游戏玩家数据存储
+
+Redis改为Squick服务器之间的缓存
+
+格式化代码为Google风格
+
+增加gameplay服务器、cdn服务器、数据缓存服务器
+
+game服务器中的gameplay_manager模块游戏结束时自动释放gameplay
 
