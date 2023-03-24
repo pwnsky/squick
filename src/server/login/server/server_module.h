@@ -15,6 +15,7 @@
 
 namespace login::server {
 class ServerModule : public IServerModule {
+    
   public:
     ServerModule(IPluginManager *p) { pPluginManager = p; }
 

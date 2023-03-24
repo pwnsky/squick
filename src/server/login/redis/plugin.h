@@ -1,8 +1,8 @@
 #pragma once
-#include <squick/core/i_plugin.h>
-#include <squick/core/i_plugin_manager.h>
 
-namespace gateway::client {
+#include <squick/core/base.h>
+
+namespace login::redis {
 class Plugin : public IPlugin {
   public:
     Plugin(IPluginManager *p) { pPluginManager = p; }
@@ -11,4 +11,5 @@ class Plugin : public IPlugin {
     virtual void Install();
     virtual void Uninstall();
 };
-} // namespace gateway::client
+
+} // namespace login::logic

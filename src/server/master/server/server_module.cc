@@ -385,18 +385,11 @@ void MasterNet_ServerModule::OnServerReport(const SQUICK_SOCKET nFd, const int m
             mGameMap.AddElement(msg.server_id(), pServerData);
         }
     } break;
-    case SQUICK_SERVER_TYPES::SQUICK_ST_GATEWAY: {
-        pServerData = mGatewayMap.GetElement(msg.server_id());
-        if (!pServerData) {
-            pServerData = std::shared_ptr<ServerData>(new ServerData());
-            mGatewayMap.AddElement(msg.server_id(), pServerData);
-        }
-    } break;
     case SQUICK_SERVER_TYPES::SQUICK_ST_GAMEPLAY_MANAGER: {
-        pServerData = mPvpManagerMap.GetElement(msg.server_id());
+        pServerData = mGameplayManagerMap.GetElement(msg.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ServerData>(new ServerData());
-            mPvpManagerMap.AddElement(msg.server_id(), pServerData);
+            mGameplayManagerMap.AddElement(msg.server_id(), pServerData);
         }
     } break;
 
@@ -492,7 +485,7 @@ std::string MasterNet_ServerModule::GetServersStatus() {
         pServerData = mMasterMap.Next();
     }
 
-    pServerData = mGatewayMap.First();
+    pServerData = mGameplayManagerMap.First();
     while (pServerData.get()) {
         json s;
         s["serverId"] = pServerData->pData->server_id();
@@ -501,21 +494,7 @@ std::string MasterNet_ServerModule::GetServersStatus() {
         s["port"] = pServerData->pData->server_port();
         s["onlineCount"] = pServerData->pData->server_cur_count();
         s["status"] = (int)pServerData->pData->server_state();
-        statusRoot["gateway" + std::to_string(i)] = s;
-        i++;
-        pServerData = mMasterMap.Next();
-    }
-
-    pServerData = mPvpManagerMap.First();
-    while (pServerData.get()) {
-        json s;
-        s["serverId"] = pServerData->pData->server_id();
-        s["servrName"] = pServerData->pData->server_name().c_str();
-        s["ip"] = pServerData->pData->server_ip().c_str();
-        s["port"] = pServerData->pData->server_port();
-        s["onlineCount"] = pServerData->pData->server_cur_count();
-        s["status"] = (int)pServerData->pData->server_state();
-        statusRoot["pvp_manager" + std::to_string(i)] = s;
+        statusRoot["gameplay_manager" + std::to_string(i)] = s;
         i++;
         pServerData = mMasterMap.Next();
     }

@@ -1,6 +1,6 @@
-set(ProjectName "gateway_client")
+set(ProjectName "login_redis")
 file(GLOB soruces *.cc)
 file(GLOB headers *.h)
 add_library(${ProjectName} SHARED ${soruces} ${headers})
 LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "server/gateway" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/gateway "client")
+SquickOut(${ProjectName} "server/login" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/login "redis")

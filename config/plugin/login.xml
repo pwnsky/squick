@@ -12,8 +12,8 @@
 		<Plugin Name="server/login/client" />
 		<Plugin Name="server/login/logic" />
 		<Plugin Name="server/login/http" />
-		<Plugin Name="server/db_proxy/logic" />
-		
+		<Plugin Name="server/login/redis" />
+		<Plugin Name="server/login/mysql" />
 	</LoginServer>
 
 </XML>

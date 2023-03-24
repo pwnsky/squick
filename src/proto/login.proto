@@ -13,8 +13,8 @@ enum LoginRPC {
     REQ_PROXY_CONNECT_KEY = 8020; //
     ACK_PROXY_CONNECT_KEY = 8021;
 
-    REQ_REFRASH_TOKEN = 8030;
-    ACK_REFRASH_TOKEN = 8031;
+    REQ_REFRASH_LOGIN_TOKEN = 8030;
+    ACK_REFRASH_LOGIN_TOKEN = 8031;
 }
 
 enum LoginType {
@@ -55,21 +55,30 @@ message ReqLogin {
 
 message AckLogin {
     int32 code = 1;
-    bytes token = 2; // 该token可用于RPC和http
-    Ident guid = 3;  // 玩家Guid
-    int32 time = 4;  // token过期倒计时
+    bytes token = 2; // 该token可用于RPC或http的token
+    Ident guid = 3;  // 账号Guid
+    int32 limit_time = 4;  // token过期倒计时
 }
 
 message ReqLogout {}
 
 message AckLogout { int32 code = 1; }
 
+message ReqRefreshToken {}
+
+message AckRefreshToken {
+    int32 code = 1;
+    bytes token = 2;       // 该token可用于RPC或http的token
+    int32 limit_time = 4;  // token过期倒计时
+}
+
 message ReqProxyConnectKey {}
 
 message AckProxyConnectKey {
     int32 code = 1;
-    Ident guid = 2;
+    Ident guid = 2; // account的guid
     bytes key = 3;
     bytes ip = 4;
     int32 port = 5;
+    int32 limit_time = 6; // 
 }

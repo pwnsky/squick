@@ -6,12 +6,12 @@
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
 
-#include "i_logic_module.h"
+#include "i_mysql_module.h"
 
-namespace login::logic {
-class LogicModule : public ILogicModule {
+namespace login::mysql {
+class MysqlModule : public IMysqlModule {
   public:
-    LogicModule(IPluginManager *p) { pPluginManager = p; }
+    MysqlModule(IPluginManager *p) { pPluginManager = p; }
 
     virtual bool Start();
     virtual bool Destory();

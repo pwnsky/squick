@@ -1,6 +1,6 @@
-set(ProjectName "gateway_lua")
+set(ProjectName "proxy_redis")
 file(GLOB soruces *.cc)
 file(GLOB headers *.h)
 add_library(${ProjectName} SHARED ${soruces} ${headers})
 LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "server/gateway" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/gateway "lua")
+SquickOut(${ProjectName} "server/proxy" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/proxy "redis")

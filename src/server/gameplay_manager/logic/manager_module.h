@@ -33,7 +33,6 @@ class ManagerModule : public IManagerModule {
     IKernelModule *m_pKernelModule;
     IClassModule *m_pClassModule;
     IElementModule *m_pElementModule;
-    ILuaScriptModule *m_pLuaScriptModule;
     ILogModule *m_pLogModule;
 };
 

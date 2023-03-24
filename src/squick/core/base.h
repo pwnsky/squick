@@ -12,26 +12,25 @@
 
 enum SQUICK_SERVER_TYPES {
     SQUICK_ST_NONE = 0,              // NONE
-    SQUICK_ST_REDIS = 1,             //
-    SQUICK_ST_MYSQL = 2,             //
-    SQUICK_ST_MASTER = 3,            //
-    SQUICK_ST_LOGIN = 4,             //
-    SQUICK_ST_PROXY = 5,             //
-    SQUICK_ST_GAME = 6,              //
-    SQUICK_ST_WORLD = 7,             //
-    SQUICK_ST_DB_PROXY = 8,          //
-    SQUICK_ST_MAX = 9,               //
-    SQUICK_ST_GATEWAY = 10,          //
-    SQUICK_ST_GAMEPLAY_MANAGER = 11, //
-    SQUICK_ST_GAMEPLAY = 12,         //
-    SQUICK_ST_MICRO = 13,            // 微服务
+    SQUICK_ST_MASTER = 1,            //
+    SQUICK_ST_LOGIN = 2,             //
+    SQUICK_ST_PROXY = 3,             //
+    SQUICK_ST_GAME = 4,              //
+    SQUICK_ST_WORLD = 5,             //
+    SQUICK_ST_DB_PROXY = 6,          //
+    SQUICK_ST_GAMEPLAY_MANAGER = 7,  //
+    SQUICK_ST_GAMEPLAY = 8,          //
+    SQUICK_ST_MICRO = 9,             // 微服务
+    SQUICK_ST_CDN = 10,              // CDN
+    
+    SQUICK_ST_MAX = 11, // 最大服务类型
 };
 
 enum class DbType {
-    None,
-    Mysql,
-    MongoDB,
-    Redis,
+    None = 0,
+    Mysql = 1,
+    MongoDB = 2,
+    Redis = 3,
 };
 
 //
