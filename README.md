@@ -355,7 +355,7 @@ deploy/bin/
 
 ```
 docker pull mysql:8.0
-docker run -d --restart always --name squick_db_mysql_1 -p 10100:3306 -e MYSQL_ROOT_PASSWORD=pwnsky_squick  mysql:8.0
+docker run -d --restart always --name squick_db_mysql_1 -p 10400:3306 -e MYSQL_ROOT_PASSWORD=pwnsky_squick  mysql:8.0
 ```
 
 pwnsky_squick 是密码, 导入基本sql
@@ -373,7 +373,7 @@ pwnsky_squick 是密码, 导入基本sql
 
 ```
 docker pull mongo:6.0.5
-docker run -d --restart always --name squick_db_mongo_1 -p 10200:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=pwnsky_squick mongo:6.0.5 mongod --auth
+docker run -d --restart always --name squick_db_mongo_1 -p 10410:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=pwnsky_squick mongo:6.0.5 mongod --auth
 ```
 
 
@@ -384,14 +384,14 @@ docker run -d --restart always --name squick_db_mongo_1 -p 10200:27017 -e MONGO_
 
 ```
 docker pull redis:7.0
-docker run -d --restart always --name squick_db_redis_1 -p 10300:6379 redis:7.0 --requirepass pwnsky_squick
+docker run -d --restart always --name squick_db_redis_1 -p 10420:6379 redis:7.0 --requirepass pwnsky_squick
 ```
 
 
 
 ## 生成配置文件
 
-采用Office软件打开{project_path}/resource/excel/squick/DB.xlsx，修改里面的IP为你搭建redis的ip，默认为127.0.0.1。修改完毕之后，需要重新生产配置文件，需执行一个脚本进行生成。linux执行如下：
+采用Office软件打开{project_path}/resource/excel/server/DB.xlsx，修改里面的IP为你搭建的数据库ip，默认为127.0.0.1。修改完毕之后，需要重新生产配置文件，需执行一个脚本进行生成。linux执行如下：
 
 ```
 cd {project_path}/tools
@@ -415,13 +415,13 @@ generate_config.bat
 
 点击generate_deploy.bat
 
-
-
 ### Linux
 
 ```
 bash generate_deploy.sh
 ```
+
+
 
 运行后，所有打包的文件会保存在 {project_path}/deploy 下。
 

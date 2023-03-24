@@ -6,4 +6,21 @@ import "base.proto";
 
 enum GatewayRPC {
     GATEWAY_RPC_NONE = 0;
+    REQ_SERVERS = 1;
+    ACK_SERVERS = 2;
+}
+
+message ServerItem {
+    bytes name = 1;
+    ServerType type = 2;
+    bytes ip = 3;
+    int32 port = 4;
+    bytes extra = 5;
+    bytes http_url = 6;
+}
+
+message ReqServers {}
+
+message AckServers {
+    repeated ServerItem list = 1;
 }

@@ -5,16 +5,21 @@ import "base.proto";
 
 // GameLobbyRPC RPC 10000 ~ 20000
 enum GameLobbyRPC {
+    // 进入游戏前的RPC  ////////////////////////////
     LOBBY_RPC_NONE = 0;
 
-    REQ_GAME_DATA = 10000;
-    ACK_GAME_DATA = 10001;
+    REQ_BASIC_GAME_DATA = 10000; // 进入服务器之前获取基本游戏信息
+    ACK_BASIC_GAME_DATA = 10001;
 
-    REQ_ENTER = 10100; // 进入大厅
-    ACK_ENTER = 10101; //
+    REQ_ENTER = 10100; // 进入游戏大厅或断线重连
+    ACK_ENTER = 10101; // 
 
+    // 进入游戏后的 RPC ////////////////////////////
     REQ_LEAVE = 10102; // 退出
-    ACK_LEAVE = 10103; //
+    ACK_LEAVE = 10103; // 
+
+    REQ_GAME_DATA = 10104; // 获取详细的游戏数据
+    ACK_GAME_DATA = 10105; 
 
     // 房间逻辑
     REQ_ROOM_CREATE = 10200;
@@ -36,20 +41,19 @@ enum GameLobbyRPC {
     // 开始游戏
     REQ_ROOM_GAME_PLAY_START = 10220; // 请求多人在线游戏，需要提前创建好房间
     ACK_ROOM_GAME_PLAY_START = 10221;
+
+    
 }
 
-////////////////////////////////////////////
-message ReqGameData {
-    Ident guid = 1;
-    int32 game = 3;
-    int32 proxy = 4;
-    bytes name = 5;
-    repeated PropertyInt property_int_list = 20;
-    repeated PropertyFloat property_float_list = 21;
-    repeated PropertyString property_string_list = 22;
-    repeated PropertyObject property_object_list = 23;
-    repeated PropertyVector2 property_vector2_list = 24;
-    repeated PropertyVector3 property_vector3_list = 25;
+message BasicGameData {
+    Ident object = 1;
+    bytes name = 2;
+}
+
+message ReqBasicGameData {}
+
+message AckBasicGameData {
+    repeated BasicGameData list = 1;
 }
 
 message ReqEnter { Ident object = 1; }
@@ -62,6 +66,21 @@ message AckEnter {
 
 message ReqLeave {}
 message AckLeave {}
+
+
+// 游戏的详细数据
+message GameData {
+    Ident object = 1;
+    bytes name = 2;
+    bool gameing = 3;
+    RoomGamePlay game_play = 4;      //gameing为true的时候，该字段有效，用于断线重连用
+}
+
+message ReqGameData {}
+
+message AckGameData {
+    GameData data = 1;
+}
 
 message AckPlayerOffline {
     Ident self = 1;
@@ -160,3 +179,5 @@ message AckRoomGamePlayStart {
     int32 code = 1;
     RoomGamePlay game_play = 2;
 }
+
+

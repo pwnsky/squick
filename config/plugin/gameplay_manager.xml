@@ -6,7 +6,6 @@
 		<Plugin Name="core/log" />
 		<Plugin Name="core/actor" />
 		<Plugin Name="core/security" />
-        <Plugin Name="core/lua" />
 		
 		<Plugin Name="server/gameplay_manager/server" />
 		<Plugin Name="server/gameplay_manager/logic" />

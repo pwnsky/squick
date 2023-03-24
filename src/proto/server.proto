@@ -73,32 +73,6 @@ enum ServerRPC {
     ACK_PLAYER_OFFLINE = 111;
 }
 
-// 服务器类型
-// c++代码对应在 squick/plugin/net/i_net_module.h :  SQUICK_SERVER_TYPES
-enum ServerType {
-    SQUICK_ST_NONE = 0;               // NONE
-    SQUICK_ST_REDIS = 1;              //
-    SQUICK_ST_MYSQL = 2;              //
-    SQUICK_ST_MASTER = 3;             // 不支持横向拓展
-    SQUICK_ST_LOGIN = 4;              //
-    SQUICK_ST_PROXY = 5;              // 支持横向拓展
-    SQUICK_ST_GAME = 6;               // 支持横向拓展
-    SQUICK_ST_WORLD = 7;              // 支持横向拓展
-    SQUICK_ST_DB = 8;                 // 暂不支持横向拓展
-    SQUICK_ST_MAX = 9;                //
-    SQUICK_ST_GATEWAY = 10;           // 支持横向拓展
-    SQUICK_ST_GAME_PLAY_MANAGER = 11; // Game Play管理服务器 支持横向拓展
-    SQUICK_ST_MICRO = 12;             // 微服务，支持横向拓展
-};
-
-enum ServerState {
-    SERVER_CRASH = 0;
-    SERVER_NORMAL = 1;
-    SERVER_BUSY = 2;
-    SERVER_FIRE = 3;
-    SERVER_MAINTEN = 4;
-}
-
 message ServerInfo {
     int32 server_id = 1;
     bytes name = 2;

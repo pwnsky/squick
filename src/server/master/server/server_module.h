@@ -66,8 +66,7 @@ class MasterNet_ServerModule : public IMasterNet_ServerModule {
     MapEx<int, ServerData> mWorldMap;
     MapEx<int, ServerData> mProxyMap;
     MapEx<int, ServerData> mGameMap;
-    MapEx<int, ServerData> mGatewayMap;
-    MapEx<int, ServerData> mPvpManagerMap;
+    MapEx<int, ServerData> mGameplayManagerMap;
 
     IElementModule *m_pElementModule;
     IClassModule *m_pClassModule;

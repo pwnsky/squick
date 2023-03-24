@@ -9,7 +9,7 @@ enum GameBaseRPC {
 
     REQ_GAME_START = 20015; // 预留测试用
     ACK_GAME_START = 20016; //
-    REQ_GAME_JOIN = 20017;  // 请求加入游戏
+    REQ_GAME_JOIN = 20017;  // 请求加入游戏,在游戏中断线重连时也请求它
     ACK_GAME_JOIN = 20018;
     ACK_GAME_OVER = 20019;    // 游戏结束
     REQ_GAME_RESTART = 20020; // 重新开始游戏

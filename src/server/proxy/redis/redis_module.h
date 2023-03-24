@@ -6,12 +6,12 @@
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
 
-#include "i_logic_module.h"
+#include "i_redis_module.h"
 
-namespace login::logic {
-class LogicModule : public ILogicModule {
+namespace proxy::redis {
+class RedisModule : public IRedisModule {
   public:
-    LogicModule(IPluginManager *p) { pPluginManager = p; }
+    RedisModule(IPluginManager *p) { pPluginManager = p; }
 
     virtual bool Start();
     virtual bool Destory();
@@ -19,6 +19,7 @@ class LogicModule : public ILogicModule {
     virtual bool Update();
     virtual bool AfterStart();
     virtual void OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+protected:
 
   protected:
     INetModule *m_pNetModule;

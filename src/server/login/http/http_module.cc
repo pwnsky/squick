@@ -2,207 +2,266 @@
 #include "struct.h"
 
 namespace login::http {
-bool HttpModule::Start() {
-    m_pHttpNetModule = pPluginManager->FindModule<IHttpServerModule>();
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pLoginServerModule = pPluginManager->FindModule<server::IServerModule>();
-    m_pLogicClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pElementModule = pPluginManager->FindModule<IElementModule>();
-    m_pLoginToMasterModule = pPluginManager->FindModule<client::IMasterModule>();
-    m_pNetClientModule = pPluginManager->FindModule<INetClientModule>();
+	bool HttpModule::Start() {
+		http_server_module_ = pPluginManager->FindModule<IHttpServerModule>();
+		kernel_module_ = pPluginManager->FindModule<IKernelModule>();
+		login_server_module_ = pPluginManager->FindModule<server::IServerModule>();
+		config_class_module_ = pPluginManager->FindModule<IClassModule>();
+		config_element_module_ = pPluginManager->FindModule<IElementModule>();
+		client_master_module_ = pPluginManager->FindModule<client::IMasterModule>();
+		net_client_module_ = pPluginManager->FindModule<INetClientModule>();
 
-    return true;
-}
-bool HttpModule::Destory() { return true; }
+		redis_module_ = pPluginManager->FindModule<redis::IRedisModule>();
 
-bool HttpModule::AfterStart() {
-    m_pHttpNetModule->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnLogin);
-    m_pHttpNetModule->AddRequestHandler("/world", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnWorldView);
-    m_pHttpNetModule->AddRequestHandler("/world", HttpType::SQUICK_HTTP_REQ_CONNECT, this, &HttpModule::OnWorldSelect);
-    m_pHttpNetModule->AddNetFilter("/world", this, &HttpModule::OnFilter);
+		return true;
+	}
 
-    SQUICK_SHARE_PTR<IClass> xLogicClass = m_pLogicClassModule->GetElement(excel::Server::ThisName());
-    if (xLogicClass) {
-        const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
-        for (int i = 0; i < strIdList.size(); ++i) {
-            const std::string &strId = strIdList[i];
 
-            int nJsonPort = m_pElementModule->GetPropertyInt32(strId, excel::Server::WebPort());
-            int nWebServerAppID = m_pElementModule->GetPropertyInt32(strId, excel::Server::ServerID());
+	bool HttpModule::Destory() { return true; }
 
-            // webserver only run one instance in each server
-            if (pPluginManager->GetAppID() == nWebServerAppID && nJsonPort > 0) {
-                m_pHttpNetModule->StartServer(nJsonPort);
+	bool HttpModule::AfterStart() {
+		//dout << "\n加载登录http模块\n";
+		http_server_module_->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnLogin);
+		http_server_module_->AddRequestHandler("/world", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnWorldView);
+		http_server_module_->AddRequestHandler("/world", HttpType::SQUICK_HTTP_REQ_CONNECT, this, &HttpModule::OnWorldSelect);
+		http_server_module_->AddNetFilter("/world", this, &HttpModule::OnFilter);
+		http_server_module_->AddRequestHandler("/cdn", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnGetCDN);
 
-                break;
-            }
-        }
-    }
+		SQUICK_SHARE_PTR<IClass> xLogicClass = config_class_module_->GetElement(excel::Server::ThisName());
+		if (xLogicClass) {
+			const std::vector<std::string>& strIdList = xLogicClass->GetIDList();
+			for (int i = 0; i < strIdList.size(); ++i) {
+				const std::string& strId = strIdList[i];
 
-    return true;
-}
+				int web_port = config_element_module_->GetPropertyInt32(strId, excel::Server::WebPort());
+				int nWebServerAppID = config_element_module_->GetPropertyInt32(strId, excel::Server::ServerID());
+				// webserver only run one instance in each server
+				if (pPluginManager->GetAppID() == nWebServerAppID && web_port > 0) {
+					http_server_module_->StartServer(web_port);
+					break;
+				}
+			}
+		}
 
-bool HttpModule::Update() {
-    // m_pHttpNetModule->Update();
-    return true;
-}
+		return true;
+	}
 
-bool HttpModule::OnLogin(SQUICK_SHARE_PTR<HttpRequest> req) {
-    std::string strResponse;
-    ResponseLogin xResponsetLogin;
+	bool HttpModule::Update() {
+		http_server_module_->Update();
+		return true;
+	}
 
-    RequestLogin xRequestLogin;
-    ajson::load_from_buff(xRequestLogin, req->body.c_str());
-    if (xRequestLogin.user.empty() || xRequestLogin.password.empty()) {
-        xResponsetLogin.code = IResponse::ResponseType::RES_TYPE_FAILED;
-        xResponsetLogin.jwt = "";
+	bool HttpModule::OnLogin(SQUICK_SHARE_PTR<HttpRequest> request) {
+		std::string res_str;
+		ResponseLogin rep;
+		RequestLogin req;
+		ajson::load_from_buff(req, request->body.c_str());
+		ajson::string_stream rep_ss;
 
-        ajson::string_stream ss;
-        ajson::save_to(ss, xResponsetLogin);
-        strResponse = ss.str();
-    } else {
-        Guid xGUIDKey = m_pKernelModule->CreateGUID();
-        xResponsetLogin.code = IResponse::ResponseType::RES_TYPE_SUCCESS;
-        xResponsetLogin.jwt = xGUIDKey.ToString();
-        mToken[xRequestLogin.user] = xGUIDKey.ToString();
+		do {
+			// Verify login
+			switch (req.type)
+			{
+			case LoginType::AccountPasswordLogin: {
 
-        ajson::string_stream ss;
-        ajson::save_to(ss, xResponsetLogin);
-        strResponse = ss.str();
-    }
+			}break;
+			case LoginType::EmailPasswordLogin: {
 
-    return m_pHttpNetModule->ResponseMsg(req, strResponse, WebStatus::WEB_OK);
-}
+			}break;
+			case LoginType::EmailVerifyCodeLogin: {
 
-bool HttpModule::OnWorldView(SQUICK_SHARE_PTR<HttpRequest> req) {
-    std::string strResponse;
-    ResponseWorldList xResponsetWorldList;
+			}break;
+			case LoginType::PhonePasswordLogin: {
 
-    MapEx<int, SquickStruct::ServerInfoReport> &xWorldMap = m_pLoginToMasterModule->GetWorldMap();
-    SquickStruct::ServerInfoReport *pWorldData = xWorldMap.FirstNude();
-    while (pWorldData) {
-        ResponseWorldList::World xWorld;
+			}break;
+			case LoginType::PhoneVerifyCodeLogin: {
 
-        xWorld.id = pWorldData->server_id();
-        xWorld.name = pWorldData->server_name();
-        xWorld.state = pWorldData->server_state();
-        xWorld.count = pWorldData->server_cur_count();
+			}break;
+			case LoginType::WechatLogin: {
 
-        xResponsetWorldList.world.push_back(xWorld);
+			}break;
+			case LoginType::QQLogin: {
 
-        pWorldData = xWorldMap.NextNude();
-    }
+			}break;
+			case LoginType::VisitorLogin: {
 
-    ajson::string_stream ss;
-    ajson::save_to(ss, xResponsetWorldList);
-    strResponse = ss.str();
+			}break;
+			case LoginType::TokenLogin: {
 
-    return m_pHttpNetModule->ResponseMsg(req, strResponse, WebStatus::WEB_OK);
-}
+			}break;
+			default:
+				break;
+			}
 
-bool HttpModule::OnWorldSelect(SQUICK_SHARE_PTR<HttpRequest> req) {
-    std::string strResponse;
-    IResponse xResponse;
 
-    std::string user = GetUserID(req);
+			// Get account guid from mysql
+			Guid guid = kernel_module_->CreateGUID(); // just for test
+			
 
-    RequestSelectWorld xRequestSelectWorld;
-    ajson::load_from_buff(xRequestSelectWorld, req->body.c_str());
-    if (xRequestSelectWorld.id == 0) {
-        xResponse.code = IResponse::ResponseType::RES_TYPE_FAILED;
 
-        ajson::string_stream ss;
-        ajson::save_to(ss, xResponse);
-        strResponse = ss.str();
+			// ok
+			Guid xGUIDKey = kernel_module_->CreateGUID();
+			rep.code = 0;
+			rep.token = xGUIDKey.ToString();
+			mToken[req.account] = xGUIDKey.ToString();
+		} while (false);
 
-        return m_pHttpNetModule->ResponseMsg(req, strResponse, WebStatus::WEB_OK);
-    }
+		ajson::save_to(rep_ss, rep);
+		return http_server_module_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
+	}
 
-    // SquickStruct::ReqConnectWorld xData;
-    // xData.set_world_id(xRequestSelectWorld.id);
-    // xData.set_login_id(pPluginManager->GetAppID());
-    // xData.mutable_sender()->CopyFrom(INetModule::StructToProtobuf(Guid()));
-    // xData.set_account(user);
+	bool HttpModule::OnWorldView(SQUICK_SHARE_PTR<HttpRequest> req) {
+		std::string strResponse;
+		ResponseWorldList xResponsetWorldList;
 
-    // m_pNetClientModule->SendSuitByPB(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER, user, SquickStruct::ServerRPC::REQ_CONNECT_WORLD, xData);
-    /*
-    while (true)
-    {
-            YieldCo();
+		MapEx<int, SquickStruct::ServerInfoReport>& xWorldMap = client_master_module_->GetWorldMap();
+		SquickStruct::ServerInfoReport* pWorldData = xWorldMap.FirstNude();
+		while (pWorldData) {
+			ResponseWorldList::World xWorld;
 
-            if ()
-            {
-                    break;
-            }
-    }
-    */
+			xWorld.id = pWorldData->server_id();
+			xWorld.name = pWorldData->server_name();
+			xWorld.state = pWorldData->server_state();
+			xWorld.count = pWorldData->server_cur_count();
 
-    return m_pHttpNetModule->ResponseMsg(req, strResponse, WebStatus::WEB_OK);
-}
+			xResponsetWorldList.world.push_back(xWorld);
 
-bool HttpModule::OnCommonQuery(SQUICK_SHARE_PTR<HttpRequest> req) { return m_pHttpNetModule->ResponseMsg(req, "OnCommonQuery", WebStatus::WEB_ERROR); }
+			pWorldData = xWorldMap.NextNude();
+		}
 
-std::string HttpModule::GetUserID(SQUICK_SHARE_PTR<HttpRequest> req) {
-    auto it = req->headers.find("user");
-    if (it != req->headers.end()) {
-        return it->second;
-    }
+		ajson::string_stream ss;
+		ajson::save_to(ss, xResponsetWorldList);
+		strResponse = ss.str();
 
-    return "";
-}
+		return http_server_module_->ResponseMsg(req, strResponse, WebStatus::WEB_OK);
+	}
 
-std::string HttpModule::GetUserJWT(SQUICK_SHARE_PTR<HttpRequest> req) {
-    auto it = req->headers.find("jwt");
-    if (it != req->headers.end()) {
-        return it->second;
-    }
+	bool HttpModule::OnWorldSelect(SQUICK_SHARE_PTR<HttpRequest> req) {
+		std::string strResponse;
+		IResponse xResponse;
 
-    return "";
-}
+		std::string user = GetUserID(req);
 
-bool HttpModule::CheckUserJWT(const std::string &user, const std::string &jwt) {
-    auto it = mToken.find(user);
-    if (it != mToken.end()) {
-        return (it->second == jwt);
-    }
+		RequestSelectWorld xRequestSelectWorld;
+		ajson::load_from_buff(xRequestSelectWorld, req->body.c_str());
+		if (xRequestSelectWorld.id == 0) {
+			xResponse.code = IResponse::ResponseType::RES_TYPE_FAILED;
 
-    return false;
-}
+			ajson::string_stream ss;
+			ajson::save_to(ss, xResponse);
+			strResponse = ss.str();
 
-WebStatus HttpModule::OnFilter(SQUICK_SHARE_PTR<HttpRequest> req) {
-    std::string user = GetUserID(req);
-    std::string jwt = GetUserJWT(req);
+			return http_server_module_->ResponseMsg(req, strResponse, WebStatus::WEB_OK);
+		}
+		return http_server_module_->ResponseMsg(req, strResponse, WebStatus::WEB_OK);
+	}
 
-    bool bRet = CheckUserJWT(user, jwt);
-    if (bRet) {
-        return WebStatus::WEB_OK;
-    }
+	bool HttpModule::OnCommonQuery(SQUICK_SHARE_PTR<HttpRequest> req) { return http_server_module_->ResponseMsg(req, "OnCommonQuery", WebStatus::WEB_ERROR); }
 
-    return WebStatus::WEB_AUTH;
-    /*
-    std::cout << "OnFilter: " << std::endl;
+	std::string HttpModule::GetUserID(SQUICK_SHARE_PTR<HttpRequest> req) {
+		auto it = req->headers.find("user");
+		if (it != req->headers.end()) {
+			return it->second;
+		}
 
-    std::cout << "url: " << req.url << std::endl;
-    std::cout << "path: " << req.path << std::endl;
-    std::cout << "type: " << req.type << std::endl;
-    std::cout << "body: " << req.body << std::endl;
+		return "";
+	}
 
-    std::cout << "params: " << std::endl;
+	std::string HttpModule::GetUserJWT(SQUICK_SHARE_PTR<HttpRequest> req) {
+		auto it = req->headers.find("jwt");
+		if (it != req->headers.end()) {
+			return it->second;
+		}
 
-    for (auto item : req.params)
-    {
-            std::cout << item.first << ":" << item.second << std::endl;
-    }
+		return "";
+	}
 
-    std::cout << "headers: " << std::endl;
+	bool HttpModule::CheckUserJWT(const std::string& user, const std::string& jwt) {
+		auto it = mToken.find(user);
+		if (it != mToken.end()) {
+			return (it->second == jwt);
+		}
 
-    for (auto item : req.headers)
-    {
-            std::cout << item.first << ":" << item.second << std::endl;
-    }
+		return false;
+	}
 
-    return WebStatus::WEB_OK;
-    */
-}
+	WebStatus HttpModule::OnFilter(SQUICK_SHARE_PTR<HttpRequest> req) {
+		std::string user = GetUserID(req);
+		std::string jwt = GetUserJWT(req);
+
+		bool bRet = CheckUserJWT(user, jwt);
+		if (bRet) {
+			return WebStatus::WEB_OK;
+		}
+
+		return WebStatus::WEB_AUTH;
+		/*
+		std::cout << "OnFilter: " << std::endl;
+
+		std::cout << "url: " << req.url << std::endl;
+		std::cout << "path: " << req.path << std::endl;
+		std::cout << "type: " << req.type << std::endl;
+		std::cout << "body: " << req.body << std::endl;
+
+		std::cout << "params: " << std::endl;
+
+		for (auto item : req.params)
+		{
+				std::cout << item.first << ":" << item.second << std::endl;
+		}
+
+		std::cout << "headers: " << std::endl;
+
+		for (auto item : req.headers)
+		{
+				std::cout << item.first << ":" << item.second << std::endl;
+		}
+
+		return WebStatus::WEB_OK;
+		*/
+	}
+
+	bool HttpModule::OnGetCDN(SQUICK_SHARE_PTR<HttpRequest> req) {
+
+		json repRoot;
+		json cdnServerList;
+
+		repRoot["code"] = 0;
+		repRoot["msg"] = "";
+
+		SQUICK_SHARE_PTR<IClass> xLogicClass = config_class_module_->GetElement(excel::Server::ThisName());
+		if (xLogicClass) {
+			const std::vector<std::string>& strIdList = xLogicClass->GetIDList();
+			for (int i = 0; i < strIdList.size(); ++i) {
+				const std::string& strId = strIdList[i];
+				int type = config_element_module_->GetPropertyInt32(strId, excel::Server::Type());
+				if (type != SQUICK_SERVER_TYPES::SQUICK_ST_CDN) {
+					continue;
+				}
+				int web_port = config_element_module_->GetPropertyInt32(strId, excel::Server::WebPort());
+				int rpc_port = config_element_module_->GetPropertyInt32(strId, excel::Server::Port());
+				int server_id = config_element_module_->GetPropertyInt32(strId, excel::Server::ServerID());
+				string server_name = config_element_module_->GetPropertyString(strId, excel::Server::ID());
+				string public_ip = config_element_module_->GetPropertyString(strId, excel::Server::PublicIP());
+				json server;
+				server = {
+						{"name", server_name},
+						{"ip", public_ip},
+						{"port", rpc_port},
+						{"id", server_id},
+						{"type", "cdn"},
+						{"http_url", "http://" + public_ip + ":" + to_string(web_port)}
+				};
+
+				cdnServerList.push_back(server);
+
+			}
+
+			repRoot["servers"] = cdnServerList;
+		}
+		return http_server_module_->ResponseMsg(req, repRoot.dump(), WebStatus::WEB_OK);
+	}
 
 } // namespace login::http
+
+

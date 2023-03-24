@@ -15,7 +15,7 @@
 #include "game_play.pb.h"
 #include "proxy.pb.h"
 #include "server.pb.h"
-
+#include "login.pb.h"
 // -------------------------------------------------------------------------
 #pragma pack(push, 1)
 

@@ -4,19 +4,36 @@
 #include <squick/plugin/net/i_response.h>
 #include <squick/struct/struct.h>
 #include <string>
-
+using namespace std;
+using namespace SquickStruct;
 class RequestLogin : public IRequest {
   public:
-    std::string user;
-    std::string password;
+    LoginType type;
+    string account;
+    string password;
+    string token;
+    string signature;
+    string version;
+    ClientPlatform platform;
+    string device;
+    string extra;
+    string email;
+    string phone;
+    string verify_code;
 };
-AJSON(RequestLogin, user, password)
+
+
+AJSON(RequestLogin, type, account, password, token, signature, version, platform, device, extra, email, phone, verify_code)
 
 class ResponseLogin : public IResponse {
-  public:
-    std::string jwt;
+    public:
+    int code;
+    string token;
+    string guid;
+    int limit_time;
 };
-AJSON(ResponseLogin, jwt, code, message)
+
+AJSON(ResponseLogin, code, token, guid, limit_time)
 
 class RequestSelectWorld : public IRequest {
   public:

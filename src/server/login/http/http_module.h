@@ -7,13 +7,17 @@
 #include "../server/i_server_module.h"
 #include "i_http_module.h"
 #include <squick/core/platform.h>
-#include <squick/plugin/config/i_element_module.h>
-#include <squick/plugin/kernel/i_kernel_module.h>
-#include <squick/plugin/net/i_http_server_module.h>
+#include <squick/plugin/config/export.h>
+#include <squick/plugin/kernel/export.h>
+#include <squick/plugin/net/export.h>
 #include <squick/struct/struct.h>
+#include <third_party/nlohmann/json.hpp>
 
+#include <server/login/redis/i_redis_module.h>
+#include <unordered_map>
 namespace login::http {
 class HttpModule : public IHttpModule {
+    using json = nlohmann::json;
   public:
     HttpModule(IPluginManager *p) {
         pPluginManager = p;
@@ -34,16 +38,18 @@ class HttpModule : public IHttpModule {
     std::string GetUserID(SQUICK_SHARE_PTR<HttpRequest> req);
     std::string GetUserJWT(SQUICK_SHARE_PTR<HttpRequest> req);
     bool CheckUserJWT(const std::string &user, const std::string &jwt);
-    std::map<std::string, std::string> mToken;
-
+    std::unordered_map<std::string, std::string> mToken;
+    
+    bool OnGetCDN(SQUICK_SHARE_PTR<HttpRequest> request);
   private:
-    INetClientModule *m_pNetClientModule;
-    IKernelModule *m_pKernelModule;
-    IHttpServerModule *m_pHttpNetModule;
-    server::IServerModule *m_pLoginServerModule;
-    client::IMasterModule *m_pLoginToMasterModule;
-    IClassModule *m_pLogicClassModule;
-    IElementModule *m_pElementModule;
+    INetClientModule *net_client_module_;
+    IKernelModule *kernel_module_;
+    IHttpServerModule *http_server_module_;
+    server::IServerModule *login_server_module_;
+    client::IMasterModule *client_master_module_;
+    IClassModule *config_class_module_;
+    IElementModule *config_element_module_;
+    redis::IRedisModule *redis_module_;
 };
 
 } // namespace login::http
