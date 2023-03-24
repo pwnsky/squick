@@ -15,6 +15,10 @@ bash ./proto2code.sh
 cd ${project_path}/tools/
 bash ./generate_config.sh
 
+# 初始化第三方.so
+cd ${project_path}/tools/
+bash ./init_runtime_dll.sh
+
 build_squick() {
 	cd ${project_path}
 	mkdir -p "${build_path}"
@@ -32,8 +36,3 @@ build_squick() {
 # build
 time build_squick $@
 
-# gen_deploy
-echo "Copying third_paty lib"
-cd $project_path
-cp third_party/build/lib/libprotobuf.so ./bin/libprotobuf.so.32
-cp third_party/build/lib/libmysqlcppconn8.so ./bin/libmysqlcppconn8.so.2
