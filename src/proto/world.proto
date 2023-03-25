@@ -1,0 +1,7 @@
+syntax = "proto3";
+package SquickStruct;
+import "base.proto";
+
+enum WorldRPC {
+    WORLD_RPC_NONE = 0;
+}

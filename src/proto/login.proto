@@ -3,82 +3,10 @@ package SquickStruct;
 import "base.proto";
 
 // 6000 ~ 7000
+// RPC用于服务器之间的通信，不予客户端通信
 enum LoginRPC {
     LOGIN_RPC_NONE = 0;
-    REQ_LOGIN = 8010;  //
-    ACK_LOGIN = 8011;  //
-    REQ_LOGOUT = 8012; //
-    ACK_LOGOUT = 8013; //
 
-    REQ_PROXY_CONNECT_KEY = 8020; //
-    ACK_PROXY_CONNECT_KEY = 8021;
-
-    REQ_REFRASH_LOGIN_TOKEN = 8030;
-    ACK_REFRASH_LOGIN_TOKEN = 8031;
-}
-
-enum LoginType {
-    AccountPasswordLogin = 0;
-    EmailPasswordLogin = 1;
-    EmailVerifyCodeLogin = 2;
-    PhonePasswordLogin = 3;
-    PhoneVerifyCodeLogin = 4;
-    WechatLogin = 5;
-    QQLogin = 6;
-    VisitorLogin = 7;
-    TokenLogin = 8;
-}
-
-enum ClientPlatform {
-    Windows = 0;
-    Linux = 1;
-    Mac = 2;
-    Android = 3;
-    IOS = 4;
-    Web = 5;
-}
-
-message ReqLogin {
-    LoginType type = 1;
-    bytes account = 2;
-    bytes password = 3;
-    bytes token = 4;
-    bytes signature = 5;
-    bytes version = 6;
-    ClientPlatform platform = 9;
-    bytes device = 10;
-    bytes extra = 11; // 第三方登录需要
-    bytes email = 12;
-    bytes phone = 13;
-    bytes verify_code = 14;
-}
-
-message AckLogin {
-    int32 code = 1;
-    bytes token = 2; // 该token可用于RPC或http的token
-    Ident guid = 3;  // 账号Guid
-    int32 limit_time = 4;  // token过期倒计时
-}
-
-message ReqLogout {}
-
-message AckLogout { int32 code = 1; }
-
-message ReqRefreshToken {}
-
-message AckRefreshToken {
-    int32 code = 1;
-    bytes token = 2;       // 该token可用于RPC或http的token
-    int32 limit_time = 4;  // token过期倒计时
-}
-
-message ReqProxyConnectKey {}
-
-message AckProxyConnectKey {
-    int32 code = 1;
-    Ident guid = 2; // account的guid
-    bytes key = 3;
-    bytes ip = 4;
-    int32 port = 5;
-    int32 limit_time = 6; // 
+    REQ_PROXY_CONNECT_VERIFY = 6000; // 来自代理服务器的验证请求
+    ACK_PROXY_CONNECT_VERIFY = 6001;   
 }

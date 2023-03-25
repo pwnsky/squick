@@ -2,11 +2,48 @@
 #include <list>
 #include <squick/plugin/net/i_request.h>
 #include <squick/plugin/net/i_response.h>
-#include <squick/struct/struct.h>
 #include <string>
+#include <squick/struct/struct.h>
 using namespace std;
-using namespace SquickStruct;
-class RequestLogin : public IRequest {
+
+enum class LoginType {
+    AccountPasswordLogin = 0,
+    EmailPasswordLogin = 1,
+    EmailVerifyCodeLogin = 2,
+    PhonePasswordLogin = 3,
+    PhoneVerifyCodeLogin = 4,
+    WechatLogin = 5,
+    QQLogin = 6,
+    VisitorLogin = 7,
+    TokenLogin = 8,
+};
+
+enum class ClientPlatform {
+    Windows = 0,
+    Linux = 1,
+    Mac = 2,
+    Android = 3,
+    IOS = 4,
+    Web = 5,
+};
+
+
+
+
+
+class AckLogout : public IResponse {
+public:
+    int code;
+};
+
+class AckRefreshToken : public IResponse {
+public:
+    int code;
+    string token;       // 该token可用于RPC或http的token
+    int limit_time;  // token过期倒计时
+};
+
+class ReqLogin : public IRequest {
   public:
     LoginType type;
     string account;
@@ -16,32 +53,45 @@ class RequestLogin : public IRequest {
     string version;
     ClientPlatform platform;
     string device;
-    string extra;
+    string extra; // 第三方登录需要
     string email;
     string phone;
     string verify_code;
 };
 
 
-AJSON(RequestLogin, type, account, password, token, signature, version, platform, device, extra, email, phone, verify_code)
 
-class ResponseLogin : public IResponse {
+AJSON(ReqLogin, type, account, password, token, signature, version, platform, device, extra, email, phone, verify_code)
+
+class AckLogin : public IResponse {
     public:
     int code;
-    string token;
-    string guid;
+    string token; // 该token可用于RPC或http的token
+    string guid;  // 账号Guid
+    int limit_time; // token过期倒计时
+};
+
+AJSON(AckLogin, code, token, guid, limit_time)
+
+class ReqWorldEnter : public IRequest {
+  public:
+    int world_id;
+};
+AJSON(ReqWorldEnter, world_id)
+
+class AckWorldEnter : public IResponse {
+  public:
+    int code;
+    string guid; // account的guid
+    string key;
+    string ip;
+    int port;
+    int world_id;
     int limit_time;
 };
 
-AJSON(ResponseLogin, code, token, guid, limit_time)
 
-class RequestSelectWorld : public IRequest {
-  public:
-    int id;
-};
-AJSON(RequestSelectWorld, id)
-
-class ResponseWorldList : public IResponse {
+class AckWorldList : public IResponse {
   public:
     class World {
       public:
@@ -53,5 +103,5 @@ class ResponseWorldList : public IResponse {
     std::list<World> world;
 };
 
-AJSON(ResponseWorldList::World, id, name, state, count)
-AJSON(ResponseWorldList, world, code, message)
+AJSON(AckWorldList::World, id, name, state, count)
+AJSON(AckWorldList, world, code, message)

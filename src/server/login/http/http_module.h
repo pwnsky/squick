@@ -30,13 +30,12 @@ class HttpModule : public IHttpModule {
     virtual bool Update();
 
   protected:
-    bool OnLogin(SQUICK_SHARE_PTR<HttpRequest> req);
-    bool OnWorldView(SQUICK_SHARE_PTR<HttpRequest> req);
-    bool OnWorldSelect(SQUICK_SHARE_PTR<HttpRequest> req);
-    bool OnCommonQuery(SQUICK_SHARE_PTR<HttpRequest> req);
-    WebStatus OnFilter(SQUICK_SHARE_PTR<HttpRequest> req);
-    std::string GetUserID(SQUICK_SHARE_PTR<HttpRequest> req);
-    std::string GetUserJWT(SQUICK_SHARE_PTR<HttpRequest> req);
+    bool OnLogin(SQUICK_SHARE_PTR<HttpRequest> request);
+    bool OnWorldList(SQUICK_SHARE_PTR<HttpRequest> request);
+    bool OnWorldEnter(SQUICK_SHARE_PTR<HttpRequest> request);
+    WebStatus OnFilter(SQUICK_SHARE_PTR<HttpRequest> request);
+    std::string GetUserID(SQUICK_SHARE_PTR<HttpRequest> request);
+    std::string GetUserJWT(SQUICK_SHARE_PTR<HttpRequest> request);
     bool CheckUserJWT(const std::string &user, const std::string &jwt);
     std::unordered_map<std::string, std::string> mToken;
     

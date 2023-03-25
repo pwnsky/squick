@@ -22,10 +22,12 @@ namespace login::http {
 	bool HttpModule::AfterStart() {
 		//dout << "\n加载登录http模块\n";
 		http_server_module_->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnLogin);
-		http_server_module_->AddRequestHandler("/world", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnWorldView);
-		http_server_module_->AddRequestHandler("/world", HttpType::SQUICK_HTTP_REQ_CONNECT, this, &HttpModule::OnWorldSelect);
-		http_server_module_->AddNetFilter("/world", this, &HttpModule::OnFilter);
 		http_server_module_->AddRequestHandler("/cdn", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnGetCDN);
+
+		http_server_module_->AddRequestHandler("/world/list", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnWorldList);
+		http_server_module_->AddRequestHandler("/world/enter", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnWorldEnter);
+		http_server_module_->AddNetFilter("/world", this, &HttpModule::OnFilter);
+		
 
 		SQUICK_SHARE_PTR<IClass> xLogicClass = config_class_module_->GetElement(excel::Server::ThisName());
 		if (xLogicClass) {
@@ -53,8 +55,8 @@ namespace login::http {
 
 	bool HttpModule::OnLogin(SQUICK_SHARE_PTR<HttpRequest> request) {
 		std::string res_str;
-		ResponseLogin rep;
-		RequestLogin req;
+		AckLogin ack;
+		ReqLogin req;
 		ajson::load_from_buff(req, request->body.c_str());
 		ajson::string_stream rep_ss;
 
@@ -101,62 +103,54 @@ namespace login::http {
 
 			// ok
 			Guid xGUIDKey = kernel_module_->CreateGUID();
-			rep.code = 0;
-			rep.token = xGUIDKey.ToString();
+			ack.code = 0;
+			ack.token = xGUIDKey.ToString();
 			mToken[req.account] = xGUIDKey.ToString();
 		} while (false);
 
-		ajson::save_to(rep_ss, rep);
+		ajson::save_to(rep_ss, ack);
 		return http_server_module_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
 	}
 
-	bool HttpModule::OnWorldView(SQUICK_SHARE_PTR<HttpRequest> req) {
-		std::string strResponse;
-		ResponseWorldList xResponsetWorldList;
+	bool HttpModule::OnWorldList(SQUICK_SHARE_PTR<HttpRequest> req) {
+		AckWorldList ack;
 
 		MapEx<int, SquickStruct::ServerInfoReport>& xWorldMap = client_master_module_->GetWorldMap();
 		SquickStruct::ServerInfoReport* pWorldData = xWorldMap.FirstNude();
 		while (pWorldData) {
-			ResponseWorldList::World xWorld;
-
-			xWorld.id = pWorldData->server_id();
-			xWorld.name = pWorldData->server_name();
-			xWorld.state = pWorldData->server_state();
-			xWorld.count = pWorldData->server_cur_count();
-
-			xResponsetWorldList.world.push_back(xWorld);
-
+			AckWorldList::World world;
+			world.id = pWorldData->server_id();
+			world.name = pWorldData->server_name();
+			world.state = pWorldData->server_state();
+			world.count = pWorldData->server_cur_count();
+			ack.world.push_back(world);
 			pWorldData = xWorldMap.NextNude();
 		}
 
-		ajson::string_stream ss;
-		ajson::save_to(ss, xResponsetWorldList);
-		strResponse = ss.str();
+		ajson::string_stream rep_ss;
+		ajson::save_to(rep_ss, ack);
 
-		return http_server_module_->ResponseMsg(req, strResponse, WebStatus::WEB_OK);
+		return http_server_module_->ResponseMsg(req, rep_ss.str(), WebStatus::WEB_OK);
 	}
 
-	bool HttpModule::OnWorldSelect(SQUICK_SHARE_PTR<HttpRequest> req) {
+	bool HttpModule::OnWorldEnter(SQUICK_SHARE_PTR<HttpRequest> request) {
 		std::string strResponse;
 		IResponse xResponse;
 
-		std::string user = GetUserID(req);
-
-		RequestSelectWorld xRequestSelectWorld;
-		ajson::load_from_buff(xRequestSelectWorld, req->body.c_str());
-		if (xRequestSelectWorld.id == 0) {
+		std::string user = GetUserID(request);
+		ReqWorldEnter req;
+		ajson::load_from_buff(req, request->body.c_str());
+		if (req.world_id == 0) {
 			xResponse.code = IResponse::ResponseType::RES_TYPE_FAILED;
 
 			ajson::string_stream ss;
 			ajson::save_to(ss, xResponse);
 			strResponse = ss.str();
 
-			return http_server_module_->ResponseMsg(req, strResponse, WebStatus::WEB_OK);
+			return http_server_module_->ResponseMsg(request, strResponse, WebStatus::WEB_OK);
 		}
-		return http_server_module_->ResponseMsg(req, strResponse, WebStatus::WEB_OK);
+		return http_server_module_->ResponseMsg(request, strResponse, WebStatus::WEB_OK);
 	}
-
-	bool HttpModule::OnCommonQuery(SQUICK_SHARE_PTR<HttpRequest> req) { return http_server_module_->ResponseMsg(req, "OnCommonQuery", WebStatus::WEB_ERROR); }
 
 	std::string HttpModule::GetUserID(SQUICK_SHARE_PTR<HttpRequest> req) {
 		auto it = req->headers.find("user");
@@ -181,7 +175,6 @@ namespace login::http {
 		if (it != mToken.end()) {
 			return (it->second == jwt);
 		}
-
 		return false;
 	}
 
@@ -194,31 +187,29 @@ namespace login::http {
 			return WebStatus::WEB_OK;
 		}
 
-		return WebStatus::WEB_AUTH;
-		/*
-		std::cout << "OnFilter: " << std::endl;
 
-		std::cout << "url: " << req.url << std::endl;
-		std::cout << "path: " << req.path << std::endl;
-		std::cout << "type: " << req.type << std::endl;
-		std::cout << "body: " << req.body << std::endl;
+		std::cout << "OnFilter: " << std::endl;
+		std::cout << "url: " << req->url << std::endl;
+		std::cout << "path: " << req->path << std::endl;
+		std::cout << "type: " << req->type << std::endl;
+		std::cout << "body: " << req->body << std::endl;
 
 		std::cout << "params: " << std::endl;
 
-		for (auto item : req.params)
+		for (auto item : req->params)
 		{
-				std::cout << item.first << ":" << item.second << std::endl;
+			std::cout << item.first << ":" << item.second << std::endl;
 		}
 
 		std::cout << "headers: " << std::endl;
 
-		for (auto item : req.headers)
+		for (auto item : req->headers)
 		{
-				std::cout << item.first << ":" << item.second << std::endl;
+			std::cout << item.first << ":" << item.second << std::endl;
 		}
-
-		return WebStatus::WEB_OK;
-		*/
+		return WebStatus::WEB_AUTH;
+		
+		
 	}
 
 	bool HttpModule::OnGetCDN(SQUICK_SHARE_PTR<HttpRequest> req) {

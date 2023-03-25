@@ -1,0 +1,9 @@
+syntax = "proto3";
+package SquickStruct;
+import "base.proto";
+
+
+enum MicroRPC {
+    MICRO_RPC_NONE = 0;
+}
+
