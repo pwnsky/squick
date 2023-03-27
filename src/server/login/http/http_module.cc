@@ -3,15 +3,15 @@
 
 namespace login::http {
 	bool HttpModule::Start() {
-		http_server_module_ = pPluginManager->FindModule<IHttpServerModule>();
-		kernel_module_ = pPluginManager->FindModule<IKernelModule>();
-		login_server_module_ = pPluginManager->FindModule<server::IServerModule>();
-		config_class_module_ = pPluginManager->FindModule<IClassModule>();
-		config_element_module_ = pPluginManager->FindModule<IElementModule>();
-		client_master_module_ = pPluginManager->FindModule<client::IMasterModule>();
-		net_client_module_ = pPluginManager->FindModule<INetClientModule>();
-
-		redis_module_ = pPluginManager->FindModule<redis::IRedisModule>();
+		m_http_server_ = pPluginManager->FindModule<IHttpServerModule>();
+		m_kernel_ = pPluginManager->FindModule<IKernelModule>();
+		m_server_ = pPluginManager->FindModule<server::IServerModule>();
+		m_class_ = pPluginManager->FindModule<IClassModule>();
+		m_element_ = pPluginManager->FindModule<IElementModule>();
+		m_master_ = pPluginManager->FindModule<client::IMasterModule>();
+		m_net_client_ = pPluginManager->FindModule<INetClientModule>();
+		m_mysql_ = pPluginManager->FindModule<mysql::IMysqlModule>();
+		m_redis_ = pPluginManager->FindModule<redis::IRedisModule>();
 
 		return true;
 	}
@@ -21,25 +21,25 @@ namespace login::http {
 
 	bool HttpModule::AfterStart() {
 		//dout << "\n加载登录http模块\n";
-		http_server_module_->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnLogin);
-		http_server_module_->AddRequestHandler("/cdn", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnGetCDN);
+		m_http_server_->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnLogin);
+		m_http_server_->AddRequestHandler("/cdn", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnGetCDN);
 
-		http_server_module_->AddRequestHandler("/world/list", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnWorldList);
-		http_server_module_->AddRequestHandler("/world/enter", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnWorldEnter);
-		http_server_module_->AddNetFilter("/world", this, &HttpModule::OnFilter);
+		m_http_server_->AddRequestHandler("/world/list", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnWorldList);
+		m_http_server_->AddRequestHandler("/world/enter", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnWorldEnter);
+		m_http_server_->AddNetFilter("/world", this, &HttpModule::OnFilter);
 		
 
-		SQUICK_SHARE_PTR<IClass> xLogicClass = config_class_module_->GetElement(excel::Server::ThisName());
+		SQUICK_SHARE_PTR<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
 		if (xLogicClass) {
 			const std::vector<std::string>& strIdList = xLogicClass->GetIDList();
 			for (int i = 0; i < strIdList.size(); ++i) {
 				const std::string& strId = strIdList[i];
 
-				int web_port = config_element_module_->GetPropertyInt32(strId, excel::Server::WebPort());
-				int nWebServerAppID = config_element_module_->GetPropertyInt32(strId, excel::Server::ServerID());
+				int web_port = m_element_->GetPropertyInt32(strId, excel::Server::WebPort());
+				int nWebServerAppID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
 				// webserver only run one instance in each server
 				if (pPluginManager->GetAppID() == nWebServerAppID && web_port > 0) {
-					http_server_module_->StartServer(web_port);
+					m_http_server_->StartServer(web_port);
 					break;
 				}
 			}
@@ -49,23 +49,36 @@ namespace login::http {
 	}
 
 	bool HttpModule::Update() {
-		http_server_module_->Update();
+		m_http_server_->Update();
 		return true;
 	}
 
 	bool HttpModule::OnLogin(SQUICK_SHARE_PTR<HttpRequest> request) {
 		std::string res_str;
-		AckLogin ack;
 		ReqLogin req;
+		AckLogin ack;
 		ajson::load_from_buff(req, request->body.c_str());
 		ajson::string_stream rep_ss;
-
 		do {
 			// Verify login
 			switch (req.type)
 			{
 			case LoginType::AccountPasswordLogin: {
+				int al = req.account.length();
+				int pl = req.password.length();
 
+				if (al < 6 || al > 32 || pl < 6 || pl > 32) {
+					ack.code = 1;
+					ack.msg = "account or password length is invalid\n";
+					break;
+				}
+				if (m_mysql_->IsHave("account", "")) {
+					// 登录
+				}
+				else {
+					// 注册
+
+				}
 			}break;
 			case LoginType::EmailPasswordLogin: {
 
@@ -97,25 +110,25 @@ namespace login::http {
 
 
 			// Get account guid from mysql
-			Guid guid = kernel_module_->CreateGUID(); // just for test
+			Guid guid = m_kernel_->CreateGUID(); // just for test
 			
 
-
+			// Account cache to redis
 			// ok
-			Guid xGUIDKey = kernel_module_->CreateGUID();
+			Guid xGUIDKey = m_kernel_->CreateGUID();
 			ack.code = 0;
 			ack.token = xGUIDKey.ToString();
 			mToken[req.account] = xGUIDKey.ToString();
 		} while (false);
 
 		ajson::save_to(rep_ss, ack);
-		return http_server_module_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
+		return m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
 	}
 
 	bool HttpModule::OnWorldList(SQUICK_SHARE_PTR<HttpRequest> req) {
 		AckWorldList ack;
 
-		MapEx<int, SquickStruct::ServerInfoReport>& xWorldMap = client_master_module_->GetWorldMap();
+		MapEx<int, SquickStruct::ServerInfoReport>& xWorldMap = m_master_->GetWorldMap();
 		SquickStruct::ServerInfoReport* pWorldData = xWorldMap.FirstNude();
 		while (pWorldData) {
 			AckWorldList::World world;
@@ -130,7 +143,7 @@ namespace login::http {
 		ajson::string_stream rep_ss;
 		ajson::save_to(rep_ss, ack);
 
-		return http_server_module_->ResponseMsg(req, rep_ss.str(), WebStatus::WEB_OK);
+		return m_http_server_->ResponseMsg(req, rep_ss.str(), WebStatus::WEB_OK);
 	}
 
 	bool HttpModule::OnWorldEnter(SQUICK_SHARE_PTR<HttpRequest> request) {
@@ -147,9 +160,9 @@ namespace login::http {
 			ajson::save_to(ss, xResponse);
 			strResponse = ss.str();
 
-			return http_server_module_->ResponseMsg(request, strResponse, WebStatus::WEB_OK);
+			return m_http_server_->ResponseMsg(request, strResponse, WebStatus::WEB_OK);
 		}
-		return http_server_module_->ResponseMsg(request, strResponse, WebStatus::WEB_OK);
+		return m_http_server_->ResponseMsg(request, strResponse, WebStatus::WEB_OK);
 	}
 
 	std::string HttpModule::GetUserID(SQUICK_SHARE_PTR<HttpRequest> req) {
@@ -220,20 +233,20 @@ namespace login::http {
 		repRoot["code"] = 0;
 		repRoot["msg"] = "";
 
-		SQUICK_SHARE_PTR<IClass> xLogicClass = config_class_module_->GetElement(excel::Server::ThisName());
+		SQUICK_SHARE_PTR<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
 		if (xLogicClass) {
 			const std::vector<std::string>& strIdList = xLogicClass->GetIDList();
 			for (int i = 0; i < strIdList.size(); ++i) {
 				const std::string& strId = strIdList[i];
-				int type = config_element_module_->GetPropertyInt32(strId, excel::Server::Type());
+				int type = m_element_->GetPropertyInt32(strId, excel::Server::Type());
 				if (type != SQUICK_SERVER_TYPES::SQUICK_ST_CDN) {
 					continue;
 				}
-				int web_port = config_element_module_->GetPropertyInt32(strId, excel::Server::WebPort());
-				int rpc_port = config_element_module_->GetPropertyInt32(strId, excel::Server::Port());
-				int server_id = config_element_module_->GetPropertyInt32(strId, excel::Server::ServerID());
-				string server_name = config_element_module_->GetPropertyString(strId, excel::Server::ID());
-				string public_ip = config_element_module_->GetPropertyString(strId, excel::Server::PublicIP());
+				int web_port = m_element_->GetPropertyInt32(strId, excel::Server::WebPort());
+				int rpc_port = m_element_->GetPropertyInt32(strId, excel::Server::Port());
+				int server_id = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
+				string server_name = m_element_->GetPropertyString(strId, excel::Server::ID());
+				string public_ip = m_element_->GetPropertyString(strId, excel::Server::PublicIP());
 				json server;
 				server = {
 						{"name", server_name},
@@ -243,14 +256,11 @@ namespace login::http {
 						{"type", "cdn"},
 						{"http_url", "http://" + public_ip + ":" + to_string(web_port)}
 				};
-
 				cdnServerList.push_back(server);
-
 			}
-
 			repRoot["servers"] = cdnServerList;
 		}
-		return http_server_module_->ResponseMsg(req, repRoot.dump(), WebStatus::WEB_OK);
+		return m_http_server_->ResponseMsg(req, repRoot.dump(), WebStatus::WEB_OK);
 	}
 
 } // namespace login::http

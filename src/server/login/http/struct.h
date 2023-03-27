@@ -69,9 +69,10 @@ class AckLogin : public IResponse {
     string token; // 该token可用于RPC或http的token
     string guid;  // 账号Guid
     int limit_time; // token过期倒计时
+    string msg;
 };
 
-AJSON(AckLogin, code, token, guid, limit_time)
+AJSON(AckLogin, code, token, guid, limit_time, msg)
 
 class ReqWorldEnter : public IRequest {
   public:
