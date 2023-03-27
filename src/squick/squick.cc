@@ -37,10 +37,10 @@ int main(int argc, char *argv[]) {
         serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=world id=100 plugin=world.xml")));
         serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=db_proxy id=300 plugin=db_proxy.xml")));
 
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=game id=500 plugin=game.xml")));
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=game id=501 plugin=game.xml")));
+        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=game id=1000 plugin=game.xml")));
+        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=game id=1001 plugin=game.xml")));
         serverList.push_back(
-            SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=gameplay_manager id=1000 plugin=gameplay_manager.xml")));
+            SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=gameplay_manager id=2000 plugin=gameplay_manager.xml")));
 
         serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=proxy id=500 plugin=proxy.xml")));
         serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=proxy id=501 plugin=proxy.xml")));

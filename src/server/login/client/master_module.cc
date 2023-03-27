@@ -168,8 +168,11 @@ void MasterModule::OnWorldInfoProcess(const SQUICK_SOCKET sockIndex, const int m
         if (!pServerData) {
             pServerData = SQUICK_SHARE_PTR<SquickStruct::ServerInfoReport>(SQUICK_NEW SquickStruct::ServerInfoReport());
             *pServerData = xData;
-
-            mWorldMap.AddElement(xData.server_id(), pServerData);
+            if (pServerData->server_type() == SquickStruct::ServerType::ST_WORLD) {
+                mWorldMap.AddElement(xData.server_id(), pServerData);
+            } else if(pServerData->server_type() == SquickStruct::ServerType::ST_PROXY){
+                proxys_map_.AddElement(xData.server_id(), pServerData);
+            }
         }
     }
 
