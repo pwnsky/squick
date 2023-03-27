@@ -27,10 +27,6 @@ enum class ClientPlatform {
     Web = 5,
 };
 
-
-
-
-
 class AckLogout : public IResponse {
 public:
     int code;
@@ -101,8 +97,10 @@ class AckWorldList : public IResponse {
         SquickStruct::ServerState state;
         int count;
     };
+    int code;
     std::list<World> world;
+    std::string msg;
 };
 
 AJSON(AckWorldList::World, id, name, state, count)
-AJSON(AckWorldList, world, code, message)
+AJSON(AckWorldList, world, code, msg)

@@ -39,7 +39,7 @@ class HttpModule : public IHttpModule {
     std::string GetUserID(SQUICK_SHARE_PTR<HttpRequest> request);
     std::string GetUserJWT(SQUICK_SHARE_PTR<HttpRequest> request);
     bool CheckUserJWT(const std::string &user, const std::string &jwt);
-    std::unordered_map<std::string, std::string> mToken;
+    std::unordered_map<std::string, std::string> tokens_;
     
     bool OnGetCDN(SQUICK_SHARE_PTR<HttpRequest> request);
   private:

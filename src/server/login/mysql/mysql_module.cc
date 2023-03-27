@@ -86,10 +86,7 @@ bool MysqlModule::RegisterAccount(const std::string& guid, const std::string& ac
     try {
         Schema sch = session_->getSchema(database_);
         Table tab = sch.getTable("account", true);
-        tab.update();
-        TableInsert i = tab.insert("guid", "account", "password"); // 指定列名字段
-        i.values(guid, account, password);
-        i.execute();
+        tab.insert("guid", "account", "password").values(guid, account, password).execute();
     }
     catch (const mysqlx::Error& err) {
         dout << "ERROR: " << err << endl;
@@ -112,10 +109,7 @@ bool MysqlModule::IsHave(const std::string& column_name, const std::string &valu
     try {
         Schema sch = session_->getSchema(database_);
         Table tab = sch.getTable("account", true);
-        TableSelect s = tab.select(column_name);
-        s.where(column_name + "='" + value + "'");
-        s.limit(1);
-        RowResult r = s.execute();
+        RowResult r = tab.select(column_name).where(column_name + "='" + value + "'").limit(1).execute();
         count = r.count();
         
     }
@@ -128,6 +122,48 @@ bool MysqlModule::IsHave(const std::string& column_name, const std::string &valu
         return false;
     }
     return count != 0;
+}
+
+Guid MysqlModule::GetGuid(AccountType type, const std::string& account) {
+    std::string column_name = "account";
+    switch (type) {
+    case AccountType::Account:
+        column_name = "account";
+        break;
+    case AccountType::Email:
+        column_name = "email";
+        break;
+    case AccountType::Phone:
+        column_name = "phone";
+        break;
+    case AccountType::Wechat:
+        column_name = "wechat";
+        break;
+    case AccountType::QQ:
+        column_name = "qq";
+        break;
+    }
+    Guid guid;
+    try {
+        Schema sch = session_->getSchema(database_);
+        Table tab = sch.getTable("account", true);
+        RowResult r = tab.select("guid").where(column_name + "='" + account + "'").limit(1).execute();
+        if (r.count() < 1) {
+            return guid;
+        }
+        mysqlx::string xstr = r.fetchOne()[0];
+        std::string sguid = xstr;
+        guid.FromString(sguid);
+    }
+    catch (const mysqlx::Error& err) {
+        dout << "ERROR: " << err << endl;
+        return guid;
+    }
+    catch (std::exception& ex) {
+        dout << "STD EXCEPTION: " << ex.what() << endl;
+        return guid;
+    }
+    return guid;
 }
 
 } // namespace login::mysql

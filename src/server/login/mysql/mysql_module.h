@@ -26,7 +26,7 @@ class MysqlModule : public IMysqlModule {
     
     virtual bool RegisterAccount(const std::string& guid, const std::string& account, const std::string& password) override;
     virtual bool IsHave(const std::string& column_name, const std::string& value) override;
-
+    virtual Guid GetGuid(AccountType type, const std::string& account) override;
 private:
     bool Connect(const std::string& user, const std::string& password, const std::string& host, int port);
     std::string host_;

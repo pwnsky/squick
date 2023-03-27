@@ -27,7 +27,7 @@ namespace login::http {
 		m_http_server_->AddRequestHandler("/world/list", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnWorldList);
 		m_http_server_->AddRequestHandler("/world/enter", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnWorldEnter);
 		m_http_server_->AddNetFilter("/world", this, &HttpModule::OnFilter);
-		
+
 
 		SQUICK_SHARE_PTR<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
 		if (xLogicClass) {
@@ -54,71 +54,67 @@ namespace login::http {
 	}
 
 	bool HttpModule::OnLogin(SQUICK_SHARE_PTR<HttpRequest> request) {
+		dout << "请求登录\n";
 		std::string res_str;
 		ReqLogin req;
 		AckLogin ack;
+		Guid guid;
 		ajson::load_from_buff(req, request->body.c_str());
 		ajson::string_stream rep_ss;
 		do {
-			// Verify login
-			switch (req.type)
-			{
-			case LoginType::AccountPasswordLogin: {
+
+			if (req.type == LoginType::AccountPasswordLogin) {
 				int al = req.account.length();
 				int pl = req.password.length();
-
+#ifdef SQUICK_DEV 
+				if (al < 1 || al > 32 || pl < 1 || pl > 32) {
+					ack.code = 1;
+					ack.msg = "account or password length is invalid\n";
+					break;
+				}
+#else
 				if (al < 6 || al > 32 || pl < 6 || pl > 32) {
 					ack.code = 1;
 					ack.msg = "account or password length is invalid\n";
 					break;
 				}
-				if (m_mysql_->IsHave("account", "")) {
-					// 登录
+#endif
+
+				if (!m_mysql_->IsHave("account", req.account)) {
+					dout << "AccountPasswordLogin 注册账号: account: " << req.account << " " << req.password << std::endl;
+					// 注册该账号
+					guid = m_kernel_->CreateGUID();
+					m_mysql_->RegisterAccount(guid.ToString(), req.account, req.password);
 				}
 				else {
-					// 注册
-
+					// 获取账号guid
+					guid = m_mysql_->GetGuid(mysql::IMysqlModule::AccountType::Account, req.account);
+					if (guid == Guid()) {
+						dout << "系统错误, 该用户不存在\n";
+						ack.code = 2;
+						ack.msg = "server error, this player is not exsited!\n";
+					}
 				}
-			}break;
-			case LoginType::EmailPasswordLogin: {
+			}
+			else if (req.type == LoginType::PhonePasswordLogin) {
 
-			}break;
-			case LoginType::EmailVerifyCodeLogin: {
-
-			}break;
-			case LoginType::PhonePasswordLogin: {
-
-			}break;
-			case LoginType::PhoneVerifyCodeLogin: {
-
-			}break;
-			case LoginType::WechatLogin: {
-
-			}break;
-			case LoginType::QQLogin: {
-
-			}break;
-			case LoginType::VisitorLogin: {
-
-			}break;
-			case LoginType::TokenLogin: {
-
-			}break;
-			default:
-				break;
 			}
 
-
-			// Get account guid from mysql
-			Guid guid = m_kernel_->CreateGUID(); // just for test
-			
+			dout << "AccountPasswordLogin 登录账号: account: " << req.account << " " << req.password << std::endl;
+			dout << "Guid: " << guid.ToString() << std::endl;
 
 			// Account cache to redis
 			// ok
-			Guid xGUIDKey = m_kernel_->CreateGUID();
+			Guid token = m_kernel_->CreateGUID();
 			ack.code = 0;
-			ack.token = xGUIDKey.ToString();
-			mToken[req.account] = xGUIDKey.ToString();
+			ack.token = token.ToString();
+			ack.guid = guid.ToString();
+			ack.limit_time = 1209600; // 14天
+			tokens_[guid.ToString()] = token.ToString();
+
+			// 缓存到redis
+
+
 		} while (false);
 
 		ajson::save_to(rep_ss, ack);
@@ -170,7 +166,6 @@ namespace login::http {
 		if (it != req->headers.end()) {
 			return it->second;
 		}
-
 		return "";
 	}
 
@@ -184,8 +179,8 @@ namespace login::http {
 	}
 
 	bool HttpModule::CheckUserJWT(const std::string& user, const std::string& jwt) {
-		auto it = mToken.find(user);
-		if (it != mToken.end()) {
+		auto it = tokens_.find(user);
+		if (it != tokens_.end()) {
 			return (it->second == jwt);
 		}
 		return false;
@@ -221,8 +216,8 @@ namespace login::http {
 			std::cout << item.first << ":" << item.second << std::endl;
 		}
 		return WebStatus::WEB_AUTH;
-		
-		
+
+
 	}
 
 	bool HttpModule::OnGetCDN(SQUICK_SHARE_PTR<HttpRequest> req) {
