@@ -125,7 +125,7 @@ void WorldNet_ServerModule::OnServerInfoProcess(const SQUICK_SOCKET sockIndex, c
     // sync to game
     SynWorldToGame();
 
-    // 同步 World 到 Pvp Manager
+    // 同步 World 到 Gameplay Manager
     SynWorldToGameplayManager();
 }
 

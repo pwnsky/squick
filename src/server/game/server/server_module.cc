@@ -88,7 +88,7 @@ void GameServerNet_ServerModule::OnSocketPSEvent(const SQUICK_SOCKET sockIndex, 
 
 void GameServerNet_ServerModule::OnClientDisconnect(const SQUICK_SOCKET nAddress) {
     int serverID = 0;
-    SQUICK_SHARE_PTR<GateServerInfo> pServerData = mProxyMap.First();
+    SQUICK_SHARE_PTR<ProxyServerInfo> pServerData = mProxyMap.First();
     while (pServerData) {
         if (nAddress == pServerData->xServerData.nFD) {
             serverID = pServerData->xServerData.pData->server_id();
@@ -111,9 +111,9 @@ void GameServerNet_ServerModule::OnProxyServerRegisteredProcess(const SQUICK_SOC
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
         const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
-        SQUICK_SHARE_PTR<GateServerInfo> pServerData = mProxyMap.GetElement(xData.server_id());
+        SQUICK_SHARE_PTR<ProxyServerInfo> pServerData = mProxyMap.GetElement(xData.server_id());
         if (!pServerData) {
-            pServerData = SQUICK_SHARE_PTR<GateServerInfo>(SQUICK_NEW GateServerInfo());
+            pServerData = SQUICK_SHARE_PTR<ProxyServerInfo>(SQUICK_NEW ProxyServerInfo());
             mProxyMap.AddElement(xData.server_id(), pServerData);
         }
 
@@ -143,7 +143,7 @@ void GameServerNet_ServerModule::OnProxyServerUnRegisteredProcess(const SQUICK_S
     return;
 }
 
-void GameServerNet_ServerModule::OnRefreshProxyServerInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
+void GameServerNet_ServerModule::OnRefreshProxyServerInfoProcess(const SQUICK_SOCKET sock, const int msgID, const char *msg, const uint32_t len) {
     Guid nPlayerID;
     SquickStruct::ServerInfoReportList xMsg;
     if (!m_pNetModule->ReceivePB(msgID, msg, len, xMsg, nPlayerID)) {
@@ -152,13 +152,13 @@ void GameServerNet_ServerModule::OnRefreshProxyServerInfoProcess(const SQUICK_SO
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
         const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
-        SQUICK_SHARE_PTR<GateServerInfo> pServerData = mProxyMap.GetElement(xData.server_id());
+        SQUICK_SHARE_PTR<ProxyServerInfo> pServerData = mProxyMap.GetElement(xData.server_id());
         if (!pServerData) {
-            pServerData = SQUICK_SHARE_PTR<GateServerInfo>(SQUICK_NEW GateServerInfo());
+            pServerData = SQUICK_SHARE_PTR<ProxyServerInfo>(SQUICK_NEW ProxyServerInfo());
             mProxyMap.AddElement(xData.server_id(), pServerData);
         }
 
-        pServerData->xServerData.nFD = sockIndex;
+        pServerData->xServerData.nFD = sock;
         *(pServerData->xServerData.pData) = xData;
 
         m_pLogModule->LogInfo(Guid(0, xData.server_id()), xData.server_name(), "Proxy Registered");
@@ -176,9 +176,9 @@ void GameServerNet_ServerModule::OnPvpManagerServerRegisteredProcess(const SQUIC
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
         const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
-        SQUICK_SHARE_PTR<GateServerInfo> pServerData = mGameplayManagerMap.GetElement(xData.server_id());
+        SQUICK_SHARE_PTR<ProxyServerInfo> pServerData = mGameplayManagerMap.GetElement(xData.server_id());
         if (!pServerData) {
-            pServerData = SQUICK_SHARE_PTR<GateServerInfo>(SQUICK_NEW GateServerInfo());
+            pServerData = SQUICK_SHARE_PTR<ProxyServerInfo>(SQUICK_NEW ProxyServerInfo());
             mGameplayManagerMap.AddElement(xData.server_id(), pServerData);
         }
 
@@ -217,9 +217,9 @@ void GameServerNet_ServerModule::OnRefreshPvpManagerServerInfoProcess(const SQUI
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
         const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
-        SQUICK_SHARE_PTR<GateServerInfo> pServerData = mGameplayManagerMap.GetElement(xData.server_id());
+        SQUICK_SHARE_PTR<ProxyServerInfo> pServerData = mGameplayManagerMap.GetElement(xData.server_id());
         if (!pServerData) {
-            pServerData = SQUICK_SHARE_PTR<GateServerInfo>(SQUICK_NEW GateServerInfo());
+            pServerData = SQUICK_SHARE_PTR<ProxyServerInfo>(SQUICK_NEW ProxyServerInfo());
             mGameplayManagerMap.AddElement(xData.server_id(), pServerData);
         }
 
@@ -232,20 +232,20 @@ void GameServerNet_ServerModule::OnRefreshPvpManagerServerInfoProcess(const SQUI
     return;
 }
 
-void GameServerNet_ServerModule::SendMsgPBToGate(const uint16_t msgID, google::protobuf::Message &xMsg, const Guid &self) {
-    SQUICK_SHARE_PTR<GateBaseInfo> pData = mRoleBaseData.GetElement(self);
+void GameServerNet_ServerModule::SendMsgPBToProxy(const uint16_t msgID, google::protobuf::Message &xMsg, const Guid &self) {
+    SQUICK_SHARE_PTR<ProxyBaseInfo> pData = mRoleBaseData.GetElement(self);
     if (pData) {
-        SQUICK_SHARE_PTR<GateServerInfo> pProxyData = mProxyMap.GetElement(pData->gateID);
+        SQUICK_SHARE_PTR<ProxyServerInfo> pProxyData = mProxyMap.GetElement(pData->proxy_id_);
         if (pProxyData) {
             m_pNetModule->SendMsgPB(msgID, xMsg, pProxyData->xServerData.nFD, pData->xClientID);
         }
     }
 }
 
-void GameServerNet_ServerModule::SendMsgToGate(const uint16_t msgID, const std::string &msg, const Guid &self) {
-    SQUICK_SHARE_PTR<GateBaseInfo> pData = mRoleBaseData.GetElement(self);
+void GameServerNet_ServerModule::SendMsgToProxy(const uint16_t msgID, const std::string &msg, const Guid &self) {
+    SQUICK_SHARE_PTR<ProxyBaseInfo> pData = mRoleBaseData.GetElement(self);
     if (pData) {
-        SQUICK_SHARE_PTR<GateServerInfo> pProxyData = mProxyMap.GetElement(pData->gateID);
+        SQUICK_SHARE_PTR<ProxyServerInfo> pProxyData = mProxyMap.GetElement(pData->proxy_id_);
         if (pProxyData) {
             m_pNetModule->SendMsg(msgID, msg, pProxyData->xServerData.nFD, pData->xClientID);
         }
@@ -255,7 +255,7 @@ void GameServerNet_ServerModule::SendMsgToGate(const uint16_t msgID, const std::
 // 发送给 Gameplay Manager 服务器
 void GameServerNet_ServerModule::SendMsgPBToGameplayManager(const uint16_t msgID, google::protobuf::Message &xMsg) {
     // 选择Gameplay转发表中的第一个Gameplay Manager进行发送,之后根据workload进行分配查找Gameplay Manager服务器
-    GateServerInfo *pGameData = mGameplayManagerMap.FirstNude();
+    ProxyServerInfo *pGameData = mGameplayManagerMap.FirstNude();
     if (pGameData) {
         dout << "发送给 Gameplay Manager 服务器: " << pGameData->xServerData.pData << std::endl;
         m_pNetModule->SendMsgPB(msgID, xMsg, pGameData->xServerData.nFD);
@@ -266,7 +266,7 @@ void GameServerNet_ServerModule::SendMsgPBToGameplayManager(const uint16_t msgID
 
 void GameServerNet_ServerModule::SendMsgToGameplayManager(const uint16_t msgID, const std::string &msg) {
     // 选择Gameplay转发表中的第一个Gameplay Manager进行发送
-    GateServerInfo *pGameData = mGameplayManagerMap.FirstNude();
+    ProxyServerInfo *pGameData = mGameplayManagerMap.FirstNude();
     if (pGameData) {
         m_pNetModule->SendMsg(msgID, msg, pGameData->xServerData.nFD);
     } else {
@@ -276,7 +276,7 @@ void GameServerNet_ServerModule::SendMsgToGameplayManager(const uint16_t msgID, 
 
 // 发送给Gameplay服务器
 void GameServerNet_ServerModule::SendMsgPBToGameplay(const uint16_t msgID, google::protobuf::Message &xMsg, const Guid &self) {
-    GateServerInfo *pGameData = mGameplayManagerMap.FirstNude();
+    ProxyServerInfo *pGameData = mGameplayManagerMap.FirstNude();
     if (pGameData) {
         dout << "发送给 Gameplay Manager 服务器: " << pGameData->xServerData.pData << std::endl;
         m_pNetModule->SendMsgPB(msgID, xMsg, pGameData->xServerData.nFD, self);
@@ -286,7 +286,7 @@ void GameServerNet_ServerModule::SendMsgPBToGameplay(const uint16_t msgID, googl
 }
 
 void GameServerNet_ServerModule::SendMsgToGameplay(const uint16_t msgID, const std::string &msg, const Guid &self) {
-    GateServerInfo *pGameData = mGameplayManagerMap.FirstNude();
+    ProxyServerInfo *pGameData = mGameplayManagerMap.FirstNude();
     if (pGameData) {
         dout << "发送给 Gameplay Manager 服务器: " << pGameData->xServerData.pData << std::endl;
         m_pNetModule->SendMsg(msgID, msg, pGameData->xServerData.nFD, self);
@@ -296,55 +296,55 @@ void GameServerNet_ServerModule::SendMsgToGameplay(const uint16_t msgID, const s
 }
 // ---
 
-void GameServerNet_ServerModule::SendGroupMsgPBToGate(const uint16_t msgID, google::protobuf::Message &xMsg, const int sceneID, const int groupID) {
+void GameServerNet_ServerModule::SendGroupMsgPBToProxy(const uint16_t msgID, google::protobuf::Message &xMsg, const int sceneID, const int groupID) {
     // care: batch
     DataList xList;
     if (m_pKernelModule->GetGroupObjectList(sceneID, groupID, xList, true)) {
         for (int i = 0; i < xList.GetCount(); ++i) {
             Guid xObject = xList.Object(i);
-            this->SendMsgPBToGate(msgID, xMsg, xObject);
+            this->SendMsgPBToProxy(msgID, xMsg, xObject);
         }
     }
 }
 
-void GameServerNet_ServerModule::SendGroupMsgPBToGate(const uint16_t msgID, google::protobuf::Message &xMsg, const int sceneID, const int groupID,
+void GameServerNet_ServerModule::SendGroupMsgPBToProxy(const uint16_t msgID, google::protobuf::Message &xMsg, const int sceneID, const int groupID,
                                                       const Guid exceptID) {
     DataList xList;
     if (m_pKernelModule->GetGroupObjectList(sceneID, groupID, xList, true)) {
         for (int i = 0; i < xList.GetCount(); ++i) {
             Guid xObject = xList.Object(i);
             if (xObject != exceptID) {
-                this->SendMsgPBToGate(msgID, xMsg, xObject);
+                this->SendMsgPBToProxy(msgID, xMsg, xObject);
             }
         }
     }
 }
 
-void GameServerNet_ServerModule::SendGroupMsgPBToGate(const uint16_t msgID, const std::string &msg, const int sceneID, const int groupID) {
+void GameServerNet_ServerModule::SendGroupMsgPBToProxy(const uint16_t msgID, const std::string &msg, const int sceneID, const int groupID) {
     // care: batch
     DataList xList;
     if (m_pKernelModule->GetGroupObjectList(sceneID, groupID, xList, true)) {
         for (int i = 0; i < xList.GetCount(); ++i) {
             Guid xObject = xList.Object(i);
-            this->SendMsgToGate(msgID, msg, xObject);
+            this->SendMsgToProxy(msgID, msg, xObject);
         }
     }
 }
 
-void GameServerNet_ServerModule::SendGroupMsgPBToGate(const uint16_t msgID, const std::string &msg, const int sceneID, const int groupID, const Guid exceptID) {
+void GameServerNet_ServerModule::SendGroupMsgPBToProxy(const uint16_t msgID, const std::string &msg, const int sceneID, const int groupID, const Guid exceptID) {
     DataList xList;
     if (m_pKernelModule->GetGroupObjectList(sceneID, groupID, xList, true)) {
         for (int i = 0; i < xList.GetCount(); ++i) {
             Guid xObject = xList.Object(i);
             if (xObject != exceptID) {
-                this->SendMsgToGate(msgID, msg, xObject);
+                this->SendMsgToProxy(msgID, msg, xObject);
             }
         }
     }
 }
 
-bool GameServerNet_ServerModule::AddPlayerGateInfo(const Guid &roleID, const Guid &clientID, const int gateID) {
-    if (gateID <= 0) {
+bool GameServerNet_ServerModule::AddPlayerProxyInfo(const Guid &roleID, const Guid &clientID, const int proxy_id) {
+    if (proxy_id <= 0) {
         return false;
     }
 
@@ -352,13 +352,13 @@ bool GameServerNet_ServerModule::AddPlayerGateInfo(const Guid &roleID, const Gui
         return false;
     }
 
-    SQUICK_SHARE_PTR<GameServerNet_ServerModule::GateBaseInfo> pBaseData = mRoleBaseData.GetElement(roleID);
+    SQUICK_SHARE_PTR<GameServerNet_ServerModule::ProxyBaseInfo> pBaseData = mRoleBaseData.GetElement(roleID);
     if (nullptr != pBaseData) {
         m_pLogModule->LogError(clientID, "player is exist, cannot enter game", __FUNCTION__, __LINE__);
         return false;
     }
 
-    SQUICK_SHARE_PTR<GateServerInfo> pServerData = mProxyMap.GetElement(gateID);
+    SQUICK_SHARE_PTR<ProxyServerInfo> pServerData = mProxyMap.GetElement(proxy_id);
     if (nullptr == pServerData) {
         return false;
     }
@@ -367,7 +367,7 @@ bool GameServerNet_ServerModule::AddPlayerGateInfo(const Guid &roleID, const Gui
         return false;
     }
 
-    if (!mRoleBaseData.AddElement(roleID, SQUICK_SHARE_PTR<GateBaseInfo>(SQUICK_NEW GateBaseInfo(gateID, clientID)))) {
+    if (!mRoleBaseData.AddElement(roleID, SQUICK_SHARE_PTR<ProxyBaseInfo>(SQUICK_NEW ProxyBaseInfo(proxy_id, clientID)))) {
         pServerData->xRoleInfo.erase(roleID);
         return false;
     }
@@ -398,15 +398,15 @@ bool GameServerNet_ServerModule::AddPvpGateInfo(const Guid& clientID, const int 
         return true;
 }*/
 
-bool GameServerNet_ServerModule::RemovePlayerGateInfo(const Guid &roleID) {
-    SQUICK_SHARE_PTR<GateBaseInfo> pBaseData = mRoleBaseData.GetElement(roleID);
+bool GameServerNet_ServerModule::RemovePlayerProxyInfo(const Guid &roleID) {
+    SQUICK_SHARE_PTR<ProxyBaseInfo> pBaseData = mRoleBaseData.GetElement(roleID);
     if (nullptr == pBaseData) {
         return false;
     }
 
     mRoleBaseData.RemoveElement(roleID);
 
-    SQUICK_SHARE_PTR<GateServerInfo> pServerData = mProxyMap.GetElement(pBaseData->gateID);
+    SQUICK_SHARE_PTR<ProxyServerInfo> pServerData = mProxyMap.GetElement(pBaseData->proxy_id_);
     if (nullptr == pServerData) {
         return false;
     }
@@ -415,17 +415,17 @@ bool GameServerNet_ServerModule::RemovePlayerGateInfo(const Guid &roleID) {
     return true;
 }
 
-SQUICK_SHARE_PTR<IGameServerNet_ServerModule::GateBaseInfo> GameServerNet_ServerModule::GetPlayerGateInfo(const Guid &roleID) {
+SQUICK_SHARE_PTR<IGameServerNet_ServerModule::ProxyBaseInfo> GameServerNet_ServerModule::GetPlayerProxyInfo(const Guid &roleID) {
     return mRoleBaseData.GetElement(roleID);
 }
 
-SQUICK_SHARE_PTR<IGameServerNet_ServerModule::GateServerInfo> GameServerNet_ServerModule::GetGateServerInfo(const int gateID) {
-    return mProxyMap.GetElement(gateID);
+SQUICK_SHARE_PTR<IGameServerNet_ServerModule::ProxyServerInfo> GameServerNet_ServerModule::GetProxyServerInfo(const int proxy_id) {
+    return mProxyMap.GetElement(proxy_id);
 }
 
-SQUICK_SHARE_PTR<IGameServerNet_ServerModule::GateServerInfo> GameServerNet_ServerModule::GetGateServerInfoBySockIndex(const SQUICK_SOCKET sockIndex) {
+SQUICK_SHARE_PTR<IGameServerNet_ServerModule::ProxyServerInfo> GameServerNet_ServerModule::GetProxyServerInfoBySockIndex(const SQUICK_SOCKET sockIndex) {
     int gateID = -1;
-    SQUICK_SHARE_PTR<GateServerInfo> pServerData = mProxyMap.First();
+    SQUICK_SHARE_PTR<ProxyServerInfo> pServerData = mProxyMap.First();
     while (pServerData) {
         if (sockIndex == pServerData->xServerData.nFD) {
             gateID = pServerData->xServerData.pData->server_id();

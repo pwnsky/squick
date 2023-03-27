@@ -4,7 +4,6 @@ START TRANSACTION;
 SET time_zone = "+00:00";
 
 CREATE DATABASE IF NOT EXISTS `admin` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
-
 USE `admin`;
 
 DROP TABLE IF EXISTS `admin_device`;
@@ -51,8 +50,8 @@ CREATE TABLE `admin_users` (
 
 
 
-DROP TABLE IF EXISTS `op_log`; -- 管理操作日志
-CREATE TABLE `app_log` (
+DROP TABLE IF EXISTS `admin_log`; -- 管理操作日志
+CREATE TABLE `admin_log` (
     `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键' ,
     `uuid` VARCHAR(127)  NOT NULL COMMENT '设备uuid',
     `time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '时间',

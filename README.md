@@ -351,11 +351,11 @@ deploy/bin/
 
 ### 搭建Mysql玩家数据库
 
-负责登录以及玩家的基本数据。
+负责登录以及玩家的基本数据，本次数据库采用最新版本的mysql8。
 
 ```
 docker pull mysql:8.0
-docker run -d --restart always --name squick_db_mysql_1 -p 10400:3306 -e MYSQL_ROOT_PASSWORD=pwnsky_squick  mysql:8.0
+docker run -d --restart always --name squick_db_mysql_1 -p 10400:33060 -e MYSQL_ROOT_PASSWORD=pwnsky_squick  mysql:8.0
 ```
 
 pwnsky_squick 是密码, 导入基本sql

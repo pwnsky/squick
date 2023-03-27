@@ -5,52 +5,50 @@
 
 class IGameServerNet_ServerModule : public IModule {
   public:
-    struct GateBaseInfo {
+    struct ProxyBaseInfo {
         enum ERoleStatus {
             E_LOADING = 1,
             E_LOADED = 2,
         };
 
-        GateBaseInfo() {
-            nActorID = 0;
-            gateID = 0;
+        ProxyBaseInfo() {
+            actor_id_ = 0;
+            proxy_id_ = 0;
             eStatus = E_LOADING;
         }
 
-        GateBaseInfo(const int gateID, const Guid xIdent) {
-            this->nActorID = 0;
-            this->gateID = gateID;
+        ProxyBaseInfo(const int proxy_id, const Guid xIdent) {
+            this->actor_id_ = 0;
+            this->proxy_id_ = proxy_id;
             this->xClientID = xIdent;
         }
 
-        int nActorID;
-        int gateID;
+        int actor_id_;
+        int proxy_id_;
         ERoleStatus eStatus;
         Guid xClientID;
     };
 
-    struct GateServerInfo {
+    struct ProxyServerInfo {
         ServerData xServerData;
-
         std::map<Guid, SQUICK_SOCKET> xRoleInfo;
     };
 
   public:
-    // virtual void SendMsgPBToGate(const uint16_t msgID, const std::string& xMsg, const Guid& self) = 0;
-    virtual void SendMsgPBToGate(const uint16_t msgID, google::protobuf::Message &xMsg, const Guid &self) = 0;
-    virtual void SendGroupMsgPBToGate(const uint16_t msgID, google::protobuf::Message &xMsg, const int sceneID, const int groupID) = 0;
-    virtual void SendGroupMsgPBToGate(const uint16_t msgID, google::protobuf::Message &xMsg, const int sceneID, const int groupID, const Guid exceptID) = 0;
+    virtual void SendMsgPBToProxy(const uint16_t msgID, google::protobuf::Message &xMsg, const Guid &self) = 0;
+    virtual void SendGroupMsgPBToProxy(const uint16_t msgID, google::protobuf::Message &xMsg, const int sceneID, const int groupID) = 0;
+    virtual void SendGroupMsgPBToProxy(const uint16_t msgID, google::protobuf::Message &xMsg, const int sceneID, const int groupID, const Guid exceptID) = 0;
 
-    virtual void SendMsgToGate(const uint16_t msgID, const std::string &msg, const Guid &self) = 0;
-    virtual void SendGroupMsgPBToGate(const uint16_t msgID, const std::string &msg, const int sceneID, const int groupID) = 0;
-    virtual void SendGroupMsgPBToGate(const uint16_t msgID, const std::string &msg, const int sceneID, const int groupID, const Guid exceptID) = 0;
+    virtual void SendMsgToProxy(const uint16_t msgID, const std::string &msg, const Guid &self) = 0;
+    virtual void SendGroupMsgPBToProxy(const uint16_t msgID, const std::string &msg, const int sceneID, const int groupID) = 0;
+    virtual void SendGroupMsgPBToProxy(const uint16_t msgID, const std::string &msg, const int sceneID, const int groupID, const Guid exceptID) = 0;
 
-    virtual bool AddPlayerGateInfo(const Guid &roleID, const Guid &clientID, const int gateID) = 0;
-    virtual bool RemovePlayerGateInfo(const Guid &roleID) = 0;
+    virtual bool AddPlayerProxyInfo(const Guid &roleID, const Guid &clientID, const int proxy_id) = 0;
+    virtual bool RemovePlayerProxyInfo(const Guid &roleID) = 0;
 
-    virtual SQUICK_SHARE_PTR<GateBaseInfo> GetPlayerGateInfo(const Guid &roleID) = 0;
-    virtual SQUICK_SHARE_PTR<GateServerInfo> GetGateServerInfo(const int gateID) = 0;
-    virtual SQUICK_SHARE_PTR<GateServerInfo> GetGateServerInfoBySockIndex(const SQUICK_SOCKET sockIndex) = 0;
+    virtual SQUICK_SHARE_PTR<ProxyBaseInfo> GetPlayerProxyInfo(const Guid &roleID) = 0;
+    virtual SQUICK_SHARE_PTR<ProxyServerInfo> GetProxyServerInfo(const int proxy_id) = 0;
+    virtual SQUICK_SHARE_PTR<ProxyServerInfo> GetProxyServerInfoBySockIndex(const SQUICK_SOCKET sockIndex) = 0;
 
     // 发送消息到Pvp服务器，由Pvp Manager作为代理
     virtual void SendMsgPBToGameplay(const uint16_t msgID, google::protobuf::Message &xMsg, const Guid &self) = 0;
