@@ -145,7 +145,7 @@ void RoomModule::OnReqRoomJoin(const SQUICK_SOCKET sockIndex, const int msgID, c
 
     SquickStruct::AckRoomJoin ack;
     ack.set_code(0);
-    m_pGameServerNet_ServerModule->SendMsgPBToGate(SquickStruct::ACK_ROOM_JOIN, ack, clientID);
+    m_pGameServerNet_ServerModule->SendMsgPBToProxy(SquickStruct::ACK_ROOM_JOIN, ack, clientID);
 }
 
 // 获取房间列表
@@ -190,7 +190,7 @@ void RoomModule::OnReqRoomList(const SQUICK_SOCKET sockIndex, const int msgID, c
         // dout << "遍历: " << iter->second->name() << std::endl;
     }
 
-    m_pGameServerNet_ServerModule->SendMsgPBToGate(SquickStruct::ACK_ROOM_LIST, ack, clientID);
+    m_pGameServerNet_ServerModule->SendMsgPBToProxy(SquickStruct::ACK_ROOM_LIST, ack, clientID);
 }
 
 void RoomModule::OnReqRoomDetails(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
@@ -232,7 +232,7 @@ void RoomModule::OnReqRoomQuit(const SQUICK_SOCKET sockIndex, const int msgID, c
     } else {
         ack.set_code(1);
     }
-    m_pGameServerNet_ServerModule->SendMsgPBToGate(SquickStruct::ACK_ROOM_QUIT, ack, clientID);
+    m_pGameServerNet_ServerModule->SendMsgPBToProxy(SquickStruct::ACK_ROOM_QUIT, ack, clientID);
 }
 
 bool RoomModule::RoomQuit(const Guid &clientID) {
@@ -343,7 +343,7 @@ void RoomModule::OnReqRoomGamePlayStart(const SQUICK_SOCKET sockIndex, const int
         gamePlay->set_key(play.key());
         gamePlay->set_name(play.name());
         ack.set_allocated_game_play(gamePlay);
-        m_pGameServerNet_ServerModule->SendMsgPBToGate(SquickStruct::GameLobbyRPC::ACK_ROOM_GAME_PLAY_START, ack, clientID);
+        m_pGameServerNet_ServerModule->SendMsgPBToProxy(SquickStruct::GameLobbyRPC::ACK_ROOM_GAME_PLAY_START, ack, clientID);
     } break;
     }
 }
@@ -434,7 +434,7 @@ void RoomModule::GamePlayPrepared(int room_id, const string &name, const string 
 }
 
 void RoomModule::SendToPlayer(const uint16_t msgID, google::protobuf::Message &xMsg, const Guid &player) {
-    m_pGameServerNet_ServerModule->SendMsgPBToGate(msgID, xMsg, player);
+    m_pGameServerNet_ServerModule->SendMsgPBToProxy(msgID, xMsg, player);
 }
 
 // 广播发送给房间内所有玩家
@@ -451,7 +451,7 @@ void RoomModule::BroadcastToPlyaers(const uint16_t msgID, google::protobuf::Mess
     for (auto const &player : room->players()) {
         Guid clientID = m_pNetModule->ProtobufToStruct(player.guid());
         dout << "Broad cast to: " << clientID.ToString() << std::endl;
-        m_pGameServerNet_ServerModule->SendMsgPBToGate(msgID, xMsg, clientID);
+        m_pGameServerNet_ServerModule->SendMsgPBToProxy(msgID, xMsg, clientID);
     }
 }
 

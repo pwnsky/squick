@@ -288,7 +288,7 @@ void GameServerToWorldModule::TransPBToProxy(const SQUICK_SOCKET sockIndex, cons
         return;
     }
 
-    m_pGameServerNet_ServerModule->SendMsgToGate(msgID, strData, nPlayerID);
+    m_pGameServerNet_ServerModule->SendMsgToProxy(msgID, strData, nPlayerID);
 
     return;
 }

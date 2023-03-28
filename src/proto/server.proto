@@ -76,6 +76,7 @@ enum ServerRPC {
 
 // 服务器类型
 // c++代码对应在 squick/core/base.h :  SQUICK_SERVER_TYPES
+/*
 enum ServerType {
     ST_NONE = 0;               // NONE
     ST_MASTER = 3;             // 不支持横向拓展
@@ -87,7 +88,7 @@ enum ServerType {
     ST_GAMEPLAY_MANAGER = 11; // Game Play管理服务器 支持横向拓展
     ST_GAMEPLAY = 12;          // Gameplay服务器
     ST_MICRO = 13;             // 微服务，支持横向拓展
-};
+};*/
 
 enum ServerState {
     SERVER_CRASH = 0;
@@ -119,10 +120,12 @@ message ServerInfoReportList { repeated ServerInfoReport server_list = 1; }
 
 message ServerHeartBeat { int32 count = 1; }
 
-message ReqServerList { ServerType type = 1; }
+message ReqServerList {
+     //ServerType type = 1;
+}
 
 message AckServerList {
-    ServerType type = 1;
+    //ServerType type = 1;
     repeated ServerInfo info = 2;
 }
 

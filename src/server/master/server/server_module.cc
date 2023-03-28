@@ -267,7 +267,6 @@ void MasterNet_ServerModule::SynWorldToLoginAndWorld() {
     while (pServerData) {
         SquickStruct::ServerInfoReport *pData = xData.add_server_list();
         *pData = *(pServerData->pData);
-
         pServerData = mWorldMap.Next();
     }
 
@@ -275,7 +274,6 @@ void MasterNet_ServerModule::SynWorldToLoginAndWorld() {
     pServerData = mLoginMap.First();
     while (pServerData) {
         m_pNetModule->SendMsgPB(SquickStruct::ServerRPC::STS_NET_INFO, xData, pServerData->nFD);
-
         pServerData = mLoginMap.Next();
     }
 

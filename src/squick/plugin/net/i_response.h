@@ -9,14 +9,15 @@
 class IResponse {
   public:
     enum ResponseType {
-        RES_TYPE_SUCCESS,
-        RES_TYPE_FAILED,
-        RES_TYPE_AUTH_FAILED,
+        SUCCESS,
+        FAILED,
+        AUTH_FAILED,
+        SERVER_ERROR,
+        QEUEST_ERROR,
     };
-
   public:
     ResponseType code;
-    std::string message;
+    std::string msg;
 };
 
-AJSON(IResponse, code, message)
+AJSON(IResponse, code, msg)

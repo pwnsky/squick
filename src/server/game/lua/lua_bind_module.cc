@@ -46,7 +46,7 @@ void LuaBindModule::SendToPlayer(string &player_guid_str, uint16_t msgID, std::s
     std::cout << "this: " << this << "  " << m_pGameServerNet_ServerModule << " LuaBindModule::SendToPlayer " << msgID << " msg: " << data << std::endl;
     // std::cout << " \n length: " << data.length() << std::endl;
     Guid guid = Guid(player_guid_str);
-    m_pGameServerNet_ServerModule->SendMsgToGate(msgID, data, guid);
+    m_pGameServerNet_ServerModule->SendMsgToProxy(msgID, data, guid);
 }
 
 void LuaBindModule::Test(const uint16_t msgID, string &msg, int a) { std::cout << "LuaBindModule::Test\n" << msgID << "   " << msg << a << std::endl; }

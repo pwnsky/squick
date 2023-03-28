@@ -68,13 +68,13 @@ namespace login::http {
 				int pl = req.password.length();
 #ifdef SQUICK_DEV 
 				if (al < 1 || al > 32 || pl < 1 || pl > 32) {
-					ack.code = 1;
+					ack.code = IResponse::QEUEST_ERROR;
 					ack.msg = "account or password length is invalid\n";
 					break;
 				}
 #else
 				if (al < 6 || al > 32 || pl < 6 || pl > 32) {
-					ack.code = 1;
+					ack.code = IResponse::QEUEST_ERROR;
 					ack.msg = "account or password length is invalid\n";
 					break;
 				}
@@ -91,7 +91,7 @@ namespace login::http {
 					guid = m_mysql_->GetGuid(mysql::IMysqlModule::AccountType::Account, req.account);
 					if (guid == Guid()) {
 						dout << "系统错误, 该用户不存在\n";
-						ack.code = 2;
+						ack.code = IResponse::SERVER_ERROR;
 						ack.msg = "server error, this player is not exsited!\n";
 					}
 				}
@@ -106,7 +106,7 @@ namespace login::http {
 			// Account cache to redis
 			// ok
 			Guid token = m_kernel_->CreateGUID();
-			ack.code = 0;
+			ack.code = IResponse::SUCCESS;
 			ack.token = token.ToString();
 			ack.guid = guid.ToString();
 			ack.limit_time = 1209600; // 14天
@@ -123,10 +123,11 @@ namespace login::http {
 
 	bool HttpModule::OnWorldList(SQUICK_SHARE_PTR<HttpRequest> req) {
 		AckWorldList ack;
-
-		MapEx<int, SquickStruct::ServerInfoReport>& xWorldMap = m_master_->GetWorldMap();
-		SquickStruct::ServerInfoReport* pWorldData = xWorldMap.FirstNude();
+		dout << "ojbk \n";
+		auto& xWorldMap = m_master_->GetWorldMap();
+		auto pWorldData = xWorldMap.FirstNude();
 		while (pWorldData) {
+			dout << " world : " << pWorldData->server_name() << std::endl;
 			AckWorldList::World world;
 			world.id = pWorldData->server_id();
 			world.name = pWorldData->server_name();
@@ -136,29 +137,35 @@ namespace login::http {
 			pWorldData = xWorldMap.NextNude();
 		}
 
+		dout << "ojbk \n";
+
+		ack.code = IResponse::SUCCESS;
+		ack.msg = "";
 		ajson::string_stream rep_ss;
 		ajson::save_to(rep_ss, ack);
-
+		
 		return m_http_server_->ResponseMsg(req, rep_ss.str(), WebStatus::WEB_OK);
 	}
 
 	bool HttpModule::OnWorldEnter(SQUICK_SHARE_PTR<HttpRequest> request) {
-		std::string strResponse;
-		IResponse xResponse;
 
-		std::string user = GetUserID(request);
 		ReqWorldEnter req;
+		AckWorldEnter ack;
+		std::string user = GetUserID(request);
+		
 		ajson::load_from_buff(req, request->body.c_str());
-		if (req.world_id == 0) {
-			xResponse.code = IResponse::ResponseType::RES_TYPE_FAILED;
 
-			ajson::string_stream ss;
-			ajson::save_to(ss, xResponse);
-			strResponse = ss.str();
-
-			return m_http_server_->ResponseMsg(request, strResponse, WebStatus::WEB_OK);
-		}
-		return m_http_server_->ResponseMsg(request, strResponse, WebStatus::WEB_OK);
+		do {
+			if (req.world_id == 0) {
+				ack.code = IResponse::QEUEST_ERROR;
+				break;
+			}
+			ack.code = IResponse::SUCCESS;
+		} while (false);
+		
+		ajson::string_stream ss;
+		ajson::save_to(ss, ack);
+		return m_http_server_->ResponseMsg(request, ss.str(), WebStatus::WEB_OK);
 	}
 
 	std::string HttpModule::GetUserID(SQUICK_SHARE_PTR<HttpRequest> req) {
@@ -191,7 +198,7 @@ namespace login::http {
 		std::string jwt = GetUserJWT(req);
 
 		bool bRet = CheckUserJWT(user, jwt);
-		if (bRet) {
+		if (!bRet) {
 			return WebStatus::WEB_OK;
 		}
 

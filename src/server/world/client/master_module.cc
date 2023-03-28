@@ -64,7 +64,7 @@ bool WorldToMasterModule::AfterStart() {
 
 bool WorldToMasterModule::Update() {
     // SQUICK_WILL_DO
-    // ServerReport();
+    ServerReport();
     return true;
 }
 
@@ -137,7 +137,7 @@ void WorldToMasterModule::ServerReport() {
                 reqMsg.set_server_max_online(maxConnect);
                 reqMsg.set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
                 reqMsg.set_server_type(serverType);
-
+                dout << "World Server report: " << serverType << std::endl;
                 m_pNetClientModule->SendToAllServerByPB(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
             }
         }
