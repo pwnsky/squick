@@ -64,7 +64,7 @@ class WorldModule : public IWorldModule {
     INT64 mLastReportTime;
 
     ILogModule *m_pLogModule;
-    logic::ILogicModule * logic_module_;
+    logic::ILogicModule * m_logic_;
     IKernelModule *m_pKernelModule;
     server::IServerModule *server_module_;
     IElementModule *m_pElementModule;

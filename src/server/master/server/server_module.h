@@ -51,7 +51,8 @@ class MasterNet_ServerModule : public IMasterNet_ServerModule {
 
     //////////////////////////////////////////////////////////////////////////
 
-    void SynWorldToLoginAndWorld();
+    void SyncWorldToLoginAndWorld();
+    void SyncProxyToLogin();
     void LogGameServer();
 
     void OnHeartBeat(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);

@@ -6,7 +6,7 @@
 namespace proxy::client {
 bool WorldModule::Start() {
     m_pSecurityModule = pPluginManager->FindModule<ISecurityModule>();
-    logic_module_ = pPluginManager->FindModule<logic::ILogicModule>();
+    m_logic_ = pPluginManager->FindModule<logic::ILogicModule>();
     m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
     server_module_ = pPluginManager->FindModule<server::IServerModule>();
     m_pElementModule = pPluginManager->FindModule<IElementModule>();
@@ -75,6 +75,7 @@ void WorldModule::OnSocketWSEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NE
 }
 
 void WorldModule::Register(INet *pNet) {
+    dout << "注册代理服务器\n";
     SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
@@ -84,6 +85,7 @@ void WorldModule::Register(INet *pNet) {
             const int serverType = m_pElementModule->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::Server::ServerID());
             if (serverType == SQUICK_SERVER_TYPES::SQUICK_ST_PROXY && pPluginManager->GetAppID() == serverID) {
+                dout << "Register proxy server to world\n";
                 const int nPort = m_pElementModule->GetPropertyInt32(strId, excel::Server::Port());
                 const int maxConnect = m_pElementModule->GetPropertyInt32(strId, excel::Server::MaxOnline());
                 // const int nCpus = m_pElementModule->GetPropertyInt32(strId, SquickProtocol::Server::CpuCount());
@@ -92,7 +94,7 @@ void WorldModule::Register(INet *pNet) {
 
                 SquickStruct::ServerInfoReportList xMsg;
                 SquickStruct::ServerInfoReport *pData = xMsg.add_server_list();
-
+                
                 pData->set_server_id(serverID);
                 pData->set_server_name(strId);
                 pData->set_server_cur_count(0);
@@ -156,7 +158,6 @@ bool WorldModule::AfterStart() {
     // &ProxyServerToWorldModule::OnSelectServerResultProcess);
     m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::STS_NET_INFO, this, &WorldModule::OnServerInfoProcess);
     m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, this, &WorldModule::OnOtherMessage);
-
     m_pNetClientModule->AddEventCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, this, &WorldModule::OnSocketWSEvent);
     m_pNetClientModule->ExpandBufferSize();
 
@@ -248,7 +249,7 @@ bool WorldModule::VerifyConnectData(const std::string &account, const std::strin
 void WorldModule::LogServerInfo(const std::string &strServerInfo) { m_pLogModule->LogInfo(Guid(), strServerInfo, ""); }
 
 void WorldModule::OnOtherMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    server_module_->Transport(sockIndex, msgID, msg, len);
+    m_logic_->Transport(sockIndex, msgID, msg, len);
 }
 
 } // namespace proxy::client

@@ -9,7 +9,7 @@
 #include "../logic/i_logic_module.h"
 #include "../server/i_server_module.h"
 #include "i_master_module.h"
-
+#include <map>
 namespace login::client {
 class MasterModule : public IMasterModule {
   public:
@@ -30,10 +30,11 @@ class MasterModule : public IMasterModule {
     virtual void LogSend(const char *str) {}
 
     virtual INetClientModule *GetClusterModule();
-    virtual MapEx<int, SquickStruct::ServerInfoReport> &GetWorldMap();
+    virtual map<int, SquickStruct::ServerInfoReport> & GetWorldServers();
+    virtual map<int, SquickStruct::ServerInfoReport>& GetProxyServers();
 
   protected:
-    void OnSocketMSEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
+    void OnSocketMSEvent(const SQUICK_SOCKET sock, const SQUICK_NET_EVENT event, INet *net);
 
   protected:
     //////////////////////////////////////////////////////////////////////////
@@ -46,8 +47,8 @@ class MasterModule : public IMasterModule {
 
   private:
     INT64 mLastReportTime;
-    MapEx<int, SquickStruct::ServerInfoReport> world_map_;
-    MapEx<int, SquickStruct::ServerInfoReport> proxys_map_;
+    map<int, SquickStruct::ServerInfoReport> world_servers_;
+    map<int, SquickStruct::ServerInfoReport> proxy_servers_;
 
     server::IServerModule *m_pLoginNet_ServerModule;
     IElementModule *m_pElementModule;

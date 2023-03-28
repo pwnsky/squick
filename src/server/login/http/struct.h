@@ -63,7 +63,7 @@ class AckLogin : public IResponse {
     int limit_time; // token过期倒计时
 };
 
-AJSON(AckLogin, code, token, guid, limit_time, msg)
+AJSON(AckLogin, code, msg, token, guid, limit_time)
 
 class ReqWorldEnter : public IRequest {
   public:
@@ -80,7 +80,7 @@ class AckWorldEnter : public IResponse {
     int world_id;
     int limit_time;
 };
-AJSON(AckWorldEnter, guid, key, ip, port, world_id, limit_time)
+AJSON(AckWorldEnter, code, msg, guid, key, ip, port, world_id, limit_time)
 
 class AckWorldList : public IResponse {
   public:
@@ -95,4 +95,4 @@ class AckWorldList : public IResponse {
 };
 
 AJSON(AckWorldList::World, id, name, state, count)
-AJSON(AckWorldList, world, code, msg)
+AJSON(AckWorldList, code, msg, world)
