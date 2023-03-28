@@ -47,7 +47,7 @@ void PlayerManagerModule::OnReqPlayerEnter(const SQUICK_SOCKET sockIndex, const 
 
     dout << "请求进入大厅 " << clientID.ToString() << std::endl;
 
-    SQUICK_SHARE_PTR<IGameServerNet_ServerModule::GateServerInfo> pGateServerinfo = m_pGameServerNet_ServerModule->GetGateServerInfoBySockIndex(sockIndex);
+    SQUICK_SHARE_PTR<IGameServerNet_ServerModule::ProxyServerInfo> pGateServerinfo = m_pGameServerNet_ServerModule->GetProxyServerInfoBySockIndex(sockIndex);
     if (nullptr == pGateServerinfo) {
         return;
     }
@@ -62,7 +62,7 @@ void PlayerManagerModule::OnReqPlayerEnter(const SQUICK_SOCKET sockIndex, const 
     }
 
     // 暂时用
-    if (!m_pGameServerNet_ServerModule->AddPlayerGateInfo(clientID, clientID, gateID)) {
+    if (!m_pGameServerNet_ServerModule->AddPlayerProxyInfo(clientID, clientID, gateID)) {
         return;
     }
 
@@ -129,7 +129,7 @@ void PlayerManagerModule::OnAckPlayerDataLoad(const SQUICK_SOCKET sockIndex, con
     *ack.mutable_client() = INetModule::StructToProtobuf(clientID);
     *ack.mutable_object() = INetModule::StructToProtobuf(objectID);
 
-    m_pGameServerNet_ServerModule->SendMsgPBToGate(SquickStruct::ACK_ENTER, ack, clientID);
+    m_pGameServerNet_ServerModule->SendMsgPBToProxy(SquickStruct::ACK_ENTER, ack, clientID);
 }
 
 // 玩家对象事件
@@ -189,9 +189,9 @@ void PlayerManagerModule::LoadDataFromDb(const Guid &self) {
             }
             mxObjectDataCache.erase(it);
             xObject->SetPropertyInt(excel::Player::GateID(), pPluginManager->GetAppID());
-            auto playerGateInfo = m_pGameServerNet_ServerModule->GetPlayerGateInfo(self);
+            auto playerGateInfo = m_pGameServerNet_ServerModule->GetPlayerProxyInfo(self);
             if (playerGateInfo) {
-                xObject->SetPropertyInt(excel::Player::GateID(), playerGateInfo->gateID);
+                xObject->SetPropertyInt(excel::Player::GateID(), playerGateInfo->proxy_id_);
             }
         }
     }
@@ -236,7 +236,7 @@ bool PlayerManagerModule::Update() {
 
 // 发送数据给客户端，用于给player.cc使用
 void PlayerManagerModule::OnSendToClient(const uint16_t msgID, google::protobuf::Message &xMsg, const Guid &client_id) {
-    m_pGameServerNet_ServerModule->SendMsgPBToGate(msgID, xMsg, client_id);
+    m_pGameServerNet_ServerModule->SendMsgPBToProxy(msgID, xMsg, client_id);
 }
 
 // virtual  ();

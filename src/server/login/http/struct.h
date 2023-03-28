@@ -29,12 +29,10 @@ enum class ClientPlatform {
 
 class AckLogout : public IResponse {
 public:
-    int code;
 };
 
 class AckRefreshToken : public IResponse {
 public:
-    int code;
     string token;       // 该token可用于RPC或http的token
     int limit_time;  // token过期倒计时
 };
@@ -56,16 +54,13 @@ class ReqLogin : public IRequest {
 };
 
 
-
 AJSON(ReqLogin, type, account, password, token, signature, version, platform, device, extra, email, phone, verify_code)
 
 class AckLogin : public IResponse {
     public:
-    int code;
     string token; // 该token可用于RPC或http的token
     string guid;  // 账号Guid
     int limit_time; // token过期倒计时
-    string msg;
 };
 
 AJSON(AckLogin, code, token, guid, limit_time, msg)
@@ -78,7 +73,6 @@ AJSON(ReqWorldEnter, world_id)
 
 class AckWorldEnter : public IResponse {
   public:
-    int code;
     string guid; // account的guid
     string key;
     string ip;
@@ -86,7 +80,7 @@ class AckWorldEnter : public IResponse {
     int world_id;
     int limit_time;
 };
-
+AJSON(AckWorldEnter, guid, key, ip, port, world_id, limit_time)
 
 class AckWorldList : public IResponse {
   public:
@@ -97,9 +91,7 @@ class AckWorldList : public IResponse {
         SquickStruct::ServerState state;
         int count;
     };
-    int code;
     std::list<World> world;
-    std::string msg;
 };
 
 AJSON(AckWorldList::World, id, name, state, count)

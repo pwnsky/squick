@@ -164,23 +164,23 @@ void MasterModule::OnWorldInfoProcess(const SQUICK_SOCKET sockIndex, const int m
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
         const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
 
-        SQUICK_SHARE_PTR<SquickStruct::ServerInfoReport> pServerData = mWorldMap.GetElement(xData.server_id());
+        SQUICK_SHARE_PTR<SquickStruct::ServerInfoReport> pServerData = world_map_.GetElement(xData.server_id());
         if (!pServerData) {
             pServerData = SQUICK_SHARE_PTR<SquickStruct::ServerInfoReport>(SQUICK_NEW SquickStruct::ServerInfoReport());
             *pServerData = xData;
-            if (pServerData->server_type() == SquickStruct::ServerType::ST_WORLD) {
-                mWorldMap.AddElement(xData.server_id(), pServerData);
-            } else if(pServerData->server_type() == SquickStruct::ServerType::ST_PROXY){
+            dout << "登录服务器收到服务列表: " << pServerData->server_name() << "   " << pServerData->server_type() << std::endl;
+            if (pServerData->server_type() == SQUICK_SERVER_TYPES::SQUICK_ST_WORLD) {
+                world_map_.AddElement(xData.server_id(), pServerData);
+            } else if(pServerData->server_type() == SQUICK_SERVER_TYPES::SQUICK_ST_PROXY){
                 proxys_map_.AddElement(xData.server_id(), pServerData);
             }
         }
     }
-
     m_pLogModule->LogInfo(Guid(0, xMsg.server_list_size()), "", "WorldInfo");
 }
 
 INetClientModule *MasterModule::GetClusterModule() { return m_pNetClientModule; }
 
-MapEx<int, SquickStruct::ServerInfoReport> &MasterModule::GetWorldMap() { return mWorldMap; }
+MapEx<int, SquickStruct::ServerInfoReport> &MasterModule::GetWorldMap() { return world_map_; }
 
 } // namespace login::client

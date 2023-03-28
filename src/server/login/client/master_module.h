@@ -46,7 +46,7 @@ class MasterModule : public IMasterModule {
 
   private:
     INT64 mLastReportTime;
-    MapEx<int, SquickStruct::ServerInfoReport> mWorldMap;
+    MapEx<int, SquickStruct::ServerInfoReport> world_map_;
     MapEx<int, SquickStruct::ServerInfoReport> proxys_map_;
 
     server::IServerModule *m_pLoginNet_ServerModule;

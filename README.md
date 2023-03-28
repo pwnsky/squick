@@ -108,7 +108,7 @@ https://github.com/niXman/mingw-builds-binaries/releases
 
 ### 2 sqkctl工具编译
 
-首先第一次编译时，先编译sqkctl工具，进入到工具目录下({project_path}/tools)，点击build_sqkctl.bat即可编译。编译完毕后，点击 generate_config.bat 生成相应的配置文件和代码文件。采用管理员权限运行 register_env.bat 注册squick的环境变量。
+首先第一次编译时，先编译sqkctl工具，进入到工具目录下({project_path}/tools)，点击build_sqkctl.bat即可编译。编译完毕后，点击 generate_config.bat 生成相应的配置文件和代码文件。采用管理员权限运行 register_env.bat 注册squick的环境变量（注：其余的脚本都是普通权限运行，只有register_env.bat需要管理员权限）。
 
 
 
@@ -358,9 +358,12 @@ docker pull mysql:8.0
 docker run -d --restart always --name squick_db_mysql_1 -p 10400:33060 -e MYSQL_ROOT_PASSWORD=pwnsky_squick  mysql:8.0
 ```
 
-pwnsky_squick 是密码, 导入基本sql
+pwnsky_squick 是密码, 导入基本sql，在 {project_path}/resource/mysql 目录下
 
 ```
+docker exec -it squick_db_mysql_1 bash
+mysql -uroot -ppwnsky_squick
+# 复制粘贴sql代码执行即可
 ```
 
 

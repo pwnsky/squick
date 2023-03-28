@@ -106,5 +106,6 @@ bool HttpServerModule::AddFilterCB(const std::string &strCommand, const HTTP_FIL
 }
 
 bool HttpServerModule::ResponseMsg(SQUICK_SHARE_PTR<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason) {
+    dout << "\nHttp Response str: " << msg << "\n";
     return m_pHttpServer->ResponseMsg(req, msg, code, strReason);
 }

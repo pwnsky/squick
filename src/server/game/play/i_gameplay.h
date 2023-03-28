@@ -156,7 +156,7 @@ class IGameplay {
 
     void SendToPlayer(int msgID, google::protobuf::Message &xMsg, const Guid &player) {
         // dout << " 发送给客户端: " << player.ToString() << "   MSGID: " << msgID << std::endl;
-        manager->m_pGameServerNet_ServerModule->SendMsgPBToGate(msgID, xMsg, player);
+        manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msgID, xMsg, player);
     }
 
     //
@@ -165,7 +165,7 @@ class IGameplay {
             auto &player = iter.second;
             if (player.isOnline == true) {
                 // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msgID << std::endl;
-                manager->m_pGameServerNet_ServerModule->SendMsgPBToGate(msgID, xMsg, player.guid);
+                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msgID, xMsg, player.guid);
             }
         }
     }
@@ -179,7 +179,7 @@ class IGameplay {
             }
             if (player.isOnline == true) {
                 // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msgID << std::endl;
-                manager->m_pGameServerNet_ServerModule->SendMsgPBToGate(msgID, xMsg, player.guid);
+                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msgID, xMsg, player.guid);
             }
         }
     }
@@ -190,7 +190,7 @@ class IGameplay {
             auto &player = iter.second;
             if (player.isOnline && player.isActive) {
                 // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msgID << std::endl;
-                manager->m_pGameServerNet_ServerModule->SendMsgPBToGate(msgID, xMsg, player.guid);
+                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msgID, xMsg, player.guid);
             }
         }
     }
@@ -204,7 +204,7 @@ class IGameplay {
             }
             if (player.isOnline && player.isActive) {
                 // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msgID << std::endl;
-                manager->m_pGameServerNet_ServerModule->SendMsgPBToGate(msgID, xMsg, player.guid);
+                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msgID, xMsg, player.guid);
             }
         }
     }
