@@ -1,6 +1,7 @@
 
 #include "http_server_module.h"
 #include "http_server.h"
+#include <squick/core/base.h>
 
 HttpServerModule::HttpServerModule(IPluginManager *p) {
     pPluginManager = p;
@@ -42,7 +43,8 @@ bool HttpServerModule::OnReceiveNetPack(SQUICK_SHARE_PTR<HttpRequest> req) {
             HTTP_RECEIVE_FUNCTOR *pFunc = pFunPtr.get();
             try {
                 pFunc->operator()(req);
-            } catch (const std::exception &) {
+            } catch (const std::exception &e) {
+                dout << "Http quest error: " << e.what() << std::endl;
                 ResponseMsg(req, "unknow error", WebStatus::WEB_INTER_ERROR);
             }
             return true;

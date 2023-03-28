@@ -26,8 +26,8 @@ namespace login::http {
 
 		m_http_server_->AddRequestHandler("/world/list", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnWorldList);
 		m_http_server_->AddRequestHandler("/world/enter", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnWorldEnter);
-		m_http_server_->AddNetFilter("/world", this, &HttpModule::OnFilter);
-
+		m_http_server_->AddNetFilter("/world/list", this, &HttpModule::OnFilter);
+		m_http_server_->AddNetFilter("/world/enter", this, &HttpModule::OnFilter);
 
 		SQUICK_SHARE_PTR<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
 		if (xLogicClass) {
@@ -123,27 +123,22 @@ namespace login::http {
 
 	bool HttpModule::OnWorldList(SQUICK_SHARE_PTR<HttpRequest> req) {
 		AckWorldList ack;
-		dout << "ojbk \n";
-		auto& xWorldMap = m_master_->GetWorldMap();
-		auto pWorldData = xWorldMap.FirstNude();
-		while (pWorldData) {
-			dout << " world : " << pWorldData->server_name() << std::endl;
-			AckWorldList::World world;
-			world.id = pWorldData->server_id();
-			world.name = pWorldData->server_name();
-			world.state = pWorldData->server_state();
-			world.count = pWorldData->server_cur_count();
-			ack.world.push_back(world);
-			pWorldData = xWorldMap.NextNude();
-		}
+		auto& world_servers = m_master_->GetWorldServers();
 
-		dout << "ojbk \n";
+		for (auto& iter : world_servers) {
+			auto &server = iter.second;
+			AckWorldList::World world;
+			world.id = server.server_id();
+			world.name = server.server_name();
+			world.state = server.server_state();
+			world.count = server.server_cur_count();
+			ack.world.push_back(world);
+		}
 
 		ack.code = IResponse::SUCCESS;
 		ack.msg = "";
 		ajson::string_stream rep_ss;
 		ajson::save_to(rep_ss, ack);
-		
 		return m_http_server_->ResponseMsg(req, rep_ss.str(), WebStatus::WEB_OK);
 	}
 
@@ -152,20 +147,52 @@ namespace login::http {
 		ReqWorldEnter req;
 		AckWorldEnter ack;
 		std::string user = GetUserID(request);
-		
+		dout << "request: " << request->body.c_str() << std::endl;
 		ajson::load_from_buff(req, request->body.c_str());
-
 		do {
-			if (req.world_id == 0) {
+			
+			// 判断world id是否存在
+			auto& servers = m_master_->GetWorldServers();
+			if (servers.find(req.world_id) == servers.end()) {
+				dout << "客户端选择world_id错误: " << req.world_id << std::endl;
 				ack.code = IResponse::QEUEST_ERROR;
 				break;
 			}
+
+			// 选择一个workload最小的proxy给客户端
+			auto &proxy_servers = m_master_->GetProxyServers();
+			auto count = proxy_servers.size();
+			if (count < 1) {
+				ack.code = IResponse::SERVER_ERROR;
+				break;
+			}
+
+
+			// find a server
+			int min_proxy_id = proxy_servers.begin()->second.server_id();
+			int min_workload = 0;
+			for (auto& iter : proxy_servers) {
+				auto server = iter.second;
+				if (min_workload > server.server_cur_count()) {
+					min_proxy_id = iter.first;
+				}
+			}
+
+			auto server = proxy_servers[min_proxy_id];
+			Guid key = m_kernel_->CreateGUID();
 			ack.code = IResponse::SUCCESS;
+			ack.ip = server.server_ip();
+			ack.port = server.server_port();
+			ack.world_id = req.world_id;
+			ack.guid = user;
+			ack.key = key.ToString();
+			ack.limit_time = 86400; // 限制一天
 		} while (false);
 		
-		ajson::string_stream ss;
-		ajson::save_to(ss, ack);
-		return m_http_server_->ResponseMsg(request, ss.str(), WebStatus::WEB_OK);
+		ajson::string_stream rep_ss;
+		ajson::save_to(rep_ss, ack);
+		dout << "response: " << rep_ss.str() << std::endl;
+		return m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
 	}
 
 	std::string HttpModule::GetUserID(SQUICK_SHARE_PTR<HttpRequest> req) {
@@ -197,12 +224,6 @@ namespace login::http {
 		std::string user = GetUserID(req);
 		std::string jwt = GetUserJWT(req);
 
-		bool bRet = CheckUserJWT(user, jwt);
-		if (!bRet) {
-			return WebStatus::WEB_OK;
-		}
-
-
 		std::cout << "OnFilter: " << std::endl;
 		std::cout << "url: " << req->url << std::endl;
 		std::cout << "path: " << req->path << std::endl;
@@ -222,9 +243,13 @@ namespace login::http {
 		{
 			std::cout << item.first << ":" << item.second << std::endl;
 		}
+		
+		bool bRet = CheckUserJWT(user, jwt);
+		//bool bRet = true;
+		if (bRet) {
+			return WebStatus::WEB_OK;
+		}
 		return WebStatus::WEB_AUTH;
-
-
 	}
 
 	bool HttpModule::OnGetCDN(SQUICK_SHARE_PTR<HttpRequest> req) {

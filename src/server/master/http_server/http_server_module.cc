@@ -16,9 +16,6 @@ bool MasterNet_HttpServerModule::Destory() { return true; }
 bool MasterNet_HttpServerModule::AfterStart() {
     // http://127.0.0.1/json
     m_pHttpNetModule->AddRequestHandler("/status", HttpType::SQUICK_HTTP_REQ_GET, this, &MasterNet_HttpServerModule::OnCommandQuery);
-    m_pHttpNetModule->AddRequestHandler("/status", HttpType::SQUICK_HTTP_REQ_POST, this, &MasterNet_HttpServerModule::OnCommandQuery);
-    m_pHttpNetModule->AddRequestHandler("/status", HttpType::SQUICK_HTTP_REQ_DELETE, this, &MasterNet_HttpServerModule::OnCommandQuery);
-    m_pHttpNetModule->AddRequestHandler("/status", HttpType::SQUICK_HTTP_REQ_PUT, this, &MasterNet_HttpServerModule::OnCommandQuery);
 
     m_pHttpNetModule->AddNetFilter("/status", this, &MasterNet_HttpServerModule::OnFilter);
 

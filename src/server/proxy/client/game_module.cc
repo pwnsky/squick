@@ -3,15 +3,13 @@
 #include "plugin.h"
 #include <squick/plugin/config/i_class_module.h>
 namespace proxy::client {
-
 bool GameModule::Start() {
     m_pNetClientModule = pPluginManager->FindModule<INetClientModule>();
     m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pProxyServerNet_ServerModule = pPluginManager->FindModule<server::IServerModule>();
     m_pElementModule = pPluginManager->FindModule<IElementModule>();
     m_pLogModule = pPluginManager->FindModule<ILogModule>();
     m_pClassModule = pPluginManager->FindModule<IClassModule>();
-
+    m_logic_ = pPluginManager->FindModule<logic::ILogicModule>();
     return true;
 }
 
@@ -86,7 +84,7 @@ void GameModule::Register(INet *pNet) {
  * 进入游戏通知玩家
  */
 void GameModule::OnAckEnterGame(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    dout << "进入游戏成功!\n";
+    //dout << "进入游戏成功!\n";
     Guid nPlayerID;
     SquickStruct::AckEnter xData;
     if (!INetModule::ReceivePB(msgID, msg, len, xData, nPlayerID)) {
@@ -96,14 +94,14 @@ void GameModule::OnAckEnterGame(const SQUICK_SOCKET sockIndex, const int msgID, 
     const Guid &xClient = INetModule::ProtobufToStruct(xData.client());
     const Guid &xPlayer = INetModule::ProtobufToStruct(xData.object());
 
-    m_pProxyServerNet_ServerModule->EnterGameSuccessEvent(xClient, xPlayer);
-    m_pProxyServerNet_ServerModule->Transport(sockIndex, msgID, msg, len);
+    m_logic_->EnterGameSuccessEvent(xClient, xPlayer);
+    m_logic_->Transport(sockIndex, msgID, msg, len);
 }
 
 void GameModule::LogServerInfo(const std::string &strServerInfo) { m_pLogModule->LogInfo(Guid(), strServerInfo, ""); }
 
 void GameModule::Transport(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    m_pProxyServerNet_ServerModule->Transport(sockIndex, msgID, msg, len);
+    m_logic_->Transport(sockIndex, msgID, msg, len);
 }
 
 } // namespace proxy::client

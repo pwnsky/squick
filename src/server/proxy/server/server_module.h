@@ -16,6 +16,7 @@
 #include "../client/i_game_module.h"
 #include "../client/i_world_module.h"
 #include "i_server_module.h"
+#include <server/proxy/logic/i_logic_module.h>
 
 namespace proxy::server {
 class ServerModule : public IServerModule {
@@ -26,21 +27,9 @@ class ServerModule : public IServerModule {
     virtual bool Destory();
     virtual bool Update();
     virtual bool AfterStart();
-    virtual int Transport(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    virtual int EnterGameSuccessEvent(const Guid xClientID, const Guid xPlayerID);
 
   protected:
     void OnSocketClientEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
-    void OnClientDisconnect(const SQUICK_SOCKET nAddress);
-    void OnClientConnected(const SQUICK_SOCKET nAddress);
-    void OnReqLogin(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnReqEnterGameServer(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-
-    void OnOtherMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-
-  protected:
-    MapEx<Guid, SQUICK_SOCKET> mxClientIdent;
-    bool SelectGameServer(int sockIndex);
 
   protected:
     INetClientModule *m_pNetClientModule;
@@ -49,9 +38,9 @@ class ServerModule : public IServerModule {
     IElementModule *m_pElementModule;
     IClassModule *m_pClassModule;
     INetModule *m_pNetModule;
-    IWSModule *m_pWsModule;
     ISecurityModule *m_pSecurityModule;
     client::IWorldModule *m_pProxyToWorldModule;
+    logic::ILogicModule* m_logic_;
     IThreadPoolModule *m_pThreadPoolModule;
 };
 

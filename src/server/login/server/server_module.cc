@@ -95,15 +95,15 @@ void ServerModule::OnSocketClientEvent(const SQUICK_SOCKET sockIndex, const SQUI
 void ServerModule::SynWorldToClient(const SQUICK_SOCKET nFD) {
     SquickStruct::AckServerList xData;
 
-    MapEx<int, SquickStruct::ServerInfoReport> &xWorldMap = m_pLoginToMasterModule->GetWorldMap();
-    SquickStruct::ServerInfoReport *pWorldData = xWorldMap.FirstNude();
-    while (pWorldData) {
-        SquickStruct::ServerInfo *pServerInfo = xData.add_info();
-        pServerInfo->set_name(pWorldData->server_name());
-        pServerInfo->set_status(pWorldData->server_state());
-        pServerInfo->set_server_id(pWorldData->server_id());
-        pServerInfo->set_wait_count(0);
-        pWorldData = xWorldMap.NextNude();
+    auto servers = m_pLoginToMasterModule->GetWorldServerMap();
+
+    for (auto& iter : servers) {
+        auto& server = iter.second;
+        SquickStruct::ServerInfo* si = xData.add_info();
+        si->set_name(server.server_name());
+        si->set_status(server.server_state());
+        si->set_server_id(server.server_id());
+        si->set_wait_count(0);
     }
 }
 

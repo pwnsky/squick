@@ -156,31 +156,28 @@ void MasterModule::OnSocketMSEvent(const SQUICK_SOCKET sockIndex, const SQUICK_N
 
 void MasterModule::OnWorldInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
-    if (!INetModule::ReceivePB(msgID, msg, len, xMsg, nPlayerID)) {
+    SquickStruct::ServerInfoReportList req;
+    if (!INetModule::ReceivePB(msgID, msg, len, req, nPlayerID)) {
         return;
     }
 
-    for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+    for (int i = 0; i < req.server_list_size(); ++i) {
+        const SquickStruct::ServerInfoReport &si = req.server_list(i);
 
-        SQUICK_SHARE_PTR<SquickStruct::ServerInfoReport> pServerData = world_map_.GetElement(xData.server_id());
-        if (!pServerData) {
-            pServerData = SQUICK_SHARE_PTR<SquickStruct::ServerInfoReport>(SQUICK_NEW SquickStruct::ServerInfoReport());
-            *pServerData = xData;
-            dout << "登录服务器收到服务列表: " << pServerData->server_name() << "   " << pServerData->server_type() << std::endl;
-            if (pServerData->server_type() == SQUICK_SERVER_TYPES::SQUICK_ST_WORLD) {
-                world_map_.AddElement(xData.server_id(), pServerData);
-            } else if(pServerData->server_type() == SQUICK_SERVER_TYPES::SQUICK_ST_PROXY){
-                proxys_map_.AddElement(xData.server_id(), pServerData);
+            dout << "登录服务器收到服务列表: " << si.server_id() << "   " << si.server_type() << std::endl;
+            if (si.server_type() == SQUICK_SERVER_TYPES::SQUICK_ST_WORLD) {
+                world_servers_[si.server_id()] = si;
+            } else if(si.server_type() == SQUICK_SERVER_TYPES::SQUICK_ST_PROXY){
+                proxy_servers_[si.server_id()] = si;
             }
-        }
     }
-    m_pLogModule->LogInfo(Guid(0, xMsg.server_list_size()), "", "WorldInfo");
+    m_pLogModule->LogInfo(Guid(0, req.server_list_size()), "", "WorldInfo");
 }
 
 INetClientModule *MasterModule::GetClusterModule() { return m_pNetClientModule; }
 
-MapEx<int, SquickStruct::ServerInfoReport> &MasterModule::GetWorldMap() { return world_map_; }
+map<int, SquickStruct::ServerInfoReport> &MasterModule::GetWorldServers() { return world_servers_; }
+
+map<int, SquickStruct::ServerInfoReport>& MasterModule::GetProxyServers() { return proxy_servers_; }
 
 } // namespace login::client

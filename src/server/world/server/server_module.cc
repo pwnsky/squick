@@ -243,6 +243,7 @@ void WorldNet_ServerModule::OnRefreshGameServerInfoProcess(const SQUICK_SOCKET s
 }
 
 void WorldNet_ServerModule::OnProxyServerRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
+   
     SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
@@ -273,17 +274,18 @@ void WorldNet_ServerModule::OnProxyServerRegisteredProcess(const SQUICK_SOCKET s
             const int nAreaID = m_pElementModule->GetPropertyInt(xData.server_name(), excel::Server::Area());
             if (nAreaID == nCurArea) // 同一区服的就同步转发表
             {
-                SQUICK_SHARE_PTR<ServerData> pServerData = mProxyMap.GetElement(xData.server_id());
-                if (!pServerData) {
-                    pServerData = SQUICK_SHARE_PTR<ServerData>(SQUICK_NEW ServerData());
-                    mProxyMap.AddElement(xData.server_id(), pServerData);
+                SQUICK_SHARE_PTR<ServerData> server = mProxyMap.GetElement(xData.server_id());
+                if (!server) {
+                    server = SQUICK_SHARE_PTR<ServerData>(SQUICK_NEW ServerData());
+
+                    mProxyMap.AddElement(xData.server_id(), server);
                 }
+                
+                server->nFD = sockIndex;
+                *(server->pData) = xData;
 
-                pServerData->nFD = sockIndex;
-                *(pServerData->pData) = xData;
-
+                dout << "代理服务器请求在World上注册: " << server->pData->server_id() << " ServerName: " << server->pData->server_name() << std::endl;
                 m_pLogModule->LogInfo(Guid(0, xData.server_id()), xData.server_name(), "Proxy Registered");
-
                 SynGameToProxy(sockIndex);
             } else {
                 m_pLogModule->LogError(Guid(0, xData.server_id()), xData.server_name(), "Proxy Registered");
@@ -542,7 +544,6 @@ void WorldNet_ServerModule::SynGameToProxy() {
     SQUICK_SHARE_PTR<ServerData> pServerData = mProxyMap.First();
     while (pServerData) {
         SynGameToProxy(pServerData->nFD);
-
         pServerData = mProxyMap.Next();
     }
 }
@@ -554,7 +555,6 @@ void WorldNet_ServerModule::SynGameToProxy(const SQUICK_SOCKET nFD) {
     while (pServerData) {
         SquickStruct::ServerInfoReport *pData = xData.add_server_list();
         *pData = *(pServerData->pData);
-
         pServerData = mGameMap.Next();
     }
 
@@ -579,7 +579,6 @@ void WorldNet_ServerModule::SynWorldToProxy(const SQUICK_SOCKET nFD) {
     while (pServerData) {
         SquickStruct::ServerInfoReport *pData = xData.add_server_list();
         *pData = *(pServerData->pData);
-
         pServerData = mWorldMap.Next();
     }
 
@@ -594,7 +593,6 @@ void WorldNet_ServerModule::SynGameToGameplayManager() {
     SQUICK_SHARE_PTR<ServerData> pServerData = mGameplayManagerMap.First();
     while (pServerData) {
         SynGameToGameplayManager(pServerData->nFD);
-
         pServerData = mGameplayManagerMap.Next();
     }
 }
@@ -648,7 +646,6 @@ void WorldNet_ServerModule::SynWorldToGame() {
             pServerData->pData->server_state() != SquickStruct::ServerState::SERVER_CRASH) {
             SynWorldToGame(pServerData->nFD);
         }
-
         pServerData = mGameMap.Next();
     }
 }
@@ -717,7 +714,6 @@ void WorldNet_ServerModule::SynDBToGame(const SQUICK_SOCKET nFD) {
     while (pServerData) {
         SquickStruct::ServerInfoReport *pData = xData.add_server_list();
         *pData = *(pServerData->pData);
-
         pServerData = mDBMap.Next();
     }
 

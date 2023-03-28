@@ -35,11 +35,10 @@ void MasterNet_ServerModule::OnWorldRegisteredProcess(const SQUICK_SOCKET sockIn
 
         pServerData->nFD = sockIndex;
         *(pServerData->pData) = xData;
-
         m_pLogModule->LogInfo(Guid(0, xData.server_id()), xData.server_name(), "WorldRegistered");
     }
 
-    SynWorldToLoginAndWorld();
+    SyncWorldToLoginAndWorld();
 }
 
 void MasterNet_ServerModule::OnWorldUnRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
@@ -56,7 +55,7 @@ void MasterNet_ServerModule::OnWorldUnRegisteredProcess(const SQUICK_SOCKET sock
         m_pLogModule->LogInfo(Guid(0, xData.server_id()), xData.server_name(), "WorldUnRegistered");
     }
 
-    SynWorldToLoginAndWorld();
+    SyncWorldToLoginAndWorld();
 }
 
 void MasterNet_ServerModule::OnRefreshWorldInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
@@ -80,7 +79,7 @@ void MasterNet_ServerModule::OnRefreshWorldInfoProcess(const SQUICK_SOCKET sockI
         m_pLogModule->LogInfo(Guid(0, xData.server_id()), xData.server_name(), "RefreshWorldInfo");
     }
 
-    SynWorldToLoginAndWorld();
+    SyncWorldToLoginAndWorld();
 }
 
 void MasterNet_ServerModule::OnLoginRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
@@ -97,14 +96,13 @@ void MasterNet_ServerModule::OnLoginRegisteredProcess(const SQUICK_SOCKET sockIn
             pServerData = SQUICK_SHARE_PTR<ServerData>(SQUICK_NEW ServerData());
             mLoginMap.AddElement(xData.server_id(), pServerData);
         }
-
         pServerData->nFD = sockIndex;
         *(pServerData->pData) = xData;
 
         m_pLogModule->LogInfo(Guid(0, xData.server_id()), xData.server_name(), "LoginRegistered");
     }
-
-    SynWorldToLoginAndWorld();
+    SyncProxyToLogin();
+    SyncWorldToLoginAndWorld();
 }
 
 void MasterNet_ServerModule::OnLoginUnRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
@@ -146,7 +144,13 @@ void MasterNet_ServerModule::OnRefreshLoginInfoProcess(const SQUICK_SOCKET sockI
 }
 
 bool MasterNet_ServerModule::Update() {
-    // LogGameServer();
+    static time_t last = 0;
+    time_t now = SquickGetTimeS();
+    if ( now - last > 10 ) {
+        last = now;
+        SyncProxyToLogin();
+        SyncWorldToLoginAndWorld();
+    }
     return true;
 }
 
@@ -235,7 +239,7 @@ void MasterNet_ServerModule::OnClientDisconnect(const SQUICK_SOCKET nAddress) {
             pServerData->pData->set_server_state(SquickStruct::ServerState::SERVER_CRASH);
             pServerData->nFD = 0;
 
-            SynWorldToLoginAndWorld();
+            SyncWorldToLoginAndWorld();
             return;
         }
 
@@ -260,7 +264,7 @@ void MasterNet_ServerModule::OnClientDisconnect(const SQUICK_SOCKET nAddress) {
 
 void MasterNet_ServerModule::OnClientConnected(const SQUICK_SOCKET nAddress) {}
 
-void MasterNet_ServerModule::SynWorldToLoginAndWorld() {
+void MasterNet_ServerModule::SyncWorldToLoginAndWorld() {
     SquickStruct::ServerInfoReportList xData;
 
     SQUICK_SHARE_PTR<ServerData> pServerData = mWorldMap.First();
@@ -292,10 +296,25 @@ void MasterNet_ServerModule::SynWorldToLoginAndWorld() {
                 *pData = *(pServerData->pData);
             }
         }
-
         m_pNetModule->SendMsgPB(SquickStruct::ServerRPC::STS_NET_INFO, xWorldData, pServerData->nFD);
-
         pServerData = mWorldMap.Next();
+    }
+}
+
+void MasterNet_ServerModule::SyncProxyToLogin() {
+    SquickStruct::ServerInfoReportList xData;
+    SQUICK_SHARE_PTR<ServerData> pServerData = mProxyMap.First();
+    while (pServerData) {
+        SquickStruct::ServerInfoReport* pData = xData.add_server_list();
+        *pData = *(pServerData->pData);
+        pServerData = mProxyMap.Next();
+    }
+
+    // loginserver
+    pServerData = mLoginMap.First();
+    while (pServerData) {
+        m_pNetModule->SendMsgPB(SquickStruct::ServerRPC::STS_NET_INFO, xData, pServerData->nFD);
+        pServerData = mLoginMap.Next();
     }
 }
 
@@ -375,6 +394,7 @@ void MasterNet_ServerModule::OnServerReport(const SQUICK_SOCKET nFd, const int m
             pServerData = std::shared_ptr<ServerData>(new ServerData());
             mProxyMap.AddElement(msg.server_id(), pServerData);
         }
+        
     } break;
     case SQUICK_SERVER_TYPES::SQUICK_ST_GAME: {
         pServerData = mGameMap.GetElement(msg.server_id());
@@ -409,18 +429,18 @@ std::string MasterNet_ServerModule::GetServersStatus() {
     json statusRoot;
 
     statusRoot["code"] = 0;
-    statusRoot["errMsg"] = "";
-    statusRoot["nowTime"] = pPluginManager->GetNowTime();
+    statusRoot["msg"] = "";
+    statusRoot["time"] = pPluginManager->GetNowTime();
 
     std::shared_ptr<ServerData> pServerData = mMasterMap.First();
     int i = 0;
     while (pServerData) {
         json s;
-        s["serverId"] = pServerData->pData->server_id();
-        s["servrName"] = pServerData->pData->server_name().c_str();
+        s["id"] = pServerData->pData->server_id();
+        s["name"] = pServerData->pData->server_name().c_str();
         s["ip"] = pServerData->pData->server_ip().c_str();
         s["port"] = pServerData->pData->server_port();
-        s["onlineCount"] = pServerData->pData->server_cur_count();
+        s["online"] = pServerData->pData->server_cur_count();
         s["status"] = (int)pServerData->pData->server_state();
         statusRoot["master" + std::to_string(i)] = s;
         i++;
@@ -430,71 +450,71 @@ std::string MasterNet_ServerModule::GetServersStatus() {
     pServerData = mLoginMap.First();
     while (pServerData) {
         json s;
-        s["serverId"] = pServerData->pData->server_id();
-        s["servrName"] = pServerData->pData->server_name().c_str();
+        s["id"] = pServerData->pData->server_id();
+        s["name"] = pServerData->pData->server_name().c_str();
         s["ip"] = pServerData->pData->server_ip().c_str();
         s["port"] = pServerData->pData->server_port();
-        s["onlineCount"] = pServerData->pData->server_cur_count();
+        s["online"] = pServerData->pData->server_cur_count();
         s["status"] = (int)pServerData->pData->server_state();
         statusRoot["login" + std::to_string(i)] = s;
         i++;
-        pServerData = mMasterMap.Next();
+        pServerData = mLoginMap.Next();
     }
 
     pServerData = mWorldMap.First();
     while (pServerData.get()) {
         json s;
-        s["serverId"] = pServerData->pData->server_id();
-        s["servrName"] = pServerData->pData->server_name().c_str();
+        s["id"] = pServerData->pData->server_id();
+        s["name"] = pServerData->pData->server_name().c_str();
         s["ip"] = pServerData->pData->server_ip().c_str();
         s["port"] = pServerData->pData->server_port();
-        s["onlineCount"] = pServerData->pData->server_cur_count();
+        s["online"] = pServerData->pData->server_cur_count();
         s["status"] = (int)pServerData->pData->server_state();
         statusRoot["world" + std::to_string(i)] = s;
         i++;
-        pServerData = mMasterMap.Next();
+        pServerData = mWorldMap.Next();
     }
 
     pServerData = mProxyMap.First();
     while (pServerData.get()) {
         json s;
-        s["serverId"] = pServerData->pData->server_id();
-        s["servrName"] = pServerData->pData->server_name().c_str();
+        s["id"] = pServerData->pData->server_id();
+        s["name"] = pServerData->pData->server_name().c_str();
         s["ip"] = pServerData->pData->server_ip().c_str();
         s["port"] = pServerData->pData->server_port();
-        s["onlineCount"] = pServerData->pData->server_cur_count();
+        s["online"] = pServerData->pData->server_cur_count();
         s["status"] = (int)pServerData->pData->server_state();
         statusRoot["proxy" + std::to_string(i)] = s;
         i++;
-        pServerData = mMasterMap.Next();
+        pServerData = mProxyMap.Next();
     }
 
     pServerData = mGameMap.First();
     while (pServerData.get()) {
         json s;
-        s["serverId"] = pServerData->pData->server_id();
-        s["servrName"] = pServerData->pData->server_name().c_str();
+        s["id"] = pServerData->pData->server_id();
+        s["name"] = pServerData->pData->server_name().c_str();
         s["ip"] = pServerData->pData->server_ip().c_str();
         s["port"] = pServerData->pData->server_port();
-        s["onlineCount"] = pServerData->pData->server_cur_count();
+        s["online"] = pServerData->pData->server_cur_count();
         s["status"] = (int)pServerData->pData->server_state();
         statusRoot["game" + std::to_string(i)] = s;
         i++;
-        pServerData = mMasterMap.Next();
+        pServerData = mGameMap.Next();
     }
 
     pServerData = mGameplayManagerMap.First();
     while (pServerData.get()) {
         json s;
-        s["serverId"] = pServerData->pData->server_id();
-        s["servrName"] = pServerData->pData->server_name().c_str();
+        s["id"] = pServerData->pData->server_id();
+        s["name"] = pServerData->pData->server_name().c_str();
         s["ip"] = pServerData->pData->server_ip().c_str();
         s["port"] = pServerData->pData->server_port();
-        s["onlineCount"] = pServerData->pData->server_cur_count();
+        s["online"] = pServerData->pData->server_cur_count();
         s["status"] = (int)pServerData->pData->server_state();
         statusRoot["gameplay_manager" + std::to_string(i)] = s;
         i++;
-        pServerData = mMasterMap.Next();
+        pServerData = mGameplayManagerMap.Next();
     }
 
     return statusRoot.dump();
