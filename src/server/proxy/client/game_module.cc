@@ -84,7 +84,7 @@ void GameModule::Register(INet *pNet) {
  * 进入游戏通知玩家
  */
 void GameModule::OnAckEnterGame(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    //dout << "进入游戏成功!\n";
+    dout << "进入游戏成功!\n";
     Guid nPlayerID;
     SquickStruct::AckEnter xData;
     if (!INetModule::ReceivePB(msgID, msg, len, xData, nPlayerID)) {
@@ -94,7 +94,7 @@ void GameModule::OnAckEnterGame(const SQUICK_SOCKET sockIndex, const int msgID, 
     const Guid &xClient = INetModule::ProtobufToStruct(xData.client());
     const Guid &xPlayer = INetModule::ProtobufToStruct(xData.object());
 
-    m_logic_->EnterGameSuccessEvent(xClient, xPlayer);
+    //m_logic_->EnterGameSuccessEvent(xClient, xPlayer);
     m_logic_->Transport(sockIndex, msgID, msg, len);
 }
 

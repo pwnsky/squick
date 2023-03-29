@@ -30,7 +30,6 @@ class ServerModule : public IServerModule {
 
   protected:
     void OnSocketClientEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
-
   protected:
     INetClientModule *m_pNetClientModule;
     IKernelModule *m_pKernelModule;
