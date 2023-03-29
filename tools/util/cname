@@ -1,0 +1,11 @@
+#! /bin/bash
+echo "change name"  
+if [ $# -lt 2 ];then 
+	echo "no"
+	exit
+fi
+old_string=$1
+new_string=$2
+echo $old_string $new_string
+
+grep ${old_string} -rl . | xargs sed -i "s/$old_string/$new_string/g"
