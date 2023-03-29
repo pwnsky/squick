@@ -44,7 +44,6 @@ void PlayerManagerModule::OnReqPlayerEnter(const SQUICK_SOCKET sockIndex, const 
     if (!m_pNetModule->ReceivePB(msgID, msg, len, xMsg, clientID)) {
         return;
     }
-
     dout << "请求进入大厅 " << clientID.ToString() << std::endl;
 
     SQUICK_SHARE_PTR<IGameServerNet_ServerModule::ProxyServerInfo> pGateServerinfo = m_pGameServerNet_ServerModule->GetProxyServerInfoBySockIndex(sockIndex);
@@ -72,13 +71,14 @@ void PlayerManagerModule::OnReqPlayerEnter(const SQUICK_SOCKET sockIndex, const 
 
 // 返回角色数据
 void PlayerManagerModule::OnAckPlayerDataLoad(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    dout << "返回角色数据\n";
+    //dout << "返回角色数据\n";
     Guid clientID;
     SquickStruct::PlayerData xMsg;
     if (!m_pNetModule->ReceivePB(msgID, msg, len, xMsg, clientID)) {
         return;
     }
 
+    dout << "返回角色数据 clientID: " << clientID.ToString() << std::endl;
     // 告诉客户端进入游戏成功
     // 暂时用，之后将绑定为ObjectID
     // Guid objectID = INetModule::ProtobufToStruct(xMsg.object());
@@ -98,12 +98,13 @@ void PlayerManagerModule::OnAckPlayerDataLoad(const SQUICK_SOCKET sockIndex, con
     player->OnEnterGame();
     player->loginTime = time(nullptr);
 
+
+    /*
     if (m_pKernelModule->GetObject(objectID)) { // 存在玩家，销毁对象
         // it should be rebind with proxy's netobject
         m_pKernelModule->DestroyObject(objectID);
     }
 
-    /*
     DataList var;
     SQUICK_SHARE_PTR<IGameServerNet_ServerModule::GateBaseInfo>  pGateInfo = m_pGameServerNet_ServerModule->GetPlayerGateInfo(clientID);
     if (nullptr == pGateInfo)
