@@ -14,7 +14,7 @@ bool ServerModule::Start() {
     m_pProxyToWorldModule = pPluginManager->FindModule<client::IWorldModule>();
     m_pSecurityModule = pPluginManager->FindModule<ISecurityModule>();
     m_pThreadPoolModule = pPluginManager->FindModule<IThreadPoolModule>();
-
+    m_logic_ = pPluginManager->FindModule<logic::ILogicModule>();
     return true;
 }
 

@@ -70,6 +70,12 @@ void RoomModule::OnReqRoomCreate(const SQUICK_SOCKET sockIndex, const int msgID,
         return;
     }
 
+    int old_room_id = m_pPlayerManagerModule->GetPlayerRoomID(clientID);
+    if(old_room_id != -1) {
+        dout << "不能创建房间, 该玩家已加入房间 " << old_room_id << " \n";
+        return;
+    }
+
     // 生成组ID
     const int roomID = SquickGetTimeMSEx() & 0x7fffffff; // 在 游戏 场景中申请一个roomID
     dout << "Room 申请新的 room id: " << roomID << " \n";
@@ -127,9 +133,9 @@ void RoomModule::OnReqRoomJoin(const SQUICK_SOCKET sockIndex, const int msgID, c
     }
 
     // 检查当前玩家是否绑定了房间
-    int bindRoom = m_pPlayerManagerModule->GetPlayerRoomID(clientID);
-    if (room_id == bindRoom) {
-        dout << "已加入房间\n";
+    int old_room = m_pPlayerManagerModule->GetPlayerRoomID(clientID);
+    if (old_room != -1) {
+        dout << "已加入房间 " << old_room << "\n";
         return;
     }
 
@@ -272,11 +278,12 @@ bool RoomModule::RoomQuit(const Guid &clientID) {
             m_rooms.erase(iter);
         } else {
             dout << "房间销毁 错误\n";
+            return false;
         }
     }
 
     m_pPlayerManagerModule->SetPlayerRoomID(clientID, -1);
-    return false;
+    return true;
 }
 
 void RoomModule::OnReqRoomPlayerEvent(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) { dout << "OnReqRoomQuit\n"; }
@@ -308,6 +315,7 @@ void RoomModule::OnReqRoomGamePlayStart(const SQUICK_SOCKET sockIndex, const int
 
     case SquickStruct::ROOM_PREPARED: {
         if (owner == clientID) {
+            //if(room->game_play().id() != -1) 
             dout << "开始游戏!";
             // 创建游戏
             // 生成instance_id和instance_key

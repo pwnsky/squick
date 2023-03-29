@@ -20,20 +20,20 @@ class Player {
     void OnExitScene();
     void OnChangeScene();
 
-    int GetRoomID() { return roomId; }
+    int GetRoomID() { return room_id_; }
 
-    void SetRoomID(int id) { this->roomId = id; }
+    void SetRoomID(int id) { this->room_id_ = id; }
 
-    void SetGameplayID(int id) { this->gameplayId = id; }
+    void SetGameplayID(int id) { this->gameplay_id_ = id; }
 
-    int GetGameplayID() { return this->gameplayId; }
+    int GetGameplayID() { return this->gameplay_id_; }
 
     int offlineTime = 0;
     int loginTime = 0;
 
   private:
-    int roomId = -1;
-    int gameplayId = -1;
+    int room_id_ = -1;
+    int gameplay_id_ = -1;
 };
 
 } // namespace game::player

@@ -25,7 +25,6 @@ bool LogicModule::AfterStart() {
     return true;
 }
 
-
 void LogicModule::OnClientDisconnect(const SQUICK_SOCKET nAddress) {
     NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(nAddress);
     if (pNetObject) {
@@ -62,7 +61,6 @@ int LogicModule::Transport(const SQUICK_SOCKET sockIndex, const int msgID, const
     if (!xMsg.ParseFromArray(msg, len)) {
         char szData[MAX_PATH] = { 0 };
         sprintf(szData, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msgID);
-
         return false;
     }
 
@@ -108,16 +106,7 @@ int LogicModule::Transport(const SQUICK_SOCKET sockIndex, const int msgID, const
 
 void LogicModule::OnClientConnected(const SQUICK_SOCKET nAddress) {
     std::cout << "Client Connected.... \n";
-    // bind client'id with socket id
-    Guid xClientIdent = m_pKernelModule->CreateGUID();
-    NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(nAddress);
-    if (pNetObject) {
-        pNetObject->SetClientID(xClientIdent);
-    }
-    mxClientIdent.AddElement(xClientIdent, SQUICK_SHARE_PTR<SQUICK_SOCKET>(new SQUICK_SOCKET(nAddress)));
 }
-
-
 
 int LogicModule::EnterGameSuccessEvent(const Guid xClientID, const Guid xPlayerID) {
     SQUICK_SHARE_PTR<SQUICK_SOCKET> pFD = mxClientIdent.GetElement(xClientID);
@@ -139,7 +128,7 @@ void LogicModule::OnOtherMessage(const SQUICK_SOCKET sockIndex, const int msgID,
     }
 
     SquickStruct::MsgBase xMsg;
-    if (!xMsg.ParseFromString(msg)) {
+    if (!xMsg.ParseFromString(std::string(msg, len))) {
         char szData[MAX_PATH] = { 0 };
         sprintf(szData, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msgID);
 
@@ -149,6 +138,7 @@ void LogicModule::OnOtherMessage(const SQUICK_SOCKET sockIndex, const int msgID,
 
     // real user id
     *xMsg.mutable_player_id() = INetModule::StructToProtobuf(pNetObject->GetUserID());
+    dout << "proxy get real user guid: " << pNetObject->GetUserID().ToString() << std::endl;
 
     std::string msgData;
     if (!xMsg.SerializeToString(&msgData)) {
@@ -179,13 +169,6 @@ void LogicModule::OnOtherMessage(const SQUICK_SOCKET sockIndex, const int msgID,
 void LogicModule::OnHeartbeat(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
     std::string msgData(msg, len);
     m_pNetModule->SendMsgWithOutHead(SquickStruct::ProxyRPC::ACK_HEARTBEAT, msgData, sockIndex);
-
-    // TODO improve performance
-    NetObject *pNetObject = m_pNetModule->GetNet()->GetNetObject(sockIndex);
-    if (pNetObject) {
-        const int gameID = pNetObject->GetGameID();
-        m_pNetClientModule->SendByServerIDWithOutHead(gameID, msgID, msgData);
-    }
 }
 
 
@@ -252,6 +235,7 @@ void LogicModule::OnReqEnterGameServer(const SQUICK_SOCKET sock, const int msg_i
             if (!xMsg.SerializeToString(&msg)) {
                 return;
             }
+
             m_pNetClientModule->SendByServerIDWithOutHead(pNetObject->GetGameID(), SquickStruct::GameLobbyRPC::REQ_ENTER, msg);
         }
     }
@@ -273,20 +257,25 @@ void LogicModule::OnReqConnect(const SQUICK_SOCKET sock, const int msg_id, const
     bool bRet = true;
     if (bRet)
     {
+        // bind user id with socket
+        Guid xClientIdent = guid;
         NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(sock);
-        if (pNetObject)
-        {
-            //this net-object verify successful and set state as true
-            pNetObject->SetConnectKeyState(1);
-                        pNetObject->SetSecurityKey(req.key());
-
-            //this net-object bind a user's account
-            pNetObject->SetAccount(guid.ToString());
-            SquickStruct::AckConnectProxy ack;
-            dout << guid.ToString() << " 连接成功!\n";
-            ack.set_code(0);
-            m_pNetModule->SendMsgPB(SquickStruct::ProxyRPC::ACK_CONNECT_PROXY, ack, sock);
+        if (pNetObject) {
+            pNetObject->SetClientID(xClientIdent);
         }
+
+        //NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(sock);
+        pNetObject->SetConnectKeyState(1);
+        pNetObject->SetSecurityKey(req.key());
+        //this net-object bind a user's account
+        pNetObject->SetAccount(guid.ToString());
+        pNetObject->SetUserID(guid);
+        SquickStruct::AckConnectProxy ack;
+        //dout << guid.ToString() << " 连接成功!\n";
+        ack.set_code(0);
+        m_pNetModule->SendMsgPB(SquickStruct::ProxyRPC::ACK_CONNECT_PROXY, ack, sock);
+
+        mxClientIdent.AddElement(xClientIdent, SQUICK_SHARE_PTR<SQUICK_SOCKET>(new SQUICK_SOCKET(sock)));
     } else {
         //if verify failed then close this connect
         m_pNetModule->GetNet()->CloseNetObject(sock);

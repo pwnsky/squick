@@ -95,7 +95,7 @@ void ServerModule::OnSocketClientEvent(const SQUICK_SOCKET sockIndex, const SQUI
 void ServerModule::SynWorldToClient(const SQUICK_SOCKET nFD) {
     SquickStruct::AckServerList xData;
 
-    auto servers = m_pLoginToMasterModule->GetWorldServerMap();
+    auto servers = m_pLoginToMasterModule->GetWorldServers();
 
     for (auto& iter : servers) {
         auto& server = iter.second;
