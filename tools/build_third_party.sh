@@ -52,7 +52,7 @@ cp install/lib/*.so ../lib
 cd $third_party_path
 cd build/libevent
 cmake  ../../libevent
-make -j $(nproc)
+cmake --build . -j $(nproc)
 mkdir -p ./install && make install DESTDIR=./install
 cp -r install/usr/local/include/* ../include
 #cp -r ./include/* ../include
@@ -66,7 +66,7 @@ cp *.so ../../lib
 cd $third_party_path
 cd build/protobuf
 cmake ../../protobuf -Dprotobuf_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=true
-make -j $(nproc)
+cmake --build . -j8
 mkdir -p ./install && make install DESTDIR=./install
 cp -r install/usr/local/include/* ../include
 cp -r install/usr/local/bin/* ../bin
@@ -109,7 +109,7 @@ cp libmysqlcppconn8.so ../lib/
 cd $third_party_path
 cd build/zlib
 cmake  ../../zlib
-make -j $(nproc)
+cmake --build . -j $(nproc)
 cp *.a $third_party_path/build/lib
 cp *.so $third_party_path/build/lib
 cp *.h $third_party_path/build/include
@@ -119,7 +119,7 @@ cp *.h $third_party_path/build/include
 cd $third_party_path
 cd build/navigation
 cmake  ../../recastnavigation
-make -j $(nproc)
+cmake --build . -j $(nproc)
 cp *.a $third_party_path/build/lib
 cp *.so $third_party_path/build/lib
 #cp *.h $third_party_path/build/include
