@@ -113,11 +113,11 @@ class WorldNet_ServerModule : public IWorldNet_ServerModule {
     INT64 mnLastCheckTime;
 
     // 同一区服，所有服务器
-    NFConsistentHashMapEx<int, ServerData> mWorldMap;
-    NFConsistentHashMapEx<int, ServerData> mGameMap;
-    NFConsistentHashMapEx<int, ServerData> mProxyMap;
-    NFConsistentHashMapEx<int, ServerData> mDBMap;
-    NFConsistentHashMapEx<int, ServerData> mGameplayManagerMap;
+    ConsistentHashMapEx<int, ServerData> mWorldMap;
+    ConsistentHashMapEx<int, ServerData> mGameMap;
+    ConsistentHashMapEx<int, ServerData> mProxyMap;
+    ConsistentHashMapEx<int, ServerData> mDBMap;
+    ConsistentHashMapEx<int, ServerData> mGameplayManagerMap;
 
     IElementModule *m_element_;
     IClassModule *m_class_;

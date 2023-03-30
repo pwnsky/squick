@@ -3,7 +3,7 @@
 #include "../logic/player_redis_module.h"
 #include "server_module.h"
 bool DBNet_ServerModule::Awake() {
-    this->pm_->SetAppType(ServerType::SQUICK_ST_DB_PROXY);
+    this->pm_->SetAppType(ServerType::ST_DB_PROXY);
 
     return true;
 }
@@ -34,7 +34,7 @@ bool DBNet_ServerModule::AfterStart() {
 
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == ServerType::SQUICK_ST_DB_PROXY && pm_->GetAppID() == serverID) {
+            if (serverType == ServerType::ST_DB_PROXY && pm_->GetAppID() == serverID) {
                 const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
                 const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
                 const int nCpus = m_element_->GetPropertyInt32(strId, excel::Server::CpuCount());

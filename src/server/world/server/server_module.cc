@@ -4,7 +4,7 @@
 #include <squick/struct/struct.h>
 
 bool WorldNet_ServerModule::Start() {
-    this->pm_->SetAppType(ServerType::SQUICK_ST_WORLD);
+    this->pm_->SetAppType(ServerType::ST_WORLD);
 
     m_net_ = pm_->FindModule<INetModule>();
     m_kernel_ = pm_->FindModule<IKernelModule>();
@@ -49,7 +49,7 @@ bool WorldNet_ServerModule::AfterStart() {
 
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == ServerType::SQUICK_ST_WORLD && pm_->GetAppID() == serverID) {
+            if (serverType == ServerType::ST_WORLD && pm_->GetAppID() == serverID) {
                 const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
                 const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
                 const int nCpus = m_element_->GetPropertyInt32(strId, excel::Server::CpuCount());
@@ -104,7 +104,7 @@ void WorldNet_ServerModule::OnServerInfoProcess(const socket_t sock, const int m
         for (int i = 0; i < xMsg.server_list_size(); ++i) {
             const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
             const int nAreaID = m_element_->GetPropertyInt(xData.server_name(), excel::Server::Area());
-            if (xData.server_type() == ServerType::SQUICK_ST_WORLD && nCurArea == nAreaID) {
+            if (xData.server_type() == ServerType::ST_WORLD && nCurArea == nAreaID) {
                 std::shared_ptr<ServerData> pServerData = mWorldMap.GetElement(xData.server_id());
                 if (!pServerData) {
                     pServerData = std::shared_ptr<ServerData>(new ServerData());
@@ -889,7 +889,7 @@ void WorldNet_ServerModule::OnTransmitServerReport(const socket_t nFd, const int
         return;
     }
 
-    m_net_client_->SendToAllServerByPB(ServerType::SQUICK_ST_MASTER, SquickStruct::STS_SERVER_REPORT, msg, Guid());
+    m_net_client_->SendToAllServerByPB(ServerType::ST_MASTER, SquickStruct::STS_SERVER_REPORT, msg, Guid());
 }
 
 bool WorldNet_ServerModule::SendMsgToGame(const int gameID, const int msg_id, const std::string &xData) {
@@ -1029,7 +1029,7 @@ void WorldNet_ServerModule::ServerReport(int reportServerId, SquickStruct::Serve
                 reqMsg.set_server_state(serverStatus);
                 reqMsg.set_server_type(serverType);
 
-                m_net_client_->SendToAllServerByPB(ServerType::SQUICK_ST_MASTER, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
+                m_net_client_->SendToAllServerByPB(ServerType::ST_MASTER, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
             }
         }
     }

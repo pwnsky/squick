@@ -38,7 +38,7 @@ class PlayerRedisModule : public IPlayerRedisModule {
   private:
     IClassModule *m_class_;
     IAccountRedisModule *m_pAccountRedisModule;
-    INoSqlModule *m_pNoSqlModule;
+    IRedisModule *m_redis_;
     ICommonRedisModule *m_pCommonRedisModule;
     IKernelModule *m_kernel_;
     ILogModule *m_log_;

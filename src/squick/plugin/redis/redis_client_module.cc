@@ -6,22 +6,22 @@
 #include <squick/struct/excel.h>
 
 IPluginManager *xPluginManager;
-NoSqlModule::NoSqlModule(IPluginManager *p) {
+RedisModule::RedisModule(IPluginManager *p) {
     is_update_ = true;
     xPluginManager = p;
     pm_ = p;
 }
 
-NoSqlModule::~NoSqlModule() {}
+RedisModule::~RedisModule() {}
 
-bool NoSqlModule::Start() {
+bool RedisModule::Start() {
     mLastCheckTime = 0;
     return true;
 }
 
-bool NoSqlModule::Destory() { return true; }
+bool RedisModule::Destory() { return true; }
 
-bool NoSqlModule::AfterStart() {
+bool RedisModule::AfterStart() {
     m_class_ = pm_->FindModule<IClassModule>();
     m_element_ = pm_->FindModule<IElementModule>();
     m_log_ = pm_->FindModule<ILogModule>();
@@ -55,13 +55,13 @@ bool NoSqlModule::AfterStart() {
     return true;
 }
 
-bool NoSqlModule::Enable() { return false; }
+bool RedisModule::Enable() { return false; }
 
-bool NoSqlModule::Busy() { return false; }
+bool RedisModule::Busy() { return false; }
 
-bool NoSqlModule::KeepLive() { return false; }
+bool RedisModule::KeepLive() { return false; }
 
-bool NoSqlModule::Update() {
+bool RedisModule::Update() {
     std::shared_ptr<IRedisClient> xNosqlDriver = this->mxNoSqlDriver.First();
     while (xNosqlDriver) {
         xNosqlDriver->Update();
@@ -74,7 +74,7 @@ bool NoSqlModule::Update() {
     return true;
 }
 
-std::shared_ptr<IRedisClient> NoSqlModule::GetDriverBySuitRandom() {
+std::shared_ptr<IRedisClient> RedisModule::GetDriverBySuitRandom() {
     std::shared_ptr<IRedisClient> xDriver = mxNoSqlDriver.GetElementBySuitRandom();
     if (xDriver && xDriver->Enable()) {
         return xDriver;
@@ -83,7 +83,7 @@ std::shared_ptr<IRedisClient> NoSqlModule::GetDriverBySuitRandom() {
     return nullptr;
 }
 
-std::shared_ptr<IRedisClient> NoSqlModule::GetDriverBySuitConsistent() {
+std::shared_ptr<IRedisClient> RedisModule::GetDriverBySuitConsistent() {
     std::shared_ptr<IRedisClient> xDriver = mxNoSqlDriver.GetElementBySuitConsistent();
     if (xDriver && xDriver->Enable()) {
         return xDriver;
@@ -92,7 +92,7 @@ std::shared_ptr<IRedisClient> NoSqlModule::GetDriverBySuitConsistent() {
     return nullptr;
 }
 
-std::shared_ptr<IRedisClient> NoSqlModule::GetDriverBySuit(const std::string &strHash) {
+std::shared_ptr<IRedisClient> RedisModule::GetDriverBySuit(const std::string &strHash) {
     std::shared_ptr<IRedisClient> xDriver = mxNoSqlDriver.GetElementBySuit(strHash);
     if (xDriver && xDriver->Enable()) {
         return xDriver;
@@ -107,12 +107,12 @@ std::shared_ptr<IRedisClient> NoSqlModule::GetDriverBySuit(const std::string &st
 }
 
 /*
-std::shared_ptr<IRedisClient> NoSqlModule::GetDriverBySuit(const int nHash)
+std::shared_ptr<IRedisClient> RedisModule::GetDriverBySuit(const int nHash)
 {
 return mxNoSqlDriver.GetElementBySuit(nHash);
 }
 */
-bool NoSqlModule::AddConnectSql(const std::string &strID, const std::string &ip) {
+bool RedisModule::AddConnectSql(const std::string &strID, const std::string &ip) {
     if (!mxNoSqlDriver.ExistElement(strID)) {
         std::shared_ptr<RedisClient> pNoSqlDriver(new RedisClient());
         pNoSqlDriver->Connect(ip, 6379, "");
@@ -122,7 +122,7 @@ bool NoSqlModule::AddConnectSql(const std::string &strID, const std::string &ip)
     return false;
 }
 
-bool NoSqlModule::AddConnectSql(const std::string &strID, const std::string &ip, const int nPort) {
+bool RedisModule::AddConnectSql(const std::string &strID, const std::string &ip, const int nPort) {
     if (!mxNoSqlDriver.ExistElement(strID)) {
         std::shared_ptr<IRedisClient> pNoSqlDriver(new RedisClient());
         pNoSqlDriver->Connect(ip, nPort, "");
@@ -132,7 +132,7 @@ bool NoSqlModule::AddConnectSql(const std::string &strID, const std::string &ip,
     return false;
 }
 
-bool NoSqlModule::AddConnectSql(const std::string &strID, const std::string &ip, const int nPort, const std::string &strPass) {
+bool RedisModule::AddConnectSql(const std::string &strID, const std::string &ip, const int nPort, const std::string &strPass) {
     if (!mxNoSqlDriver.ExistElement(strID)) {
         std::shared_ptr<IRedisClient> pNoSqlDriver(new RedisClient());
         pNoSqlDriver->Connect(ip, nPort, strPass);
@@ -142,7 +142,7 @@ bool NoSqlModule::AddConnectSql(const std::string &strID, const std::string &ip,
     return false;
 }
 
-List<std::string> NoSqlModule::GetDriverIdList() {
+List<std::string> RedisModule::GetDriverIdList() {
     List<std::string> lDriverIdList;
     std::string strDriverId;
     std::shared_ptr<IRedisClient> pDriver = mxNoSqlDriver.First(strDriverId);
@@ -153,7 +153,7 @@ List<std::string> NoSqlModule::GetDriverIdList() {
     return lDriverIdList;
 }
 
-std::shared_ptr<IRedisClient> NoSqlModule::GetDriver(const std::string &strID) {
+std::shared_ptr<IRedisClient> RedisModule::GetDriver(const std::string &strID) {
     std::shared_ptr<IRedisClient> xDriver = mxNoSqlDriver.GetElement(strID);
     if (xDriver && xDriver->Enable()) {
         return xDriver;
@@ -162,9 +162,9 @@ std::shared_ptr<IRedisClient> NoSqlModule::GetDriver(const std::string &strID) {
     return nullptr;
 }
 
-bool NoSqlModule::RemoveConnectSql(const std::string &strID) { return mxNoSqlDriver.RemoveElement(strID); }
+bool RedisModule::RemoveConnectSql(const std::string &strID) { return mxNoSqlDriver.RemoveElement(strID); }
 
-void NoSqlModule::CheckConnect() {
+void RedisModule::CheckConnect() {
     static const int CHECK_TIME = 15;
     if (mLastCheckTime + CHECK_TIME > pm_->GetNowTime()) {
         return;

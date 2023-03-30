@@ -8,10 +8,10 @@
 #include <squick/plugin/config/i_element_module.h>
 #include <squick/plugin/log/i_log_module.h>
 
-class NoSqlModule : public INoSqlModule {
+class RedisModule : public IRedisModule {
   public:
-    NoSqlModule(IPluginManager *p);
-    virtual ~NoSqlModule();
+    RedisModule(IPluginManager *p);
+    virtual ~RedisModule();
 
     virtual bool Start();
     virtual bool Destory();
@@ -44,5 +44,5 @@ class NoSqlModule : public INoSqlModule {
     IElementModule *m_element_;
     ILogModule *m_log_;
 
-    NFConsistentHashMapEx<std::string, IRedisClient> mxNoSqlDriver;
+    ConsistentHashMapEx<std::string, IRedisClient> mxNoSqlDriver;
 };

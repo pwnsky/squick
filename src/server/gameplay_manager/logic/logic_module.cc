@@ -36,7 +36,7 @@ bool LogicModule::AfterStart() {
     m_net_->AddReceiveCallBack(SquickStruct::STS_HEART_BEAT, this, &LogicModule::OnLagTestProcess);
 
     // 来自Game 服务器
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_GAME, SquickStruct::REQ_GAMEPLAY_CREATE, this, &LogicModule::OnReqPvpInstanceCreate);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, SquickStruct::REQ_GAMEPLAY_CREATE, this, &LogicModule::OnReqPvpInstanceCreate);
 
     return true;
 }

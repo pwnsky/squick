@@ -31,7 +31,7 @@ std::string CommonRedisModule::GetCellCacheKey(const std::string &strCellID) { r
 bool CommonRedisModule::AfterStart() {
     m_kernel_ = pm_->FindModule<IKernelModule>();
     m_class_ = pm_->FindModule<IClassModule>();
-    m_pNoSqlModule = pm_->FindModule<INoSqlModule>();
+    m_redis_ = pm_->FindModule<IRedisModule>();
     m_element_ = pm_->FindModule<IElementModule>();
     m_log_ = pm_->FindModule<ILogModule>();
 
@@ -105,7 +105,7 @@ std::shared_ptr<IPropertyManager> CommonRedisModule::GetPropertyInfo(const std::
         }
     }
 
-    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_redis_->GetDriverBySuit(self);
     if (!pDriver) {
         return nullptr;
     }
@@ -147,7 +147,7 @@ std::shared_ptr<IRecordManager> CommonRedisModule::GetRecordInfo(const std::stri
         }
     }
 
-    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_redis_->GetDriverBySuit(self);
     if (!pDriver) {
         return nullptr;
     }
@@ -215,7 +215,7 @@ bool CommonRedisModule::SavePropertyInfo(const std::string &self, std::shared_pt
         return false;
     }
 
-    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_redis_->GetDriverBySuit(self);
     if (!pDriver) {
         return false;
     }
@@ -258,7 +258,7 @@ bool CommonRedisModule::SaveRecordInfo(const std::string &self, std::shared_ptr<
 }
 
 bool CommonRedisModule::SaveRecordInfo(const std::string &self, const SquickStruct::ObjectRecordList &xRecordData, const int nExpireSecond) {
-    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_redis_->GetDriverBySuit(self);
     if (!pDriver) {
         return false;
     }
@@ -295,7 +295,7 @@ bool CommonRedisModule::SaveRecordInfo(const std::string &self, const SquickStru
 }
 
 bool CommonRedisModule::GetPropertyList(const std::string &self, const std::vector<std::string> &fields, std::vector<std::string> &values) {
-    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_redis_->GetDriverBySuit(self);
     if (!pDriver) {
         return false;
     }
@@ -309,7 +309,7 @@ bool CommonRedisModule::GetPropertyList(const std::string &self, const std::vect
 }
 
 INT64 CommonRedisModule::GetPropertyInt(const std::string &self, const std::string &propertyName) {
-    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_redis_->GetDriverBySuit(self);
     if (!pDriver) {
         return 0;
     }
@@ -324,7 +324,7 @@ INT64 CommonRedisModule::GetPropertyInt(const std::string &self, const std::stri
 }
 
 int CommonRedisModule::GetPropertyInt32(const std::string &self, const std::string &propertyName) {
-    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_redis_->GetDriverBySuit(self);
     if (!pDriver) {
         return 0;
     }
@@ -339,7 +339,7 @@ int CommonRedisModule::GetPropertyInt32(const std::string &self, const std::stri
 }
 
 double CommonRedisModule::GetPropertyFloat(const std::string &self, const std::string &propertyName) {
-    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_redis_->GetDriverBySuit(self);
     if (!pDriver) {
         return 0;
     }
@@ -354,7 +354,7 @@ double CommonRedisModule::GetPropertyFloat(const std::string &self, const std::s
 }
 
 std::string CommonRedisModule::GetPropertyString(const std::string &self, const std::string &propertyName) {
-    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_redis_->GetDriverBySuit(self);
     if (!pDriver) {
         return "";
     }
@@ -369,7 +369,7 @@ std::string CommonRedisModule::GetPropertyString(const std::string &self, const 
 }
 
 Guid CommonRedisModule::GetPropertyObject(const std::string &self, const std::string &propertyName) {
-    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_redis_->GetDriverBySuit(self);
     if (!pDriver) {
         return Guid();
     }
@@ -385,7 +385,7 @@ Guid CommonRedisModule::GetPropertyObject(const std::string &self, const std::st
 }
 
 Vector2 CommonRedisModule::GetPropertyVector2(const std::string &self, const std::string &propertyName) {
-    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_redis_->GetDriverBySuit(self);
     if (!pDriver) {
         return Vector2();
     }
@@ -402,7 +402,7 @@ Vector2 CommonRedisModule::GetPropertyVector2(const std::string &self, const std
 }
 
 Vector3 CommonRedisModule::GetPropertyVector3(const std::string &self, const std::string &propertyName) {
-    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_redis_->GetDriverBySuit(self);
     if (!pDriver) {
         return Vector3();
     }
@@ -524,7 +524,7 @@ bool CommonRedisModule::ConvertRecordManagerToVector(std::shared_ptr<IRecordMana
 // bool CommonRedisModule::ConvertPBToPropertyManager(const SquickStruct::ObjectPropertyList& pPropertyData, std::shared_ptr<IPropertyManager> pProps)
 
 bool CommonRedisModule::SavePropertyInfo(const std::string &self, const std::string &propertyName, const std::string &propertyValue) {
-    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_redis_->GetDriverBySuit(self);
     if (!pDriver) {
         return false;
     }
@@ -549,7 +549,7 @@ bool CommonRedisModule::SavePropertyInfo(const std::string &self, const std::str
 }
 
 bool CommonRedisModule::GetPropertyList(const std::string &self, std::vector<std::pair<std::string, std::string>> &values) {
-    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_redis_->GetDriverBySuit(self);
     if (!pDriver) {
         return false;
     }

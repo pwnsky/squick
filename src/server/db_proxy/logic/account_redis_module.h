@@ -28,7 +28,7 @@ class AccountRedisModule : public IAccountRedisModule {
   protected:
   private:
     IClassModule *m_class_;
-    INoSqlModule *m_pNoSqlModule;
+    IRedisModule *m_redis_;
     ICommonRedisModule *m_pCommonRedisModule;
     IKernelModule *m_kernel_;
 };

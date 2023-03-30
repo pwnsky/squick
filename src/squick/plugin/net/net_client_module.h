@@ -111,9 +111,9 @@ class NetClientModule : public INetClientModule {
     int64_t mnLastActionTime;
     unsigned int mnBufferSize;
     // server_id, server_data
-    NFConsistentHashMapEx<int, ConnectData> mxServerMap;
+    ConsistentHashMapEx<int, ConnectData> mxServerMap;
     // server_type, server_id, server_data
-    MapEx<int, NFConsistentHashMapEx<int, ConnectData>> mxServerTypeMap;
+    MapEx<int, ConsistentHashMapEx<int, ConnectData>> mxServerTypeMap;
 
     std::list<ConnectData> mxTempNetList;
 

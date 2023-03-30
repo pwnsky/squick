@@ -5,7 +5,7 @@
 MasterNet_ServerModule::~MasterNet_ServerModule() {}
 
 bool MasterNet_ServerModule::Start() {
-    this->pm_->SetAppType(ServerType::SQUICK_ST_MASTER);
+    this->pm_->SetAppType(ServerType::ST_MASTER);
 
     m_net_ = pm_->FindModule<INetModule>();
     m_kernel_ = pm_->FindModule<IKernelModule>();
@@ -177,7 +177,7 @@ bool MasterNet_ServerModule::AfterStart() {
 
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == ServerType::SQUICK_ST_MASTER && pm_->GetAppID() == serverID) {
+            if (serverType == ServerType::ST_MASTER && pm_->GetAppID() == serverID) {
                 const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
                 const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
                 const int nCpus = m_element_->GetPropertyInt32(strId, excel::Server::CpuCount());
@@ -374,21 +374,21 @@ void MasterNet_ServerModule::OnServerReport(const socket_t nFd, const int msg_id
 
     std::shared_ptr<ServerData> pServerData;
     switch (msg.server_type()) {
-    case ServerType::SQUICK_ST_LOGIN: {
+    case ServerType::ST_LOGIN: {
         pServerData = mLoginMap.GetElement(msg.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ServerData>(new ServerData());
             mLoginMap.AddElement(msg.server_id(), pServerData);
         }
     } break;
-    case ServerType::SQUICK_ST_WORLD: {
+    case ServerType::ST_WORLD: {
         pServerData = mWorldMap.GetElement(msg.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ServerData>(new ServerData());
             mWorldMap.AddElement(msg.server_id(), pServerData);
         }
     } break;
-    case ServerType::SQUICK_ST_PROXY: {
+    case ServerType::ST_PROXY: {
         pServerData = mProxyMap.GetElement(msg.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ServerData>(new ServerData());
@@ -396,14 +396,14 @@ void MasterNet_ServerModule::OnServerReport(const socket_t nFd, const int msg_id
         }
         
     } break;
-    case ServerType::SQUICK_ST_GAME: {
+    case ServerType::ST_GAME: {
         pServerData = mGameMap.GetElement(msg.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ServerData>(new ServerData());
             mGameMap.AddElement(msg.server_id(), pServerData);
         }
     } break;
-    case ServerType::SQUICK_ST_GAMEPLAY_MANAGER: {
+    case ServerType::ST_GAMEPLAY_MANAGER: {
         pServerData = mGameplayManagerMap.GetElement(msg.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ServerData>(new ServerData());

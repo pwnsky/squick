@@ -6,7 +6,7 @@
 #include <third_party/nlohmann/json.hpp>
 namespace gameplay_manager::server {
 bool ServerModule::Start() {
-    this->pm_->SetAppType(ServerType::SQUICK_ST_GAMEPLAY_MANAGER);
+    this->pm_->SetAppType(ServerType::ST_GAMEPLAY_MANAGER);
     m_net_ = pm_->FindModule<INetModule>();
     m_kernel_ = pm_->FindModule<IKernelModule>();
     m_class_ = pm_->FindModule<IClassModule>();
@@ -33,7 +33,7 @@ bool ServerModule::AfterStart() {
             const std::string &strId = strIdList[i];
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == ServerType::SQUICK_ST_GAMEPLAY_MANAGER && pm_->GetAppID() == serverID) {
+            if (serverType == ServerType::ST_GAMEPLAY_MANAGER && pm_->GetAppID() == serverID) {
                 const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
                 const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
                 const int nCpus = m_element_->GetPropertyInt32(strId, excel::Server::CpuCount());
@@ -141,14 +141,14 @@ void ServerModule::OnOtherMessage(const socket_t sock, const int msg_id, const c
     if (xMsg.has_hash_ident()) {
         // special for distributed
         if (!pNetObject->GetHashIdentID().IsNull()) {
-            m_net_client_->SendBySuitWithOutHead(ServerType::SQUICK_ST_GAME, pNetObject->GetHashIdentID().ToString(), msg_id, msgData);
+            m_net_client_->SendBySuitWithOutHead(ServerType::ST_GAME, pNetObject->GetHashIdentID().ToString(), msg_id, msgData);
         } else {
             Guid xHashIdent = INetModule::ProtobufToStruct(xMsg.hash_ident());
-            m_net_client_->SendBySuitWithOutHead(ServerType::SQUICK_ST_GAME, xHashIdent.ToString(), msg_id, msgData);
+            m_net_client_->SendBySuitWithOutHead(ServerType::ST_GAME, xHashIdent.ToString(), msg_id, msgData);
         }
     } else {
         if (msg_id >= 50000) {
-            m_net_client_->SendBySuitWithOutHead(ServerType::SQUICK_ST_WORLD, pNetObject->GetUserID().ToString(), msg_id, msgData);
+            m_net_client_->SendBySuitWithOutHead(ServerType::ST_WORLD, pNetObject->GetUserID().ToString(), msg_id, msgData);
         } else
             dout << "PVP Manger 转发给 Game Server\n";
         { m_net_client_->SendByServerIDWithOutHead(pNetObject->GetGameID(), msg_id, msgData); }

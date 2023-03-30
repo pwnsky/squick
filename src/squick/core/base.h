@@ -11,19 +11,19 @@
 #include <iostream>
 
 enum ServerType {
-    SQUICK_ST_NONE = 0,              // NONE
-    SQUICK_ST_MASTER = 1,            //
-    SQUICK_ST_LOGIN = 2,             //
-    SQUICK_ST_PROXY = 3,             //
-    SQUICK_ST_GAME = 4,              //
-    SQUICK_ST_WORLD = 5,             //
-    SQUICK_ST_DB_PROXY = 6,          //
-    SQUICK_ST_GAMEPLAY_MANAGER = 7,  //
-    SQUICK_ST_GAMEPLAY = 8,          //
-    SQUICK_ST_MICRO = 9,             // 微服务
-    SQUICK_ST_CDN = 10,              // CDN
+    ST_NONE = 0,              // NONE
+    ST_MASTER = 1,            //
+    ST_LOGIN = 2,             //
+    ST_PROXY = 3,             //
+    ST_GAME = 4,              //
+    ST_WORLD = 5,             //
+    ST_DB_PROXY = 6,          //
+    ST_GAMEPLAY_MANAGER = 7,  //
+    ST_GAMEPLAY = 8,          //
+    ST_MICRO = 9,             // 微服务
+    ST_CDN = 10,              // CDN
     
-    SQUICK_ST_MAX = 11, // 最大服务类型
+    ST_MAX = 11, // 最大服务类型
 };
 
 enum class DbType {

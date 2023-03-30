@@ -277,7 +277,7 @@ namespace login::http {
 			for (int i = 0; i < strIdList.size(); ++i) {
 				const std::string& strId = strIdList[i];
 				int type = m_element_->GetPropertyInt32(strId, excel::Server::Type());
-				if (type != ServerType::SQUICK_ST_CDN) {
+				if (type != ServerType::ST_CDN) {
 					continue;
 				}
 				int web_port = m_element_->GetPropertyInt32(strId, excel::Server::WebPort());

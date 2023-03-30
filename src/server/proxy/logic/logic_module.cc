@@ -154,16 +154,16 @@ void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const ch
     if (xMsg.has_hash_ident()) {
         // special for distributed
         if (!pNetObject->GetHashIdentID().IsNull()) {
-            m_net_client_->SendBySuitWithOutHead(ServerType::SQUICK_ST_GAME, pNetObject->GetHashIdentID().ToString(), msg_id, msgData);
+            m_net_client_->SendBySuitWithOutHead(ServerType::ST_GAME, pNetObject->GetHashIdentID().ToString(), msg_id, msgData);
         }
         else {
             Guid xHashIdent = INetModule::ProtobufToStruct(xMsg.hash_ident());
-            m_net_client_->SendBySuitWithOutHead(ServerType::SQUICK_ST_GAME, xHashIdent.ToString(), msg_id, msgData);
+            m_net_client_->SendBySuitWithOutHead(ServerType::ST_GAME, xHashIdent.ToString(), msg_id, msgData);
         }
     }
     else {
         if (msg_id >= 50000) {
-            m_net_client_->SendBySuitWithOutHead(ServerType::SQUICK_ST_WORLD, pNetObject->GetUserID().ToString(), msg_id, msgData);
+            m_net_client_->SendBySuitWithOutHead(ServerType::ST_WORLD, pNetObject->GetUserID().ToString(), msg_id, msgData);
         }
         else {
             m_net_client_->SendByServerIDWithOutHead(pNetObject->GetGameID(), msg_id, msgData);
@@ -192,7 +192,7 @@ bool LogicModule::SelectGameServer(int sock) {
     MapEx<int, ConnectData>& xServerList = m_net_client_->GetServerList();
     ConnectData* pGameData = xServerList.FirstNude();
     while (pGameData) {
-        if (ConnectDataState::NORMAL == pGameData->eState && ServerType::SQUICK_ST_GAME == pGameData->eServerType) {
+        if (ConnectDataState::NORMAL == pGameData->eState && ServerType::ST_GAME == pGameData->eServerType) {
             if (pGameData->nWorkLoad < nWorkload) {
                 nWorkload = pGameData->nWorkLoad;
                 nGameID = pGameData->nGameID;

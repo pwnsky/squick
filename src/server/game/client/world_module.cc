@@ -35,7 +35,7 @@ void GameServerToWorldModule::Register(INet *pNet) {
 
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == ServerType::SQUICK_ST_GAME && pm_->GetAppID() == serverID) {
+            if (serverType == ServerType::ST_GAME && pm_->GetAppID() == serverID) {
                 const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
                 const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
                 // const int nCpus = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::CpuCount());
@@ -97,53 +97,53 @@ void GameServerToWorldModule::ServerReport() {
                 reqMsg.set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
                 reqMsg.set_server_type(serverType);
 
-                m_net_client_->SendToAllServerByPB(ServerType::SQUICK_ST_WORLD, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
+                m_net_client_->SendToAllServerByPB(ServerType::ST_WORLD, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
             }
         }
     }
 }
 
 bool GameServerToWorldModule::AfterStart() {
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_INT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_PROPERTY_INT, this,
                                            &GameServerToWorldModule::OnWorldPropertyIntProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_FLOAT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_PROPERTY_FLOAT, this,
                                            &GameServerToWorldModule::OnWorldPropertyFloatProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_STRING, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_PROPERTY_STRING, this,
                                            &GameServerToWorldModule::OnWorldPropertyStringProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_OBJECT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_PROPERTY_OBJECT, this,
                                            &GameServerToWorldModule::OnWorldPropertyObjectProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_VECTOR2, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_PROPERTY_VECTOR2, this,
                                            &GameServerToWorldModule::OnWorldPropertyVector2Process);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_VECTOR3, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_PROPERTY_VECTOR3, this,
                                            &GameServerToWorldModule::OnWorldPropertyVector3Process);
 
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_OBJECT_RECORD_ENTRY, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_OBJECT_RECORD_ENTRY, this,
                                            &GameServerToWorldModule::OnWorldRecordEnterProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_ADD_ROW, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_ADD_ROW, this,
                                            &GameServerToWorldModule::OnWorldAddRowProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_REMOVE_ROW, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_REMOVE_ROW, this,
                                            &GameServerToWorldModule::OnWorldRemoveRowProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_SWAP_ROW, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_SWAP_ROW, this,
                                            &GameServerToWorldModule::OnWorldSwapRowProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_INT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_RECORD_INT, this,
                                            &GameServerToWorldModule::OnWorldRecordIntProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_FLOAT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_RECORD_FLOAT, this,
                                            &GameServerToWorldModule::OnWorldRecordFloatProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_STRING, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_RECORD_STRING, this,
                                            &GameServerToWorldModule::OnWorldRecordStringProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_OBJECT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_RECORD_OBJECT, this,
                                            &GameServerToWorldModule::OnWorldRecordObjectProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_VECTOR2, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_RECORD_VECTOR2, this,
                                            &GameServerToWorldModule::OnWorldRecordVector2Process);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_VECTOR3, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_RECORD_VECTOR3, this,
                                            &GameServerToWorldModule::OnWorldRecordVector3Process);
 
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::STS_NET_INFO, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::STS_NET_INFO, this,
                                            &GameServerToWorldModule::OnServerInfoProcess);
 
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, this, &GameServerToWorldModule::TransPBToProxy);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, this, &GameServerToWorldModule::TransPBToProxy);
 
-    m_net_client_->AddEventCallBack(ServerType::SQUICK_ST_WORLD, this, &GameServerToWorldModule::OnSocketWSEvent);
+    m_net_client_->AddEventCallBack(ServerType::ST_WORLD, this, &GameServerToWorldModule::OnSocketWSEvent);
 
     m_kernel_->AddClassCallBack(excel::Player::ThisName(), this, &GameServerToWorldModule::OnObjectClassEvent);
 
@@ -174,7 +174,7 @@ bool GameServerToWorldModule::AfterStart() {
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
             const int nServerArea = m_element_->GetPropertyInt32(strId, excel::Server::Area());
-            if (serverType == ServerType::SQUICK_ST_WORLD && nCurArea == nServerArea) {
+            if (serverType == ServerType::ST_WORLD && nCurArea == nServerArea) {
                 const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
                 // const int maxConnect = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::MaxOnline());
                 // const int nCpus = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::CpuCount());
@@ -217,9 +217,9 @@ void GameServerToWorldModule::OnServerInfoProcess(const socket_t sock, const int
         xServerData.nWorkLoad = xData.server_cur_count();
         xServerData.eServerType = (ServerType)xData.server_type();
 
-        if (ServerType::SQUICK_ST_WORLD == xServerData.eServerType) {
+        if (ServerType::ST_WORLD == xServerData.eServerType) {
             m_net_client_->AddServer(xServerData);
-        } else if (ServerType::SQUICK_ST_DB_PROXY == xServerData.eServerType) {
+        } else if (ServerType::ST_DB_PROXY == xServerData.eServerType) {
             m_net_client_->AddServer(xServerData);
         }
     }
@@ -262,7 +262,7 @@ void GameServerToWorldModule::SendOnline(const Guid &self) {
             xMsg.set_name(playerName);
             xMsg.set_bp(bp);
 
-            m_net_client_->SendToAllServerByPB(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_ONLINE_NOTIFY, xMsg, self);
+            m_net_client_->SendToAllServerByPB(ServerType::ST_WORLD, SquickStruct::ACK_ONLINE_NOTIFY, xMsg, self);
     }*/
 }
 
@@ -277,7 +277,7 @@ void GameServerToWorldModule::SendOffline(const Guid &self) {
         xMsg.set_game(pm_->GetAppID());
         xMsg.set_proxy(0);
 
-        m_net_client_->SendToAllServerByPB(ServerType::SQUICK_ST_WORLD, SquickStruct::ServerRPC::ACK_PLAYER_OFFLINE, xMsg, self);
+        m_net_client_->SendToAllServerByPB(ServerType::ST_WORLD, SquickStruct::ServerRPC::ACK_PLAYER_OFFLINE, xMsg, self);
     }
 }
 
@@ -294,7 +294,7 @@ void GameServerToWorldModule::TransPBToProxy(const socket_t sock, const int msg_
 }
 
 void GameServerToWorldModule::TransmitToWorld(const int nHashKey, const int msg_id, const google::protobuf::Message &xData) {
-    m_net_client_->SendSuitByPB(ServerType::SQUICK_ST_WORLD, nHashKey, msg_id, xData);
+    m_net_client_->SendSuitByPB(ServerType::ST_WORLD, nHashKey, msg_id, xData);
 }
 
 void GameServerToWorldModule::OnWorldPropertyIntProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {

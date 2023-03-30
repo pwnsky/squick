@@ -25,8 +25,8 @@ bool GameModule::Update() { return true; }
 
 bool GameModule::AfterStart() {
     dout << " Game Modull bind\n";
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_GAME, this, &GameModule::Transport);
-    m_net_client_->AddEventCallBack(ServerType::SQUICK_ST_GAME, this, &GameModule::OnSocketGSEvent);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, this, &GameModule::Transport);
+    m_net_client_->AddEventCallBack(ServerType::ST_GAME, this, &GameModule::OnSocketGSEvent);
     m_net_client_->ExpandBufferSize();
 
     return true;
@@ -53,7 +53,7 @@ void GameModule::Register(INet *pNet) {
 
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == ServerType::SQUICK_ST_GAMEPLAY_MANAGER && pm_->GetAppID() == serverID) {
+            if (serverType == ServerType::ST_GAMEPLAY_MANAGER && pm_->GetAppID() == serverID) {
                 const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
                 const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
                 // const int nCpus = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::CpuCount());

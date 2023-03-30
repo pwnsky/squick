@@ -203,7 +203,7 @@ template <typename T, typename TD> class MapEx {
     typename MapOBJECT::iterator mObjectCurIter;
 };
 
-template <typename T, typename TD> class NFConsistentHashMapEx : public MapEx<T, TD> {
+template <typename T, typename TD> class ConsistentHashMapEx : public MapEx<T, TD> {
   public:
     virtual std::shared_ptr<TD> GetElementBySuitRandom() {
         NFVirtualNode<T> vNode;
@@ -277,6 +277,6 @@ template <typename T, typename TD> class NFConsistentHashMapEx : public MapEx<T,
     }
 
   private:
-    NFConsistentHash<T> mxConsistentHash;
+    ConsistentHash<T> mxConsistentHash;
 };
 #endif

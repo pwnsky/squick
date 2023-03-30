@@ -396,7 +396,7 @@ class CommonRedisModule : public ICommonRedisModule {
   protected:
     IKernelModule *m_kernel_;
     IClassModule *m_class_;
-    INoSqlModule *m_pNoSqlModule;
+    IRedisModule *m_redis_;
     IElementModule *m_element_;
     ILogModule *m_log_;
 };

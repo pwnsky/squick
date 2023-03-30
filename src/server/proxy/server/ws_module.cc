@@ -25,7 +25,7 @@ bool ProxyServerNet_WSModule::AfterStart() {
 
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == ServerType::SQUICK_ST_PROXY && pm_->GetAppID() == serverID) {
+            if (serverType == ServerType::ST_PROXY && pm_->GetAppID() == serverID) {
                 const int port = m_element_->GetPropertyInt32(strId, excel::Server::Port());
                 const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
                 const int cpuCount = m_element_->GetPropertyInt32(strId, excel::Server::CpuCount());

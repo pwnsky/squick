@@ -13,7 +13,7 @@ NetClientModule::NetClientModule(IPluginManager *p) {
 bool NetClientModule::Start() {
     m_log_ = pm_->FindModule<ILogModule>();
 
-    for (int i = 0; i < ServerType::SQUICK_ST_MAX; ++i) {
+    for (int i = 0; i < ServerType::ST_MAX; ++i) {
         INetClientModule::AddEventCallBack((ServerType)i, this, &NetClientModule::OnSocketEvent);
     }
 
@@ -356,7 +356,7 @@ void NetClientModule::SendBySuit(const ServerType eType, const std::string &strH
 }
 
 void NetClientModule::SendBySuitWithOutHead(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const std::string &strData) {
-    std::shared_ptr<NFConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
+    std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
     if (xConnectDataMap) {
         std::shared_ptr<ConnectData> pConnectData = xConnectDataMap->GetElementBySuit(nHashKey32);
         if (pConnectData) {
@@ -371,7 +371,7 @@ void NetClientModule::SendBySuitWithOutHead(const ServerType eType, const int nH
 }
 
 void NetClientModule::SendBySuit(const ServerType eType, const int nHashKey, const uint16_t msg_id, const std::string &strData) {
-    std::shared_ptr<NFConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
+    std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
     if (xConnectDataMap) {
         std::shared_ptr<ConnectData> pConnectData = xConnectDataMap->GetElementBySuit(nHashKey);
         if (pConnectData) {
@@ -386,7 +386,7 @@ void NetClientModule::SendBySuit(const ServerType eType, const int nHashKey, con
 }
 
 void NetClientModule::SendBySuit(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const std::string &strData, const Guid id) {
-    std::shared_ptr<NFConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
+    std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
     if (xConnectDataMap) {
         std::shared_ptr<ConnectData> pConnectData = xConnectDataMap->GetElementBySuit(nHashKey32);
         if (pConnectData) {
@@ -413,7 +413,7 @@ void NetClientModule::SendSuitByPB(const ServerType eType, const std::string &st
 }
 
 void NetClientModule::SendSuitByPB(const ServerType eType, const int nHashKey, const uint16_t msg_id, const google::protobuf::Message &xData) {
-    std::shared_ptr<NFConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
+    std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
     if (xConnectDataMap) {
         std::shared_ptr<ConnectData> pConnectData = xConnectDataMap->GetElementBySuit(nHashKey);
         if (pConnectData) {
@@ -424,7 +424,7 @@ void NetClientModule::SendSuitByPB(const ServerType eType, const int nHashKey, c
 
 void NetClientModule::SendSuitByPB(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const google::protobuf::Message &xData,
                                    const Guid id) {
-    std::shared_ptr<NFConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
+    std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
     if (xConnectDataMap) {
         std::shared_ptr<ConnectData> pConnectData = xConnectDataMap->GetElementBySuit(nHashKey32);
         if (pConnectData) {
@@ -434,7 +434,7 @@ void NetClientModule::SendSuitByPB(const ServerType eType, const int nHashKey32,
 }
 
 std::shared_ptr<ConnectData> NetClientModule::GetServerNetInfo(const ServerType eType) {
-    std::shared_ptr<NFConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
+    std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
     if (xConnectDataMap) {
         return xConnectDataMap->GetElementBySuitRandom();
     }
@@ -596,9 +596,9 @@ int NetClientModule::OnConnected(const socket_t fd, INet *pNet) {
         pServerInfo->eState = ConnectDataState::NORMAL;
 
         // for type--suit
-        std::shared_ptr<NFConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(pServerInfo->eServerType);
+        std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(pServerInfo->eServerType);
         if (!xConnectDataMap) {
-            xConnectDataMap = std::shared_ptr<NFConsistentHashMapEx<int, ConnectData>>(new NFConsistentHashMapEx<int, ConnectData>());
+            xConnectDataMap = std::shared_ptr<ConsistentHashMapEx<int, ConnectData>>(new ConsistentHashMapEx<int, ConnectData>());
             mxServerTypeMap.AddElement(pServerInfo->eServerType, xConnectDataMap);
         }
 
@@ -617,7 +617,7 @@ int NetClientModule::OnDisConnected(const socket_t fd, INet *pNet) {
         pServerInfo->mnLastActionTime = GetPluginManager()->GetNowTime();
 
         // for type--suit
-        std::shared_ptr<NFConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(pServerInfo->eServerType);
+        std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(pServerInfo->eServerType);
         if (xConnectDataMap) {
             xConnectDataMap->RemoveElement(pServerInfo->nGameID);
         }

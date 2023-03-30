@@ -77,11 +77,11 @@ template <typename T> class NFIConsistentHash {
     virtual bool GetNodeList(std::list<NFVirtualNode<T>> &nodeList) = 0;
 };
 
-template <typename T> class NFConsistentHash : public NFIConsistentHash<T> {
+template <typename T> class ConsistentHash : public NFIConsistentHash<T> {
   public:
-    NFConsistentHash() { m_pHasher = new NFHasher(); }
+    ConsistentHash() { m_pHasher = new NFHasher(); }
 
-    virtual ~NFConsistentHash() {
+    virtual ~ConsistentHash() {
         delete m_pHasher;
         m_pHasher = NULL;
     }

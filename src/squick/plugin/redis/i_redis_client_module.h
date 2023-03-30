@@ -751,7 +751,7 @@ class IRedisClient {
     std::string mstrAuthKey;
 };
 
-class INoSqlModule : public IModule {
+class IRedisModule : public IModule {
   public:
     virtual bool AddConnectSql(const std::string &strID, const std::string &ip) = 0;
     virtual bool AddConnectSql(const std::string &strID, const std::string &ip, const int nPort) = 0;

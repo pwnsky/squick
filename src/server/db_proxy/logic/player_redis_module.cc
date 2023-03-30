@@ -6,7 +6,7 @@ PlayerRedisModule::PlayerRedisModule(IPluginManager *p) { pm_ = p; }
 
 bool PlayerRedisModule::Start() {
     m_class_ = pm_->FindModule<IClassModule>();
-    m_pNoSqlModule = pm_->FindModule<INoSqlModule>();
+    m_redis_ = pm_->FindModule<IRedisModule>();
     m_pCommonRedisModule = pm_->FindModule<ICommonRedisModule>();
     m_kernel_ = pm_->FindModule<IKernelModule>();
     m_log_ = pm_->FindModule<ILogModule>();
@@ -57,7 +57,7 @@ std::string PlayerRedisModule::GetOnlineGameServerKey() {
 std::string PlayerRedisModule::GetOnlineProxyServerKey() { return "OnlineProxyKey"; }
 
 bool PlayerRedisModule::ExistRoleName(const std::string &strRoleName) {
-    std::shared_ptr<IRedisClient> xNoSqlDriver = m_pNoSqlModule->GetDriverBySuitConsistent();
+    std::shared_ptr<IRedisClient> xNoSqlDriver = m_redis_->GetDriverBySuitConsistent();
     if (xNoSqlDriver) {
         return xNoSqlDriver->EXISTS(strRoleName);
     }
@@ -67,7 +67,7 @@ bool PlayerRedisModule::ExistRoleName(const std::string &strRoleName) {
 
 bool PlayerRedisModule::CreateRole(const std::string &account, const std::string &strRoleName, const Guid &id, const int nHomeSceneID) {
     const std::string strAccountKey = m_pCommonRedisModule->GetAccountCacheKey(account);
-    std::shared_ptr<IRedisClient> xNoSqlDriver = m_pNoSqlModule->GetDriverBySuit(account);
+    std::shared_ptr<IRedisClient> xNoSqlDriver = m_redis_->GetDriverBySuit(account);
     if (xNoSqlDriver) {
 #ifdef SQUICK_DEV
         std::cout << "在数据库中创建角色 account: " << account << " role_name: " << strRoleName << "\n";
@@ -106,7 +106,7 @@ bool PlayerRedisModule::CreateRole(const std::string &account, const std::string
 
             xNoSqlDriver->HMSET(strAccountKey, vecFields, vecValues);
 
-            std::shared_ptr<IRedisClient> xRoleNameNoSqlDriver = m_pNoSqlModule->GetDriverBySuitConsistent();
+            std::shared_ptr<IRedisClient> xRoleNameNoSqlDriver = m_redis_->GetDriverBySuitConsistent();
             if (xRoleNameNoSqlDriver) {
                 // the name ref to the guid
                 xRoleNameNoSqlDriver->HSET(strRoleName, excel::Player::ID(), id.ToString());
@@ -146,7 +146,7 @@ bool PlayerRedisModule::CreateRole(const std::string &account, const std::string
 
 bool PlayerRedisModule::GetRoleInfo(const std::string &account, std::string &strRoleName, Guid &id) {
     std::string strAccountKey = m_pCommonRedisModule->GetAccountCacheKey(account);
-    std::shared_ptr<IRedisClient> xNoSqlDriver = m_pNoSqlModule->GetDriverBySuit(account);
+    std::shared_ptr<IRedisClient> xNoSqlDriver = m_redis_->GetDriverBySuit(account);
     if (xNoSqlDriver) {
         if (xNoSqlDriver->EXISTS(strAccountKey)) {
             std::string strID;

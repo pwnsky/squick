@@ -18,8 +18,8 @@ bool WorldModule::Start() {
 bool WorldModule::Destory() { return true; }
 
 bool WorldModule::AfterStart() {
-    m_net_client_->AddEventCallBack(ServerType::SQUICK_ST_WORLD, this, &WorldModule::OnSocketMSEvent);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::STS_NET_INFO, this, &WorldModule::OnServerInfoProcess);
+    m_net_client_->AddEventCallBack(ServerType::ST_WORLD, this, &WorldModule::OnSocketMSEvent);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::STS_NET_INFO, this, &WorldModule::OnServerInfoProcess);
     m_net_client_->ExpandBufferSize();
 
     std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
@@ -30,7 +30,7 @@ bool WorldModule::AfterStart() {
 
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == ServerType::SQUICK_ST_WORLD) {
+            if (serverType == ServerType::ST_WORLD) {
                 const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
                 // const int maxConnect = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::MaxOnline());
                 // const int nCpus = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::CpuCount());
@@ -69,7 +69,7 @@ void WorldModule::Register(INet *pNet) {
 
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == ServerType::SQUICK_ST_GAMEPLAY_MANAGER && pm_->GetAppID() == serverID) {
+            if (serverType == ServerType::ST_GAMEPLAY_MANAGER && pm_->GetAppID() == serverID) {
                 const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
                 const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
                 // const int nCpus = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::CpuCount());
@@ -121,10 +121,10 @@ void WorldModule::OnServerInfoProcess(const socket_t sock, const int msg_id, con
         xServerData.eServerType = (ServerType)xData.server_type();
 
         switch (xServerData.eServerType) {
-        case ServerType::SQUICK_ST_GAME: {
+        case ServerType::ST_GAME: {
             m_net_client_->AddServer(xServerData);
         } break;
-        case ServerType::SQUICK_ST_WORLD: {
+        case ServerType::ST_WORLD: {
             m_net_client_->AddServer(xServerData);
         } break;
         default:
@@ -166,7 +166,7 @@ void WorldModule::ServerReport() {
                 reqMsg.set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
                 reqMsg.set_server_type(serverType);
 
-                m_net_client_->SendToAllServerByPB(ServerType::SQUICK_ST_WORLD, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
+                m_net_client_->SendToAllServerByPB(ServerType::ST_WORLD, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
             }
         }
     }

@@ -21,8 +21,8 @@ bool GameServerToDBModule::Destory() { return true; }
 bool GameServerToDBModule::Update() { return true; }
 
 bool GameServerToDBModule::AfterStart() {
-    // m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, this, &GameServerToDBModule::TransPBToProxy);
-    // m_net_client_->AddEventCallBack(ServerType::SQUICK_ST_WORLD, this, &GameServerToDBModule::OnSocketWSEvent);
+    // m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, this, &GameServerToDBModule::TransPBToProxy);
+    // m_net_client_->AddEventCallBack(ServerType::ST_WORLD, this, &GameServerToDBModule::OnSocketWSEvent);
 
     m_net_client_->ExpandBufferSize();
 
@@ -39,11 +39,11 @@ void GameServerToDBModule::OnSocketWSEvent(const socket_t sock, const SQUICK_NET
 }
 
 void GameServerToDBModule::TransPBToProxy(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    m_net_client_->SendBySuitWithOutHead(ServerType::SQUICK_ST_DB_PROXY, sock, msg_id, std::string(msg, len));
+    m_net_client_->SendBySuitWithOutHead(ServerType::ST_DB_PROXY, sock, msg_id, std::string(msg, len));
 
     return;
 }
 
 void GameServerToDBModule::TransmitToDB(const int nHashKey, const int msg_id, const google::protobuf::Message &xData) {
-    m_net_client_->SendSuitByPB(ServerType::SQUICK_ST_DB_PROXY, nHashKey, msg_id, xData);
+    m_net_client_->SendSuitByPB(ServerType::ST_DB_PROXY, nHashKey, msg_id, xData);
 }

@@ -18,11 +18,11 @@ bool MasterModule::Start() {
 bool MasterModule::Destory() { return true; }
 
 bool MasterModule::AfterStart() {
-    // m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_MASTER, SquickStruct::ACK_CONNECT_WORLD, this,
+    // m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, SquickStruct::ACK_CONNECT_WORLD, this,
     // &LoginToMasterModule::OnSelectServerResultProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_MASTER, SquickStruct::STS_NET_INFO, this, &MasterModule::OnWorldInfoProcess);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, SquickStruct::STS_NET_INFO, this, &MasterModule::OnWorldInfoProcess);
 
-    m_net_client_->AddEventCallBack(ServerType::SQUICK_ST_MASTER, this, &MasterModule::OnSocketMSEvent);
+    m_net_client_->AddEventCallBack(ServerType::ST_MASTER, this, &MasterModule::OnSocketMSEvent);
 
     m_net_client_->ExpandBufferSize();
 
@@ -34,7 +34,7 @@ bool MasterModule::AfterStart() {
 
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == ServerType::SQUICK_ST_MASTER) {
+            if (serverType == ServerType::ST_MASTER) {
                 const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
                 // const int maxConnect = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::MaxOnline());
                 // const int nCpus = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::CpuCount());
@@ -73,7 +73,7 @@ void MasterModule::Register(INet *pNet) {
 
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == ServerType::SQUICK_ST_LOGIN && pm_->GetAppID() == serverID) {
+            if (serverType == ServerType::ST_LOGIN && pm_->GetAppID() == serverID) {
                 const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
                 const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
                 // const int nCpus = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::CpuCount());
@@ -133,7 +133,7 @@ void MasterModule::ServerReport() {
                 reqMsg.set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
                 reqMsg.set_server_type(serverType);
 
-                m_net_client_->SendToAllServerByPB(ServerType::SQUICK_ST_MASTER, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
+                m_net_client_->SendToAllServerByPB(ServerType::ST_MASTER, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
             }
         }
     }
@@ -165,9 +165,9 @@ void MasterModule::OnWorldInfoProcess(const socket_t sock, const int msg_id, con
         const SquickStruct::ServerInfoReport &si = req.server_list(i);
 
             dout << "登录服务器收到服务列表: " << si.server_id() << "   " << si.server_type() << std::endl;
-            if (si.server_type() == ServerType::SQUICK_ST_WORLD) {
+            if (si.server_type() == ServerType::ST_WORLD) {
                 world_servers_[si.server_id()] = si;
-            } else if(si.server_type() == ServerType::SQUICK_ST_PROXY){
+            } else if(si.server_type() == ServerType::ST_PROXY){
                 proxy_servers_[si.server_id()] = si;
             }
     }

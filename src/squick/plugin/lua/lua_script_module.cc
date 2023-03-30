@@ -610,13 +610,13 @@ void LuaScriptModule::AddMsgCallBackAsClient(const ServerType serverType, const 
         serverMap->AddElement(msg_id, callbackList);
 
         switch (serverType) {
-        case ServerType::SQUICK_ST_MASTER:
+        case ServerType::ST_MASTER:
             m_net_client_->AddReceiveCallBack(serverType, msg_id, this, &LuaScriptModule::OnNetMsgCallBackAsClientForMasterServer);
             break;
-        case ServerType::SQUICK_ST_WORLD:
+        case ServerType::ST_WORLD:
             m_net_client_->AddReceiveCallBack(serverType, msg_id, this, &LuaScriptModule::OnNetMsgCallBackAsClientForWorldServer);
             break;
-        case ServerType::SQUICK_ST_GAME:
+        case ServerType::ST_GAME:
             m_net_client_->AddReceiveCallBack(serverType, msg_id, this, &LuaScriptModule::OnNetMsgCallBackAsClientForGameServer);
             break;
         default:
@@ -688,19 +688,19 @@ void LuaScriptModule::SendMsgToClientByFD(const socket_t fd, const uint16_t msg_
 
 void LuaScriptModule::SendMsgToPlayer(const Guid &player, const uint16_t msg_id, const std::string &data) {
     // the app must be the game server
-    if (pm_->GetAppType() == ServerType::SQUICK_ST_GAME) {
+    if (pm_->GetAppType() == ServerType::ST_GAME) {
 
-    } else if (pm_->GetAppType() == ServerType::SQUICK_ST_WORLD) {
+    } else if (pm_->GetAppType() == ServerType::ST_WORLD) {
 
-    } else if (pm_->GetAppType() == ServerType::SQUICK_ST_PROXY) {
+    } else if (pm_->GetAppType() == ServerType::ST_PROXY) {
     } else {
-        m_log_->LogError("you are not: SQUICK_ST_GAME || SQUICK_ST_WORLD");
+        m_log_->LogError("you are not: ST_GAME || ST_WORLD");
     }
 }
 
 void LuaScriptModule::SendToGroupPlayer(const uint16_t msg_id, const std::string &data) {
     // the app must be the game server
-    if (pm_->GetAppType() == ServerType::SQUICK_ST_GAME) {
+    if (pm_->GetAppType() == ServerType::ST_GAME) {
 
     } else {
         m_log_->LogError("you are not an game server");
@@ -711,9 +711,9 @@ void LuaScriptModule::SendToAllPlayer(const uint16_t msg_id, const std::string &
     // if game server
     // if world server
     // if proxy server
-    if (pm_->GetAppType() == ServerType::SQUICK_ST_GAME) {
-    } else if (pm_->GetAppType() == ServerType::SQUICK_ST_WORLD) {
-    } else if (pm_->GetAppType() == ServerType::SQUICK_ST_PROXY) {
+    if (pm_->GetAppType() == ServerType::ST_GAME) {
+    } else if (pm_->GetAppType() == ServerType::ST_WORLD) {
+    } else if (pm_->GetAppType() == ServerType::ST_PROXY) {
         m_net_->SendMsgToAllClientWithOutHead(msg_id, data);
     } else {
         m_log_->LogError("you are not an game server or world server");
@@ -943,7 +943,7 @@ void LuaScriptModule::OnNetMsgCallBackAsServer(const socket_t sock, const int ms
 }
 
 void LuaScriptModule::OnNetMsgCallBackAsClientForMasterServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    auto serverData = mxNetMsgCallBackFuncMapAsClient.GetElement(ServerType::SQUICK_ST_MASTER);
+    auto serverData = mxNetMsgCallBackFuncMapAsClient.GetElement(ServerType::ST_MASTER);
     if (serverData) {
         auto msgCallBack = serverData->GetElement(msg_id);
         if (msgCallBack) {
@@ -968,7 +968,7 @@ void LuaScriptModule::OnNetMsgCallBackAsClientForMasterServer(const socket_t soc
 
 // 作为World服务器的消息回调
 void LuaScriptModule::OnNetMsgCallBackAsClientForWorldServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    auto serverData = mxNetMsgCallBackFuncMapAsClient.GetElement(ServerType::SQUICK_ST_WORLD);
+    auto serverData = mxNetMsgCallBackFuncMapAsClient.GetElement(ServerType::ST_WORLD);
     if (serverData) {
         auto msgCallBack = serverData->GetElement(msg_id);
         if (msgCallBack) {
@@ -992,7 +992,7 @@ void LuaScriptModule::OnNetMsgCallBackAsClientForWorldServer(const socket_t sock
 }
 // 作为World服务器的消息回调
 void LuaScriptModule::OnNetMsgCallBackAsClientForGameServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    auto serverData = mxNetMsgCallBackFuncMapAsClient.GetElement(ServerType::SQUICK_ST_GAME);
+    auto serverData = mxNetMsgCallBackFuncMapAsClient.GetElement(ServerType::ST_GAME);
     if (serverData) {
         auto msgCallBack = serverData->GetElement(msg_id);
         if (msgCallBack) {

@@ -4,7 +4,7 @@
 
 namespace login::server {
 bool ServerModule::Start() {
-    this->pm_->SetAppType(ServerType::SQUICK_ST_LOGIN);
+    this->pm_->SetAppType(ServerType::ST_LOGIN);
 
     m_net_ = pm_->FindModule<INetModule>();
     m_kernel_ = pm_->FindModule<IKernelModule>();
@@ -35,7 +35,7 @@ bool ServerModule::AfterStart() {
 
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == ServerType::SQUICK_ST_LOGIN && pm_->GetAppID() == serverID) {
+            if (serverType == ServerType::ST_LOGIN && pm_->GetAppID() == serverID) {
                 const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
                 const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
                 const int nCpus = m_element_->GetPropertyInt32(strId, excel::Server::CpuCount());

@@ -32,7 +32,7 @@ bool PlayerManagerModule::AfterStart() {
 bool PlayerManagerModule::ReadyUpdate() {
     m_net_->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ENTER, this, &PlayerManagerModule::OnReqPlayerEnter);
     m_net_->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_LEAVE, this, &PlayerManagerModule::OnReqPlayerLeave);
-    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_DB_PROXY, SquickStruct::DbProxyRPC::ACK_PLAYER_DATA_LOAD, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_DB_PROXY, SquickStruct::DbProxyRPC::ACK_PLAYER_DATA_LOAD, this,
                                            &PlayerManagerModule::OnAckPlayerDataLoad);
 
     return true;
@@ -65,7 +65,7 @@ void PlayerManagerModule::OnReqPlayerEnter(const socket_t sock, const int msg_id
         return;
     }
 
-    m_net_client_->SendBySuitWithOutHead(ServerType::SQUICK_ST_DB_PROXY, sock, SquickStruct::DbProxyRPC::REQ_PLAYER_DATA_LOAD,
+    m_net_client_->SendBySuitWithOutHead(ServerType::ST_DB_PROXY, sock, SquickStruct::DbProxyRPC::REQ_PLAYER_DATA_LOAD,
                                               std::string(msg, len));
 }
 
@@ -218,7 +218,7 @@ void PlayerManagerModule::SaveDataToDb(const Guid &self) {
         if (xRecordManager) {
             CommonRedisModule::ConvertRecordManagerToPB(xRecordManager, xDataPack.mutable_record(), false, true);
         }
-        m_net_client_->SendSuitByPB(ServerType::SQUICK_ST_DB_PROXY, self.GetData(), SquickStruct::DbProxyRPC::REQ_PLAYER_DATA_SAVE, xDataPack);
+        m_net_client_->SendSuitByPB(ServerType::ST_DB_PROXY, self.GetData(), SquickStruct::DbProxyRPC::REQ_PLAYER_DATA_SAVE, xDataPack);
     }
 }
 

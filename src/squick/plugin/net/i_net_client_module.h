@@ -18,7 +18,7 @@ struct ConnectData {
         nPort = 0;
         name = "";
         ip = "";
-        eServerType = SQUICK_ST_NONE;
+        eServerType = ST_NONE;
         eState = ConnectDataState::DISCONNECT;
         mnLastActionTime = 0;
         nWorkLoad = 0;

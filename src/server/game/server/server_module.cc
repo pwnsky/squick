@@ -5,7 +5,7 @@
 
 namespace game::server {
 bool GameServerNet_ServerModule::Start() {
-    this->pm_->SetAppType(ServerType::SQUICK_ST_GAME);
+    this->pm_->SetAppType(ServerType::ST_GAME);
 
     m_kernel_ = pm_->FindModule<IKernelModule>();
     m_class_ = pm_->FindModule<IClassModule>();
@@ -45,7 +45,7 @@ bool GameServerNet_ServerModule::AfterStart() {
 
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == ServerType::SQUICK_ST_GAME && pm_->GetAppID() == serverID) {
+            if (serverType == ServerType::ST_GAME && pm_->GetAppID() == serverID) {
                 const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
                 const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
                 const int nCpus = m_element_->GetPropertyInt32(strId, excel::Server::CpuCount());
@@ -450,6 +450,6 @@ void GameServerNet_ServerModule::OnTransWorld(const socket_t sock, const int msg
         nHasKey = nPlayer.nData64;
     }
 
-    m_net_client_->SendBySuitWithOutHead(ServerType::SQUICK_ST_WORLD, nHasKey, msg_id, std::string(msg, len));
+    m_net_client_->SendBySuitWithOutHead(ServerType::ST_WORLD, nHasKey, msg_id, std::string(msg, len));
 }
 } // namespace game::server
