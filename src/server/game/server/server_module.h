@@ -93,7 +93,7 @@ class GameServerNet_ServerModule : public IGameServerNet_ServerModule {
     ISceneModule *m_scene_;
     INetClientModule *m_net_client_;
     IScheduleModule *m_schedule_;
-    IThreadPoolModule *m_pThreadPoolModule;
+    IThreadPoolModule *m_thread_pool_;
 };
 
 } // namespace game::server

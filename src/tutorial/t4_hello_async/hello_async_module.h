@@ -62,7 +62,7 @@ class HelloWorld4Module : public IHelloWorld4Module {
 
   protected:
     IActorModule *m_pActorModule;
-    IThreadPoolModule *m_pThreadPoolModule;
+    IThreadPoolModule *m_thread_pool_;
 };
 
 #endif

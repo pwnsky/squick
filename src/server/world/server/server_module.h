@@ -125,5 +125,5 @@ class WorldNet_ServerModule : public IWorldNet_ServerModule {
     ILogModule *m_log_;
     INetModule *m_net_;
     INetClientModule *m_net_client_;
-    IThreadPoolModule *m_pThreadPoolModule;
+    IThreadPoolModule *m_thread_pool_;
 };

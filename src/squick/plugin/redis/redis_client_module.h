@@ -44,5 +44,5 @@ class RedisModule : public IRedisModule {
     IElementModule *m_element_;
     ILogModule *m_log_;
 
-    ConsistentHashMapEx<std::string, IRedisClient> mxNoSqlDriver;
+    ConsistentHashMapEx<std::string, IRedisClient> mdriver;
 };

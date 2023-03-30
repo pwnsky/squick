@@ -17,7 +17,7 @@ bool DBNet_ServerModule::Start() {
     m_net_client_ = pm_->FindModule<INetClientModule>();
     m_pAccountRedisModule = pm_->FindModule<IAccountRedisModule>();
     m_pPlayerRedisModule = pm_->FindModule<IPlayerRedisModule>();
-    m_pThreadPoolModule = pm_->FindModule<IThreadPoolModule>();
+    m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
 
     return true;
 }

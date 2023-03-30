@@ -12,7 +12,7 @@
 class ThreadCell : MemoryCounter {
   public:
     ThreadCell(IThreadPoolModule *p) : MemoryCounter(GET_CLASS_NAME(ThreadCell), 1) {
-        m_pThreadPoolModule = p;
+        m_thread_pool_ = p;
         mThread = std::shared_ptr<std::thread>(new std::thread(&ThreadCell::Update, this));
     }
 
@@ -35,7 +35,7 @@ class ThreadCell : MemoryCounter {
                     // repush the result to the main thread
                     // and, do we must to tell the result to the main thread?
                     if (task.xEndFunc) {
-                        m_pThreadPoolModule->TaskResult(task);
+                        m_thread_pool_->TaskResult(task);
                     }
 
                     task.Reset();
@@ -47,7 +47,7 @@ class ThreadCell : MemoryCounter {
   private:
     Queue<ThreadTask> mTaskList;
     std::shared_ptr<std::thread> mThread;
-    IThreadPoolModule *m_pThreadPoolModule;
+    IThreadPoolModule *m_thread_pool_;
 };
 
 class ThreadPoolModule : public IThreadPoolModule {

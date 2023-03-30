@@ -12,7 +12,7 @@ bool WorldNet_ServerModule::Start() {
     m_element_ = pm_->FindModule<IElementModule>();
     m_class_ = pm_->FindModule<IClassModule>();
     m_net_client_ = pm_->FindModule<INetClientModule>();
-    m_pThreadPoolModule = pm_->FindModule<IThreadPoolModule>();
+    m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
 
     return true;
 }

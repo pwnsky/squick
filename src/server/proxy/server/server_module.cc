@@ -13,7 +13,7 @@ bool ServerModule::Start() {
     m_element_ = pm_->FindModule<IElementModule>();
     m_pProxyToWorldModule = pm_->FindModule<client::IWorldModule>();
     m_security_ = pm_->FindModule<ISecurityModule>();
-    m_pThreadPoolModule = pm_->FindModule<IThreadPoolModule>();
+    m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
     m_logic_ = pm_->FindModule<logic::ILogicModule>();
     return true;
 }

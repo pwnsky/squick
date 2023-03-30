@@ -184,7 +184,7 @@ class KernelModule : public IKernelModule, public MapEx<Guid, IObject> {
     IScheduleModule *m_schedule_;
     IEventModule *m_event_;
     ICellModule *m_pCellModule;
-    IThreadPoolModule *m_pThreadPoolModule;
+    IThreadPoolModule *m_thread_pool_;
 };
 
 #endif

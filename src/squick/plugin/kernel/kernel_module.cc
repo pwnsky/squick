@@ -51,7 +51,7 @@ bool KernelModule::Start() {
     m_schedule_ = pm_->FindModule<IScheduleModule>();
     m_event_ = pm_->FindModule<IEventModule>();
     m_pCellModule = pm_->FindModule<ICellModule>();
-    m_pThreadPoolModule = pm_->FindModule<IThreadPoolModule>();
+    m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
     return true;
 }
 
@@ -109,7 +109,7 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
     AddElement(ident, pObject);
 
     if (pm_->UsingBackThread()) {
-        m_pThreadPoolModule->DoAsyncTask(
+        m_thread_pool_->DoAsyncTask(
             Guid(), "",
             [=](ThreadTask &task) -> void {
                 // backup thread for async task
@@ -174,7 +174,7 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
                     DoEvent(ident, className, pObject->GetState(), arg);
                 }
 
-                m_pThreadPoolModule->DoAsyncTask(
+                m_thread_pool_->DoAsyncTask(
                     Guid(), "",
                     [=](ThreadTask &task) -> void {
                         // backup thread
@@ -246,7 +246,7 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
                             DoEvent(ident, className, pObject->GetState(), arg);
                         }
 
-                        m_pThreadPoolModule->DoAsyncTask(
+                        m_thread_pool_->DoAsyncTask(
                             Guid(), "",
                             [=](ThreadTask &task) -> void {
                                 // back up thread

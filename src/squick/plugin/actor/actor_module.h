@@ -49,7 +49,7 @@ class ActorModule : public IActorModule {
     bool test = false;
 
     IKernelModule *m_kernel_;
-    IThreadPoolModule *m_pThreadPoolModule;
+    IThreadPoolModule *m_thread_pool_;
 
     std::map<Guid, std::shared_ptr<IActor>> mxActorMap;
 

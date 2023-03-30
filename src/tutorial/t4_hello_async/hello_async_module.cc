@@ -5,7 +5,7 @@
 
 bool HelloWorld4Module::Start() {
     m_pActorModule = pm_->FindModule<IActorModule>();
-    m_pThreadPoolModule = pm_->FindModule<IThreadPoolModule>();
+    m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
 
     return true;
 }
@@ -131,7 +131,7 @@ bool HelloWorld4Module::AfterStart() {
         int64_t timeStart = SquickGetTimeMS();
         // example 4
         for (int i = 0; i < messageCount; ++i) {
-            m_pThreadPoolModule->DoAsyncTask(Guid(), "sas", [&](ThreadTask &task) -> void {
+            m_thread_pool_->DoAsyncTask(Guid(), "sas", [&](ThreadTask &task) -> void {
                 // std::cout << "example 4 thread id: " << std::this_thread::get_id() << " task id:" << task.nTaskID.ToString() << " task data:" << task.data <<
                 // std::endl;
                 task.data = "aaaaaresulttttttt";
@@ -150,7 +150,7 @@ bool HelloWorld4Module::AfterStart() {
         // 100M
         // example 4
         for (int i = 0; i < messageCount; ++i) {
-            m_pThreadPoolModule->DoAsyncTask(
+            m_thread_pool_->DoAsyncTask(
                 Guid(), "sas",
                 [&](ThreadTask &task) -> void {
                     // std::cout << "example 4 thread id: " << std::this_thread::get_id() << " task id:" << taskID.ToString() << " task data:" << strData <<

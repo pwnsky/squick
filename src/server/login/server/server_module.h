@@ -52,7 +52,7 @@ class ServerModule : public IServerModule {
     IKernelModule *m_kernel_;
     ILogModule *m_log_;
     client::IMasterModule *m_pLoginToMasterModule;
-    IThreadPoolModule *m_pThreadPoolModule;
+    IThreadPoolModule *m_thread_pool_;
 };
 
 } // namespace login::server

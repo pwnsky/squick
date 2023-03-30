@@ -40,7 +40,7 @@ class ServerModule : public IServerModule {
     ISecurityModule *m_security_;
     client::IWorldModule *m_pProxyToWorldModule;
     logic::ILogicModule* m_logic_;
-    IThreadPoolModule *m_pThreadPoolModule;
+    IThreadPoolModule *m_thread_pool_;
 };
 
 } // namespace proxy::server

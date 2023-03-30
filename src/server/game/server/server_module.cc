@@ -17,7 +17,7 @@ bool GameServerNet_ServerModule::Start() {
 
     m_net_ = pm_->FindModule<INetModule>();
     m_net_client_ = pm_->FindModule<INetClientModule>();
-    m_pThreadPoolModule = pm_->FindModule<IThreadPoolModule>();
+    m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
 
     return true;
 }

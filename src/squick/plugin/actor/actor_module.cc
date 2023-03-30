@@ -12,7 +12,7 @@ ActorModule::~ActorModule() {}
 
 bool ActorModule::Start() {
     m_kernel_ = pm_->FindModule<IKernelModule>();
-    m_pThreadPoolModule = pm_->FindModule<IThreadPoolModule>();
+    m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
 
     return true;
 }
@@ -66,7 +66,7 @@ bool ActorModule::UpdateEvent() {
             if (test) {
                 pActor->Update();
             } else {
-                m_pThreadPoolModule->DoAsyncTask(pActor->ID(), "", [pActor](ThreadTask &threadTask) -> void { pActor->Update(); });
+                m_thread_pool_->DoAsyncTask(pActor->ID(), "", [pActor](ThreadTask &threadTask) -> void { pActor->Update(); });
             }
         }
     }
