@@ -24,15 +24,15 @@ class Class : public IClass {
         mParentClass = NULL;
         mClassName = className;
 
-        mPropertyManager = SQUICK_SHARE_PTR<IPropertyManager>(SQUICK_NEW PropertyManager(Guid()));
-        mRecordManager = SQUICK_SHARE_PTR<IRecordManager>(SQUICK_NEW RecordManager(Guid()));
+        mPropertyManager = std::shared_ptr<IPropertyManager>(new PropertyManager(Guid()));
+        mRecordManager = std::shared_ptr<IRecordManager>(new RecordManager(Guid()));
     }
 
     virtual ~Class() { ClearAll(); }
 
-    virtual SQUICK_SHARE_PTR<IPropertyManager> GetPropertyManager() { return mPropertyManager; }
+    virtual std::shared_ptr<IPropertyManager> GetPropertyManager() { return mPropertyManager; }
 
-    virtual SQUICK_SHARE_PTR<IRecordManager> GetRecordManager() { return mRecordManager; }
+    virtual std::shared_ptr<IRecordManager> GetRecordManager() { return mRecordManager; }
 
     virtual bool AddClassCallBack(const CLASS_EVENT_FUNCTOR_PTR &cb) { return mClassEventInfo.Add(cb); }
 
@@ -48,9 +48,9 @@ class Class : public IClass {
         return true;
     }
 
-    void SetParent(SQUICK_SHARE_PTR<IClass> pClass) { mParentClass = pClass; }
+    void SetParent(std::shared_ptr<IClass> pClass) { mParentClass = pClass; }
 
-    SQUICK_SHARE_PTR<IClass> GetParent() { return mParentClass; }
+    std::shared_ptr<IClass> GetParent() { return mParentClass; }
 
     void SetTypeName(const char *strType) { mType = strType; }
 
@@ -70,10 +70,10 @@ class Class : public IClass {
     const std::string &GetInstancePath() { return mClassInstancePath; }
 
   private:
-    SQUICK_SHARE_PTR<IPropertyManager> mPropertyManager;
-    SQUICK_SHARE_PTR<IRecordManager> mRecordManager;
+    std::shared_ptr<IPropertyManager> mPropertyManager;
+    std::shared_ptr<IRecordManager> mRecordManager;
 
-    SQUICK_SHARE_PTR<IClass> mParentClass;
+    std::shared_ptr<IClass> mParentClass;
     std::string mType;
     std::string mClassName;
     std::string mClassInstancePath;
@@ -107,20 +107,20 @@ class ClassModule : public IClassModule {
     virtual bool AddClassCallBack(const std::string &className, const CLASS_EVENT_FUNCTOR_PTR &cb) override;
     virtual bool DoEvent(const Guid &objectID, const std::string &className, const CLASS_OBJECT_EVENT classEvent, const DataList &valueList) override;
 
-    virtual SQUICK_SHARE_PTR<IPropertyManager> GetClassPropertyManager(const std::string &className) override;
-    virtual SQUICK_SHARE_PTR<IRecordManager> GetClassRecordManager(const std::string &className) override;
+    virtual std::shared_ptr<IPropertyManager> GetClassPropertyManager(const std::string &className) override;
+    virtual std::shared_ptr<IRecordManager> GetClassRecordManager(const std::string &className) override;
 
     virtual bool AddClass(const std::string &className, const std::string &strParentName) override;
 
   protected:
     virtual DATA_TYPE ComputerType(const char *pstrTypeName, SquickData &var);
-    virtual bool AddProperties(rapidxml::xml_node<> *pPropertyRootNode, SQUICK_SHARE_PTR<IClass> pClass);
-    virtual bool AddRecords(rapidxml::xml_node<> *pRecordRootNode, SQUICK_SHARE_PTR<IClass> pClass);
-    virtual bool AddComponents(rapidxml::xml_node<> *pRecordRootNode, SQUICK_SHARE_PTR<IClass> pClass);
-    virtual bool AddClassInclude(const char *pstrClassFilePath, SQUICK_SHARE_PTR<IClass> pClass);
-    virtual bool AddClass(const char *pstrClassFilePath, SQUICK_SHARE_PTR<IClass> pClass);
+    virtual bool AddProperties(rapidxml::xml_node<> *pPropertyRootNode, std::shared_ptr<IClass> pClass);
+    virtual bool AddRecords(rapidxml::xml_node<> *pRecordRootNode, std::shared_ptr<IClass> pClass);
+    virtual bool AddComponents(rapidxml::xml_node<> *pRecordRootNode, std::shared_ptr<IClass> pClass);
+    virtual bool AddClassInclude(const char *pstrClassFilePath, std::shared_ptr<IClass> pClass);
+    virtual bool AddClass(const char *pstrClassFilePath, std::shared_ptr<IClass> pClass);
 
-    virtual bool Load(rapidxml::xml_node<> *attrNode, SQUICK_SHARE_PTR<IClass> pParentClass);
+    virtual bool Load(rapidxml::xml_node<> *attrNode, std::shared_ptr<IClass> pParentClass);
 
   protected:
     struct ThreadClassModule {

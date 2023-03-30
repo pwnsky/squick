@@ -13,7 +13,7 @@
 
 class DataTailModule : public IDataTailModule {
   public:
-    DataTailModule(IPluginManager *p) { pPluginManager = p; }
+    DataTailModule(IPluginManager *p) { pm_ = p; }
     virtual ~DataTailModule(){};
 
     virtual bool Start();
@@ -36,10 +36,10 @@ class DataTailModule : public IDataTailModule {
     int OnObjectRecordEvent(const Guid &self, const RECORD_EVENT_DATA &eventData, const SquickData &oldVar, const SquickData &newVar);
 
   private:
-    IKernelModule *m_pKernelModule;
-    IElementModule *m_pElementModule;
-    IClassModule *m_pClassModule;
-    ILogModule *m_pLogModule;
+    IKernelModule *m_kernel_;
+    IElementModule *m_element_;
+    IClassModule *m_class_;
+    ILogModule *m_log_;
 };
 
 #endif

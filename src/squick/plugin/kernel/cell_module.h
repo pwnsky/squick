@@ -40,7 +40,7 @@ class SceneCellInfo : public List<Guid> {
         // TODO
     }
 
-    void Start(SQUICK_SHARE_PTR<SceneCellInfo> *pGridArray) {
+    void Start(std::shared_ptr<SceneCellInfo> *pGridArray) {
         for (int i = ECELL_TOP; i < ECELL_DIRECTION_MAXCOUNT; i++) {
             mAroundCell[i] = pGridArray[i];
         }
@@ -48,7 +48,7 @@ class SceneCellInfo : public List<Guid> {
 
     void Finale() {}
 
-    SQUICK_SHARE_PTR<SceneCellInfo> GetConnectCell(ECELL_DIRECTION eDirection) { return mAroundCell[eDirection]; }
+    std::shared_ptr<SceneCellInfo> GetConnectCell(ECELL_DIRECTION eDirection) { return mAroundCell[eDirection]; }
 
     const int GetSceneID() { return msceneID; }
 
@@ -58,7 +58,7 @@ class SceneCellInfo : public List<Guid> {
 
   protected:
   private:
-    SQUICK_SHARE_PTR<SceneCellInfo> mAroundCell[ECELL_DIRECTION_MAXCOUNT];
+    std::shared_ptr<SceneCellInfo> mAroundCell[ECELL_DIRECTION_MAXCOUNT];
     Guid mCellID;
     int msceneID;
     int mgroupID;
@@ -112,24 +112,24 @@ class CellModule : public ICellModule {
     virtual const Guid GetStepLenth(const Guid &selfGrid, const Guid &otherGrid);
 
     // get some grids that around this grid(not include self)
-    virtual const int GetAroundCell(const int &sceneID, const int &groupID, const Guid &selfGrid, SQUICK_SHARE_PTR<SceneCellInfo> *gridList,
+    virtual const int GetAroundCell(const int &sceneID, const int &groupID, const Guid &selfGrid, std::shared_ptr<SceneCellInfo> *gridList,
                                     ECELL_AROUND around = ECELL_AROUND_9);
 
     // get some objects that around this grid(not include self)
     virtual const int GetAroundObject(const int &sceneID, const int &groupID, const Guid &selfGrid, DataList &objectList, ECELL_AROUND around = ECELL_AROUND_9);
 
     // get a grid who connected it by direction
-    virtual SQUICK_SHARE_PTR<SceneCellInfo> GetConnectCell(const int &sceneID, const int &groupID, const Guid &selfGrid, ECELL_DIRECTION eDirection);
+    virtual std::shared_ptr<SceneCellInfo> GetConnectCell(const int &sceneID, const int &groupID, const Guid &selfGrid, ECELL_DIRECTION eDirection);
 
     // get the pointer of this grid
-    virtual SQUICK_SHARE_PTR<SceneCellInfo> GetCellInfo(const int &sceneID, const int &groupID, const Guid &selfGrid);
+    virtual std::shared_ptr<SceneCellInfo> GetCellInfo(const int &sceneID, const int &groupID, const Guid &selfGrid);
 
   protected:
     // get some grids that around this grid(not include self)
-    virtual const int GetAroundCell(SQUICK_SHARE_PTR<SceneCellInfo> pGridInfo, SQUICK_SHARE_PTR<SceneCellInfo> *gridList, ECELL_AROUND around = ECELL_AROUND_9);
+    virtual const int GetAroundCell(std::shared_ptr<SceneCellInfo> pGridInfo, std::shared_ptr<SceneCellInfo> *gridList, ECELL_AROUND around = ECELL_AROUND_9);
 
     // get some objects that around this grid(not include self)
-    virtual const int GetAroundObject(SQUICK_SHARE_PTR<SceneCellInfo> pGridInfo, DataList &objectList, ECELL_AROUND around = ECELL_AROUND_9);
+    virtual const int GetAroundObject(std::shared_ptr<SceneCellInfo> pGridInfo, DataList &objectList, ECELL_AROUND around = ECELL_AROUND_9);
 
     virtual int AddMoveEventCallBack(CELL_MOVE_EVENT_FUNCTOR_PTR functorPtr);
     virtual int AddMoveInEventCallBack(CELL_MOVE_EVENT_FUNCTOR_PTR functorPtr);
@@ -150,7 +150,7 @@ class CellModule : public ICellModule {
     const static int nCellWidth = 10;
 
     // cell_id -> cell_data
-    typedef std::map<Guid, SQUICK_SHARE_PTR<SceneCellInfo>> TMAP_CELL_INFO;
+    typedef std::map<Guid, std::shared_ptr<SceneCellInfo>> TMAP_CELL_INFO;
 
     // groupd_id->cell info
     typedef std::map<int, TMAP_CELL_INFO> TMAP_GROUP_INFO;
@@ -164,11 +164,11 @@ class CellModule : public ICellModule {
     std::vector<CELL_MOVE_EVENT_FUNCTOR_PTR> mMoveOutEventHandler;
 
   private:
-    IKernelModule *m_pKernelModule;
-    IClassModule *m_pClassModule;
-    ILogModule *m_pLogModule;
-    IElementModule *m_pElementModule;
-    IEventModule *m_pEventModule;
+    IKernelModule *m_kernel_;
+    IClassModule *m_class_;
+    ILogModule *m_log_;
+    IElementModule *m_element_;
+    IEventModule *m_event_;
 };
 
 #endif

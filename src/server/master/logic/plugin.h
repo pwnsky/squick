@@ -4,7 +4,7 @@
 
 class MasterServerPlugin : public IPlugin {
   public:
-    MasterServerPlugin(IPluginManager *p) { pPluginManager = p; }
+    MasterServerPlugin(IPluginManager *p) { pm_ = p; }
     virtual const int GetPluginVersion();
 
     virtual const std::string GetPluginName();

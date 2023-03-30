@@ -16,11 +16,11 @@ const int LuaScriptPlugin::GetPluginVersion() { return 0; }
 const std::string LuaScriptPlugin::GetPluginName() { return GET_CLASS_NAME(LuaScriptPlugin); }
 
 void LuaScriptPlugin::Install() {
-    REGISTER_MODULE(pPluginManager, ILuaScriptModule, LuaScriptModule)
-    REGISTER_MODULE(pPluginManager, ILuaPBModule, LuaPBModule)
+    REGISTER_MODULE(pm_, ILuaScriptModule, LuaScriptModule)
+    REGISTER_MODULE(pm_, ILuaPBModule, LuaPBModule)
 }
 
 void LuaScriptPlugin::Uninstall() {
-    UNREGISTER_MODULE(pPluginManager, ILuaPBModule, LuaPBModule)
-    UNREGISTER_MODULE(pPluginManager, ILuaScriptModule, LuaScriptModule)
+    UNREGISTER_MODULE(pm_, ILuaPBModule, LuaPBModule)
+    UNREGISTER_MODULE(pm_, ILuaScriptModule, LuaScriptModule)
 }

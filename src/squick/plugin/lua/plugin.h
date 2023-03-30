@@ -5,7 +5,7 @@
 
 class LuaScriptPlugin : public IPlugin {
   public:
-    LuaScriptPlugin(IPluginManager *p) { pPluginManager = p; }
+    LuaScriptPlugin(IPluginManager *p) { pm_ = p; }
 
     virtual const int GetPluginVersion();
 

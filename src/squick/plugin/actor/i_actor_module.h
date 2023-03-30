@@ -16,7 +16,7 @@ class IActorModule : public IModule {
             return false;
         }
 
-        SQUICK_SHARE_PTR<IActor> pActor = GetActor(nActorIndex);
+        std::shared_ptr<IActor> pActor = GetActor(nActorIndex);
         if (pActor) {
             auto component = pActor->AddComponent<TypeComponent>();
             if (component) {
@@ -40,8 +40,8 @@ class IActorModule : public IModule {
         return AddEndFunc(subMessageID, functorPtr_end);
     }
 
-    virtual SQUICK_SHARE_PTR<IActor> RequireActor() = 0;
-    virtual SQUICK_SHARE_PTR<IActor> GetActor(const Guid nActorIndex) = 0;
+    virtual std::shared_ptr<IActor> RequireActor() = 0;
+    virtual std::shared_ptr<IActor> GetActor(const Guid nActorIndex) = 0;
     virtual bool ReleaseActor(const Guid nActorIndex) = 0;
 
     virtual bool SendMsgToActor(const Guid actorIndex, const Guid who, const int eventID, const std::string &data, const std::string &arg = "") = 0;

@@ -4,7 +4,7 @@
 #include <squick/core/base.h>
 
 HttpServerModule::HttpServerModule(IPluginManager *p) {
-    pPluginManager = p;
+    pm_ = p;
     m_pHttpServer = NULL;
 }
 
@@ -23,13 +23,13 @@ bool HttpServerModule::Update() {
 }
 
 int HttpServerModule::StartServer(const unsigned short nPort) {
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
     m_pHttpServer = new HttpServer(this, &HttpServerModule::OnReceiveNetPack, &HttpServerModule::OnFilterPack);
 
     return m_pHttpServer->StartServer(nPort);
 }
 
-bool HttpServerModule::OnReceiveNetPack(SQUICK_SHARE_PTR<HttpRequest> req) {
+bool HttpServerModule::OnReceiveNetPack(std::shared_ptr<HttpRequest> req) {
     if (req == nullptr) {
         return false;
     }
@@ -57,13 +57,13 @@ bool HttpServerModule::OnReceiveNetPack(SQUICK_SHARE_PTR<HttpRequest> req) {
         os << performance.TimeScope();
         os << "---------- ";
         os << req->path;
-        m_pLogModule->LogWarning(Guid(), os, __FUNCTION__, __LINE__);
+        m_log_->LogWarning(Guid(), os, __FUNCTION__, __LINE__);
     }
 
     return ResponseMsg(req, "", WebStatus::WEB_ERROR);
 }
 
-WebStatus HttpServerModule::OnFilterPack(SQUICK_SHARE_PTR<HttpRequest> req) {
+WebStatus HttpServerModule::OnFilterPack(std::shared_ptr<HttpRequest> req) {
     if (req == nullptr) {
         return WebStatus::WEB_INTER_ERROR;
     }
@@ -82,7 +82,7 @@ bool HttpServerModule::AddMsgCB(const std::string &strCommand, const HttpType eR
     auto it = mMsgCBMap.GetElement(eRequestType);
     if (!it) {
         mMsgCBMap.AddElement(eRequestType,
-                             SQUICK_SHARE_PTR<std::map<std::string, HTTP_RECEIVE_FUNCTOR_PTR>>(SQUICK_NEW std::map<std::string, HTTP_RECEIVE_FUNCTOR_PTR>()));
+                             std::shared_ptr<std::map<std::string, HTTP_RECEIVE_FUNCTOR_PTR>>(new std::map<std::string, HTTP_RECEIVE_FUNCTOR_PTR>()));
     }
 
     it = mMsgCBMap.GetElement(eRequestType);
@@ -107,7 +107,7 @@ bool HttpServerModule::AddFilterCB(const std::string &strCommand, const HTTP_FIL
     return true;
 }
 
-bool HttpServerModule::ResponseMsg(SQUICK_SHARE_PTR<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason) {
+bool HttpServerModule::ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason) {
     dout << "\nHttp Response str: " << msg << "\n";
     return m_pHttpServer->ResponseMsg(req, msg, code, strReason);
 }

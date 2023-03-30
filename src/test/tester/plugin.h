@@ -7,7 +7,7 @@
 
 class TestPlugin : public IPlugin {
   public:
-    TestPlugin(IPluginManager *p) { pPluginManager = p; }
+    TestPlugin(IPluginManager *p) { pm_ = p; }
     virtual const int GetPluginVersion();
 
     virtual const std::string GetPluginName();

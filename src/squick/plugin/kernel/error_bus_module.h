@@ -8,7 +8,7 @@
 
 class ErrorBusModule : public IErrorBusModule {
   public:
-    ErrorBusModule(IPluginManager *p) { pPluginManager = p; }
+    ErrorBusModule(IPluginManager *p) { pm_ = p; }
 
     virtual ~ErrorBusModule() {}
 

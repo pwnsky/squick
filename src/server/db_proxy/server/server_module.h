@@ -19,7 +19,7 @@
 
 class DBNet_ServerModule : public IDBNet_ServerModule {
   public:
-    DBNet_ServerModule(IPluginManager *p) { pPluginManager = p; }
+    DBNet_ServerModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Awake();
     virtual bool Start();
@@ -29,25 +29,25 @@ class DBNet_ServerModule : public IDBNet_ServerModule {
     virtual bool AfterStart();
 
   protected:
-    void OnSocketEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
+    void OnSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 
-    void OnClientDisconnect(const SQUICK_SOCKET nAddress);
-    void OnClientConnected(const SQUICK_SOCKET nAddress);
+    void OnClientDisconnect(const socket_t sock);
+    void OnClientConnected(const socket_t sock);
 
-    void OnRequireRoleListProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnCreateRoleGameProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnDeleteRoleGameProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnLoadRoleDataProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnSaveRoleDataProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnRequireRoleListProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnCreateRoleGameProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnDeleteRoleGameProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnLoadRoleDataProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnSaveRoleDataProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   protected:
     IPlayerRedisModule *m_pPlayerRedisModule;
     IAccountRedisModule *m_pAccountRedisModule;
-    IElementModule *m_pElementModule;
-    IClassModule *m_pClassModule;
-    IKernelModule *m_pKernelModule;
-    ILogModule *m_pLogModule;
-    INetModule *m_pNetModule;
-    INetClientModule *m_pNetClientModule;
+    IElementModule *m_element_;
+    IClassModule *m_class_;
+    IKernelModule *m_kernel_;
+    ILogModule *m_log_;
+    INetModule *m_net_;
+    INetClientModule *m_net_client_;
     IThreadPoolModule *m_pThreadPoolModule;
 };

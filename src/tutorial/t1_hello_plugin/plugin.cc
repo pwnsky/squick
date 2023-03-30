@@ -20,6 +20,6 @@ const int T1_HelloPlugin::GetPluginVersion() { return 0; }
 
 const std::string T1_HelloPlugin::GetPluginName() { return GET_CLASS_NAME(T1_HelloPlugin); }
 
-void T1_HelloPlugin::Install() { REGISTER_MODULE(pPluginManager, IHelloPlugin, HelloWorld1) }
+void T1_HelloPlugin::Install() { REGISTER_MODULE(pm_, IHelloPlugin, HelloWorld1) }
 
-void T1_HelloPlugin::Uninstall() { UNREGISTER_MODULE(pPluginManager, IHelloPlugin, HelloWorld1) }
+void T1_HelloPlugin::Uninstall() { UNREGISTER_MODULE(pm_, IHelloPlugin, HelloWorld1) }

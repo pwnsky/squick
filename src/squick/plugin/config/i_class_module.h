@@ -7,19 +7,19 @@
 #include <squick/core/i_object.h>
 
 typedef std::function<int(const Guid &, const std::string &, const CLASS_OBJECT_EVENT, const DataList &)> CLASS_EVENT_FUNCTOR;
-typedef SQUICK_SHARE_PTR<CLASS_EVENT_FUNCTOR> CLASS_EVENT_FUNCTOR_PTR; // EVENT
+typedef std::shared_ptr<CLASS_EVENT_FUNCTOR> CLASS_EVENT_FUNCTOR_PTR; // EVENT
 
 class IClass : public List<std::string> // include files
 {
   public:
     virtual ~IClass() {}
 
-    virtual SQUICK_SHARE_PTR<IPropertyManager> GetPropertyManager() = 0;
+    virtual std::shared_ptr<IPropertyManager> GetPropertyManager() = 0;
 
-    virtual SQUICK_SHARE_PTR<IRecordManager> GetRecordManager() = 0;
+    virtual std::shared_ptr<IRecordManager> GetRecordManager() = 0;
 
-    virtual void SetParent(SQUICK_SHARE_PTR<IClass> pClass) = 0;
-    virtual SQUICK_SHARE_PTR<IClass> GetParent() = 0;
+    virtual void SetParent(std::shared_ptr<IClass> pClass) = 0;
+    virtual std::shared_ptr<IClass> GetParent() = 0;
     virtual void SetTypeName(const char *strType) = 0;
     virtual const std::string &GetTypeName() = 0;
     virtual const std::string &GetClassName() = 0;
@@ -54,9 +54,9 @@ class IClassModule : public IModule, public MapEx<std::string, IClass> {
 
     virtual bool AddClassCallBack(const std::string &className, const CLASS_EVENT_FUNCTOR_PTR &cb) = 0;
 
-    virtual SQUICK_SHARE_PTR<IPropertyManager> GetClassPropertyManager(const std::string &className) = 0;
+    virtual std::shared_ptr<IPropertyManager> GetClassPropertyManager(const std::string &className) = 0;
 
-    virtual SQUICK_SHARE_PTR<IRecordManager> GetClassRecordManager(const std::string &className) = 0;
+    virtual std::shared_ptr<IRecordManager> GetClassRecordManager(const std::string &className) = 0;
 
     virtual bool AddClass(const std::string &className, const std::string &strParentName) = 0;
 };

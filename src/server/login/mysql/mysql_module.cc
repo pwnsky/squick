@@ -4,16 +4,16 @@
 
 namespace login::mysql {
 bool MysqlModule::Start() {
-    m_net_ = pPluginManager->FindModule<INetModule>();
-    m_log_ = pPluginManager->FindModule<ILogModule>();
-    m_class_ = pPluginManager->FindModule<IClassModule>();
-    m_element_ = pPluginManager->FindModule<IElementModule>();
+    m_net_ = pm_->FindModule<INetModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_element_ = pm_->FindModule<IElementModule>();
     return true;
 }
 
 bool MysqlModule::Destory() { return true; }
 
-void MysqlModule::OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
+void MysqlModule::OnLoginProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
 }
 
 bool MysqlModule::ReadyUpdate() {
@@ -23,7 +23,7 @@ bool MysqlModule::ReadyUpdate() {
 bool MysqlModule::Update() { return true; }
 
 bool MysqlModule::AfterStart() { 
-    SQUICK_SHARE_PTR<IClass> iclass = m_class_->GetElement(excel::DB::ThisName());
+    std::shared_ptr<IClass> iclass = m_class_->GetElement(excel::DB::ThisName());
     if (iclass) {
         const std::vector<std::string>& strIdList = iclass->GetIDList();
         for (int i = 0; i < strIdList.size(); ++i) {

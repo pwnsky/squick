@@ -18,10 +18,10 @@ bool Actor::Update() {
     while (mMessageQueue.TryPop(messageObject)) {
         // must make sure that only one thread running this function at the same time
         // mxProcessFunctor is not thread-safe
-        ACTOR_PROCESS_FUNCTOR_PTR xBeginFunctor = mxProcessFunctor.GetElement(messageObject.msgID);
+        ACTOR_PROCESS_FUNCTOR_PTR xBeginFunctor = mxProcessFunctor.GetElement(messageObject.msg_id);
 
         if (xBeginFunctor != nullptr) {
-            // std::cout << ID().ToString() << " received message " << messageObject.msgID << " and msg index is " << messageObject.index << " totaly msg count:
+            // std::cout << ID().ToString() << " received message " << messageObject.msg_id << " and msg index is " << messageObject.index << " totaly msg count:
             // " << mMessageQueue.size_approx() << std::endl;
 
             xBeginFunctor->operator()(messageObject);
@@ -34,12 +34,12 @@ bool Actor::Update() {
     return true;
 }
 
-bool Actor::AddComponent(SQUICK_SHARE_PTR<IComponent> component) {
+bool Actor::AddComponent(std::shared_ptr<IComponent> component) {
     // if you want to add more components for the actor, please don't clear the component
     // mComponent.ClearAll();
     if (!mComponent.ExistElement(component->GetComponentName())) {
         mComponent.AddElement(component->GetComponentName(), component);
-        component->SetActor(SQUICK_SHARE_PTR<IActor>(this));
+        component->SetActor(std::shared_ptr<IActor>(this));
 
         component->Awake();
         component->Start();
@@ -54,7 +54,7 @@ bool Actor::AddComponent(SQUICK_SHARE_PTR<IComponent> component) {
 
 bool Actor::RemoveComponent(const std::string &componentName) { return false; }
 
-SQUICK_SHARE_PTR<IComponent> Actor::FindComponent(const std::string &componentName) { return mComponent.GetElement(componentName); }
+std::shared_ptr<IComponent> Actor::FindComponent(const std::string &componentName) { return mComponent.GetElement(componentName); }
 
 bool Actor::AddMessageHandler(const int nSubMsgID, ACTOR_PROCESS_FUNCTOR_PTR xBeginFunctor) { return mxProcessFunctor.AddElement(nSubMsgID, xBeginFunctor); }
 
@@ -64,7 +64,7 @@ bool Actor::SendMsg(const int eventID, const std::string &data, const std::strin
     static ActorMessage xMessage;
 
     xMessage.id = this->id;
-    xMessage.msgID = eventID;
+    xMessage.msg_id = eventID;
     xMessage.data = data;
     xMessage.arg = arg;
 

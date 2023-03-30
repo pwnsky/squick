@@ -8,7 +8,7 @@
 #include "map_ex.h"
 #include "platform.h"
 typedef std::function<int(const Guid &, const std::string &, const SquickData &, const SquickData &, const INT64)> PROPERTY_EVENT_FUNCTOR;
-typedef SQUICK_SHARE_PTR<PROPERTY_EVENT_FUNCTOR> PROPERTY_EVENT_FUNCTOR_PTR;
+typedef std::shared_ptr<PROPERTY_EVENT_FUNCTOR> PROPERTY_EVENT_FUNCTOR_PTR;
 
 class _SquickExport IProperty : public MemoryCounter {
   public:
@@ -54,8 +54,8 @@ class _SquickExport IProperty : public MemoryCounter {
     virtual const Vector3 &GetVector3() const = 0;
 
     virtual const SquickData &GetValue() const = 0;
-    virtual const SQUICK_SHARE_PTR<List<std::string>> GetEmbeddedList() const = 0;
-    virtual const SQUICK_SHARE_PTR<MapEx<std::string, std::string>> GetEmbeddedMap() const = 0;
+    virtual const std::shared_ptr<List<std::string>> GetEmbeddedList() const = 0;
+    virtual const std::shared_ptr<MapEx<std::string, std::string>> GetEmbeddedMap() const = 0;
 
     virtual bool Changed() const = 0;
 

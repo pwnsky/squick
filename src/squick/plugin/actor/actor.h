@@ -17,9 +17,9 @@ class Actor : public IActor {
 
     virtual bool Update();
 
-    virtual bool AddComponent(SQUICK_SHARE_PTR<IComponent> component);
+    virtual bool AddComponent(std::shared_ptr<IComponent> component);
     virtual bool RemoveComponent(const std::string &componentName);
-    virtual SQUICK_SHARE_PTR<IComponent> FindComponent(const std::string &componentName);
+    virtual std::shared_ptr<IComponent> FindComponent(const std::string &componentName);
 
     virtual bool SendMsg(const ActorMessage &message);
     virtual bool SendMsg(const int eventID, const std::string &data, const std::string &arg);

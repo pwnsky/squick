@@ -13,7 +13,7 @@
 class GameServerToDBModule : public IGameServerToDBModule {
   public:
     GameServerToDBModule(IPluginManager *p) {
-        pPluginManager = p;
+        pm_ = p;
         mLastReportTime = 0;
     }
     virtual bool Start();
@@ -21,20 +21,20 @@ class GameServerToDBModule : public IGameServerToDBModule {
     virtual bool Update();
     virtual bool AfterStart();
 
-    virtual void TransmitToDB(const int nHashKey, const int msgID, const google::protobuf::Message &xData);
+    virtual void TransmitToDB(const int nHashKey, const int msg_id, const google::protobuf::Message &xData);
 
   protected:
-    void OnSocketWSEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
+    void OnSocketWSEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 
   protected:
-    void TransPBToProxy(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void TransPBToProxy(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
     INT64 mLastReportTime;
 
-    ILogModule *m_pLogModule;
-    IKernelModule *m_pKernelModule;
-    IClassModule *m_pClassModule;
-    IElementModule *m_pElementModule;
-    INetClientModule *m_pNetClientModule;
+    ILogModule *m_log_;
+    IKernelModule *m_kernel_;
+    IClassModule *m_class_;
+    IElementModule *m_element_;
+    INetClientModule *m_net_client_;
     IGameServerNet_ServerModule *m_pGameServerNet_ServerModule;
 };

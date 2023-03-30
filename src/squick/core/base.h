@@ -10,7 +10,7 @@
 #include "i_plugin_manager.h"
 #include <iostream>
 
-enum SQUICK_SERVER_TYPES {
+enum ServerType {
     SQUICK_ST_NONE = 0,              // NONE
     SQUICK_ST_MASTER = 1,            //
     SQUICK_ST_LOGIN = 2,             //

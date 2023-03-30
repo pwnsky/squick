@@ -16,11 +16,11 @@
 #include <squick/core/guid.h>
 #include <vector>
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 #include <WinSock2.h>
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE || SQUICK_PLATFORM == SQUICK_PLATFORM_LINUX || SQUICK_PLATFORM == SQUICK_PLATFORM_ANDROID
+#elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_LINUX || PLATFORM == PLATFORM_ANDROID
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE
+#if PLATFORM == PLATFORM_APPLE
 
 #include <libkern/OSByteOrder.h>
 
@@ -57,16 +57,16 @@ struct IMsgHead {
 
     virtual uint16_t GetMsgID() const = 0;
 
-    virtual void SetMsgID(uint16_t msgID) = 0;
+    virtual void SetMsgID(uint16_t msg_id) = 0;
 
     virtual uint32_t GetBodyLength() const = 0;
 
     virtual void SetBodyLength(uint32_t length) = 0;
 
     static int64_t SQUICK_HTONLL(int64_t nData) {
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
         return htonll(nData);
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE || SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE_IOS
+#elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS
         return OSSwapHostToBigInt64(nData);
 #else
         return htobe64(nData);
@@ -74,11 +74,11 @@ struct IMsgHead {
     }
 
     static int64_t SQUICK_NTOHLL(int64_t nData) {
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
         return ntohll(nData);
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE || SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE_IOS
+#elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS
         return OSSwapBigToHostInt64(nData);
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_ANDROID
+#elif PLATFORM == PLATFORM_ANDROID
         return betoh64(nData);
 #else
         return be64toh(nData);
@@ -86,9 +86,9 @@ struct IMsgHead {
     }
 
     static int32_t SQUICK_HTONL(int32_t nData) {
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
         return htonl(nData);
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE || SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE_IOS
+#elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS
         return OSSwapHostToBigInt32(nData);
 #else
         return htobe32(nData);
@@ -96,11 +96,11 @@ struct IMsgHead {
     }
 
     static int32_t SQUICK_NTOHL(int32_t nData) {
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
         return ntohl(nData);
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE || SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE_IOS
+#elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS
         return OSSwapBigToHostInt32(nData);
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_ANDROID
+#elif PLATFORM == PLATFORM_ANDROID
         return betoh32(nData);
 #else
         return be32toh(nData);
@@ -108,9 +108,9 @@ struct IMsgHead {
     }
 
     static int16_t SQUICK_HTONS(int16_t nData) {
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
         return htons(nData);
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE || SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE_IOS
+#elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS
         return OSSwapHostToBigInt16(nData);
 #else
         return htobe16(nData);
@@ -118,11 +118,11 @@ struct IMsgHead {
     }
 
     static int16_t SQUICK_NTOHS(int16_t nData) {
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
         return ntohs(nData);
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE || SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE_IOS
+#elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS
         return OSSwapBigToHostInt16(nData);
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_ANDROID
+#elif PLATFORM == PLATFORM_ANDROID
         return betoh16(nData);
 #else
         return be16toh(nData);
@@ -135,16 +135,16 @@ class SquickStructHead : public IMsgHead {
   public:
     SquickStructHead() {
         munSize = 0;
-        mumsgID = 0;
+        mumsg_id = 0;
     }
 
     // Message Head[ MsgID(2) | MsgSize(4) ]
     virtual int EnCode(char *data) {
         uint32_t nOffset = 0;
 
-        uint16_t msgID = SQUICK_HTONS(mumsgID);
-        memcpy(data + nOffset, (void *)(&msgID), sizeof(mumsgID));
-        nOffset += sizeof(mumsgID);
+        uint16_t msg_id = SQUICK_HTONS(mumsg_id);
+        memcpy(data + nOffset, (void *)(&msg_id), sizeof(mumsg_id));
+        nOffset += sizeof(mumsg_id);
 
         uint32_t nPackSize = munSize + SQUICK_HEAD_LENGTH;
         uint32_t nSize = SQUICK_HTONL(nPackSize);
@@ -162,10 +162,10 @@ class SquickStructHead : public IMsgHead {
     virtual int DeCode(const char *data) {
         uint32_t nOffset = 0;
 
-        uint16_t msgID = 0;
-        memcpy(&msgID, data + nOffset, sizeof(mumsgID));
-        mumsgID = SQUICK_NTOHS(msgID);
-        nOffset += sizeof(mumsgID);
+        uint16_t msg_id = 0;
+        memcpy(&msg_id, data + nOffset, sizeof(mumsg_id));
+        mumsg_id = SQUICK_NTOHS(msg_id);
+        nOffset += sizeof(mumsg_id);
 
         uint32_t nPackSize = 0;
         memcpy(&nPackSize, data + nOffset, sizeof(munSize));
@@ -179,9 +179,9 @@ class SquickStructHead : public IMsgHead {
         return nOffset;
     }
 
-    virtual uint16_t GetMsgID() const { return mumsgID; }
+    virtual uint16_t GetMsgID() const { return mumsg_id; }
 
-    virtual void SetMsgID(uint16_t msgID) { mumsgID = msgID; }
+    virtual void SetMsgID(uint16_t msg_id) { mumsg_id = msg_id; }
 
     virtual uint32_t GetBodyLength() const { return munSize; }
 
@@ -189,15 +189,15 @@ class SquickStructHead : public IMsgHead {
 
   protected:
     uint32_t munSize;
-    uint16_t mumsgID;
+    uint16_t mumsg_id;
 };
 
 class INet;
 
-typedef std::function<void(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len)> NET_RECEIVE_FUNCTOR;
+typedef std::function<void(const socket_t sock, const int msg_id, const char *msg, const uint32_t len)> NET_RECEIVE_FUNCTOR;
 typedef std::shared_ptr<NET_RECEIVE_FUNCTOR> NET_RECEIVE_FUNCTOR_PTR;
 
-typedef std::function<void(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT nEvent, INet *pNet)> NET_EVENT_FUNCTOR;
+typedef std::function<void(const socket_t sock, const SQUICK_NET_EVENT nEvent, INet *pNet)> NET_EVENT_FUNCTOR;
 typedef std::shared_ptr<NET_EVENT_FUNCTOR> NET_EVENT_FUNCTOR_PTR;
 
 typedef std::function<void(int severity, const char *msg)> NET_EVENT_LOG_FUNCTOR;
@@ -205,7 +205,7 @@ typedef std::shared_ptr<NET_EVENT_LOG_FUNCTOR> NET_EVENT_LOG_FUNCTOR_PTR;
 
 class NetObject {
   public:
-    NetObject(INet *pNet, SQUICK_SOCKET sock, sockaddr_in &addr, void *pBev) {
+    NetObject(INet *pNet, socket_t sock, sockaddr_in &addr, void *pBev) {
         logicState = 0;
         gameID = 0;
         fd = sock;
@@ -287,7 +287,7 @@ class NetObject {
 
     void SetHashIdentID(const Guid &xHashIdentID) { hashIdentID = xHashIdentID; }
 
-    SQUICK_SOCKET GetRealFD() { return fd; }
+    socket_t GetRealFD() { return fd; }
 
   private:
     sockaddr_in sin;
@@ -304,7 +304,7 @@ class NetObject {
     Guid hashIdentID; // hash ident, special for distributed
     INet *netObject;
     //
-    SQUICK_SOCKET fd;
+    socket_t fd;
     bool bNeedRemove;
 };
 
@@ -326,22 +326,22 @@ class INet {
     virtual bool Final() = 0;
 
     // send a message with out msg-head[auto add msg-head in this function]
-    virtual bool SendMsgWithOutHead(const int16_t msgID, const char *msg, const size_t len, const SQUICK_SOCKET sockIndex = 0) = 0;
+    virtual bool SendMsgWithOutHead(const int16_t msg_id, const char *msg, const size_t len, const socket_t sock = 0) = 0;
 
     // send a message with out msg-head[need to add msg-head for this message by youself]
-    virtual bool SendMsg(const char *msg, const size_t len, const SQUICK_SOCKET sockIndex) = 0;
+    virtual bool SendMsg(const char *msg, const size_t len, const socket_t sock) = 0;
 
     // send a message to all client[need to add msg-head for this message by youself]
     virtual bool SendMsgToAllClient(const char *msg, const size_t len) = 0;
 
     // send a message with out msg-head to all client[auto add msg-head in this function]
-    virtual bool SendMsgToAllClientWithOutHead(const int16_t msgID, const char *msg, const size_t len) = 0;
+    virtual bool SendMsgToAllClientWithOutHead(const int16_t msg_id, const char *msg, const size_t len) = 0;
 
-    virtual bool CloseNetObject(const SQUICK_SOCKET sockIndex) = 0;
+    virtual bool CloseNetObject(const socket_t sock) = 0;
 
-    virtual NetObject *GetNetObject(const SQUICK_SOCKET sockIndex) = 0;
+    virtual NetObject *GetNetObject(const socket_t sock) = 0;
 
-    virtual bool AddNetObject(const SQUICK_SOCKET sockIndex, NetObject *pObject) = 0;
+    virtual bool AddNetObject(const socket_t sock, NetObject *pObject) = 0;
 
     virtual bool IsServer() = 0;
 

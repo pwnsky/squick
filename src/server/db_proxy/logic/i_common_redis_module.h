@@ -18,18 +18,18 @@ class ICommonRedisModule : public IModule {
     virtual std::string GetSceneCacheKey(const int &sceneID) = 0;
     virtual std::string GetCellCacheKey(const std::string &strCellID) = 0;
 
-    virtual SQUICK_SHARE_PTR<IPropertyManager> NewPropertyManager(const std::string &className) = 0;
-    virtual SQUICK_SHARE_PTR<IRecordManager> NewRecordManager(const std::string &className) = 0;
+    virtual std::shared_ptr<IPropertyManager> NewPropertyManager(const std::string &className) = 0;
+    virtual std::shared_ptr<IRecordManager> NewRecordManager(const std::string &className) = 0;
 
-    virtual SQUICK_SHARE_PTR<IPropertyManager> GetPropertyInfo(const std::string &self, const std::string &className, const bool cache, const bool save,
-                                                               SQUICK_SHARE_PTR<IPropertyManager> propertyManager = nullptr) = 0;
-    virtual SQUICK_SHARE_PTR<IRecordManager> GetRecordInfo(const std::string &self, const std::string &className, const bool cache, const bool save,
-                                                           SQUICK_SHARE_PTR<IRecordManager> recordManager = nullptr) = 0;
+    virtual std::shared_ptr<IPropertyManager> GetPropertyInfo(const std::string &self, const std::string &className, const bool cache, const bool save,
+                                                               std::shared_ptr<IPropertyManager> propertyManager = nullptr) = 0;
+    virtual std::shared_ptr<IRecordManager> GetRecordInfo(const std::string &self, const std::string &className, const bool cache, const bool save,
+                                                           std::shared_ptr<IRecordManager> recordManager = nullptr) = 0;
 
     virtual bool SavePropertyInfo(const std::string &self, const std::string &propertyName, const std::string &propertyValue) = 0;
-    virtual bool SavePropertyInfo(const std::string &self, SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager, const bool cache, const bool save,
+    virtual bool SavePropertyInfo(const std::string &self, std::shared_ptr<IPropertyManager> pPropertyManager, const bool cache, const bool save,
                                   const int nExpireSecond = -1) = 0;
-    virtual bool SaveRecordInfo(const std::string &self, SQUICK_SHARE_PTR<IRecordManager> pRecordManager, const bool cache, const bool save,
+    virtual bool SaveRecordInfo(const std::string &self, std::shared_ptr<IRecordManager> pRecordManager, const bool cache, const bool save,
                                 const int nExpireSecond = -1) = 0;
 
     virtual bool GetPropertyList(const std::string &self, const std::vector<std::string> &fields, std::vector<std::string> &values) = 0;

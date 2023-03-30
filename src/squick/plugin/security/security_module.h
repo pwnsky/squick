@@ -9,7 +9,7 @@
 
 class SecurityModule : public ISecurityModule {
   public:
-    SecurityModule(IPluginManager *p) { pPluginManager = p; }
+    SecurityModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Start();
     virtual bool Destory();
@@ -33,9 +33,9 @@ class SecurityModule : public ISecurityModule {
 
   protected:
     //////////////////////////////////////////////////////////////////////////
-    IKernelModule *m_pKernelModule;
-    IClassModule *m_pClassModule;
-    ILogModule *m_pLogModule;
-    IElementModule *m_pElementModule;
+    IKernelModule *m_kernel_;
+    IClassModule *m_class_;
+    ILogModule *m_log_;
+    IElementModule *m_element_;
     //////////////////////////////////////////////////////////////////////////
 };

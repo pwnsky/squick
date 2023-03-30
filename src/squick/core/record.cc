@@ -18,7 +18,7 @@ Record::Record() {
     mnMaxRow = 0;
 }
 
-Record::Record(const Guid &self, const std::string &recordName, const SQUICK_SHARE_PTR<DataList> &valueList, const SQUICK_SHARE_PTR<DataList> &tagList,
+Record::Record(const Guid &self, const std::string &recordName, const std::shared_ptr<DataList> &valueList, const std::shared_ptr<DataList> &tagList,
                const int nMaxRow) {
     mVarRecordType = valueList;
     mVarRecordTag = tagList;
@@ -43,7 +43,7 @@ Record::Record(const Guid &self, const std::string &recordName, const SQUICK_SHA
 
     // init share_pointer for all data
     for (int i = 0; i < GetRows() * GetCols(); i++) {
-        mtRecordVec.push_back(SQUICK_SHARE_PTR<SquickData>());
+        mtRecordVec.push_back(std::shared_ptr<SquickData>());
     }
 
     // it would be optimized in future as it should apply the memory by onetime
@@ -148,9 +148,9 @@ int Record::AddRow(const int row, const DataList &var) {
     SetUsed(nFindRow, 1);
 
     for (int i = 0; i < GetCols(); ++i) {
-        SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(nFindRow, i));
+        std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(nFindRow, i));
         if (nullptr == pVar) {
-            pVar = SQUICK_SHARE_PTR<SquickData>(SQUICK_NEW SquickData(var.Type(i)));
+            pVar = std::shared_ptr<SquickData>(new SquickData(var.Type(i)));
         }
 
         pVar->variantData = var.GetStack(i)->variantData;
@@ -185,9 +185,9 @@ bool Record::SetRow(const int row, const DataList &var) {
     }
 
     for (int i = 0; i < GetCols(); ++i) {
-        SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, i));
+        std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, i));
         if (nullptr == pVar) {
-            pVar = SQUICK_SHARE_PTR<SquickData>(SQUICK_NEW SquickData(var.Type(i)));
+            pVar = std::shared_ptr<SquickData>(new SquickData(var.Type(i)));
         }
 
         SquickData oldValue = *pVar;
@@ -223,7 +223,7 @@ bool Record::SetInt(const int row, const int col, const INT64 value) {
     SquickData var;
     var.SetInt(value);
 
-    SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
+    std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
     // must have memory
     if (nullptr == pVar) {
         return false;
@@ -275,7 +275,7 @@ bool Record::SetFloat(const int row, const int col, const double value) {
     SquickData var;
     var.SetFloat(value);
 
-    SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
+    std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
 
     // must have memory
     if (nullptr == pVar) {
@@ -327,7 +327,7 @@ bool Record::SetString(const int row, const int col, const std::string &value) {
     SquickData var;
     var.SetString(value);
 
-    SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
+    std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
 
     // must have memory
     if (nullptr == pVar) {
@@ -380,7 +380,7 @@ bool Record::SetObject(const int row, const int col, const Guid &value) {
     SquickData var;
     var.SetObject(value);
 
-    SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
+    std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
 
     // must have memory
     if (nullptr == pVar) {
@@ -433,7 +433,7 @@ bool Record::SetVector2(const int row, const int col, const Vector2 &value) {
     SquickData var;
     var.SetVector2(value);
 
-    SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
+    std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
 
     // must have memory
     if (nullptr == pVar) {
@@ -480,7 +480,7 @@ bool Record::SetVector3(const int row, const int col, const Vector3 &value) {
     SquickData var;
     var.SetVector3(value);
 
-    SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
+    std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
 
     // must have memory
     if (nullptr == pVar) {
@@ -532,7 +532,7 @@ bool Record::QueryRow(const int row, DataList &varList) {
 
     varList.Clear();
     for (int i = 0; i < GetCols(); ++i) {
-        SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, i));
+        std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, i));
         if (pVar) {
             varList.Append(*pVar);
         } else {
@@ -583,7 +583,7 @@ INT64 Record::GetInt(const int row, const int col) const {
         return 0;
     }
 
-    const SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
+    const std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
     if (!pVar) {
         return 0;
     }
@@ -605,7 +605,7 @@ double Record::GetFloat(const int row, const int col) const {
         return 0.0f;
     }
 
-    const SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
+    const std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
     if (!pVar) {
         return 0.0f;
     }
@@ -627,7 +627,7 @@ const std::string &Record::GetString(const int row, const int col) const {
         return NULL_STR;
     }
 
-    const SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
+    const std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
     if (!pVar) {
         return NULL_STR;
     }
@@ -649,7 +649,7 @@ const Guid &Record::GetObject(const int row, const int col) const {
         return NULL_OBJECT;
     }
 
-    const SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
+    const std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
     if (!pVar) {
         return NULL_OBJECT;
     }
@@ -671,7 +671,7 @@ const Vector2 &Record::GetVector2(const int row, const int col) const {
         return NULL_VECTOR2;
     }
 
-    const SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
+    const std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
     if (!pVar) {
         return NULL_VECTOR2;
     }
@@ -693,7 +693,7 @@ const Vector3 &Record::GetVector3(const int row, const int col) const {
         return NULL_VECTOR3;
     }
 
-    const SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
+    const std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, col));
     if (!pVar) {
         return NULL_VECTOR3;
     }
@@ -1168,8 +1168,8 @@ void Record::SetPrivate(const bool bPrivate) { mbPrivate = bPrivate; }
 
 void Record::SetName(const std::string &name) { mstrRecordName = name; }
 
-SQUICK_SHARE_PTR<DataList> Record::GetStartData() const {
-    SQUICK_SHARE_PTR<DataList> pIniData = SQUICK_SHARE_PTR<DataList>(SQUICK_NEW DataList());
+std::shared_ptr<DataList> Record::GetStartData() const {
+    std::shared_ptr<DataList> pIniData = std::shared_ptr<DataList>(new DataList());
     pIniData->Append(*mVarRecordType);
 
     return pIniData;
@@ -1200,7 +1200,7 @@ bool Record::SwapRowInfo(const int nOriginRow, const int nTargetRow) {
 
     if (ValidRow(nOriginRow) && ValidRow(nTargetRow)) {
         for (int i = 0; i < GetCols(); ++i) {
-            SQUICK_SHARE_PTR<SquickData> pOrigin = mtRecordVec.at(GetPos(nOriginRow, i));
+            std::shared_ptr<SquickData> pOrigin = mtRecordVec.at(GetPos(nOriginRow, i));
             mtRecordVec[GetPos(nOriginRow, i)] = mtRecordVec.at(GetPos(nTargetRow, i));
             mtRecordVec[GetPos(nTargetRow, i)] = pOrigin;
         }
@@ -1224,9 +1224,9 @@ bool Record::SwapRowInfo(const int nOriginRow, const int nTargetRow) {
     return false;
 }
 
-const SQUICK_SHARE_PTR<DataList> Record::GetTag() const {
+const std::shared_ptr<DataList> Record::GetTag() const {
     // TODO
-    SQUICK_SHARE_PTR<DataList> pIniData = SQUICK_SHARE_PTR<DataList>(SQUICK_NEW DataList());
+    std::shared_ptr<DataList> pIniData = std::shared_ptr<DataList>(new DataList());
     pIniData->Append(*mVarRecordTag);
     return pIniData;
 }
@@ -1248,9 +1248,9 @@ bool Record::PreAllocMemoryForRow(const int row) {
     }
 
     for (int i = 0; i < GetCols(); ++i) {
-        SQUICK_SHARE_PTR<SquickData> &pVar = mtRecordVec.at(GetPos(row, i));
+        std::shared_ptr<SquickData> &pVar = mtRecordVec.at(GetPos(row, i));
         if (nullptr == pVar) {
-            pVar = SQUICK_SHARE_PTR<SquickData>(SQUICK_NEW SquickData(mVarRecordType->Type(i)));
+            pVar = std::shared_ptr<SquickData>(new SquickData(mVarRecordType->Type(i)));
         }
 
         pVar->variantData = mVarRecordType->GetStack(i)->variantData;

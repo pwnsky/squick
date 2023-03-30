@@ -71,7 +71,7 @@ class RedisClient : public IRedisClient {
      */
     virtual bool DEL(const std::string &key);
 
-    // SQUICK_SHARE_PTR<NFRedisResult> DUMP(const std::string& key, std::string& out);
+    // std::shared_ptr<NFRedisResult> DUMP(const std::string& key, std::string& out);
 
     /**
      * @brie Returns if key exists.
@@ -120,7 +120,7 @@ class RedisClient : public IRedisClient {
      * @return Simple string reply: type of key, or none when key does not exist.
      */
     virtual std::string TYPE(const std::string &key);
-    // SQUICK_SHARE_PTR<NFRedisResult> SCAN(const std::string& key);
+    // std::shared_ptr<NFRedisResult> SCAN(const std::string& key);
 
     /////////client String//////////////
     /**
@@ -159,8 +159,8 @@ class RedisClient : public IRedisClient {
      */
     virtual bool GET(const std::string &key, std::string &value);
 
-    // SQUICK_SHARE_PTR<NFRedisResult> GETBIT(const std::string& key);
-    // SQUICK_SHARE_PTR<NFRedisResult> GETRANGE(const std::string& key);
+    // std::shared_ptr<NFRedisResult> GETBIT(const std::string& key);
+    // std::shared_ptr<NFRedisResult> GETRANGE(const std::string& key);
     /**
      * @brief Atomically sets key to value and returns the old value stored at key
      * @param keys [in] name of key
@@ -212,8 +212,8 @@ class RedisClient : public IRedisClient {
      */
     virtual void MSET(const string_pair_vector &values);
 
-    // SQUICK_SHARE_PTR<NFRedisResult> MSETNX(const std::string& key);
-    // SQUICK_SHARE_PTR<NFRedisResult> PSETEX(const std::string& key);
+    // std::shared_ptr<NFRedisResult> MSETNX(const std::string& key);
+    // std::shared_ptr<NFRedisResult> PSETEX(const std::string& key);
     /**
      * @brief Set key to hold the string value. If key already holds a value, it is overwritten, regardless of its type
      * @param key [in] name of key
@@ -223,7 +223,7 @@ class RedisClient : public IRedisClient {
      */
     virtual bool SET(const std::string &key, const std::string &value);
 
-    // SQUICK_SHARE_PTR<NFRedisResult> SETBIT(const std::string& key);
+    // std::shared_ptr<NFRedisResult> SETBIT(const std::string& key);
     /**
      * @brief Set key to hold the string value and set key to timeout after a given number of seconds
      * @param key [in] name of key
@@ -240,7 +240,7 @@ class RedisClient : public IRedisClient {
      * @return true if the key was set, false if the key was not set
      */
     virtual bool SETNX(const std::string &key, const std::string &value);
-    // SQUICK_SHARE_PTR<NFRedisResult> SETRANGE(const std::string& key);
+    // std::shared_ptr<NFRedisResult> SETRANGE(const std::string& key);
 
     /**
      * @brief Returns the length of the string value stored at key
@@ -364,7 +364,7 @@ class RedisClient : public IRedisClient {
      * @return false when key does not exist or not a hashmap key
      */
     virtual bool HVALS(const std::string &key, string_vector &values);
-    // SQUICK_SHARE_PTR<NFRedisResult> HSCAN(const std::string& key, const std::string& field);
+    // std::shared_ptr<NFRedisResult> HSCAN(const std::string& key, const std::string& field);
 
     /**
      * @brief Returns the length of the string value stored at key
@@ -377,9 +377,9 @@ class RedisClient : public IRedisClient {
 
     /////////client list//////////////
 
-    // SQUICK_SHARE_PTR<NFRedisResult> BLPOP(const std::string& key, string_vector& values);
-    // SQUICK_SHARE_PTR<NFRedisResult> BRPOP(const std::string& key, string_vector& values);
-    // SQUICK_SHARE_PTR<NFRedisResult> BRPOPLPUSH(const std::string& key, string_vector& values);
+    // std::shared_ptr<NFRedisResult> BLPOP(const std::string& key, string_vector& values);
+    // std::shared_ptr<NFRedisResult> BRPOP(const std::string& key, string_vector& values);
+    // std::shared_ptr<NFRedisResult> BRPOPLPUSH(const std::string& key, string_vector& values);
     /**
      * @brief Returns the element at index index in the list stored at key
      * @param key [in] name of key
@@ -388,7 +388,7 @@ class RedisClient : public IRedisClient {
      * @return true when cmd success, false when key does not exist or not a list key.
      */
     virtual bool LINDEX(const std::string &key, const int index, std::string &value);
-    // SQUICK_SHARE_PTR<NFRedisResult> LINSERT(const std::string& key, const std::string& value1, const std::string& value2);
+    // std::shared_ptr<NFRedisResult> LINSERT(const std::string& key, const std::string& value1, const std::string& value2);
 
     /**
      * @brief Returns the length of the list stored at key
@@ -432,7 +432,7 @@ class RedisClient : public IRedisClient {
      * @return true when cmd success, false when key does not exist or dose not a list key.
      */
     virtual bool LRANGE(const std::string &key, const int start, const int end, string_vector &values);
-    // SQUICK_SHARE_PTR<NFRedisResult> LREM(const std::string& key, string_vector& values);
+    // std::shared_ptr<NFRedisResult> LREM(const std::string& key, string_vector& values);
 
     /**
      * @brief Sets the list element at index to value
@@ -442,7 +442,7 @@ class RedisClient : public IRedisClient {
      * @return true when cmd success, false when key dose not a list key.
      */
     virtual bool LSET(const std::string &key, const int index, const std::string &value);
-    // SQUICK_SHARE_PTR<NFRedisResult> LTRIM(const std::string& key, string_vector& values);
+    // std::shared_ptr<NFRedisResult> LTRIM(const std::string& key, string_vector& values);
 
     /**
      * @brief Removes and returns the last element of the list stored at key.
@@ -451,7 +451,7 @@ class RedisClient : public IRedisClient {
      * @return true when cmd success, false when key does not exist or not a list key.
      */
     virtual bool RPOP(const std::string &key, std::string &value);
-    // SQUICK_SHARE_PTR<NFRedisResult> RPOPLPUSH(const std::string& key, string_vector& values);
+    // std::shared_ptr<NFRedisResult> RPOPLPUSH(const std::string& key, string_vector& values);
 
     /**
      * @brief Insert all the specified values at the last of the list stored at key
@@ -758,8 +758,8 @@ class RedisClient : public IRedisClient {
     virtual bool UNSUBSCRIBE(const std::string &key);
 
   protected:
-    SQUICK_SHARE_PTR<redisReply> BuildSendCmd(const RedisCommand &cmd);
-    SQUICK_SHARE_PTR<redisReply> ParseForReply();
+    std::shared_ptr<redisReply> BuildSendCmd(const RedisCommand &cmd);
+    std::shared_ptr<redisReply> ParseForReply();
 
   private:
     bool mbAuthed;

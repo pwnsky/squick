@@ -25,21 +25,21 @@ class Class;
 class ElementConfigInfo {
   public:
     ElementConfigInfo() {
-        m_pPropertyManager = SQUICK_SHARE_PTR<IPropertyManager>(SQUICK_NEW PropertyManager(Guid()));
-        m_pRecordManager = SQUICK_SHARE_PTR<IRecordManager>(SQUICK_NEW RecordManager(Guid()));
+        m_pPropertyManager = std::shared_ptr<IPropertyManager>(new PropertyManager(Guid()));
+        m_pRecordManager = std::shared_ptr<IRecordManager>(new RecordManager(Guid()));
     }
 
     virtual ~ElementConfigInfo() {}
 
-    SQUICK_SHARE_PTR<IPropertyManager> GetPropertyManager() { return m_pPropertyManager; }
+    std::shared_ptr<IPropertyManager> GetPropertyManager() { return m_pPropertyManager; }
 
-    SQUICK_SHARE_PTR<IRecordManager> GetRecordManager() { return m_pRecordManager; }
+    std::shared_ptr<IRecordManager> GetRecordManager() { return m_pRecordManager; }
 
   protected:
     // std::string mstrConfigID;
 
-    SQUICK_SHARE_PTR<IPropertyManager> m_pPropertyManager;
-    SQUICK_SHARE_PTR<IRecordManager> m_pRecordManager;
+    std::shared_ptr<IPropertyManager> m_pPropertyManager;
+    std::shared_ptr<IRecordManager> m_pRecordManager;
 };
 
 class ElementModule : public IElementModule, MapEx<std::string, ElementConfigInfo> {
@@ -69,8 +69,8 @@ class ElementModule : public IElementModule, MapEx<std::string, ElementConfigInf
     virtual bool ExistElement(const std::string &configName) override;
     virtual bool ExistElement(const std::string &className, const std::string &configName) override;
 
-    virtual SQUICK_SHARE_PTR<IPropertyManager> GetPropertyManager(const std::string &configName) override;
-    virtual SQUICK_SHARE_PTR<IRecordManager> GetRecordManager(const std::string &configName) override;
+    virtual std::shared_ptr<IPropertyManager> GetPropertyManager(const std::string &configName) override;
+    virtual std::shared_ptr<IRecordManager> GetRecordManager(const std::string &configName) override;
 
     virtual INT64 GetPropertyInt(const std::string &configName, const std::string &propertyName) override;
     virtual int GetPropertyInt32(const std::string &configName, const std::string &propertyName) override;
@@ -83,9 +83,9 @@ class ElementModule : public IElementModule, MapEx<std::string, ElementConfigInf
     virtual const std::vector<std::string> GetListByProperty(const std::string &className, const std::string &propertyName, const std::string &nValue) override;
 
   protected:
-    virtual SQUICK_SHARE_PTR<IProperty> GetProperty(const std::string &configName, const std::string &propertyName);
+    virtual std::shared_ptr<IProperty> GetProperty(const std::string &configName, const std::string &propertyName);
 
-    virtual bool Load(rapidxml::xml_node<> *attrNode, SQUICK_SHARE_PTR<IClass> pLogicClass);
+    virtual bool Load(rapidxml::xml_node<> *attrNode, std::shared_ptr<IClass> pLogicClass);
     virtual bool CheckRef();
     virtual bool LegalNumber(const char *str);
     virtual bool LegalFloat(const char *str);
@@ -101,8 +101,8 @@ class ElementModule : public IElementModule, MapEx<std::string, ElementConfigInf
     ElementModule *originalElementModule;
 
   protected:
-    IClassModule *m_pClassModule;
-    ILogModule *m_pLogModule;
+    IClassModule *m_class_;
+    ILogModule *m_log_;
 
     bool mbLoaded;
     bool mbBackup = false;

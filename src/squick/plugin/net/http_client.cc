@@ -2,7 +2,7 @@
 #include "http_client.h"
 #include "net_module.h"
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 #define snprintf _snprintf
 #endif
 
@@ -19,7 +19,7 @@ bool HttpClient::Start() {
         mlHttpObject.push_back(new HttpObject(this, nullptr, nullptr, Guid()));
     }
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
     WORD wVersionRequested;
     WSADATA wsaData;
     wVersionRequested = MAKEWORD(2, 2);
@@ -378,7 +378,7 @@ void HttpClient::OnHttpReqDone(struct evhttp_request *req, void *ctx) {
         }
     }
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
     SQUICK_CRASH_TRY
 #endif
 
@@ -389,7 +389,7 @@ void HttpClient::OnHttpReqDone(struct evhttp_request *req, void *ctx) {
         }
     }
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
     SQUICK_CRASH_END
 #endif
 

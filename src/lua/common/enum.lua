@@ -41,7 +41,7 @@ RecordOpType =
 
 RecordOpType = CreatEnumTable(RecordOpType, -1)
 
-SQUICK_SERVER_TYPES =
+ServerType =
 {
     "SQUICK_ST_NONE",
     "SQUICK_ST_REDIS",
@@ -55,4 +55,4 @@ SQUICK_SERVER_TYPES =
 	"SQUICK_ST_MAX",
     "SQUICK_ST_GATEWAY",
 };
-SQUICK_SERVER_TYPES = CreatEnumTable(SQUICK_SERVER_TYPES, -1)
+ServerType = CreatEnumTable(ServerType, -1)

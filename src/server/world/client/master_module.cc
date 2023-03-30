@@ -7,13 +7,13 @@
 #include <squick/struct/struct.h>
 
 bool WorldToMasterModule::Start() {
-    m_pNetClientModule = pPluginManager->FindModule<INetClientModule>();
-    m_pNetModule = pPluginManager->FindModule<INetModule>();
-    m_pClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pElementModule = pPluginManager->FindModule<IElementModule>();
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
-    m_pWorldNet_ServerModule = pPluginManager->FindModule<IWorldNet_ServerModule>();
-    m_pSecurityModule = pPluginManager->FindModule<ISecurityModule>();
+    m_net_client_ = pm_->FindModule<INetClientModule>();
+    m_net_ = pm_->FindModule<INetModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_element_ = pm_->FindModule<IElementModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
+    m_pWorldNet_ServerModule = pm_->FindModule<IWorldNet_ServerModule>();
+    m_security_ = pm_->FindModule<ISecurityModule>();
 
     return true;
 }
@@ -21,40 +21,40 @@ bool WorldToMasterModule::Start() {
 bool WorldToMasterModule::Destory() { return true; }
 
 bool WorldToMasterModule::AfterStart() {
-    // m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER, SquickStruct::REQ_CONNECT_WORLD, this,
-    // &WorldToMasterModule::OnSelectServerProcess); m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER,
+    // m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_MASTER, SquickStruct::REQ_CONNECT_WORLD, this,
+    // &WorldToMasterModule::OnSelectServerProcess); m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_MASTER,
     // SquickStruct::REQ_KICKED_FROM_WORLD, this, &WorldToMasterModule::OnKickClientProcess);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER, this, &WorldToMasterModule::InvalidMessage);
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_MASTER, this, &WorldToMasterModule::InvalidMessage);
 
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER, SquickStruct::STS_NET_INFO, this, &WorldToMasterModule::OnServerInfoProcess);
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_MASTER, SquickStruct::STS_NET_INFO, this, &WorldToMasterModule::OnServerInfoProcess);
 
-    m_pNetClientModule->AddEventCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER, this, &WorldToMasterModule::OnSocketMSEvent);
-    m_pNetClientModule->ExpandBufferSize();
+    m_net_client_->AddEventCallBack(ServerType::SQUICK_ST_MASTER, this, &WorldToMasterModule::OnSocketMSEvent);
+    m_net_client_->ExpandBufferSize();
 
-    SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
         for (int i = 0; i < strIdList.size(); ++i) {
             const std::string &strId = strIdList[i];
 
-            const int serverType = m_pElementModule->GetPropertyInt32(strId, excel::Server::Type());
-            const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == SQUICK_SERVER_TYPES::SQUICK_ST_MASTER) {
-                const int nPort = m_pElementModule->GetPropertyInt32(strId, excel::Server::Port());
-                const int maxConnect = m_pElementModule->GetPropertyInt32(strId, excel::Server::MaxOnline());
-                const int nCpus = m_pElementModule->GetPropertyInt32(strId, excel::Server::CpuCount());
-                const std::string &name = m_pElementModule->GetPropertyString(strId, excel::Server::ID());
-                const std::string &ip = m_pElementModule->GetPropertyString(strId, excel::Server::IP());
+            const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
+            const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
+            if (serverType == ServerType::SQUICK_ST_MASTER) {
+                const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
+                const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
+                const int nCpus = m_element_->GetPropertyInt32(strId, excel::Server::CpuCount());
+                const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
+                const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
                 ConnectData xServerData;
 
                 xServerData.nGameID = serverID;
-                xServerData.eServerType = (SQUICK_SERVER_TYPES)serverType;
+                xServerData.eServerType = (ServerType)serverType;
                 xServerData.ip = ip;
                 xServerData.nPort = nPort;
                 xServerData.name = strId;
 
-                m_pNetClientModule->AddServer(xServerData);
+                m_net_client_->AddServer(xServerData);
             }
         }
     }
@@ -69,20 +69,20 @@ bool WorldToMasterModule::Update() {
 }
 
 void WorldToMasterModule::Register(INet *pNet) {
-    SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
         for (int i = 0; i < strIdList.size(); ++i) {
             const std::string &strId = strIdList[i];
 
-            const int serverType = m_pElementModule->GetPropertyInt32(strId, excel::Server::Type());
-            const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == SQUICK_SERVER_TYPES::SQUICK_ST_WORLD && pPluginManager->GetAppID() == serverID) {
-                const int nPort = m_pElementModule->GetPropertyInt32(strId, excel::Server::Port());
-                const int maxConnect = m_pElementModule->GetPropertyInt32(strId, excel::Server::MaxOnline());
-                const int nCpus = m_pElementModule->GetPropertyInt32(strId, excel::Server::CpuCount());
-                const std::string &name = m_pElementModule->GetPropertyString(strId, excel::Server::ID());
-                const std::string &ip = m_pElementModule->GetPropertyString(strId, excel::Server::IP());
+            const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
+            const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
+            if (serverType == ServerType::SQUICK_ST_WORLD && pm_->GetAppID() == serverID) {
+                const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
+                const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
+                const int nCpus = m_element_->GetPropertyInt32(strId, excel::Server::CpuCount());
+                const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
+                const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
                 SquickStruct::ServerInfoReportList xMsg;
                 SquickStruct::ServerInfoReport *pData = xMsg.add_server_list();
@@ -96,12 +96,12 @@ void WorldToMasterModule::Register(INet *pNet) {
                 pData->set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
                 pData->set_server_type(serverType);
 
-                SQUICK_SHARE_PTR<ConnectData> pServerData = m_pNetClientModule->GetServerNetInfo(pNet);
+                std::shared_ptr<ConnectData> pServerData = m_net_client_->GetServerNetInfo(pNet);
                 if (pServerData) {
                     int nTargetID = pServerData->nGameID;
-                    m_pNetClientModule->SendToServerByPB(nTargetID, SquickStruct::ServerRPC::WORLD_TO_MASTER_REGISTERED, xMsg);
+                    m_net_client_->SendToServerByPB(nTargetID, SquickStruct::ServerRPC::WORLD_TO_MASTER_REGISTERED, xMsg);
 
-                    m_pLogModule->LogInfo(Guid(0, pData->server_id()), pData->server_name(), "Register");
+                    m_log_->LogInfo(Guid(0, pData->server_id()), pData->server_name(), "Register");
                 }
             }
         }
@@ -109,23 +109,23 @@ void WorldToMasterModule::Register(INet *pNet) {
 }
 
 void WorldToMasterModule::ServerReport() {
-    if (mLastReportTime + 10 > pPluginManager->GetNowTime()) {
+    if (mLastReportTime + 10 > pm_->GetNowTime()) {
         return;
     }
-    mLastReportTime = pPluginManager->GetNowTime();
-    std::shared_ptr<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
+    mLastReportTime = pm_->GetNowTime();
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
         for (int i = 0; i < strIdList.size(); ++i) {
             const std::string &strId = strIdList[i];
 
-            const int serverType = m_pElementModule->GetPropertyInt32(strId, excel::Server::Type());
-            const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (pPluginManager->GetAppID() == serverID) {
-                const int nPort = m_pElementModule->GetPropertyInt32(strId, excel::Server::Port());
-                const int maxConnect = m_pElementModule->GetPropertyInt32(strId, excel::Server::MaxOnline());
-                const std::string &name = m_pElementModule->GetPropertyString(strId, excel::Server::ID());
-                const std::string &ip = m_pElementModule->GetPropertyString(strId, excel::Server::IP());
+            const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
+            const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
+            if (pm_->GetAppID() == serverID) {
+                const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
+                const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
+                const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
+                const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
                 SquickStruct::ServerInfoReport reqMsg;
 
@@ -138,7 +138,7 @@ void WorldToMasterModule::ServerReport() {
                 reqMsg.set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
                 reqMsg.set_server_type(serverType);
                 dout << "World Server report: " << serverType << std::endl;
-                m_pNetClientModule->SendToAllServerByPB(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
+                m_net_client_->SendToAllServerByPB(ServerType::SQUICK_ST_MASTER, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
             }
         }
     }
@@ -146,19 +146,19 @@ void WorldToMasterModule::ServerReport() {
 
 void WorldToMasterModule::RefreshWorldInfo() {}
 
-void WorldToMasterModule::OnSelectServerProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
+void WorldToMasterModule::OnSelectServerProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     /*
     Guid nPlayerID;
     SquickStruct::ReqConnectWorld xMsg;
-    if (!INetModule::ReceivePB( msgID, msg, len, xMsg, nPlayerID))
+    if (!INetModule::ReceivePB( msg_id, msg, len, xMsg, nPlayerID))
     {
             return;
     }
 
-    SQUICK_SHARE_PTR<ServerData> xServerData = m_pWorldNet_ServerModule->GetSuitProxyToEnter();
+    std::shared_ptr<ServerData> xServerData = m_pWorldNet_ServerModule->GetSuitProxyToEnter();
     if (xServerData)
     {
-            const std::string& strSecurityKey = m_pSecurityModule->GetSecurityKey(xMsg.account());
+            const std::string& strSecurityKey = m_security_->GetSecurityKey(xMsg.account());
 
             SquickStruct::AckConnectWorldResult xData;
 
@@ -171,38 +171,38 @@ void WorldToMasterModule::OnSelectServerProcess(const SQUICK_SOCKET sockIndex, c
             xData.set_world_port(xServerData->pData->server_port());
             xData.set_world_key(strSecurityKey);
 
-            m_pNetModule->SendMsgPB(SquickStruct::ACK_CONNECT_WORLD, xData, xServerData->nFD);
-            m_pNetClientModule->SendSuitByPB(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER, xMsg.account(), SquickStruct::ACK_CONNECT_WORLD, xData);
+            m_net_->SendMsgPB(SquickStruct::ACK_CONNECT_WORLD, xData, xServerData->nFD);
+            m_net_client_->SendSuitByPB(ServerType::SQUICK_ST_MASTER, xMsg.account(), SquickStruct::ACK_CONNECT_WORLD, xData);
     }*/
 }
 
-void WorldToMasterModule::OnKickClientProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {}
+void WorldToMasterModule::OnKickClientProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
 
-void WorldToMasterModule::InvalidMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    printf("Net || umsgID=%d\n", msgID);
+void WorldToMasterModule::InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    printf("Net || umsg_id=%d\n", msg_id);
 }
 
-void WorldToMasterModule::OnSocketMSEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet) {
+void WorldToMasterModule::OnSocketMSEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
     if (eEvent & SQUICK_NET_EVENT_EOF) {
-        m_pLogModule->LogInfo(Guid(0, sockIndex), "SQUICK_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
+        m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
     } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
-        m_pLogModule->LogInfo(Guid(0, sockIndex), "SQUICK_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
+        m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
     } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
-        m_pLogModule->LogInfo(Guid(0, sockIndex), "SQUICK_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
+        m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
     } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
-        m_pLogModule->LogInfo(Guid(0, sockIndex), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
+        m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
         Register(pNet);
     }
 }
 
-void WorldToMasterModule::OnClientDisconnect(const SQUICK_SOCKET nAddress) {}
+void WorldToMasterModule::OnClientDisconnect(const socket_t sock) {}
 
-void WorldToMasterModule::OnClientConnected(const SQUICK_SOCKET nAddress) {}
+void WorldToMasterModule::OnClientConnected(const socket_t sock) {}
 
 bool WorldToMasterModule::BeforeDestory() { return true; }
 
-void WorldToMasterModule::LogServerInfo(const std::string &strServerInfo) { m_pLogModule->LogInfo(Guid(), strServerInfo, ""); }
+void WorldToMasterModule::LogServerInfo(const std::string &strServerInfo) { m_log_->LogInfo(Guid(), strServerInfo, ""); }
 
-void WorldToMasterModule::OnServerInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    m_pWorldNet_ServerModule->OnServerInfoProcess(sockIndex, msgID, msg, len);
+void WorldToMasterModule::OnServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    m_pWorldNet_ServerModule->OnServerInfoProcess(sock, msg_id, msg, len);
 }

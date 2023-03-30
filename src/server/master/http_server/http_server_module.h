@@ -13,8 +13,8 @@
 class MasterNet_HttpServerModule : public IMasterNet_HttpServerModule {
   public:
     MasterNet_HttpServerModule(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
+        is_update_ = true;
+        pm_ = p;
     }
 
     virtual bool Start();
@@ -24,14 +24,14 @@ class MasterNet_HttpServerModule : public IMasterNet_HttpServerModule {
     virtual bool Update();
 
   protected:
-    bool OnCommandQuery(SQUICK_SHARE_PTR<HttpRequest> req);
+    bool OnCommandQuery(std::shared_ptr<HttpRequest> req);
 
-    WebStatus OnFilter(SQUICK_SHARE_PTR<HttpRequest> req);
+    WebStatus OnFilter(std::shared_ptr<HttpRequest> req);
 
   private:
-    IKernelModule *m_pKernelModule;
-    IHttpServerModule *m_pHttpNetModule;
+    IKernelModule *m_kernel_;
+    IHttpServerModule *m_http_server_;
     IMasterNet_ServerModule *m_pMasterServerModule;
-    IClassModule *m_pLogicClassModule;
-    IElementModule *m_pElementModule;
+    IClassModule *m_class_;
+    IElementModule *m_element_;
 };

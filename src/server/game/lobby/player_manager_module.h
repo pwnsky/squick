@@ -19,7 +19,7 @@
 namespace game::player {
 class PlayerManagerModule : public IPlayerManagerModule {
   public:
-    PlayerManagerModule(IPluginManager *p) { pPluginManager = p; }
+    PlayerManagerModule(IPluginManager *p) { pm_ = p; }
 
     virtual ~PlayerManagerModule(){};
 
@@ -30,7 +30,7 @@ class PlayerManagerModule : public IPlayerManagerModule {
     virtual bool AfterStart();
 
     // 发送数据到客户端
-    virtual void OnSendToClient(const uint16_t msgID, google::protobuf::Message &xMsg, const Guid &client_id);
+    virtual void OnSendToClient(const uint16_t msg_id, google::protobuf::Message &xMsg, const Guid &client_id);
     virtual Player *GetPlayer(const Guid &clientID) override;
     virtual int GetPlayerRoomID(const Guid &clientID) override;
     virtual void SetPlayerRoomID(const Guid &clientID, int roomID) override;
@@ -38,10 +38,10 @@ class PlayerManagerModule : public IPlayerManagerModule {
     virtual void SetPlayerGameplayID(const Guid &clientID, int gameplayID) override;
 
   protected:
-    void OnReqPlayerEnter(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnReqPlayerLeave(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnReqPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnReqPlayerLeave(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
-    void OnAckPlayerDataLoad(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnAckPlayerDataLoad(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     int OnPlayerObjectEvent(const Guid &self, const std::string &className, const CLASS_OBJECT_EVENT classEvent, const DataList &var);
 
   private:
@@ -56,21 +56,21 @@ class PlayerManagerModule : public IPlayerManagerModule {
     std::map<Guid, Player *> m_players;             // 所有玩家
     std::map<Guid, Player *> m_offlineCachePlayers; // 离线缓存玩家
   private:
-    INetModule *m_pNetModule;
-    IClassModule *m_pClassModule;
-    IElementModule *m_pElementModule;
-    IKernelModule *m_pKernelModule;
-    ISceneModule *m_pSceneModule;
+    INetModule *m_net_;
+    IClassModule *m_class_;
+    IElementModule *m_element_;
+    IKernelModule *m_kernel_;
+    ISceneModule *m_scene_;
     IGameServerNet_ServerModule *m_pGameServerNet_ServerModule;
     IGameServerToDBModule *m_pGameToDBModule;
-    INetClientModule *m_pNetClientModule;
-    IScheduleModule *m_pScheduleModule;
-    IDataTailModule *m_pDataTailModule;
-    IEventModule *m_pEventModule;
-    ILogModule *m_pLogModule;
-    IRoomModule *m_pRoomModule;
+    INetClientModule *m_net_client_;
+    IScheduleModule *m_schedule_;
+    IDataTailModule *m_data_tail_;
+    IEventModule *m_event_;
+    ILogModule *m_log_;
+    IRoomModule *m_room_;
 
-    play::IGameplayManagerModule *m_pGameplayManagerModule;
+    play::IGameplayManagerModule *m_gameplay_manager_;
 };
 
 } // namespace game::player

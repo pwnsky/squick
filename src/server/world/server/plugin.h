@@ -5,7 +5,7 @@
 
 class WorldNet_ServerPlugin : public IPlugin {
   public:
-    WorldNet_ServerPlugin(IPluginManager *p) { pPluginManager = p; }
+    WorldNet_ServerPlugin(IPluginManager *p) { pm_ = p; }
     virtual const int GetPluginVersion();
 
     virtual const std::string GetPluginName();

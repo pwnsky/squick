@@ -15,24 +15,24 @@ bool LogicModule::Update() {
 }
 
 bool LogicModule::AfterStart() {
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pNetModule = pPluginManager->FindModule<INetModule>();
-    m_pNetClientModule = pPluginManager->FindModule<INetClientModule>();
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_net_ = pm_->FindModule<INetModule>();
+    m_net_client_ = pm_->FindModule<INetClientModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
 
-    m_pNetModule->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
-    m_pNetModule->AddReceiveCallBack(SquickStruct::ProxyRPC::REQ_HEARTBEAT, this, &LogicModule::OnHeartbeat);
-    m_pNetModule->AddReceiveCallBack(SquickStruct::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnect);
-    m_pNetModule->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ENTER, this, &LogicModule::OnReqEnterGameServer);
+    m_net_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
+    m_net_->AddReceiveCallBack(SquickStruct::ProxyRPC::REQ_HEARTBEAT, this, &LogicModule::OnHeartbeat);
+    m_net_->AddReceiveCallBack(SquickStruct::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnect);
+    m_net_->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ENTER, this, &LogicModule::OnReqEnterGameServer);
     
     return true;
 }
 
-void LogicModule::OnClientDisconnect(const SQUICK_SOCKET nAddress) {
+void LogicModule::OnClientDisconnect(const socket_t sock) {
     // 加入过期队列
 
-    NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(nAddress);
+    NetObject* pNetObject = m_net_->GetNet()->GetNetObject(sock);
     if (pNetObject) {
         int nGameID = pNetObject->GetGameID();
         if (nGameID > 0) {
@@ -53,7 +53,7 @@ void LogicModule::OnClientDisconnect(const SQUICK_SOCKET nAddress) {
                     return;
                 }
 
-                m_pNetClientModule->SendByServerIDWithOutHead(nGameID, SquickStruct::GameLobbyRPC::REQ_LEAVE, msg);
+                m_net_client_->SendByServerIDWithOutHead(nGameID, SquickStruct::GameLobbyRPC::REQ_LEAVE, msg);
             }
         }
         mxClientIdent.RemoveElement(pNetObject->GetClientID());
@@ -62,45 +62,45 @@ void LogicModule::OnClientDisconnect(const SQUICK_SOCKET nAddress) {
 
 
 
-int LogicModule::Transport(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len) {
+int LogicModule::Transport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     SquickStruct::MsgBase xMsg;
     if (!xMsg.ParseFromArray(msg, len)) {
         char szData[MAX_PATH] = { 0 };
-        sprintf(szData, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msgID);
+        sprintf(szData, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
         return false;
     }
 
     // broadcast many palyers
     for (int i = 0; i < xMsg.player_client_list_size(); ++i) {
-        SQUICK_SHARE_PTR<SQUICK_SOCKET> pFD = mxClientIdent.GetElement(INetModule::ProtobufToStruct(xMsg.player_client_list(i)));
+        std::shared_ptr<socket_t> pFD = mxClientIdent.GetElement(INetModule::ProtobufToStruct(xMsg.player_client_list(i)));
         if (pFD) {
             if (xMsg.has_hash_ident()) {
-                NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(*pFD);
+                NetObject* pNetObject = m_net_->GetNet()->GetNetObject(*pFD);
                 if (pNetObject) {
                     pNetObject->SetHashIdentID(INetModule::ProtobufToStruct(xMsg.hash_ident()));
                 }
             }
-            m_pNetModule->SendMsgWithOutHead(msgID, std::string(msg, len), *pFD);
+            m_net_->SendMsgWithOutHead(msg_id, std::string(msg, len), *pFD);
         }
     }
 
     // send message to one player
     if (xMsg.player_client_list_size() <= 0) {
         Guid xClientIdent = INetModule::ProtobufToStruct(xMsg.player_id());
-        SQUICK_SHARE_PTR<SQUICK_SOCKET> pFD = mxClientIdent.GetElement(xClientIdent);
+        std::shared_ptr<socket_t> pFD = mxClientIdent.GetElement(xClientIdent);
         if (pFD) {
             if (xMsg.has_hash_ident()) {
-                NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(*pFD);
+                NetObject* pNetObject = m_net_->GetNet()->GetNetObject(*pFD);
                 if (pNetObject) {
                     pNetObject->SetHashIdentID(INetModule::ProtobufToStruct(xMsg.hash_ident()));
                 }
             }
 
-            m_pNetModule->SendMsgWithOutHead(msgID, std::string(msg, len), *pFD);
+            m_net_->SendMsgWithOutHead(msg_id, std::string(msg, len), *pFD);
         }
         else if (xClientIdent.IsNull()) {
             // send this msessage to all clientss
-            m_pNetModule->GetNet()->SendMsgToAllClientWithOutHead(msgID, msg, len);
+            m_net_->GetNet()->SendMsgToAllClientWithOutHead(msg_id, msg, len);
         }
         // pFD is empty means end of connection, no need to send message to this client any more. And,
         // we should never send a message that specified to a player to all clients here.
@@ -110,14 +110,14 @@ int LogicModule::Transport(const SQUICK_SOCKET sockIndex, const int msgID, const
     return true;
 }
 
-void LogicModule::OnClientConnected(const SQUICK_SOCKET nAddress) {
+void LogicModule::OnClientConnected(const socket_t sock) {
     std::cout << "Client Connected.... \n";
 }
 
 int LogicModule::EnterGameSuccessEvent(const Guid xClientID, const Guid xPlayerID) {
-    SQUICK_SHARE_PTR<SQUICK_SOCKET> pFD = mxClientIdent.GetElement(xClientID);
+    std::shared_ptr<socket_t> pFD = mxClientIdent.GetElement(xClientID);
     if (pFD) {
-        NetObject* pNetObeject = m_pNetModule->GetNet()->GetNetObject(*pFD);
+        NetObject* pNetObeject = m_net_->GetNet()->GetNetObject(*pFD);
         if (pNetObeject) {
             pNetObeject->SetUserID(xPlayerID);
         }
@@ -126,8 +126,8 @@ int LogicModule::EnterGameSuccessEvent(const Guid xClientID, const Guid xPlayerI
 }
 
 
-void LogicModule::OnOtherMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len) {
-    NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(sockIndex);
+void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    NetObject* pNetObject = m_net_->GetNet()->GetNetObject(sock);
     if (!pNetObject || pNetObject->GetConnectKeyState() <= 0 || pNetObject->GetGameID() <= 0) {
         // state error
         return;
@@ -136,9 +136,9 @@ void LogicModule::OnOtherMessage(const SQUICK_SOCKET sockIndex, const int msgID,
     SquickStruct::MsgBase xMsg;
     if (!xMsg.ParseFromString(std::string(msg, len))) {
         char szData[MAX_PATH] = { 0 };
-        sprintf(szData, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msgID);
+        sprintf(szData, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
 
-        m_pLogModule->LogError(Guid(0, sockIndex), szData, __FUNCTION__, __LINE__);
+        m_log_->LogError(Guid(0, sock), szData, __FUNCTION__, __LINE__);
         return;
     }
 
@@ -154,33 +154,33 @@ void LogicModule::OnOtherMessage(const SQUICK_SOCKET sockIndex, const int msgID,
     if (xMsg.has_hash_ident()) {
         // special for distributed
         if (!pNetObject->GetHashIdentID().IsNull()) {
-            m_pNetClientModule->SendBySuitWithOutHead(SQUICK_SERVER_TYPES::SQUICK_ST_GAME, pNetObject->GetHashIdentID().ToString(), msgID, msgData);
+            m_net_client_->SendBySuitWithOutHead(ServerType::SQUICK_ST_GAME, pNetObject->GetHashIdentID().ToString(), msg_id, msgData);
         }
         else {
             Guid xHashIdent = INetModule::ProtobufToStruct(xMsg.hash_ident());
-            m_pNetClientModule->SendBySuitWithOutHead(SQUICK_SERVER_TYPES::SQUICK_ST_GAME, xHashIdent.ToString(), msgID, msgData);
+            m_net_client_->SendBySuitWithOutHead(ServerType::SQUICK_ST_GAME, xHashIdent.ToString(), msg_id, msgData);
         }
     }
     else {
-        if (msgID >= 50000) {
-            m_pNetClientModule->SendBySuitWithOutHead(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, pNetObject->GetUserID().ToString(), msgID, msgData);
+        if (msg_id >= 50000) {
+            m_net_client_->SendBySuitWithOutHead(ServerType::SQUICK_ST_WORLD, pNetObject->GetUserID().ToString(), msg_id, msgData);
         }
         else {
-            m_pNetClientModule->SendByServerIDWithOutHead(pNetObject->GetGameID(), msgID, msgData);
+            m_net_client_->SendByServerIDWithOutHead(pNetObject->GetGameID(), msg_id, msgData);
         }
     }
 }
 
 
-void LogicModule::OnHeartbeat(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
+void LogicModule::OnHeartbeat(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     std::string msgData(msg, len);
-    m_pNetModule->SendMsgWithOutHead(SquickStruct::ProxyRPC::ACK_HEARTBEAT, msgData, sockIndex);
+    m_net_->SendMsgWithOutHead(SquickStruct::ProxyRPC::ACK_HEARTBEAT, msgData, sock);
 }
 
 
 // 选择服务器
 bool LogicModule::SelectGameServer(int sock) {
-    NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(sock);
+    NetObject* pNetObject = m_net_->GetNet()->GetNetObject(sock);
     if (!pNetObject) {
         return false;
     }
@@ -189,10 +189,10 @@ bool LogicModule::SelectGameServer(int sock) {
     // actually, if you want the game server working with a good performance then we need to find the game server with lowest workload
     int nWorkload = 999999;
     int nGameID = 0;
-    MapEx<int, ConnectData>& xServerList = m_pNetClientModule->GetServerList();
+    MapEx<int, ConnectData>& xServerList = m_net_client_->GetServerList();
     ConnectData* pGameData = xServerList.FirstNude();
     while (pGameData) {
-        if (ConnectDataState::NORMAL == pGameData->eState && SQUICK_SERVER_TYPES::SQUICK_ST_GAME == pGameData->eServerType) {
+        if (ConnectDataState::NORMAL == pGameData->eState && ServerType::SQUICK_ST_GAME == pGameData->eServerType) {
             if (pGameData->nWorkLoad < nWorkload) {
                 nWorkload = pGameData->nWorkLoad;
                 nGameID = pGameData->nGameID;
@@ -211,23 +211,23 @@ bool LogicModule::SelectGameServer(int sock) {
 }
 
 // 请求进入游戏
-void LogicModule::OnReqEnterGameServer(const SQUICK_SOCKET sock, const int msg_id, const char* msg, const uint32_t len) {
+void LogicModule::OnReqEnterGameServer(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     dout << "请求进入游戏\n";
 
     SelectGameServer(sock);
 
-    NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(sock);
+    NetObject* pNetObject = m_net_->GetNet()->GetNetObject(sock);
     if (!pNetObject) {
         return;
     }
 
     Guid nPlayerID; // no value
     SquickStruct::ReqEnter xData;
-    if (!m_pNetModule->ReceivePB(msg_id, msg, len, xData, nPlayerID)) {
+    if (!m_net_->ReceivePB(msg_id, msg, len, xData, nPlayerID)) {
         return;
     }
 
-    SQUICK_SHARE_PTR<ConnectData> pServerData = m_pNetClientModule->GetServerNetInfo(pNetObject->GetGameID());
+    std::shared_ptr<ConnectData> pServerData = m_net_client_->GetServerNetInfo(pNetObject->GetGameID());
     if (pServerData && ConnectDataState::NORMAL == pServerData->eState) {
         if (pNetObject->GetConnectKeyState() > 0) {
             SquickStruct::MsgBase xMsg;
@@ -242,16 +242,16 @@ void LogicModule::OnReqEnterGameServer(const SQUICK_SOCKET sock, const int msg_i
                 return;
             }
 
-            m_pNetClientModule->SendByServerIDWithOutHead(pNetObject->GetGameID(), SquickStruct::GameLobbyRPC::REQ_ENTER, msg);
+            m_net_client_->SendByServerIDWithOutHead(pNetObject->GetGameID(), SquickStruct::GameLobbyRPC::REQ_ENTER, msg);
         }
     }
 }
 
 
-void LogicModule::OnReqConnect(const SQUICK_SOCKET sock, const int msg_id, const char* msg, const uint32_t len) {
+void LogicModule::OnReqConnect(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     Guid nPlayerID;
     SquickStruct::ReqConnectProxy req;
-    if (!m_pNetModule->ReceivePB(msg_id, msg, len, req, nPlayerID))
+    if (!m_net_->ReceivePB(msg_id, msg, len, req, nPlayerID))
     {
         return;
     }
@@ -264,12 +264,12 @@ void LogicModule::OnReqConnect(const SQUICK_SOCKET sock, const int msg_id, const
     {
         // bind user id with socket
         Guid xClientIdent = guid;
-        NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(sock);
+        NetObject* pNetObject = m_net_->GetNet()->GetNetObject(sock);
         if (pNetObject) {
             pNetObject->SetClientID(xClientIdent);
         }
 
-        //NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(sock);
+        //NetObject* pNetObject = m_net_->GetNet()->GetNetObject(sock);
         pNetObject->SetConnectKeyState(1);
         pNetObject->SetSecurityKey(req.key());
         //this net-object bind a user's account
@@ -278,12 +278,12 @@ void LogicModule::OnReqConnect(const SQUICK_SOCKET sock, const int msg_id, const
         SquickStruct::AckConnectProxy ack;
         //dout << guid.ToString() << " 连接成功!\n";
         ack.set_code(0);
-        m_pNetModule->SendMsgPB(SquickStruct::ProxyRPC::ACK_CONNECT_PROXY, ack, sock);
+        m_net_->SendMsgPB(SquickStruct::ProxyRPC::ACK_CONNECT_PROXY, ack, sock);
 
-        mxClientIdent.AddElement(xClientIdent, SQUICK_SHARE_PTR<SQUICK_SOCKET>(new SQUICK_SOCKET(sock)));
+        mxClientIdent.AddElement(xClientIdent, std::shared_ptr<socket_t>(new socket_t(sock)));
     } else {
         //if verify failed then close this connect
-        m_pNetModule->GetNet()->CloseNetObject(sock);
+        m_net_->GetNet()->CloseNetObject(sock);
     }
 }
 

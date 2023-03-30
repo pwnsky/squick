@@ -12,9 +12,9 @@
 class MasterNet_ServerModule : public IMasterNet_ServerModule {
   public:
     MasterNet_ServerModule(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
-        mnLastLogTime = pPluginManager->GetNowTime();
+        is_update_ = true;
+        pm_ = p;
+        mnLastLogTime = pm_->GetNowTime();
     }
     virtual ~MasterNet_ServerModule();
 
@@ -30,24 +30,24 @@ class MasterNet_ServerModule : public IMasterNet_ServerModule {
     virtual std::string GetServersStatus();
 
   protected:
-    void OnSocketEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
-    void OnClientDisconnect(const SQUICK_SOCKET nAddress);
-    void OnClientConnected(const SQUICK_SOCKET nAddress);
+    void OnSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
+    void OnClientDisconnect(const socket_t sock);
+    void OnClientConnected(const socket_t sock);
 
   protected:
-    void OnWorldRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnWorldUnRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnRefreshWorldInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnWorldRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnWorldUnRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnRefreshWorldInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
     //////////////////////////////////////////////////////////////////////////
-    void OnLoginRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnLoginUnRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnRefreshLoginInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnLoginRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnLoginUnRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnRefreshLoginInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
-    void OnSelectWorldProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnSelectServerResultProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnSelectWorldProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnSelectServerResultProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
-    void OnServerReport(const SQUICK_SOCKET nFd, const int msgId, const char *buffer, const uint32_t len);
+    void OnServerReport(const socket_t nFd, const int msg_id, const char *buffer, const uint32_t len);
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -55,8 +55,8 @@ class MasterNet_ServerModule : public IMasterNet_ServerModule {
     void SyncProxyToLogin();
     void LogGameServer();
 
-    void OnHeartBeat(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void InvalidMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnHeartBeat(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   private:
     INT64 mnLastLogTime;
@@ -69,9 +69,9 @@ class MasterNet_ServerModule : public IMasterNet_ServerModule {
     MapEx<int, ServerData> mGameMap;
     MapEx<int, ServerData> mGameplayManagerMap;
 
-    IElementModule *m_pElementModule;
-    IClassModule *m_pClassModule;
-    IKernelModule *m_pKernelModule;
-    ILogModule *m_pLogModule;
-    INetModule *m_pNetModule;
+    IElementModule *m_element_;
+    IClassModule *m_class_;
+    IKernelModule *m_kernel_;
+    ILogModule *m_log_;
+    INetModule *m_net_;
 };

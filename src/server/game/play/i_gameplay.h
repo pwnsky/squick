@@ -54,7 +54,7 @@ class IGameplay {
         status = RUNNING;
         dout << "Game Play Parent Start!\n";
         // 初始化完毕后，通过告诉房间实现加入
-        manager->m_pRoomModule->GamePlayPrepared(id, "game", "", 0);
+        manager->m_room_->GamePlayPrepared(id, "game", "", 0);
         Start();
     };
 
@@ -65,7 +65,7 @@ class IGameplay {
         Destroy();
     };
 
-    void OnReqGameJoin(const Guid &clientID, const int msgID, const std::string &data) {
+    void OnReqGameJoin(const Guid &clientID, const int msg_id, const std::string &data) {
         dout << "Req Game Join\n";
         DoPlayerJoin(clientID);
     }
@@ -73,14 +73,14 @@ class IGameplay {
     // 玩家加入
     void DoPlayerJoin(const Guid &player) {
 
-        int roomd_id = manager->m_pPlayerManagerModule->GetPlayerRoomID(player);
+        int roomd_id = manager->m_player_manager_->GetPlayerRoomID(player);
         if (id != roomd_id) {
             dout << "Join Failed!\n";
             return;
         }
 
         // 判断是否重复加入
-        if (-1 != manager->m_pPlayerManagerModule->GetPlayerGameplayID(player)) {
+        if (-1 != manager->m_player_manager_->GetPlayerGameplayID(player)) {
             dout << "重复加入!\n";
             return;
         }
@@ -101,7 +101,7 @@ class IGameplay {
 
         base_players[player] = pd;
 
-        manager->m_pPlayerManagerModule->SetPlayerGameplayID(player, id);
+        manager->m_player_manager_->SetPlayerGameplayID(player, id);
 
         SquickStruct::AckGameJoin ack;
         ack.set_code(0);
@@ -134,7 +134,7 @@ class IGameplay {
 
         // 调用子类
         PlayerJoin(player);
-        if (base_players.size() == manager->m_pRoomModule->GetRoomByID(id)->players_size()) {
+        if (base_players.size() == manager->m_room_->GetRoomByID(id)->players_size()) {
             AllPlayerJoined();
         }
     }
@@ -154,23 +154,23 @@ class IGameplay {
         PlayerQuit(player.guid);
     }
 
-    void SendToPlayer(int msgID, google::protobuf::Message &xMsg, const Guid &player) {
-        // dout << " 发送给客户端: " << player.ToString() << "   MSGID: " << msgID << std::endl;
-        manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msgID, xMsg, player);
+    void SendToPlayer(int msg_id, google::protobuf::Message &xMsg, const Guid &player) {
+        // dout << " 发送给客户端: " << player.ToString() << "   MSGID: " << msg_id << std::endl;
+        manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msg_id, xMsg, player);
     }
 
     //
-    void BroadcastToPlayers(int msgID, google::protobuf::Message &xMsg) {
+    void BroadcastToPlayers(int msg_id, google::protobuf::Message &xMsg) {
         for (auto const &iter : base_players) {
             auto &player = iter.second;
             if (player.isOnline == true) {
-                // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msgID << std::endl;
-                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msgID, xMsg, player.guid);
+                // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msg_id << std::endl;
+                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msg_id, xMsg, player.guid);
             }
         }
     }
 
-    void BroadcastToPlayersExcept(int msgID, google::protobuf::Message &xMsg, const Guid &exceptPlayer) {
+    void BroadcastToPlayersExcept(int msg_id, google::protobuf::Message &xMsg, const Guid &exceptPlayer) {
         for (auto const &iter : base_players) {
             auto &player = iter.second;
             if (player.guid == exceptPlayer) {
@@ -178,33 +178,33 @@ class IGameplay {
                 continue;
             }
             if (player.isOnline == true) {
-                // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msgID << std::endl;
-                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msgID, xMsg, player.guid);
+                // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msg_id << std::endl;
+                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msg_id, xMsg, player.guid);
             }
         }
     }
 
     // 广播给在游玩的玩家
-    void BroadcastToActivePlayers(int msgID, google::protobuf::Message &xMsg) {
+    void BroadcastToActivePlayers(int msg_id, google::protobuf::Message &xMsg) {
         for (auto const &iter : base_players) {
             auto &player = iter.second;
             if (player.isOnline && player.isActive) {
-                // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msgID << std::endl;
-                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msgID, xMsg, player.guid);
+                // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msg_id << std::endl;
+                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msg_id, xMsg, player.guid);
             }
         }
     }
 
     // 广播给在游玩的玩家
-    void BroadcastToActivePlayersExcept(int msgID, google::protobuf::Message &xMsg, const Guid &exceptPlayer) {
+    void BroadcastToActivePlayersExcept(int msg_id, google::protobuf::Message &xMsg, const Guid &exceptPlayer) {
         for (auto const &iter : base_players) {
             auto &player = iter.second;
             if (player.guid == exceptPlayer) {
                 continue;
             }
             if (player.isOnline && player.isActive) {
-                // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msgID << std::endl;
-                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msgID, xMsg, player.guid);
+                // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msg_id << std::endl;
+                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msg_id, xMsg, player.guid);
             }
         }
     }
@@ -212,8 +212,8 @@ class IGameplay {
     inline int OnlinePlayerCount() { return onlinePlayerCount; }
 
     template <typename BaseType>
-    bool MsgBind(const int msgID, BaseType *pBase, void (BaseType::*handleReceiver)(const Guid &clientID, const int msgID, const std::string &data)) {
-        return manager->AddReceiveCallBack(msgID, id, pBase, handleReceiver);
+    bool MsgBind(const int msg_id, BaseType *pBase, void (BaseType::*handleReceiver)(const Guid &clientID, const int msg_id, const std::string &data)) {
+        return manager->AddReceiveCallBack(msg_id, id, pBase, handleReceiver);
     }
 
     inline bool CheckIsHaveThisPlayer(const Guid &p) {

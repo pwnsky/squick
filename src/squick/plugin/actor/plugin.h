@@ -5,7 +5,7 @@
 //////////////////////////////////////////////////////////////////////////
 class ActorPlugin : public IPlugin {
   public:
-    ActorPlugin(IPluginManager *p) { pPluginManager = p; }
+    ActorPlugin(IPluginManager *p) { pm_ = p; }
 
     virtual const int GetPluginVersion();
 

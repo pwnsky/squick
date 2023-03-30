@@ -2,46 +2,46 @@
 #include "hello_http_server_module.h"
 
 bool HelloWorld5::Start() {
-    m_pElementModule = pPluginManager->FindModule<IElementModule>();
-    m_pScheduleModule = pPluginManager->FindModule<IScheduleModule>();
-    m_pLogicClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pHttpClientModule = pPluginManager->FindModule<IHttpClientModule>();
-    m_pHttpNetModule = pPluginManager->FindModule<IHttpServerModule>();
-    m_pWSModule = pPluginManager->FindModule<IWSModule>();
-    m_pNetModule = pPluginManager->FindModule<INetModule>();
+    m_element_ = pm_->FindModule<IElementModule>();
+    m_schedule_ = pm_->FindModule<IScheduleModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_pHttpClientModule = pm_->FindModule<IHttpClientModule>();
+    m_http_server_ = pm_->FindModule<IHttpServerModule>();
+    m_pWSModule = pm_->FindModule<IWSModule>();
+    m_net_ = pm_->FindModule<INetModule>();
 
     return true;
 }
 
 bool HelloWorld5::AfterStart() {
-    m_pScheduleModule->AddSchedule(Guid(0, 1), "OnHeartBeat1", this, &HelloWorld5::OnHeartBeat, 5.0f, 10);
-    m_pScheduleModule->AddSchedule(Guid(0, 1), "OnHeartBeat2", this, &HelloWorld5::OnHeartBeat, 5.0f, 10);
+    m_schedule_->AddSchedule(Guid(0, 1), "OnHeartBeat1", this, &HelloWorld5::OnHeartBeat, 5.0f, 10);
+    m_schedule_->AddSchedule(Guid(0, 1), "OnHeartBeat2", this, &HelloWorld5::OnHeartBeat, 5.0f, 10);
 
     std::cout << "Hello, world, Start" << std::endl;
     // http://127.0.0.1/json
-    m_pHttpNetModule->AddRequestHandler("/json", HttpType::SQUICK_HTTP_REQ_GET, this, &HelloWorld5::OnCommandQuery);
-    m_pHttpNetModule->AddRequestHandler("/json", HttpType::SQUICK_HTTP_REQ_POST, this, &HelloWorld5::OnCommandQuery);
-    m_pHttpNetModule->AddRequestHandler("/json", HttpType::SQUICK_HTTP_REQ_DELETE, this, &HelloWorld5::OnCommandQuery);
-    m_pHttpNetModule->AddRequestHandler("/json", HttpType::SQUICK_HTTP_REQ_PUT, this, &HelloWorld5::OnCommandQuery);
+    m_http_server_->AddRequestHandler("/json", HttpType::SQUICK_HTTP_REQ_GET, this, &HelloWorld5::OnCommandQuery);
+    m_http_server_->AddRequestHandler("/json", HttpType::SQUICK_HTTP_REQ_POST, this, &HelloWorld5::OnCommandQuery);
+    m_http_server_->AddRequestHandler("/json", HttpType::SQUICK_HTTP_REQ_DELETE, this, &HelloWorld5::OnCommandQuery);
+    m_http_server_->AddRequestHandler("/json", HttpType::SQUICK_HTTP_REQ_PUT, this, &HelloWorld5::OnCommandQuery);
 
-    m_pHttpNetModule->AddNetFilter("/json", this, &HelloWorld5::OnFilter);
+    m_http_server_->AddNetFilter("/json", this, &HelloWorld5::OnFilter);
 
-    m_pHttpNetModule->StartServer(8080);
+    m_http_server_->StartServer(8080);
 
     m_pWSModule->Startialization(9999, 8090, 4);
 
     m_pWSModule->AddReceiveCallBack(this, &HelloWorld5::OnWebSocketTestProcess);
 
-    m_pNetModule->Startialization(9999, 5001);
-    m_pNetModule->AddEventCallBack(this, &HelloWorld5::OnTCPEvent);
-    m_pNetModule->AddReceiveCallBack(SquickStruct::REQ_LOGIN, this, &HelloWorld5::OnLoginProcess);
+    m_net_->Startialization(9999, 5001);
+    m_net_->AddEventCallBack(this, &HelloWorld5::OnTCPEvent);
+    m_net_->AddReceiveCallBack(SquickStruct::REQ_LOGIN, this, &HelloWorld5::OnLoginProcess);
 
     return true;
 }
 
 bool HelloWorld5::Update() {
-    if (m_pHttpNetModule)
-        m_pHttpNetModule->Update();
+    if (m_http_server_)
+        m_http_server_->Update();
 
     return true;
 }
@@ -60,7 +60,7 @@ bool HelloWorld5::Destory() {
     return true;
 }
 
-bool HelloWorld5::OnCommandQuery(SQUICK_SHARE_PTR<HttpRequest> req) {
+bool HelloWorld5::OnCommandQuery(std::shared_ptr<HttpRequest> req) {
     std::cout << "url: " << req->url << std::endl;
     std::cout << "path: " << req->path << std::endl;
     std::cout << "type: " << req->type << std::endl;
@@ -78,10 +78,10 @@ bool HelloWorld5::OnCommandQuery(SQUICK_SHARE_PTR<HttpRequest> req) {
         std::cout << item.first << ":" << item.second << std::endl;
     }
 
-    return m_pHttpNetModule->ResponseMsg(req, "OnCommandQuery --- test1", WebStatus::WEB_OK);
+    return m_http_server_->ResponseMsg(req, "OnCommandQuery --- test1", WebStatus::WEB_OK);
 }
 
-WebStatus HelloWorld5::OnFilter(SQUICK_SHARE_PTR<HttpRequest> req) {
+WebStatus HelloWorld5::OnFilter(std::shared_ptr<HttpRequest> req) {
     std::cout << "OnFilter ... " << std::endl;
 
     return WebStatus::WEB_OK;
@@ -116,18 +116,18 @@ void HelloWorld5::OnPostCallBack(const Guid id, const int state_code, const std:
 
 ///////////////////////////////////////web socket ////////////////////////////////////////
 
-void HelloWorld5::OnWebSocketTestProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
+void HelloWorld5::OnWebSocketTestProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     std::string s(msg, len);
     std::cout << s << std::endl;
-    m_pWSModule->SendMsg(s, sockIndex);
+    m_pWSModule->SendMsg(s, sock);
 }
 
-void HelloWorld5::OnTCPEvent(const SQUICK_SOCKET fd, const SQUICK_NET_EVENT event, INet *pNet) { std::cout << "fd:" << fd << " event " << event << std::endl; }
+void HelloWorld5::OnTCPEvent(const socket_t fd, const SQUICK_NET_EVENT event, INet *pNet) { std::cout << "fd:" << fd << " event " << event << std::endl; }
 
-void HelloWorld5::OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
+void HelloWorld5::OnLoginProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
     SquickStruct::ReqAccountLogin xMsg;
-    if (!m_pNetModule->ReceivePB(msgID, msg, len, xMsg, nPlayerID)) {
+    if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 

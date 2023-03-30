@@ -71,7 +71,7 @@ class IPluginManager {
                 return NULL;
             }
             // TODO OSX上dynamic_cast返回了NULL
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE
+#if PLATFORM == PLATFORM_APPLE
             T *pT = (T *)pLogicModule;
 #else
             T *pT = dynamic_cast<T *>(pLogicModule);

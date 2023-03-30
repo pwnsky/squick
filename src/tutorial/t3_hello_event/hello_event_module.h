@@ -11,8 +11,8 @@ class IHelloEventModule : public IModule {};
 class HelloEventModule : public IHelloEventModule {
   public:
     HelloEventModule(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
+        is_update_ = true;
+        pm_ = p;
     }
 
     virtual bool Start();
@@ -37,10 +37,10 @@ class HelloEventModule : public IHelloEventModule {
     int64_t mLastTime;
 
   protected:
-    IKernelModule *m_pKernelModule;
-    IElementModule *m_pElementModule;
-    IEventModule *m_pEventModule;
-    IScheduleModule *m_pScheduleModule;
+    IKernelModule *m_kernel_;
+    IElementModule *m_element_;
+    IEventModule *m_event_;
+    IScheduleModule *m_schedule_;
 };
 
 #endif

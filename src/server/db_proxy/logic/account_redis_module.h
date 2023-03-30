@@ -13,7 +13,7 @@
 
 class AccountRedisModule : public IAccountRedisModule {
   public:
-    AccountRedisModule(IPluginManager *p) { pPluginManager = p; }
+    AccountRedisModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Start();
     virtual bool Destory();
@@ -27,8 +27,8 @@ class AccountRedisModule : public IAccountRedisModule {
 
   protected:
   private:
-    IClassModule *m_pLogicClassModule;
+    IClassModule *m_class_;
     INoSqlModule *m_pNoSqlModule;
     ICommonRedisModule *m_pCommonRedisModule;
-    IKernelModule *m_pKernelModule;
+    IKernelModule *m_kernel_;
 };

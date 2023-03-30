@@ -4,7 +4,7 @@
 //////////////////////////////////////////////////////////////////////////
 class NoSqlPlugin : public IPlugin {
   public:
-    NoSqlPlugin(IPluginManager *p) { pPluginManager = p; }
+    NoSqlPlugin(IPluginManager *p) { pm_ = p; }
 
     virtual const int GetPluginVersion();
 

@@ -5,10 +5,14 @@
 # Github: https://github.com/i0gan/Squick
 # Description: Install development environment on linux
 
+export LD_LIBRARY_PATH=`realpath  ../third_party/build/bin`:`realpath  ../third_party/build/lib`
+echo $LD_LIBRARY_PATH
+
 proto_bin='../third_party/build/bin/protoc'
 proto_path="../src/proto"
 cpp_out_path="../src/squick/struct"
 csharp_out_path='../client/proto'
+
 
 mkdir -p $csharp_out_path
 proto_files=$proto_path/*.proto

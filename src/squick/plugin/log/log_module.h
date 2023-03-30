@@ -65,7 +65,7 @@ class LogModule : public ILogModule {
     std::string GetConfigPath(const std::string &fileName);
 
   private:
-    IKernelModule *m_pKernelModule;
+    IKernelModule *m_kernel_;
 
     std::string mstrLocalStream;
     LOG_HOOKER_FUNCTOR_PTR mLogHooker;

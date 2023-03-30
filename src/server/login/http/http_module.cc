@@ -3,15 +3,15 @@
 
 namespace login::http {
 	bool HttpModule::Start() {
-		m_http_server_ = pPluginManager->FindModule<IHttpServerModule>();
-		m_kernel_ = pPluginManager->FindModule<IKernelModule>();
-		m_server_ = pPluginManager->FindModule<server::IServerModule>();
-		m_class_ = pPluginManager->FindModule<IClassModule>();
-		m_element_ = pPluginManager->FindModule<IElementModule>();
-		m_master_ = pPluginManager->FindModule<client::IMasterModule>();
-		m_net_client_ = pPluginManager->FindModule<INetClientModule>();
-		m_mysql_ = pPluginManager->FindModule<mysql::IMysqlModule>();
-		m_redis_ = pPluginManager->FindModule<redis::IRedisModule>();
+		m_http_server_ = pm_->FindModule<IHttpServerModule>();
+		m_kernel_ = pm_->FindModule<IKernelModule>();
+		m_server_ = pm_->FindModule<server::IServerModule>();
+		m_class_ = pm_->FindModule<IClassModule>();
+		m_element_ = pm_->FindModule<IElementModule>();
+		m_master_ = pm_->FindModule<client::IMasterModule>();
+		m_net_client_ = pm_->FindModule<INetClientModule>();
+		m_mysql_ = pm_->FindModule<mysql::IMysqlModule>();
+		m_redis_ = pm_->FindModule<redis::IRedisModule>();
 
 		return true;
 	}
@@ -29,7 +29,7 @@ namespace login::http {
 		m_http_server_->AddNetFilter("/world/list", this, &HttpModule::OnFilter);
 		m_http_server_->AddNetFilter("/world/enter", this, &HttpModule::OnFilter);
 
-		SQUICK_SHARE_PTR<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
+		std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
 		if (xLogicClass) {
 			const std::vector<std::string>& strIdList = xLogicClass->GetIDList();
 			for (int i = 0; i < strIdList.size(); ++i) {
@@ -38,7 +38,7 @@ namespace login::http {
 				int web_port = m_element_->GetPropertyInt32(strId, excel::Server::WebPort());
 				int nWebServerAppID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
 				// webserver only run one instance in each server
-				if (pPluginManager->GetAppID() == nWebServerAppID && web_port > 0) {
+				if (pm_->GetAppID() == nWebServerAppID && web_port > 0) {
 					m_http_server_->StartServer(web_port);
 					break;
 				}
@@ -53,7 +53,7 @@ namespace login::http {
 		return true;
 	}
 
-	bool HttpModule::OnLogin(SQUICK_SHARE_PTR<HttpRequest> request) {
+	bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
 		dout << "请求登录\n";
 		std::string res_str;
 		ReqLogin req;
@@ -121,7 +121,7 @@ namespace login::http {
 		return m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
 	}
 
-	bool HttpModule::OnWorldList(SQUICK_SHARE_PTR<HttpRequest> req) {
+	bool HttpModule::OnWorldList(std::shared_ptr<HttpRequest> req) {
 		AckWorldList ack;
 		auto& world_servers = m_master_->GetWorldServers();
 
@@ -142,7 +142,7 @@ namespace login::http {
 		return m_http_server_->ResponseMsg(req, rep_ss.str(), WebStatus::WEB_OK);
 	}
 
-	bool HttpModule::OnWorldEnter(SQUICK_SHARE_PTR<HttpRequest> request) {
+	bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
 
 		ReqWorldEnter req;
 		AckWorldEnter ack;
@@ -195,7 +195,7 @@ namespace login::http {
 		return m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
 	}
 
-	std::string HttpModule::GetUserID(SQUICK_SHARE_PTR<HttpRequest> req) {
+	std::string HttpModule::GetUserID(std::shared_ptr<HttpRequest> req) {
 		auto it = req->headers.find("User");
 		if (it != req->headers.end()) {
 			return it->second;
@@ -209,7 +209,7 @@ namespace login::http {
 		return "";
 	}
 
-	std::string HttpModule::GetUserJWT(SQUICK_SHARE_PTR<HttpRequest> req) {
+	std::string HttpModule::GetUserJWT(std::shared_ptr<HttpRequest> req) {
 		auto it = req->headers.find("Jwt");
 		if (it != req->headers.end()) {
 			return it->second;
@@ -231,7 +231,7 @@ namespace login::http {
 		return false;
 	}
 
-	WebStatus HttpModule::OnFilter(SQUICK_SHARE_PTR<HttpRequest> req) {
+	WebStatus HttpModule::OnFilter(std::shared_ptr<HttpRequest> req) {
 		std::string user = GetUserID(req);
 		std::string jwt = GetUserJWT(req);
 
@@ -263,7 +263,7 @@ namespace login::http {
 		return WebStatus::WEB_AUTH;
 	}
 
-	bool HttpModule::OnGetCDN(SQUICK_SHARE_PTR<HttpRequest> req) {
+	bool HttpModule::OnGetCDN(std::shared_ptr<HttpRequest> req) {
 
 		json repRoot;
 		json cdnServerList;
@@ -271,13 +271,13 @@ namespace login::http {
 		repRoot["code"] = 0;
 		repRoot["msg"] = "";
 
-		SQUICK_SHARE_PTR<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
+		std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
 		if (xLogicClass) {
 			const std::vector<std::string>& strIdList = xLogicClass->GetIDList();
 			for (int i = 0; i < strIdList.size(); ++i) {
 				const std::string& strId = strIdList[i];
 				int type = m_element_->GetPropertyInt32(strId, excel::Server::Type());
-				if (type != SQUICK_SERVER_TYPES::SQUICK_ST_CDN) {
+				if (type != ServerType::SQUICK_ST_CDN) {
 					continue;
 				}
 				int web_port = m_element_->GetPropertyInt32(strId, excel::Server::WebPort());

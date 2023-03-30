@@ -24,7 +24,7 @@ bool HelloProperty::AfterStart() {
     std::cout << "Hello, world2, AfterStart" << std::endl;
 
     // created a object for this test
-    IObject *pObject = new Object(Guid(0, 1), pPluginManager);
+    IObject *pObject = new Object(Guid(0, 1), pm_);
 
     // add a property name is "Hello" for this object
     pObject->GetPropertyManager()->AddProperty(pObject->Self(), "Hello", TDATA_STRING);

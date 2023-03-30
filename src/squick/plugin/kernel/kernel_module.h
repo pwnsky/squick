@@ -44,8 +44,8 @@ class KernelModule : public IKernelModule, public MapEx<Guid, IObject> {
     virtual bool ObjectReady(const Guid &ident);
     virtual bool ExistObject(const Guid &ident, const int sceneID, const int groupID);
 
-    virtual SQUICK_SHARE_PTR<IObject> GetObject(const Guid &ident);
-    virtual SQUICK_SHARE_PTR<IObject> CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className,
+    virtual std::shared_ptr<IObject> GetObject(const Guid &ident);
+    virtual std::shared_ptr<IObject> CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className,
                                                    const std::string &configIndex, const DataList &arg);
 
     virtual bool DestroyAll();
@@ -71,7 +71,7 @@ class KernelModule : public IKernelModule, public MapEx<Guid, IObject> {
     virtual const Vector3 &GetPropertyVector3(const Guid &self, const std::string &propertyName);
 
     //////////////////////////////////////////////////////////////////////////
-    virtual SQUICK_SHARE_PTR<IRecord> FindRecord(const Guid &self, const std::string &recordName);
+    virtual std::shared_ptr<IRecord> FindRecord(const Guid &self, const std::string &recordName);
     virtual bool ClearRecord(const Guid &self, const std::string &recordName);
 
     virtual bool SetRecordInt(const Guid &self, const std::string &recordName, const int row, const int col, const INT64 nValue);
@@ -177,12 +177,12 @@ class KernelModule : public IKernelModule, public MapEx<Guid, IObject> {
     Guid mnCurExeObject;
     INT64 nLastTime;
 
-    ISceneModule *m_pSceneModule;
-    ILogModule *m_pLogModule;
-    IClassModule *m_pClassModule;
-    IElementModule *m_pElementModule;
-    IScheduleModule *m_pScheduleModule;
-    IEventModule *m_pEventModule;
+    ISceneModule *m_scene_;
+    ILogModule *m_log_;
+    IClassModule *m_class_;
+    IElementModule *m_element_;
+    IScheduleModule *m_schedule_;
+    IEventModule *m_event_;
     ICellModule *m_pCellModule;
     IThreadPoolModule *m_pThreadPoolModule;
 };

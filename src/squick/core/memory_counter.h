@@ -22,7 +22,7 @@ class MemoryCounter {
     };
 
   public:
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
     WIN_DLL_EXPORT static std::map<std::string, Data> *mxCounter;
 #else
     static std::map<std::string, Data> *mxCounter;
@@ -32,7 +32,7 @@ class MemoryCounter {
         mclassName = className;
 
         if (!mxCounter) {
-            mxCounter = SQUICK_NEW std::map<std::string, Data>();
+            mxCounter = new std::map<std::string, Data>();
         }
 
         auto it = mxCounter->find(mclassName);

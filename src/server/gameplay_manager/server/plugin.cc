@@ -17,8 +17,8 @@ const int Plugin::GetPluginVersion() { return 0; }
 
 const std::string Plugin::GetPluginName() { return GET_CLASS_NAME(Plugin); }
 
-void Plugin::Install() { REGISTER_MODULE(pPluginManager, IServerModule, ServerModule) }
+void Plugin::Install() { REGISTER_MODULE(pm_, IServerModule, ServerModule) }
 
-void Plugin::Uninstall() { UNREGISTER_MODULE(pPluginManager, IServerModule, ServerModule) }
+void Plugin::Uninstall() { UNREGISTER_MODULE(pm_, IServerModule, ServerModule) }
 
 } // namespace gameplay_manager::server

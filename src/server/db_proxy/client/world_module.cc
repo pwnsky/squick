@@ -7,12 +7,12 @@
 #include <squick/struct/struct.h>
 
 bool DBToWorldModule::Start() {
-    m_pNetClientModule = pPluginManager->FindModule<INetClientModule>();
-    m_pNetModule = pPluginManager->FindModule<INetModule>();
-    m_pClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pElementModule = pPluginManager->FindModule<IElementModule>();
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
-    m_pSecurityModule = pPluginManager->FindModule<ISecurityModule>();
+    m_net_client_ = pm_->FindModule<INetClientModule>();
+    m_net_ = pm_->FindModule<INetModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_element_ = pm_->FindModule<IElementModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
+    m_security_ = pm_->FindModule<ISecurityModule>();
 
     return true;
 }
@@ -20,54 +20,54 @@ bool DBToWorldModule::Start() {
 bool DBToWorldModule::Destory() { return true; }
 
 bool DBToWorldModule::AfterStart() {
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, this, &DBToWorldModule::InvalidMessage);
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, this, &DBToWorldModule::InvalidMessage);
 
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::STS_NET_INFO, this, &DBToWorldModule::OnServerInfoProcess);
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::STS_NET_INFO, this, &DBToWorldModule::OnServerInfoProcess);
 
-    m_pNetClientModule->AddEventCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, this, &DBToWorldModule::OnSocketMSEvent);
-    m_pNetClientModule->ExpandBufferSize();
+    m_net_client_->AddEventCallBack(ServerType::SQUICK_ST_WORLD, this, &DBToWorldModule::OnSocketMSEvent);
+    m_net_client_->ExpandBufferSize();
 
-    SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
-        const int nCurAppID = pPluginManager->GetAppID();
+        const int nCurAppID = pm_->GetAppID();
 
         std::vector<std::string>::const_iterator itr = std::find_if(strIdList.begin(), strIdList.end(), [&](const std::string &strConfigId) {
-            return nCurAppID == m_pElementModule->GetPropertyInt32(strConfigId, excel::Server::ServerID());
+            return nCurAppID == m_element_->GetPropertyInt32(strConfigId, excel::Server::ServerID());
         });
 
         if (strIdList.end() == itr) {
             std::ostringstream strLog;
             strLog << "Cannot find current server, AppID = " << nCurAppID;
-            m_pLogModule->LogError(NULL_OBJECT, strLog, __FILE__, __LINE__);
-            NFASSERT(-1, "Cannot find current server", __FILE__, __FUNCTION__);
+            m_log_->LogError(NULL_OBJECT, strLog, __FILE__, __LINE__);
+            SQUICK_ASSERT(-1, "Cannot find current server", __FILE__, __FUNCTION__);
             exit(0);
         }
 
-        const int nCurArea = m_pElementModule->GetPropertyInt32(*itr, excel::Server::Area());
+        const int nCurArea = m_element_->GetPropertyInt32(*itr, excel::Server::Area());
 
         for (int i = 0; i < strIdList.size(); ++i) {
             const std::string &strId = strIdList[i];
 
-            const int serverType = m_pElementModule->GetPropertyInt32(strId, excel::Server::Type());
-            const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::Server::ServerID());
-            const int nServerArea = m_pElementModule->GetPropertyInt32(strId, excel::Server::Area());
-            if (serverType == SQUICK_SERVER_TYPES::SQUICK_ST_WORLD && nServerArea == nCurArea) {
-                const int nPort = m_pElementModule->GetPropertyInt32(strId, excel::Server::Port());
-                const int maxConnect = m_pElementModule->GetPropertyInt32(strId, excel::Server::MaxOnline());
-                const int nCpus = m_pElementModule->GetPropertyInt32(strId, excel::Server::CpuCount());
-                const std::string &name = m_pElementModule->GetPropertyString(strId, excel::Server::ID());
-                const std::string &ip = m_pElementModule->GetPropertyString(strId, excel::Server::IP());
+            const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
+            const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
+            const int nServerArea = m_element_->GetPropertyInt32(strId, excel::Server::Area());
+            if (serverType == ServerType::SQUICK_ST_WORLD && nServerArea == nCurArea) {
+                const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
+                const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
+                const int nCpus = m_element_->GetPropertyInt32(strId, excel::Server::CpuCount());
+                const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
+                const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
                 ConnectData xServerData;
 
                 xServerData.nGameID = serverID;
-                xServerData.eServerType = (SQUICK_SERVER_TYPES)serverType;
+                xServerData.eServerType = (ServerType)serverType;
                 xServerData.ip = ip;
                 xServerData.nPort = nPort;
                 xServerData.name = strId;
 
-                m_pNetClientModule->AddServer(xServerData);
+                m_net_client_->AddServer(xServerData);
             }
         }
     }
@@ -82,20 +82,20 @@ bool DBToWorldModule::Update() {
 }
 
 void DBToWorldModule::Register(INet *pNet) {
-    SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
         for (int i = 0; i < strIdList.size(); ++i) {
             const std::string &strId = strIdList[i];
 
-            const int serverType = m_pElementModule->GetPropertyInt32(strId, excel::Server::Type());
-            const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == SQUICK_SERVER_TYPES::SQUICK_ST_DB_PROXY && pPluginManager->GetAppID() == serverID) {
-                const int nPort = m_pElementModule->GetPropertyInt32(strId, excel::Server::Port());
-                const int maxConnect = m_pElementModule->GetPropertyInt32(strId, excel::Server::MaxOnline());
-                const int nCpus = m_pElementModule->GetPropertyInt32(strId, excel::Server::CpuCount());
-                const std::string &name = m_pElementModule->GetPropertyString(strId, excel::Server::ID());
-                const std::string &ip = m_pElementModule->GetPropertyString(strId, excel::Server::IP());
+            const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
+            const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
+            if (serverType == ServerType::SQUICK_ST_DB_PROXY && pm_->GetAppID() == serverID) {
+                const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
+                const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
+                const int nCpus = m_element_->GetPropertyInt32(strId, excel::Server::CpuCount());
+                const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
+                const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
                 SquickStruct::ServerInfoReportList xMsg;
                 SquickStruct::ServerInfoReport *pData = xMsg.add_server_list();
@@ -109,12 +109,12 @@ void DBToWorldModule::Register(INet *pNet) {
                 pData->set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
                 pData->set_server_type(serverType);
 
-                SQUICK_SHARE_PTR<ConnectData> pServerData = m_pNetClientModule->GetServerNetInfo(pNet);
+                std::shared_ptr<ConnectData> pServerData = m_net_client_->GetServerNetInfo(pNet);
                 if (pServerData) {
                     int nTargetID = pServerData->nGameID;
-                    m_pNetClientModule->SendToServerByPB(nTargetID, SquickStruct::ServerRPC::DB_TO_WORLD_REGISTERED, xMsg);
+                    m_net_client_->SendToServerByPB(nTargetID, SquickStruct::ServerRPC::DB_TO_WORLD_REGISTERED, xMsg);
 
-                    m_pLogModule->LogInfo(Guid(0, pData->server_id()), pData->server_name(), "Register");
+                    m_log_->LogInfo(Guid(0, pData->server_id()), pData->server_name(), "Register");
                 }
             }
         }
@@ -122,23 +122,23 @@ void DBToWorldModule::Register(INet *pNet) {
 }
 
 void DBToWorldModule::ServerReport() {
-    if (mLastReportTime + 10 > pPluginManager->GetNowTime()) {
+    if (mLastReportTime + 10 > pm_->GetNowTime()) {
         return;
     }
-    mLastReportTime = pPluginManager->GetNowTime();
-    std::shared_ptr<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
+    mLastReportTime = pm_->GetNowTime();
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
         for (int i = 0; i < strIdList.size(); ++i) {
             const std::string &strId = strIdList[i];
 
-            const int serverType = m_pElementModule->GetPropertyInt32(strId, excel::Server::Type());
-            const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (pPluginManager->GetAppID() == serverID) {
-                const int nPort = m_pElementModule->GetPropertyInt32(strId, excel::Server::Port());
-                const int maxConnect = m_pElementModule->GetPropertyInt32(strId, excel::Server::MaxOnline());
-                const std::string &name = m_pElementModule->GetPropertyString(strId, excel::Server::ID());
-                const std::string &ip = m_pElementModule->GetPropertyString(strId, excel::Server::IP());
+            const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
+            const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
+            if (pm_->GetAppID() == serverID) {
+                const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
+                const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
+                const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
+                const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
                 SquickStruct::ServerInfoReport reqMsg;
 
@@ -151,41 +151,41 @@ void DBToWorldModule::ServerReport() {
                 reqMsg.set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
                 reqMsg.set_server_type(serverType);
 
-                m_pNetClientModule->SendToAllServerByPB(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
+                m_net_client_->SendToAllServerByPB(ServerType::SQUICK_ST_WORLD, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
             }
         }
     }
 }
 
-void DBToWorldModule::InvalidMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    printf("Net || umsgID=%d\n", msgID);
+void DBToWorldModule::InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    printf("Net || umsg_id=%d\n", msg_id);
 }
 
-void DBToWorldModule::OnSocketMSEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet) {
+void DBToWorldModule::OnSocketMSEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
     if (eEvent & SQUICK_NET_EVENT_EOF) {
-        m_pLogModule->LogInfo(Guid(0, sockIndex), "SQUICK_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
+        m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
     } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
-        m_pLogModule->LogInfo(Guid(0, sockIndex), "SQUICK_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
+        m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
     } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
-        m_pLogModule->LogInfo(Guid(0, sockIndex), "SQUICK_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
+        m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
     } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
-        m_pLogModule->LogInfo(Guid(0, sockIndex), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
+        m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
         Register(pNet);
     }
 }
 
-void DBToWorldModule::OnClientDisconnect(const SQUICK_SOCKET nAddress) {}
+void DBToWorldModule::OnClientDisconnect(const socket_t sock) {}
 
-void DBToWorldModule::OnClientConnected(const SQUICK_SOCKET nAddress) {}
+void DBToWorldModule::OnClientConnected(const socket_t sock) {}
 
 bool DBToWorldModule::BeforeDestory() { return true; }
 
-void DBToWorldModule::LogServerInfo(const std::string &strServerInfo) { m_pLogModule->LogInfo(Guid(), strServerInfo, ""); }
+void DBToWorldModule::LogServerInfo(const std::string &strServerInfo) { m_log_->LogInfo(Guid(), strServerInfo, ""); }
 
-void DBToWorldModule::OnServerInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
+void DBToWorldModule::OnServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
     SquickStruct::ServerInfoReportList xMsg;
-    if (!INetModule::ReceivePB(msgID, msg, len, xMsg, nPlayerID)) {
+    if (!INetModule::ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
@@ -200,10 +200,10 @@ void DBToWorldModule::OnServerInfoProcess(const SQUICK_SOCKET sockIndex, const i
         xServerData.nPort = xData.server_port();
         xServerData.name = xData.server_name();
         xServerData.nWorkLoad = xData.server_cur_count();
-        xServerData.eServerType = (SQUICK_SERVER_TYPES)xData.server_type();
+        xServerData.eServerType = (ServerType)xData.server_type();
 
-        if (SQUICK_SERVER_TYPES::SQUICK_ST_WORLD == xServerData.eServerType) {
-            m_pNetClientModule->AddServer(xServerData);
+        if (ServerType::SQUICK_ST_WORLD == xServerData.eServerType) {
+            m_net_client_->AddServer(xServerData);
         }
     }
 }

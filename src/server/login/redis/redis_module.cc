@@ -4,8 +4,8 @@
 
 namespace login::redis {
 bool RedisModule::Start() {
-    m_pNetModule = pPluginManager->FindModule<INetModule>();
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
+    m_net_ = pm_->FindModule<INetModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
 
     return true;
 }

@@ -35,7 +35,7 @@ enum ECELL_AROUND {
 };
 // id, scene_id, group_id, move_out_cell_id, move_in_cell_id
 typedef std::function<int(const Guid &, const int &, const int &, const Guid &, const Guid &)> CELL_MOVE_EVENT_FUNCTOR;
-typedef SQUICK_SHARE_PTR<CELL_MOVE_EVENT_FUNCTOR> CELL_MOVE_EVENT_FUNCTOR_PTR; // EVENT
+typedef std::shared_ptr<CELL_MOVE_EVENT_FUNCTOR> CELL_MOVE_EVENT_FUNCTOR_PTR; // EVENT
 
 class ICellModule : public IModule {
   public:

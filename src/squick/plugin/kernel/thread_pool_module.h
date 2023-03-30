@@ -13,7 +13,7 @@ class ThreadCell : MemoryCounter {
   public:
     ThreadCell(IThreadPoolModule *p) : MemoryCounter(GET_CLASS_NAME(ThreadCell), 1) {
         m_pThreadPoolModule = p;
-        mThread = SQUICK_SHARE_PTR<std::thread>(SQUICK_NEW std::thread(&ThreadCell::Update, this));
+        mThread = std::shared_ptr<std::thread>(new std::thread(&ThreadCell::Update, this));
     }
 
     void AddTask(const ThreadTask &task) { mTaskList.Push(task); }
@@ -46,7 +46,7 @@ class ThreadCell : MemoryCounter {
 
   private:
     Queue<ThreadTask> mTaskList;
-    SQUICK_SHARE_PTR<std::thread> mThread;
+    std::shared_ptr<std::thread> mThread;
     IThreadPoolModule *m_pThreadPoolModule;
 };
 
@@ -76,7 +76,7 @@ class ThreadPoolModule : public IThreadPoolModule {
 
   private:
     Queue<ThreadTask> mTaskResult;
-    std::vector<SQUICK_SHARE_PTR<ThreadCell>> mThreadPool;
+    std::vector<std::shared_ptr<ThreadCell>> mThreadPool;
 };
 
 #endif

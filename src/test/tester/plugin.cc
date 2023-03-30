@@ -17,7 +17,7 @@ const std::string TestPlugin::GetPluginName() { return GET_CLASS_NAME(TestPlugin
 
 void TestPlugin::Install() {
     std::cout << "TestPlugin::Install" << std::endl;
-    REGISTER_MODULE(pPluginManager, ITestModule, TestModule)
+    REGISTER_MODULE(pm_, ITestModule, TestModule)
 }
 
-void TestPlugin::Uninstall() { UNREGISTER_MODULE(pPluginManager, ITestModule, TestModule) }
+void TestPlugin::Uninstall() { UNREGISTER_MODULE(pm_, ITestModule, TestModule) }

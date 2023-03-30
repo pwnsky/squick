@@ -1,8 +1,8 @@
 
 #include "exception.h"
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
 
 static ExceptFrame pExceptStack;
 ExceptFrame &Exception::ExceptStack() { return pExceptStack; }
-#endif //  SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#endif //  PLATFORM != PLATFORM_WIN

@@ -58,7 +58,7 @@ class SquickFiles {
     //
     static void CleanFiles() {
         // files目录下的所有文件
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
         system("del /f /q /s  files\\*");
         system("del /f /q /s  changed.json");
 #else
@@ -76,7 +76,7 @@ class SquickFiles {
 
         sourcePath = "\"" + sourcePath + "\"";
         targetPath = "\"" + targetPath + "\"";
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
         Files::StringReplace(targetPath, "/", "\\");
         Files::StringReplace(sourcePath, "/", "\\");
         cmd = "mkdir " + targetPath;
@@ -105,7 +105,7 @@ class SquickFiles {
 
         sourcePath = "\"" + sourcePath + "\"";
         targetPath = "\"" + targetPath + "\"";
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
         Files::StringReplace(targetPath, "/", "\\");
         Files::StringReplace(sourcePath, "/", "\\");
         cmd = "mkdir " + targetPath;
@@ -122,7 +122,7 @@ class SquickFiles {
     }
 
     static void BackupFiles() {
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
         system("mkdir backup");
         system("xcopy /s /e /y files backup");
 #else

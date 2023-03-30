@@ -14,7 +14,7 @@
 #include <time.h>
 #include <utility>
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
 #include <arpa/inet.h>
 #include <execinfo.h>
 #include <netdb.h>
@@ -22,7 +22,7 @@
 #include <signal.h>
 #include <unistd.h>
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_LINUX
+#if PLATFORM == PLATFORM_LINUX
 #include <sys/prctl.h>
 #endif
 
@@ -42,7 +42,7 @@ class PluginServer {
     void SetMidWareLoader(std::function<void(IPluginManager *p)> fun);
 
   private:
-    SQUICK_SHARE_PTR<IPluginManager> pPluginManager;
+    std::shared_ptr<IPluginManager> pm_;
     std::string strArgvList;
     std::function<void(IPluginManager *p)> externalMidWarePluginLoader;
     std::function<void(IPluginManager *p)> externalBasicWarePluginLoader;

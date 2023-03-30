@@ -30,22 +30,22 @@ class CommonRedisModule : public ICommonRedisModule {
     virtual std::string GetSceneCacheKey(const int &sceneID);
     virtual std::string GetCellCacheKey(const std::string &strCellID);
 
-    virtual SQUICK_SHARE_PTR<IPropertyManager> NewPropertyManager(const std::string &className);
-    virtual SQUICK_SHARE_PTR<IRecordManager> NewRecordManager(const std::string &className);
+    virtual std::shared_ptr<IPropertyManager> NewPropertyManager(const std::string &className);
+    virtual std::shared_ptr<IRecordManager> NewRecordManager(const std::string &className);
 
-    virtual SQUICK_SHARE_PTR<IPropertyManager> GetPropertyInfo(const std::string &self, const std::string &className, const bool cache, const bool save,
-                                                               SQUICK_SHARE_PTR<IPropertyManager> propertyManager = nullptr);
-    virtual SQUICK_SHARE_PTR<IRecordManager> GetRecordInfo(const std::string &self, const std::string &className, const bool cache, const bool save,
-                                                           SQUICK_SHARE_PTR<IRecordManager> recordManager = nullptr);
+    virtual std::shared_ptr<IPropertyManager> GetPropertyInfo(const std::string &self, const std::string &className, const bool cache, const bool save,
+                                                               std::shared_ptr<IPropertyManager> propertyManager = nullptr);
+    virtual std::shared_ptr<IRecordManager> GetRecordInfo(const std::string &self, const std::string &className, const bool cache, const bool save,
+                                                           std::shared_ptr<IRecordManager> recordManager = nullptr);
     virtual bool GetRecordInfo(const std::string &self, const std::string &className, SquickStruct::ObjectRecordList *pRecordData, const bool cache,
                                const bool save);
 
     // support hmset
     virtual bool SavePropertyInfo(const std::string &self, const std::string &propertyName, const std::string &propertyValue);
 
-    virtual bool SavePropertyInfo(const std::string &self, SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager, const bool cache, const bool save,
+    virtual bool SavePropertyInfo(const std::string &self, std::shared_ptr<IPropertyManager> pPropertyManager, const bool cache, const bool save,
                                   const int nExpireSecond = -1);
-    virtual bool SaveRecordInfo(const std::string &self, SQUICK_SHARE_PTR<IRecordManager> pRecordManager, const bool cache, const bool save,
+    virtual bool SaveRecordInfo(const std::string &self, std::shared_ptr<IRecordManager> pRecordManager, const bool cache, const bool save,
                                 const int nExpireSecond = -1);
     virtual bool SaveRecordInfo(const std::string &self, const SquickStruct::ObjectRecordList &xRecordData, const int nExpireSecond = -1);
     virtual bool GetPropertyList(const std::string &self, const std::vector<std::string> &fields, std::vector<std::string> &values);
@@ -60,7 +60,7 @@ class CommonRedisModule : public ICommonRedisModule {
     virtual Vector3 GetPropertyVector3(const std::string &self, const std::string &propertyName);
 
     ////
-    static bool ConvertRecordToPB(const SQUICK_SHARE_PTR<IRecord> pRecord, SquickStruct::ObjectRecordBase *pRecordData) {
+    static bool ConvertRecordToPB(const std::shared_ptr<IRecord> pRecord, SquickStruct::ObjectRecordBase *pRecordData) {
         pRecordData->set_record_name(pRecord->GetName());
 
         for (int iRow = 0; iRow < pRecord->GetRows(); iRow++) {
@@ -153,7 +153,7 @@ class CommonRedisModule : public ICommonRedisModule {
 
         return true;
     }
-    static bool ConvertPBToRecord(const SquickStruct::ObjectRecordBase &pRecordData, SQUICK_SHARE_PTR<IRecord> pRecord) {
+    static bool ConvertPBToRecord(const SquickStruct::ObjectRecordBase &pRecordData, std::shared_ptr<IRecord> pRecord) {
         pRecord->Clear();
 
         for (int row = 0; row < pRecordData.row_struct_size(); row++) {
@@ -215,15 +215,15 @@ class CommonRedisModule : public ICommonRedisModule {
 
         return false;
     }
-    // static bool ConvertRecordManagerToPB(const SQUICK_SHARE_PTR<IRecordManager> pRecord, SquickStruct::ObjectRecordList* pRecordData, const bool cache, const
+    // static bool ConvertRecordManagerToPB(const std::shared_ptr<IRecordManager> pRecord, SquickStruct::ObjectRecordList* pRecordData, const bool cache, const
     // bool save);
-    static bool ConvertRecordManagerToPB(const SQUICK_SHARE_PTR<IRecordManager> pRecordManager, SquickStruct::ObjectRecordList *pRecordDataList,
+    static bool ConvertRecordManagerToPB(const std::shared_ptr<IRecordManager> pRecordManager, SquickStruct::ObjectRecordList *pRecordDataList,
                                          const bool cache, const bool save) {
         if (pRecordDataList == nullptr) {
             return false;
         }
 
-        for (SQUICK_SHARE_PTR<IRecord> pRecord = pRecordManager->First(); pRecord != NULL; pRecord = pRecordManager->Next()) {
+        for (std::shared_ptr<IRecord> pRecord = pRecordManager->First(); pRecord != NULL; pRecord = pRecordManager->Next()) {
             if ((cache && pRecord->GetCache()) || (save && pRecord->GetSave())) {
                 SquickStruct::ObjectRecordBase *pRecordData = pRecordDataList->add_record_list();
                 if (!pRecordData) {
@@ -237,14 +237,14 @@ class CommonRedisModule : public ICommonRedisModule {
         return true;
     }
     // ConvertPBToRecordManager
-    static bool ConvertPBToRecordManager(const SquickStruct::ObjectRecordList &pRecordData, SQUICK_SHARE_PTR<IRecordManager> pRecord) {
+    static bool ConvertPBToRecordManager(const SquickStruct::ObjectRecordList &pRecordData, std::shared_ptr<IRecordManager> pRecord) {
         if (pRecord == nullptr) {
             return false;
         }
 
         for (int i = 0; i < pRecordData.record_list_size(); ++i) {
             const SquickStruct::ObjectRecordBase &xRecordBase = pRecordData.record_list(i);
-            SQUICK_SHARE_PTR<IRecord> xRecord = pRecord->GetElement(xRecordBase.record_name());
+            std::shared_ptr<IRecord> xRecord = pRecord->GetElement(xRecordBase.record_name());
             if (xRecord) {
                 ConvertPBToRecord(xRecordBase, xRecord);
             }
@@ -254,10 +254,10 @@ class CommonRedisModule : public ICommonRedisModule {
     }
 
     // ConvertPropertyManagerToPB
-    static bool ConvertPropertyManagerToPB(const SQUICK_SHARE_PTR<IPropertyManager> pProps, SquickStruct::ObjectPropertyList *pPropertyData, const bool cache,
+    static bool ConvertPropertyManagerToPB(const std::shared_ptr<IPropertyManager> pProps, SquickStruct::ObjectPropertyList *pPropertyData, const bool cache,
                                            const bool save) {
         if (pProps) {
-            SQUICK_SHARE_PTR<IProperty> xPropert = pProps->First();
+            std::shared_ptr<IProperty> xPropert = pProps->First();
             while (xPropert) {
                 if ((cache && xPropert->GetCache()) || (save && xPropert->GetSave())) {
                     switch (xPropert->GetType()) {
@@ -308,7 +308,7 @@ class CommonRedisModule : public ICommonRedisModule {
     }
 
     // ConvertPBToPropertyManager
-    static bool ConvertPBToPropertyManager(const SquickStruct::ObjectPropertyList &pPropertyData, SQUICK_SHARE_PTR<IPropertyManager> pProps) {
+    static bool ConvertPBToPropertyManager(const SquickStruct::ObjectPropertyList &pPropertyData, std::shared_ptr<IPropertyManager> pProps) {
         if (pProps) {
             for (int i = 0; i < pPropertyData.property_int_list_size(); ++i) {
                 const SquickStruct::PropertyInt &xData = pPropertyData.property_int_list(i);
@@ -376,27 +376,27 @@ class CommonRedisModule : public ICommonRedisModule {
   protected:
     // support hmset
     virtual bool ConvertVectorToPropertyManager(std::vector<std::string> &vKeyList, std::vector<std::string> &vValueList,
-                                                SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager, const bool cache, const bool save);
+                                                std::shared_ptr<IPropertyManager> pPropertyManager, const bool cache, const bool save);
     virtual bool ConvertVectorToRecordManager(std::vector<std::string> &vKeyList, std::vector<std::string> &vValueList,
-                                              SQUICK_SHARE_PTR<IRecordManager> pRecordManager, const bool cache, const bool save);
+                                              std::shared_ptr<IRecordManager> pRecordManager, const bool cache, const bool save);
 
     // support hmset
-    virtual bool ConvertPropertyManagerToVector(SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager, std::vector<std::string> &vKeyList,
+    virtual bool ConvertPropertyManagerToVector(std::shared_ptr<IPropertyManager> pPropertyManager, std::vector<std::string> &vKeyList,
                                                 std::vector<std::string> &vValueList, const bool cache, const bool save);
-    virtual bool ConvertRecordManagerToVector(SQUICK_SHARE_PTR<IRecordManager> pRecordManager, std::vector<std::string> &vKeyList,
+    virtual bool ConvertRecordManagerToVector(std::shared_ptr<IRecordManager> pRecordManager, std::vector<std::string> &vKeyList,
                                               std::vector<std::string> &vValueList, const bool cache, const bool save);
 
-    virtual SQUICK_SHARE_PTR<IPropertyManager> GetPropertyInfo(const std::string &self, const std::string &className, std::vector<std::string> &vKeyList,
+    virtual std::shared_ptr<IPropertyManager> GetPropertyInfo(const std::string &self, const std::string &className, std::vector<std::string> &vKeyList,
                                                                std::vector<std::string> &vValueList, const bool cache, const bool save,
-                                                               SQUICK_SHARE_PTR<IPropertyManager> propertyManager = nullptr);
-    virtual SQUICK_SHARE_PTR<IRecordManager> GetRecordInfo(const std::string &self, const std::string &className, std::vector<std::string> &vKeyList,
+                                                               std::shared_ptr<IPropertyManager> propertyManager = nullptr);
+    virtual std::shared_ptr<IRecordManager> GetRecordInfo(const std::string &self, const std::string &className, std::vector<std::string> &vKeyList,
                                                            std::vector<std::string> &vValueList, const bool cache, const bool save,
-                                                           SQUICK_SHARE_PTR<IRecordManager> recordManager = nullptr);
+                                                           std::shared_ptr<IRecordManager> recordManager = nullptr);
 
   protected:
-    IKernelModule *m_pKernelModule;
-    IClassModule *m_pLogicClassModule;
+    IKernelModule *m_kernel_;
+    IClassModule *m_class_;
     INoSqlModule *m_pNoSqlModule;
-    IElementModule *m_pElementModule;
-    ILogModule *m_pLogModule;
+    IElementModule *m_element_;
+    ILogModule *m_log_;
 };

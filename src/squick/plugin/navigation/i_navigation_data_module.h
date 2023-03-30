@@ -59,8 +59,8 @@ class INavigationDataModule : public IModule {
   public:
     virtual const std::string &GetDefaultMapData(const int scene) = 0;
 
-    static SQUICK_SHARE_PTR<GroupNavigationData> ParseDefaultMapData(const int scene, const std::string &sceneMapData, const bool saveOriginalData = false) {
-        auto groupData = SQUICK_SHARE_PTR<GroupNavigationData>(SQUICK_NEW GroupNavigationData(scene, 0));
+    static std::shared_ptr<GroupNavigationData> ParseDefaultMapData(const int scene, const std::string &sceneMapData, const bool saveOriginalData = false) {
+        auto groupData = std::shared_ptr<GroupNavigationData>(new GroupNavigationData(scene, 0));
         if (!sceneMapData.empty()) {
             auto map = json::parse(sceneMapData);
             auto tileConfig = map["tileConfig"];
@@ -78,7 +78,7 @@ class INavigationDataModule : public IModule {
                 Guid posID(cellID);
                 auto voxelData = groupData->data.GetElement(posID);
                 if (voxelData == nullptr) {
-                    voxelData = SQUICK_SHARE_PTR<Voxel>(SQUICK_NEW Voxel());
+                    voxelData = std::shared_ptr<Voxel>(new Voxel());
                     ajson::load_from_buff(*voxelData, cellData.c_str(), cellData.length());
                     voxelData->x = (int)posID.GetHead();
                     voxelData->z = (int)posID.GetData();
@@ -91,9 +91,9 @@ class INavigationDataModule : public IModule {
         return groupData;
     }
 
-    virtual const SQUICK_SHARE_PTR<GroupNavigationData> GetMapData(const int scene) = 0;
-    virtual const SQUICK_SHARE_PTR<GroupNavigationData> GetMapData(const int scene, const int group) = 0;
-    virtual const SQUICK_SHARE_PTR<Voxel> GetMapData(const int scene, const int group, const int x, int z) = 0;
+    virtual const std::shared_ptr<GroupNavigationData> GetMapData(const int scene) = 0;
+    virtual const std::shared_ptr<GroupNavigationData> GetMapData(const int scene, const int group) = 0;
+    virtual const std::shared_ptr<Voxel> GetMapData(const int scene, const int group, const int x, int z) = 0;
 
     // modify map data in run time
     virtual bool SetMapDataOccupyItem(const int scene, const int group, const int x, const int z, const std::string &item) = 0;

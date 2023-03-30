@@ -18,13 +18,13 @@ const int Plugin::GetPluginVersion() { return 0; }
 const std::string Plugin::GetPluginName() { return GET_CLASS_NAME(Plugin); }
 
 void Plugin::Install() {
-    REGISTER_MODULE(pPluginManager, IManagerModule, ManagerModule)
-    REGISTER_MODULE(pPluginManager, ILogicModule, LogicModule)
+    REGISTER_MODULE(pm_, IManagerModule, ManagerModule)
+    REGISTER_MODULE(pm_, ILogicModule, LogicModule)
 }
 
 void Plugin::Uninstall() {
-    UNREGISTER_MODULE(pPluginManager, ILogicModule, LogicModule)
-    UNREGISTER_MODULE(pPluginManager, IManagerModule, ManagerModule)
+    UNREGISTER_MODULE(pm_, ILogicModule, LogicModule)
+    UNREGISTER_MODULE(pm_, IManagerModule, ManagerModule)
 }
 
 } // namespace gameplay_manager::logic

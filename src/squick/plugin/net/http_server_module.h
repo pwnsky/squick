@@ -20,18 +20,18 @@ class HttpServerModule : public IHttpServerModule {
 
     virtual bool Update();
 
-    virtual bool ResponseMsg(SQUICK_SHARE_PTR<HttpRequest> req, const std::string &msg, WebStatus code = WebStatus::WEB_OK, const std::string &reason = "OK");
+    virtual bool ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string &msg, WebStatus code = WebStatus::WEB_OK, const std::string &reason = "OK");
 
   private:
-    virtual bool OnReceiveNetPack(SQUICK_SHARE_PTR<HttpRequest> req);
-    virtual WebStatus OnFilterPack(SQUICK_SHARE_PTR<HttpRequest> req);
+    virtual bool OnReceiveNetPack(std::shared_ptr<HttpRequest> req);
+    virtual WebStatus OnFilterPack(std::shared_ptr<HttpRequest> req);
 
     virtual bool AddMsgCB(const std::string &strCommand, const HttpType eRequestType, const HTTP_RECEIVE_FUNCTOR_PTR &cb);
     virtual bool AddFilterCB(const std::string &strCommand, const HTTP_FILTER_FUNCTOR_PTR &cb);
 
   private:
     IHttpServer *m_pHttpServer;
-    ILogModule *m_pLogModule;
+    ILogModule *m_log_;
 
     MapEx<HttpType, std::map<std::string, HTTP_RECEIVE_FUNCTOR_PTR>> mMsgCBMap;
     std::map<std::string, HTTP_FILTER_FUNCTOR_PTR> mMsgFliterMap;

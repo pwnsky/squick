@@ -6,21 +6,21 @@
 namespace game::play {
 
 bool GameplayManagerModule::Start() {
-    m_pElementModule = pPluginManager->FindModule<IElementModule>();
-    m_pClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pNetModule = pPluginManager->FindModule<INetModule>();
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pGameToDBModule = pPluginManager->FindModule<IGameServerToDBModule>();
+    m_element_ = pm_->FindModule<IElementModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_net_ = pm_->FindModule<INetModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_pGameToDBModule = pm_->FindModule<IGameServerToDBModule>();
 
-    m_pGameServerNet_ServerModule = pPluginManager->FindModule<IGameServerNet_ServerModule>();
-    m_pNetClientModule = pPluginManager->FindModule<INetClientModule>();
-    m_pScheduleModule = pPluginManager->FindModule<IScheduleModule>();
-    m_pDataTailModule = pPluginManager->FindModule<IDataTailModule>();
-    m_pSceneModule = pPluginManager->FindModule<ISceneModule>();
-    m_pEventModule = pPluginManager->FindModule<IEventModule>();
+    m_pGameServerNet_ServerModule = pm_->FindModule<IGameServerNet_ServerModule>();
+    m_net_client_ = pm_->FindModule<INetClientModule>();
+    m_schedule_ = pm_->FindModule<IScheduleModule>();
+    m_data_tail_ = pm_->FindModule<IDataTailModule>();
+    m_scene_ = pm_->FindModule<ISceneModule>();
+    m_event_ = pm_->FindModule<IEventModule>();
 
-    m_pRoomModule = pPluginManager->FindModule<player::IRoomModule>();
-    m_pPlayerManagerModule = pPluginManager->FindModule<player::IPlayerManagerModule>();
+    m_room_ = pm_->FindModule<player::IRoomModule>();
+    m_player_manager_ = pm_->FindModule<player::IPlayerManagerModule>();
     return true;
 }
 
@@ -94,7 +94,7 @@ bool GameplayManagerModule::GameplayDestroy(int id) {
 
 bool GameplayManagerModule::GameplayPlayerQuit(const Guid &player) {
     dout << "玩家: " << player.ToString() << " quit \n";
-    int id = m_pPlayerManagerModule->GetPlayerGameplayID(player);
+    int id = m_player_manager_->GetPlayerGameplayID(player);
     if (id != -1) {
         auto gameplay = m_gameplay[id];
         if (gameplay != nullptr) {
@@ -117,7 +117,7 @@ bool GameplayManagerModule::SingleGameplayCreate(int id, const string& key) {
     SquickStruct::ReqGameplayCreate xMsg;
     xMsg.set_id(id);
     xMsg.set_key(key);
-    xMsg.set_game_id(pPluginManager->GetAppID()); // 获取当前Game ID
+    xMsg.set_game_id(pm_->GetAppID()); // 获取当前Game ID
     m_pGameServerNet_ServerModule->SendMsgPBToGameplayManager(GameplayManagerRPC::REQ_GAMEPLAY_CREATE, xMsg);
     return true;
 }
@@ -126,29 +126,29 @@ bool GameplayManagerModule::SingleGameplayDestroy(int id) {
     return true;
 }
 
-void GameplayManagerModule::OnRecv(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
+void GameplayManagerModule::OnRecv(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     SquickStruct::MsgBase xMsg;
     if (!xMsg.ParseFromArray(msg, len)) {
         char szData[MAX_PATH] = {0};
-        NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msgID);
+        NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
         return;
     }
 
-    Guid clientID = m_pNetModule->ProtobufToStruct(xMsg.player_id());
-    int group_id = m_pPlayerManagerModule->GetPlayerRoomID(clientID);
+    Guid clientID = m_net_->ProtobufToStruct(xMsg.player_id());
+    int group_id = m_player_manager_->GetPlayerRoomID(clientID);
 
     auto gameplay = m_gameplay[group_id];
     if (gameplay != nullptr) {
-        GAME_PLAY_RECEIVE_FUNCTOR_PTR &ptr = GetCallback(msgID, group_id);
+        GAME_PLAY_RECEIVE_FUNCTOR_PTR &ptr = GetCallback(msg_id, group_id);
         if (ptr != nullptr) {
             GAME_PLAY_RECEIVE_FUNCTOR *pFunc = ptr.get();
-            pFunc->operator()(clientID, msgID, xMsg.msg_data());
+            pFunc->operator()(clientID, msg_id, xMsg.msg_data());
         } else {
-            dout << "不存在该 callback! msgID: " << msgID << std::endl;
+            dout << "不存在该 callback! msg_id: " << msg_id << std::endl;
         }
 
     } else {
-        dout << "不存在该 group: " << group_id << " msgID: " << msgID << std::endl;
+        dout << "不存在该 group: " << group_id << " msg_id: " << msg_id << std::endl;
         // 不存在该group，可能已销毁
     }
 }

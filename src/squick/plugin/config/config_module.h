@@ -11,7 +11,7 @@ class ConfigModule : public ICommonConfigModule {
     class CAttributeList : public MapEx<std::string, std::string> {
       public:
         const int GetInt(const std::string &name) {
-            SQUICK_SHARE_PTR<std::string> pStr = GetElement(name);
+            std::shared_ptr<std::string> pStr = GetElement(name);
             if (pStr && !pStr->empty()) {
                 int nData = 0;
                 SQUICK_StrTo(*pStr, nData);
@@ -22,7 +22,7 @@ class ConfigModule : public ICommonConfigModule {
         }
 
         const std::string &GetString(const std::string &name) {
-            SQUICK_SHARE_PTR<std::string> pStr = GetElement(name);
+            std::shared_ptr<std::string> pStr = GetElement(name);
             if (pStr) {
                 return *pStr;
             }
@@ -36,7 +36,7 @@ class ConfigModule : public ICommonConfigModule {
     };
 
   public:
-    ConfigModule(IPluginManager *p) { pPluginManager = p; }
+    ConfigModule(IPluginManager *p) { pm_ = p; }
     virtual ~ConfigModule(){};
 
     virtual bool Start();

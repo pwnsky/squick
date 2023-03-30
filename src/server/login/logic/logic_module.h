@@ -11,18 +11,18 @@
 namespace login::logic {
 class LogicModule : public ILogicModule {
   public:
-    LogicModule(IPluginManager *p) { pPluginManager = p; }
+    LogicModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Start();
     virtual bool Destory();
     virtual bool ReadyUpdate();
     virtual bool Update();
     virtual bool AfterStart();
-    virtual void OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    virtual void OnLoginProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   protected:
-    INetModule *m_pNetModule;
-    ILogModule *m_pLogModule;
+    INetModule *m_net_;
+    ILogModule *m_log_;
   private:
 };
 

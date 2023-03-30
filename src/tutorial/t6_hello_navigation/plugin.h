@@ -4,7 +4,7 @@
 
 class Tutorial6 : public IPlugin {
   public:
-    Tutorial6(IPluginManager *p) { pPluginManager = p; }
+    Tutorial6(IPluginManager *p) { pm_ = p; }
     virtual const int GetPluginVersion();
 
     virtual const std::string GetPluginName();

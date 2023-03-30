@@ -8,10 +8,10 @@ bool TestModule::Awake() {
     //::testing::GTEST_FLAG(output) = "xml:hello.xml";
     //::testing::StartGoogleTest(&argc, &c);
     std::cout << "我已经运行了" << std::endl;
-    std::list<IModule *> xModules = pPluginManager->Modules(); // 获取全部模块，
+    std::list<IModule *> xModules = pm_->Modules(); // 获取全部模块，
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pPluginManager->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name);
         std::cout << "尝试查找：" << pModule->name << std::endl;
         if (nullptr != pTestModule) {
             pTestModule->Awake();
@@ -28,10 +28,10 @@ bool TestModule::Start() {
     // if any module have't a tester for it then  can not start the application
     // this is a rule for Squick's world to keep high quality code under TDD
 
-    std::list<IModule *> xModules = pPluginManager->Modules();
+    std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pPluginManager->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name);
         pTestModule->Start();
     }
 
@@ -39,10 +39,10 @@ bool TestModule::Start() {
 }
 
 bool TestModule::AfterStart() {
-    std::list<IModule *> xModules = pPluginManager->Modules();
+    std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pPluginManager->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name);
         pTestModule->AfterStart();
     }
 
@@ -50,10 +50,10 @@ bool TestModule::AfterStart() {
 }
 
 bool TestModule::CheckConfig() {
-    std::list<IModule *> xModules = pPluginManager->Modules();
+    std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pPluginManager->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name);
         pTestModule->CheckConfig();
     }
 
@@ -61,10 +61,10 @@ bool TestModule::CheckConfig() {
 }
 
 bool TestModule::ReadyUpdate() {
-    std::list<IModule *> xModules = pPluginManager->Modules();
+    std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pPluginManager->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name);
         pTestModule->ReadyUpdate();
     }
 
@@ -72,10 +72,10 @@ bool TestModule::ReadyUpdate() {
 }
 
 bool TestModule::Update() {
-    std::list<IModule *> xModules = pPluginManager->Modules();
+    std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pPluginManager->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name);
         pTestModule->Update();
     }
 
@@ -83,10 +83,10 @@ bool TestModule::Update() {
 }
 
 bool TestModule::BeforeDestory() {
-    std::list<IModule *> xModules = pPluginManager->Modules();
+    std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pPluginManager->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name);
         pTestModule->BeforeDestory();
     }
 
@@ -94,10 +94,10 @@ bool TestModule::BeforeDestory() {
 }
 
 bool TestModule::Destory() {
-    std::list<IModule *> xModules = pPluginManager->Modules();
+    std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pPluginManager->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name);
         pTestModule->Destory();
     }
 
@@ -105,10 +105,10 @@ bool TestModule::Destory() {
 }
 
 bool TestModule::Finalize() {
-    std::list<IModule *> xModules = pPluginManager->Modules();
+    std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pPluginManager->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name);
         pTestModule->Finalize();
     }
 
@@ -116,10 +116,10 @@ bool TestModule::Finalize() {
 }
 
 bool TestModule::OnReloadPlugin() {
-    std::list<IModule *> xModules = pPluginManager->Modules();
+    std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pPluginManager->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name);
         pTestModule->OnReloadPlugin();
     }
 

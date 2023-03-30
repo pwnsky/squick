@@ -55,7 +55,7 @@ class HttpClientModule : public IHttpClientModule {
     void CallBack(const Guid id, const int state_code, const std::string &strRespData);
 
   private:
-    IKernelModule *m_pKernelModule;
+    IKernelModule *m_kernel_;
     IHttpClient *m_pHttpClient;
     std::map<std::string, std::string> m_xDefaultHttpHeaders;
     MapEx<Guid, RespData> mxRespDataMap;

@@ -6,7 +6,7 @@
 //////////////////////////////////////////////////////////////////////////
 class LogPlugin : public IPlugin {
   public:
-    LogPlugin(IPluginManager *p) { pPluginManager = p; }
+    LogPlugin(IPluginManager *p) { pm_ = p; }
 
     virtual const int GetPluginVersion();
 

@@ -6,7 +6,7 @@ int RedisClient::HDEL(const std::string &key, const std::string &field) {
     cmd << key;
     cmd << field;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -26,7 +26,7 @@ int RedisClient::HDEL(const std::string &key, const string_vector &fields) {
         cmd << *it;
     }
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -44,7 +44,7 @@ bool RedisClient::HEXISTS(const std::string &key, const std::string &field) {
     cmd << key;
     cmd << field;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -62,7 +62,7 @@ bool RedisClient::HGET(const std::string &key, const std::string &field, std::st
     cmd << key;
     cmd << field;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -78,7 +78,7 @@ bool RedisClient::HGETALL(const std::string &key, std::vector<string_pair> &valu
     RedisCommand cmd(GET_NAME(HGETALL));
     cmd << key;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -99,7 +99,7 @@ bool RedisClient::HINCRBY(const std::string &key, const std::string &field, cons
     cmd << field;
     cmd << by;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -117,7 +117,7 @@ bool RedisClient::HINCRBYFLOAT(const std::string &key, const std::string &field,
     cmd << field;
     cmd << by;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -134,7 +134,7 @@ bool RedisClient::HKEYS(const std::string &key, std::vector<std::string> &fields
     RedisCommand cmd(GET_NAME(HKEYS));
     cmd << key;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -152,7 +152,7 @@ bool RedisClient::HLEN(const std::string &key, int &number) {
     RedisCommand cmd(GET_NAME(HLEN));
     cmd << key;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -171,7 +171,7 @@ bool RedisClient::HMGET(const std::string &key, const string_vector &fields, str
         cmd << fields[i];
     }
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -197,7 +197,7 @@ bool RedisClient::HMSET(const std::string &key, const std::vector<string_pair> &
         cmd << values[i].second;
     }
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -217,7 +217,7 @@ bool RedisClient::HMSET(const std::string &key, const string_vector &fields, con
         cmd << values[i];
     }
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -231,7 +231,7 @@ bool RedisClient::HSET(const std::string &key, const std::string &field, const s
     cmd << field;
     cmd << value;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -256,7 +256,7 @@ bool RedisClient::HSETNX(const std::string &key, const std::string &field, const
     cmd << field;
     cmd << value;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -273,7 +273,7 @@ bool RedisClient::HVALS(const std::string &key, string_vector &values) {
     RedisCommand cmd(GET_NAME(HVALS));
     cmd << key;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -292,7 +292,7 @@ bool RedisClient::HSTRLEN(const std::string &key, const std::string &field, int 
     cmd << key;
     cmd << field;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }

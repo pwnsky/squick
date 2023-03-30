@@ -28,11 +28,11 @@ class NoSqlModule : public INoSqlModule {
     virtual bool AddConnectSql(const std::string &strID, const std::string &ip, const int nPort, const std::string &strPass);
 
     virtual List<std::string> GetDriverIdList();
-    virtual SQUICK_SHARE_PTR<IRedisClient> GetDriver(const std::string &strID);
-    virtual SQUICK_SHARE_PTR<IRedisClient> GetDriverBySuitRandom();
-    virtual SQUICK_SHARE_PTR<IRedisClient> GetDriverBySuitConsistent();
-    virtual SQUICK_SHARE_PTR<IRedisClient> GetDriverBySuit(const std::string &strHash);
-    // virtual SQUICK_SHARE_PTR<IRedisClient> GetDriverBySuit(const int nHash);
+    virtual std::shared_ptr<IRedisClient> GetDriver(const std::string &strID);
+    virtual std::shared_ptr<IRedisClient> GetDriverBySuitRandom();
+    virtual std::shared_ptr<IRedisClient> GetDriverBySuitConsistent();
+    virtual std::shared_ptr<IRedisClient> GetDriverBySuit(const std::string &strHash);
+    // virtual std::shared_ptr<IRedisClient> GetDriverBySuit(const int nHash);
     virtual bool RemoveConnectSql(const std::string &strID);
 
   protected:
@@ -40,9 +40,9 @@ class NoSqlModule : public INoSqlModule {
 
   protected:
     INT64 mLastCheckTime;
-    IClassModule *m_pClassModule;
-    IElementModule *m_pElementModule;
-    ILogModule *m_pLogModule;
+    IClassModule *m_class_;
+    IElementModule *m_element_;
+    ILogModule *m_log_;
 
     NFConsistentHashMapEx<std::string, IRedisClient> mxNoSqlDriver;
 };

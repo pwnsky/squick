@@ -19,27 +19,27 @@
 #include <squick/core/vector4.h>
 
 typedef std::function<int(const DataList &, const DataList &)> OBJECT_ENTER_EVENT_FUNCTOR;
-typedef SQUICK_SHARE_PTR<OBJECT_ENTER_EVENT_FUNCTOR> OBJECT_ENTER_EVENT_FUNCTOR_PTR; // ObjectEnterCallBack
+typedef std::shared_ptr<OBJECT_ENTER_EVENT_FUNCTOR> OBJECT_ENTER_EVENT_FUNCTOR_PTR; // ObjectEnterCallBack
 
 typedef std::function<int(const DataList &, const DataList &)> OBJECT_LEAVE_EVENT_FUNCTOR;
-typedef SQUICK_SHARE_PTR<OBJECT_LEAVE_EVENT_FUNCTOR> OBJECT_LEAVE_EVENT_FUNCTOR_PTR; // ObjectLeaveCallBack
+typedef std::shared_ptr<OBJECT_LEAVE_EVENT_FUNCTOR> OBJECT_LEAVE_EVENT_FUNCTOR_PTR; // ObjectLeaveCallBack
 
 typedef std::function<int(const DataList &, const Guid &)> PROPERTY_ENTER_EVENT_FUNCTOR;
-typedef SQUICK_SHARE_PTR<PROPERTY_ENTER_EVENT_FUNCTOR> PROPERTY_ENTER_EVENT_FUNCTOR_PTR; // AddPropertyEnterCallBack
+typedef std::shared_ptr<PROPERTY_ENTER_EVENT_FUNCTOR> PROPERTY_ENTER_EVENT_FUNCTOR_PTR; // AddPropertyEnterCallBack
 
 typedef std::function<int(const DataList &, const Guid &)> RECORD_ENTER_EVENT_FUNCTOR;
-typedef SQUICK_SHARE_PTR<RECORD_ENTER_EVENT_FUNCTOR> RECORD_ENTER_EVENT_FUNCTOR_PTR; // AddRecordEnterCallBack
+typedef std::shared_ptr<RECORD_ENTER_EVENT_FUNCTOR> RECORD_ENTER_EVENT_FUNCTOR_PTR; // AddRecordEnterCallBack
 
 typedef std::function<int(const Guid &, const std::string &, const SquickData &, const SquickData &, const DataList &, const INT64 reason)>
     PROPERTY_SINGLE_EVENT_FUNCTOR;
-typedef SQUICK_SHARE_PTR<PROPERTY_SINGLE_EVENT_FUNCTOR> PROPERTY_SINGLE_EVENT_FUNCTOR_PTR; // AddPropertyEventCallBack
+typedef std::shared_ptr<PROPERTY_SINGLE_EVENT_FUNCTOR> PROPERTY_SINGLE_EVENT_FUNCTOR_PTR; // AddPropertyEventCallBack
 
 typedef std::function<int(const Guid &, const std::string &, const RECORD_EVENT_DATA &, const SquickData &, const SquickData &, const DataList &)>
     RECORD_SINGLE_EVENT_FUNCTOR;
-typedef SQUICK_SHARE_PTR<RECORD_SINGLE_EVENT_FUNCTOR> RECORD_SINGLE_EVENT_FUNCTOR_PTR; // AddRecordEventCallBack
+typedef std::shared_ptr<RECORD_SINGLE_EVENT_FUNCTOR> RECORD_SINGLE_EVENT_FUNCTOR_PTR; // AddRecordEventCallBack
 
 typedef std::function<int(const Guid &, const int, const int, const int, const DataList &)> SCENE_EVENT_FUNCTOR;
-typedef SQUICK_SHARE_PTR<SCENE_EVENT_FUNCTOR> SCENE_EVENT_FUNCTOR_PTR;
+typedef std::shared_ptr<SCENE_EVENT_FUNCTOR> SCENE_EVENT_FUNCTOR_PTR;
 
 class SceneInfo;
 class SceneGroupInfo;
@@ -53,7 +53,7 @@ class ISceneModule : public IModule, public MapEx<int, SceneInfo> {
     bool AddGroupPropertyCallBack(const std::string &propertyName, BaseType *pBase,
                                   int (BaseType::*handler)(const Guid &, const std::string &, const SquickData &, const SquickData &)) {
         PROPERTY_EVENT_FUNCTOR functor = std::bind(handler, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        PROPERTY_EVENT_FUNCTOR_PTR functorPtr(SQUICK_NEW PROPERTY_EVENT_FUNCTOR(functor));
+        PROPERTY_EVENT_FUNCTOR_PTR functorPtr(new PROPERTY_EVENT_FUNCTOR(functor));
         return AddGroupPropertyCallBack(propertyName, functorPtr);
     }
 
@@ -61,14 +61,14 @@ class ISceneModule : public IModule, public MapEx<int, SceneInfo> {
     bool AddGroupRecordCallBack(const std::string &recordName, BaseType *pBase,
                                 int (BaseType::*handler)(const Guid &, const RECORD_EVENT_DATA &, const SquickData &, const SquickData &)) {
         RECORD_EVENT_FUNCTOR functor = std::bind(handler, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        RECORD_EVENT_FUNCTOR_PTR functorPtr(SQUICK_NEW RECORD_EVENT_FUNCTOR(functor));
+        RECORD_EVENT_FUNCTOR_PTR functorPtr(new RECORD_EVENT_FUNCTOR(functor));
         return AddGroupRecordCallBack(recordName, functorPtr);
     }
 
     template <typename BaseType>
     bool AddGroupPropertyCommCallBack(BaseType *pBase, int (BaseType::*handler)(const Guid &, const std::string &, const SquickData &, const SquickData &)) {
         PROPERTY_EVENT_FUNCTOR functor = std::bind(handler, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        PROPERTY_EVENT_FUNCTOR_PTR functorPtr(SQUICK_NEW PROPERTY_EVENT_FUNCTOR(functor));
+        PROPERTY_EVENT_FUNCTOR_PTR functorPtr(new PROPERTY_EVENT_FUNCTOR(functor));
         return AddGroupPropertyCommCallBack(functorPtr);
     }
 
@@ -76,7 +76,7 @@ class ISceneModule : public IModule, public MapEx<int, SceneInfo> {
     bool AddGroupRecordCommCallBack(BaseType *pBase,
                                     int (BaseType::*handler)(const Guid &, const RECORD_EVENT_DATA &, const SquickData &, const SquickData &)) {
         RECORD_EVENT_FUNCTOR functor = std::bind(handler, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        RECORD_EVENT_FUNCTOR_PTR functorPtr(SQUICK_NEW RECORD_EVENT_FUNCTOR(functor));
+        RECORD_EVENT_FUNCTOR_PTR functorPtr(new RECORD_EVENT_FUNCTOR(functor));
         return AddGroupRecordCommCallBack(functorPtr);
     }
 
@@ -238,9 +238,9 @@ class ISceneModule : public IModule, public MapEx<int, SceneInfo> {
     virtual const Vector2 &GetPropertyVector2(const int scene, const int group, const std::string &propertyName) = 0;
     virtual const Vector3 &GetPropertyVector3(const int scene, const int group, const std::string &propertyName) = 0;
 
-    virtual SQUICK_SHARE_PTR<IPropertyManager> FindPropertyManager(const int scene, const int group) = 0;
-    virtual SQUICK_SHARE_PTR<IRecordManager> FindRecordManager(const int scene, const int group) = 0;
-    virtual SQUICK_SHARE_PTR<IRecord> FindRecord(const int scene, const int group, const std::string &recordName) = 0;
+    virtual std::shared_ptr<IPropertyManager> FindPropertyManager(const int scene, const int group) = 0;
+    virtual std::shared_ptr<IRecordManager> FindRecordManager(const int scene, const int group) = 0;
+    virtual std::shared_ptr<IRecord> FindRecord(const int scene, const int group, const std::string &recordName) = 0;
     virtual bool ClearRecord(const int scene, const int group, const std::string &recordName) = 0;
 
     virtual bool SetRecordInt(const int scene, const int group, const std::string &recordName, const int row, const int col, const INT64 nValue) = 0;

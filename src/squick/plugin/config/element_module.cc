@@ -13,16 +13,16 @@ ElementModule::ElementModule(ElementModule *p) {
 
 ElementModule::ElementModule(IPluginManager *p) {
     originalElementModule = this;
-    pPluginManager = p;
+    pm_ = p;
     mbLoaded = false;
 
     if (!this->mbBackup) {
-        for (int i = 0; i < pPluginManager->GetAppCPUCount(); ++i) {
+        for (int i = 0; i < pm_->GetAppCPUCount(); ++i) {
             ThreadElementModule threadElement;
             threadElement.used = false;
             threadElement.elementModule = new ElementModule(this);
             threadElement.elementModule->mbBackup = true;
-            threadElement.elementModule->pPluginManager = pPluginManager;
+            threadElement.elementModule->pm_ = pm_;
 
             mThreadElements.push_back(threadElement);
         }
@@ -40,13 +40,13 @@ ElementModule::~ElementModule() {
 }
 
 bool ElementModule::Awake() {
-    m_pClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
 
     if (this->mbBackup) {
         for (int i = 0; i < originalElementModule->mThreadElements.size(); ++i) {
             if (originalElementModule->mThreadElements[i].elementModule == this) {
-                m_pClassModule = m_pClassModule->GetThreadClassModule(i);
+                m_class_ = m_class_->GetThreadClassModule(i);
                 break;
             }
         }
@@ -109,17 +109,17 @@ bool ElementModule::Load() {
         return false;
     }
 
-    SQUICK_SHARE_PTR<IClass> pLogicClass = m_pClassModule->First();
+    std::shared_ptr<IClass> pLogicClass = m_class_->First();
     while (pLogicClass) {
         const std::string &strInstancePath = pLogicClass->GetInstancePath();
         if (strInstancePath.empty()) {
-            pLogicClass = m_pClassModule->Next();
+            pLogicClass = m_class_->Next();
             continue;
         }
         //////////////////////////////////////////////////////////////////////////
-        std::string strFile = pPluginManager->GetConfigPath() + "/" + strInstancePath;
+        std::string strFile = pm_->GetConfigPath() + "/" + strInstancePath;
         std::string content;
-        pPluginManager->GetFileContent(strFile, content);
+        pm_->GetFileContent(strFile, content);
 #ifdef DEBUG
         std::cout << "Loading config file: " << strFile << std::endl;
 #endif
@@ -153,7 +153,7 @@ bool ElementModule::Load() {
         }
 
         mbLoaded = true;
-        pLogicClass = m_pClassModule->Next();
+        pLogicClass = m_class_->Next();
     }
 
     for (int i = 0; i < mThreadElements.size(); ++i) {
@@ -163,11 +163,11 @@ bool ElementModule::Load() {
 }
 
 bool ElementModule::CheckRef() {
-    SQUICK_SHARE_PTR<IClass> pLogicClass = m_pClassModule->First();
+    std::shared_ptr<IClass> pLogicClass = m_class_->First();
     while (pLogicClass) {
-        SQUICK_SHARE_PTR<IPropertyManager> pClassPropertyManager = pLogicClass->GetPropertyManager();
+        std::shared_ptr<IPropertyManager> pClassPropertyManager = pLogicClass->GetPropertyManager();
         if (pClassPropertyManager) {
-            SQUICK_SHARE_PTR<IProperty> pProperty = pClassPropertyManager->First();
+            std::shared_ptr<IProperty> pProperty = pClassPropertyManager->First();
             while (pProperty) {
                 // if one property is ref,check every config
                 if (pProperty->GetRef()) {
@@ -178,9 +178,9 @@ bool ElementModule::CheckRef() {
                         const std::string &strRefValue = this->GetPropertyString(strId, pProperty->GetKey());
                         if (!strRefValue.empty() && !this->GetElement(strRefValue)) {
                             std::string msg = "check ref failed id:" + strRefValue + ", in " + pLogicClass->GetClassName() + "=>" + strId;
-                            NFASSERT(nRet, msg.c_str(), __FILE__, __FUNCTION__);
+                            SQUICK_ASSERT(nRet, msg.c_str(), __FILE__, __FUNCTION__);
 
-                            m_pLogModule->LogError(msg, __FUNCTION__, __LINE__);
+                            m_log_->LogError(msg, __FUNCTION__, __LINE__);
                             exit(0);
                         }
                     }
@@ -189,42 +189,42 @@ bool ElementModule::CheckRef() {
             }
         }
         //////////////////////////////////////////////////////////////////////////
-        pLogicClass = m_pClassModule->Next();
+        pLogicClass = m_class_->Next();
     }
 
     return false;
 }
 
 // 加载属性
-bool ElementModule::Load(rapidxml::xml_node<> *attrNode, SQUICK_SHARE_PTR<IClass> pLogicClass) {
+bool ElementModule::Load(rapidxml::xml_node<> *attrNode, std::shared_ptr<IClass> pLogicClass) {
     // attrNode is the node of a object
     std::string configID = attrNode->first_attribute("Id")->value();
     if (configID.empty()) {
-        NFASSERT(0, configID, __FILE__, __FUNCTION__);
+        SQUICK_ASSERT(0, configID, __FILE__, __FUNCTION__);
         return false;
     }
 
     if (ExistElement(configID)) {
-        NFASSERT(0, configID, __FILE__, __FUNCTION__);
+        SQUICK_ASSERT(0, configID, __FILE__, __FUNCTION__);
         return false;
     }
 
-    SQUICK_SHARE_PTR<ElementConfigInfo> pElementInfo(SQUICK_NEW ElementConfigInfo());
+    std::shared_ptr<ElementConfigInfo> pElementInfo(new ElementConfigInfo());
     AddElement(configID, pElementInfo);
 
     // can find all configid by class name
     pLogicClass->AddId(configID);
 
     // ElementConfigInfo* pElementInfo = CreateElement( configID, pElementInfo );
-    SQUICK_SHARE_PTR<IPropertyManager> pElementPropertyManager = pElementInfo->GetPropertyManager();
-    SQUICK_SHARE_PTR<IRecordManager> pElementRecordManager = pElementInfo->GetRecordManager();
+    std::shared_ptr<IPropertyManager> pElementPropertyManager = pElementInfo->GetPropertyManager();
+    std::shared_ptr<IRecordManager> pElementRecordManager = pElementInfo->GetRecordManager();
 
     // 1.add property
     // 2.set the default value  of them
-    SQUICK_SHARE_PTR<IPropertyManager> pClassPropertyManager = pLogicClass->GetPropertyManager();
-    SQUICK_SHARE_PTR<IRecordManager> pClassRecordManager = pLogicClass->GetRecordManager();
+    std::shared_ptr<IPropertyManager> pClassPropertyManager = pLogicClass->GetPropertyManager();
+    std::shared_ptr<IRecordManager> pClassRecordManager = pLogicClass->GetRecordManager();
     if (pClassPropertyManager && pClassRecordManager) {
-        SQUICK_SHARE_PTR<IProperty> pProperty = pClassPropertyManager->First();
+        std::shared_ptr<IProperty> pProperty = pClassPropertyManager->First();
         while (pProperty) {
 
             pElementPropertyManager->AddProperty(Guid(), pProperty);
@@ -232,9 +232,9 @@ bool ElementModule::Load(rapidxml::xml_node<> *attrNode, SQUICK_SHARE_PTR<IClass
             pProperty = pClassPropertyManager->Next();
         }
 
-        SQUICK_SHARE_PTR<IRecord> pRecord = pClassRecordManager->First();
+        std::shared_ptr<IRecord> pRecord = pClassRecordManager->First();
         while (pRecord) {
-            SQUICK_SHARE_PTR<IRecord> xRecord =
+            std::shared_ptr<IRecord> xRecord =
                 pElementRecordManager->AddRecord(Guid(), pRecord->GetName(), pRecord->GetStartData(), pRecord->GetTag(), pRecord->GetRows());
 
             xRecord->SetPublic(pRecord->GetPublic());
@@ -257,7 +257,7 @@ bool ElementModule::Load(rapidxml::xml_node<> *attrNode, SQUICK_SHARE_PTR<IClass
         const char *pstrConfigValue = pAttribute->value();
         // printf( "%s : %s\n", pstrConfigName, pstrConfigValue );
 
-        SQUICK_SHARE_PTR<IProperty> temProperty = pElementPropertyManager->GetElement(pstrConfigName);
+        std::shared_ptr<IProperty> temProperty = pElementPropertyManager->GetElement(pstrConfigName);
         if (!temProperty) {
             continue;
         }
@@ -267,13 +267,13 @@ bool ElementModule::Load(rapidxml::xml_node<> *attrNode, SQUICK_SHARE_PTR<IClass
         switch (eType) {
         case TDATA_INT: {
             if (!LegalNumber(pstrConfigValue)) {
-                NFASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
+                SQUICK_ASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
             }
             var.SetInt(lexical_cast<INT64>(pstrConfigValue));
         } break;
         case TDATA_FLOAT: {
             if (strlen(pstrConfigValue) <= 0 || !LegalFloat(pstrConfigValue)) {
-                NFASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
+                SQUICK_ASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
             }
             var.SetFloat((double)atof(pstrConfigValue));
         } break;
@@ -282,33 +282,33 @@ bool ElementModule::Load(rapidxml::xml_node<> *attrNode, SQUICK_SHARE_PTR<IClass
         } break;
         case TDATA_OBJECT: {
             if (strlen(pstrConfigValue) <= 0) {
-                NFASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
+                SQUICK_ASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
             }
             var.SetObject(Guid());
         } break;
         case TDATA_VECTOR2: {
             if (strlen(pstrConfigValue) <= 0) {
-                NFASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
+                SQUICK_ASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
             }
 
             Vector2 tmp;
             if (!tmp.FromString(pstrConfigValue)) {
-                NFASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
+                SQUICK_ASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
             }
             var.SetVector2(tmp);
         } break;
         case TDATA_VECTOR3: {
             if (strlen(pstrConfigValue) <= 0) {
-                NFASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
+                SQUICK_ASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
             }
             Vector3 tmp;
             if (!tmp.FromString(pstrConfigValue)) {
-                NFASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
+                SQUICK_ASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
             }
             var.SetVector3(tmp);
         } break;
         default:
-            NFASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
+            SQUICK_ASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);
             break;
         }
 
@@ -333,7 +333,7 @@ bool ElementModule::Load(rapidxml::xml_node<> *attrNode, SQUICK_SHARE_PTR<IClass
 bool ElementModule::Save() { return true; }
 
 INT64 ElementModule::GetPropertyInt(const std::string &configName, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IProperty> pProperty = GetProperty(configName, propertyName);
+    std::shared_ptr<IProperty> pProperty = GetProperty(configName, propertyName);
     if (pProperty) {
         return pProperty->GetInt();
     }
@@ -342,7 +342,7 @@ INT64 ElementModule::GetPropertyInt(const std::string &configName, const std::st
 }
 
 int ElementModule::GetPropertyInt32(const std::string &configName, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IProperty> pProperty = GetProperty(configName, propertyName);
+    std::shared_ptr<IProperty> pProperty = GetProperty(configName, propertyName);
     if (pProperty) {
         return pProperty->GetInt32();
     }
@@ -351,7 +351,7 @@ int ElementModule::GetPropertyInt32(const std::string &configName, const std::st
 }
 
 double ElementModule::GetPropertyFloat(const std::string &configName, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IProperty> pProperty = GetProperty(configName, propertyName);
+    std::shared_ptr<IProperty> pProperty = GetProperty(configName, propertyName);
     if (pProperty) {
         return pProperty->GetFloat();
     }
@@ -360,7 +360,7 @@ double ElementModule::GetPropertyFloat(const std::string &configName, const std:
 }
 
 const std::string &ElementModule::GetPropertyString(const std::string &configName, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IProperty> pProperty = GetProperty(configName, propertyName);
+    std::shared_ptr<IProperty> pProperty = GetProperty(configName, propertyName);
     if (pProperty) {
         return pProperty->GetString();
     }
@@ -369,7 +369,7 @@ const std::string &ElementModule::GetPropertyString(const std::string &configNam
 }
 
 const Vector2 ElementModule::GetPropertyVector2(const std::string &configName, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IProperty> pProperty = GetProperty(configName, propertyName);
+    std::shared_ptr<IProperty> pProperty = GetProperty(configName, propertyName);
     if (pProperty) {
         return pProperty->GetVector2();
     }
@@ -378,7 +378,7 @@ const Vector2 ElementModule::GetPropertyVector2(const std::string &configName, c
 }
 
 const Vector3 ElementModule::GetPropertyVector3(const std::string &configName, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IProperty> pProperty = GetProperty(configName, propertyName);
+    std::shared_ptr<IProperty> pProperty = GetProperty(configName, propertyName);
     if (pProperty) {
         return pProperty->GetVector3();
     }
@@ -389,7 +389,7 @@ const Vector3 ElementModule::GetPropertyVector3(const std::string &configName, c
 const std::vector<std::string> ElementModule::GetListByProperty(const std::string &className, const std::string &propertyName, INT64 nValue) {
     std::vector<std::string> xList;
 
-    SQUICK_SHARE_PTR<IClass> xClass = m_pClassModule->GetElement(className);
+    std::shared_ptr<IClass> xClass = m_class_->GetElement(className);
     if (nullptr != xClass) {
         const std::vector<std::string> &xElementList = xClass->GetIDList();
         for (int i = 0; i < xElementList.size(); ++i) {
@@ -407,7 +407,7 @@ const std::vector<std::string> ElementModule::GetListByProperty(const std::strin
 const std::vector<std::string> ElementModule::GetListByProperty(const std::string &className, const std::string &propertyName, const std::string &nValue) {
     std::vector<std::string> xList;
 
-    SQUICK_SHARE_PTR<IClass> xClass = m_pClassModule->GetElement(className);
+    std::shared_ptr<IClass> xClass = m_class_->GetElement(className);
     if (nullptr != xClass) {
         const std::vector<std::string> &xElementList = xClass->GetIDList();
         for (int i = 0; i < xElementList.size(); ++i) {
@@ -422,8 +422,8 @@ const std::vector<std::string> ElementModule::GetListByProperty(const std::strin
     return xList;
 }
 
-SQUICK_SHARE_PTR<IProperty> ElementModule::GetProperty(const std::string &configName, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<ElementConfigInfo> pElementInfo = GetElement(configName);
+std::shared_ptr<IProperty> ElementModule::GetProperty(const std::string &configName, const std::string &propertyName) {
+    std::shared_ptr<ElementConfigInfo> pElementInfo = GetElement(configName);
     if (pElementInfo) {
         return pElementInfo->GetPropertyManager()->GetElement(propertyName);
     }
@@ -431,8 +431,8 @@ SQUICK_SHARE_PTR<IProperty> ElementModule::GetProperty(const std::string &config
     return NULL;
 }
 
-SQUICK_SHARE_PTR<IPropertyManager> ElementModule::GetPropertyManager(const std::string &configName) {
-    SQUICK_SHARE_PTR<ElementConfigInfo> pElementInfo = GetElement(configName);
+std::shared_ptr<IPropertyManager> ElementModule::GetPropertyManager(const std::string &configName) {
+    std::shared_ptr<ElementConfigInfo> pElementInfo = GetElement(configName);
     if (pElementInfo) {
         return pElementInfo->GetPropertyManager();
     }
@@ -440,8 +440,8 @@ SQUICK_SHARE_PTR<IPropertyManager> ElementModule::GetPropertyManager(const std::
     return NULL;
 }
 
-SQUICK_SHARE_PTR<IRecordManager> ElementModule::GetRecordManager(const std::string &configName) {
-    SQUICK_SHARE_PTR<ElementConfigInfo> pElementInfo = GetElement(configName);
+std::shared_ptr<IRecordManager> ElementModule::GetRecordManager(const std::string &configName) {
+    std::shared_ptr<ElementConfigInfo> pElementInfo = GetElement(configName);
     if (pElementInfo) {
         return pElementInfo->GetRecordManager();
     }
@@ -450,12 +450,12 @@ SQUICK_SHARE_PTR<IRecordManager> ElementModule::GetRecordManager(const std::stri
 
 bool ElementModule::LoadSceneInfo(const std::string &fileName, const std::string &className) {
     std::string content;
-    pPluginManager->GetFileContent(fileName, content);
+    pm_->GetFileContent(fileName, content);
 
     rapidxml::xml_document<> xDoc;
     xDoc.parse<0>((char *)content.c_str());
 
-    SQUICK_SHARE_PTR<IClass> pLogicClass = m_pClassModule->GetElement(className.c_str());
+    std::shared_ptr<IClass> pLogicClass = m_class_->GetElement(className.c_str());
     if (pLogicClass) {
         // support for unlimited layer class inherits
         rapidxml::xml_node<> *root = xDoc.first_node();
@@ -470,7 +470,7 @@ bool ElementModule::LoadSceneInfo(const std::string &fileName, const std::string
 }
 
 bool ElementModule::ExistElement(const std::string &configName) {
-    SQUICK_SHARE_PTR<ElementConfigInfo> pElementInfo = GetElement(configName);
+    std::shared_ptr<ElementConfigInfo> pElementInfo = GetElement(configName);
     if (pElementInfo) {
         return true;
     }
@@ -479,7 +479,7 @@ bool ElementModule::ExistElement(const std::string &configName) {
 }
 
 bool ElementModule::ExistElement(const std::string &className, const std::string &configName) {
-    SQUICK_SHARE_PTR<ElementConfigInfo> pElementInfo = GetElement(configName);
+    std::shared_ptr<ElementConfigInfo> pElementInfo = GetElement(configName);
     if (!pElementInfo) {
         return false;
     }

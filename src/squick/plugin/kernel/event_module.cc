@@ -2,7 +2,7 @@
 #include "event_module.h"
 
 bool EventModule::Start() {
-    m_pKernelModule = GetPluginManager()->FindModule<IKernelModule>();
+    m_kernel_ = GetPluginManager()->FindModule<IKernelModule>();
 
     return true;
 }
@@ -81,7 +81,7 @@ bool EventModule::DoEvent(const Guid self, const int eventID, const DataList &va
 
     bool bRet = false;
 
-    if (!m_pKernelModule->ExistObject(self)) {
+    if (!m_kernel_->ExistObject(self)) {
         return bRet;
     }
 
@@ -129,7 +129,7 @@ bool EventModule::RemoveEventCallBack(const Guid self) { return mObjectEventInfo
 bool EventModule::AddEventCallBack(const int eventID, const MODULE_EVENT_FUNCTOR cb) {
     auto xEventListPtr = mModuleEventInfoMapEx.GetElement(eventID);
     if (!xEventListPtr) {
-        xEventListPtr = SQUICK_SHARE_PTR<List<MODULE_EVENT_FUNCTOR>>(SQUICK_NEW List<MODULE_EVENT_FUNCTOR>());
+        xEventListPtr = std::shared_ptr<List<MODULE_EVENT_FUNCTOR>>(new List<MODULE_EVENT_FUNCTOR>());
         mModuleEventInfoMapEx.AddElement(eventID, xEventListPtr);
     }
 
@@ -139,19 +139,19 @@ bool EventModule::AddEventCallBack(const int eventID, const MODULE_EVENT_FUNCTOR
 }
 
 bool EventModule::AddEventCallBack(const Guid self, const int eventID, const OBJECT_EVENT_FUNCTOR cb) {
-    if (!m_pKernelModule->ExistObject(self)) {
+    if (!m_kernel_->ExistObject(self)) {
         return false;
     }
 
     auto xEventMapPtr = mObjectEventInfoMapEx.GetElement(self);
     if (!xEventMapPtr) {
-        xEventMapPtr = SQUICK_SHARE_PTR<MapEx<int, List<OBJECT_EVENT_FUNCTOR>>>(SQUICK_NEW MapEx<int, List<OBJECT_EVENT_FUNCTOR>>());
+        xEventMapPtr = std::shared_ptr<MapEx<int, List<OBJECT_EVENT_FUNCTOR>>>(new MapEx<int, List<OBJECT_EVENT_FUNCTOR>>());
         mObjectEventInfoMapEx.AddElement(self, xEventMapPtr);
     }
 
     auto xEventListPtr = xEventMapPtr->GetElement(eventID);
     if (!xEventListPtr) {
-        xEventListPtr = SQUICK_SHARE_PTR<List<OBJECT_EVENT_FUNCTOR>>(SQUICK_NEW List<OBJECT_EVENT_FUNCTOR>());
+        xEventListPtr = std::shared_ptr<List<OBJECT_EVENT_FUNCTOR>>(new List<OBJECT_EVENT_FUNCTOR>());
         xEventMapPtr->AddElement(eventID, xEventListPtr);
     }
 

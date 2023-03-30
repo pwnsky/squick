@@ -4,7 +4,7 @@
 #include <squick/core/property_manager.h>
 #include <squick/core/record_manager.h>
 
-CommonRedisModule::CommonRedisModule(IPluginManager *p) { pPluginManager = p; }
+CommonRedisModule::CommonRedisModule(IPluginManager *p) { pm_ = p; }
 
 std::string CommonRedisModule::GetPropertyCacheKey(const std::string &self) { return self + "_ObjectProperty"; }
 
@@ -29,25 +29,25 @@ std::string CommonRedisModule::GetSceneCacheKey(const int &sceneID) { return lex
 std::string CommonRedisModule::GetCellCacheKey(const std::string &strCellID) { return strCellID + "_CellInfo"; }
 
 bool CommonRedisModule::AfterStart() {
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pLogicClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pNoSqlModule = pPluginManager->FindModule<INoSqlModule>();
-    m_pElementModule = pPluginManager->FindModule<IElementModule>();
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_pNoSqlModule = pm_->FindModule<INoSqlModule>();
+    m_element_ = pm_->FindModule<IElementModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
 
     return true;
 }
 
-SQUICK_SHARE_PTR<IPropertyManager> CommonRedisModule::NewPropertyManager(const std::string &className) {
-    SQUICK_SHARE_PTR<IPropertyManager> pStaticClassPropertyManager = m_pLogicClassModule->GetClassPropertyManager(className);
+std::shared_ptr<IPropertyManager> CommonRedisModule::NewPropertyManager(const std::string &className) {
+    std::shared_ptr<IPropertyManager> pStaticClassPropertyManager = m_class_->GetClassPropertyManager(className);
     if (pStaticClassPropertyManager) {
         Guid ident;
-        SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager(SQUICK_NEW PropertyManager(ident));
+        std::shared_ptr<IPropertyManager> pPropertyManager(new PropertyManager(ident));
 
-        SQUICK_SHARE_PTR<IProperty> pStaticConfigPropertyInfo = pStaticClassPropertyManager->First();
+        std::shared_ptr<IProperty> pStaticConfigPropertyInfo = pStaticClassPropertyManager->First();
         while (pStaticConfigPropertyInfo) {
             if (pStaticConfigPropertyInfo->GetSave() || pStaticConfigPropertyInfo->GetCache()) {
-                SQUICK_SHARE_PTR<IProperty> xProperty =
+                std::shared_ptr<IProperty> xProperty =
                     pPropertyManager->AddProperty(ident, pStaticConfigPropertyInfo->GetKey(), pStaticConfigPropertyInfo->GetType());
 
                 xProperty->SetPublic(pStaticConfigPropertyInfo->GetPublic());
@@ -63,19 +63,19 @@ SQUICK_SHARE_PTR<IPropertyManager> CommonRedisModule::NewPropertyManager(const s
         return pPropertyManager;
     }
 
-    return SQUICK_SHARE_PTR<IPropertyManager>(NULL);
+    return std::shared_ptr<IPropertyManager>(NULL);
 }
 
-SQUICK_SHARE_PTR<IRecordManager> CommonRedisModule::NewRecordManager(const std::string &className) {
-    SQUICK_SHARE_PTR<IRecordManager> pStaticClassRecordManager = m_pLogicClassModule->GetClassRecordManager(className);
+std::shared_ptr<IRecordManager> CommonRedisModule::NewRecordManager(const std::string &className) {
+    std::shared_ptr<IRecordManager> pStaticClassRecordManager = m_class_->GetClassRecordManager(className);
     if (pStaticClassRecordManager) {
         Guid ident;
-        SQUICK_SHARE_PTR<IRecordManager> pRecordManager(SQUICK_NEW RecordManager(ident));
+        std::shared_ptr<IRecordManager> pRecordManager(new RecordManager(ident));
 
-        SQUICK_SHARE_PTR<IRecord> pConfigRecordInfo = pStaticClassRecordManager->First();
+        std::shared_ptr<IRecord> pConfigRecordInfo = pStaticClassRecordManager->First();
         while (pConfigRecordInfo) {
             if (pConfigRecordInfo->GetSave() || pConfigRecordInfo->GetCache()) {
-                SQUICK_SHARE_PTR<IRecord> xRecord = pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(),
+                std::shared_ptr<IRecord> xRecord = pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(),
                                                                               pConfigRecordInfo->GetTag(), pConfigRecordInfo->GetRows());
 
                 xRecord->SetPublic(pConfigRecordInfo->GetPublic());
@@ -90,14 +90,14 @@ SQUICK_SHARE_PTR<IRecordManager> CommonRedisModule::NewRecordManager(const std::
         return pRecordManager;
     }
 
-    return SQUICK_SHARE_PTR<IRecordManager>(NULL);
+    return std::shared_ptr<IRecordManager>(NULL);
 }
 
-SQUICK_SHARE_PTR<IPropertyManager> CommonRedisModule::GetPropertyInfo(const std::string &self, const std::string &className,
+std::shared_ptr<IPropertyManager> CommonRedisModule::GetPropertyInfo(const std::string &self, const std::string &className,
                                                                       std::vector<std::string> &vKeyCacheList, std::vector<std::string> &vValueCacheList,
-                                                                      const bool cache, const bool save, SQUICK_SHARE_PTR<IPropertyManager> propertyManager) {
+                                                                      const bool cache, const bool save, std::shared_ptr<IPropertyManager> propertyManager) {
     // TODO optimize
-    SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager = propertyManager;
+    std::shared_ptr<IPropertyManager> pPropertyManager = propertyManager;
     if (pPropertyManager == nullptr) {
         pPropertyManager = NewPropertyManager(className);
         if (!pPropertyManager) {
@@ -105,14 +105,14 @@ SQUICK_SHARE_PTR<IPropertyManager> CommonRedisModule::GetPropertyInfo(const std:
         }
     }
 
-    SQUICK_SHARE_PTR<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
     if (!pDriver) {
         return nullptr;
     }
 
     // TODO
     // just run this function one time
-    SQUICK_SHARE_PTR<IProperty> xProperty = pPropertyManager->First();
+    std::shared_ptr<IProperty> xProperty = pPropertyManager->First();
     while (xProperty) {
         if ((cache && xProperty->GetCache()) || (save && xProperty->GetSave())) {
             vKeyCacheList.push_back(xProperty->GetKey());
@@ -136,10 +136,10 @@ SQUICK_SHARE_PTR<IPropertyManager> CommonRedisModule::GetPropertyInfo(const std:
     return nullptr;
 }
 
-SQUICK_SHARE_PTR<IRecordManager> CommonRedisModule::GetRecordInfo(const std::string &self, const std::string &className,
+std::shared_ptr<IRecordManager> CommonRedisModule::GetRecordInfo(const std::string &self, const std::string &className,
                                                                   std::vector<std::string> &vKeyCacheList, std::vector<std::string> &vValueCacheList,
-                                                                  const bool cache, const bool save, SQUICK_SHARE_PTR<IRecordManager> recordManager) {
-    SQUICK_SHARE_PTR<IRecordManager> pRecordManager = recordManager;
+                                                                  const bool cache, const bool save, std::shared_ptr<IRecordManager> recordManager) {
+    std::shared_ptr<IRecordManager> pRecordManager = recordManager;
     if (pRecordManager == nullptr) {
         pRecordManager = NewRecordManager(className);
         if (!pRecordManager) {
@@ -147,14 +147,14 @@ SQUICK_SHARE_PTR<IRecordManager> CommonRedisModule::GetRecordInfo(const std::str
         }
     }
 
-    SQUICK_SHARE_PTR<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
     if (!pDriver) {
         return nullptr;
     }
 
     // TODO
     // just run this function one time
-    SQUICK_SHARE_PTR<IRecord> xRecord = pRecordManager->First();
+    std::shared_ptr<IRecord> xRecord = pRecordManager->First();
     while (xRecord) {
         if ((cache && xRecord->GetCache()) || (save && xRecord->GetSave())) {
             vKeyCacheList.push_back(xRecord->GetName());
@@ -177,16 +177,16 @@ SQUICK_SHARE_PTR<IRecordManager> CommonRedisModule::GetRecordInfo(const std::str
     return nullptr;
 }
 
-SQUICK_SHARE_PTR<IPropertyManager> CommonRedisModule::GetPropertyInfo(const std::string &self, const std::string &className, const bool cache, const bool save,
-                                                                      SQUICK_SHARE_PTR<IPropertyManager> propertyManager) {
+std::shared_ptr<IPropertyManager> CommonRedisModule::GetPropertyInfo(const std::string &self, const std::string &className, const bool cache, const bool save,
+                                                                      std::shared_ptr<IPropertyManager> propertyManager) {
     std::vector<std::string> vKeyCacheList;
     std::vector<std::string> vValueCacheList;
 
     return GetPropertyInfo(self, className, vKeyCacheList, vValueCacheList, cache, save, propertyManager);
 }
 
-SQUICK_SHARE_PTR<IRecordManager> CommonRedisModule::GetRecordInfo(const std::string &self, const std::string &className, const bool cache, const bool save,
-                                                                  SQUICK_SHARE_PTR<IRecordManager> recordManager) {
+std::shared_ptr<IRecordManager> CommonRedisModule::GetRecordInfo(const std::string &self, const std::string &className, const bool cache, const bool save,
+                                                                  std::shared_ptr<IRecordManager> recordManager) {
     std::vector<std::string> vKeyCacheList;
     std::vector<std::string> vValueCacheList;
 
@@ -199,7 +199,7 @@ bool CommonRedisModule::GetRecordInfo(const std::string &self, const std::string
 
     std::vector<std::string> vKeyCacheList;
     std::vector<std::string> vValueCacheList;
-    SQUICK_SHARE_PTR<IRecordManager> xRecordManager = GetRecordInfo(self, className, vKeyCacheList, vValueCacheList, cache, save);
+    std::shared_ptr<IRecordManager> xRecordManager = GetRecordInfo(self, className, vKeyCacheList, vValueCacheList, cache, save);
     if (xRecordManager && vKeyCacheList.size() == vValueCacheList.size()) {
         if (ConvertRecordManagerToPB(xRecordManager, pRecordDataList, cache, save)) {
             return true;
@@ -209,13 +209,13 @@ bool CommonRedisModule::GetRecordInfo(const std::string &self, const std::string
     return false;
 }
 
-bool CommonRedisModule::SavePropertyInfo(const std::string &self, SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager, const bool cache, const bool save,
+bool CommonRedisModule::SavePropertyInfo(const std::string &self, std::shared_ptr<IPropertyManager> pPropertyManager, const bool cache, const bool save,
                                          const int nExpireSecond) {
     if (!pPropertyManager) {
         return false;
     }
 
-    SQUICK_SHARE_PTR<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
     if (!pDriver) {
         return false;
     }
@@ -243,7 +243,7 @@ bool CommonRedisModule::SavePropertyInfo(const std::string &self, SQUICK_SHARE_P
     return true;
 }
 
-bool CommonRedisModule::SaveRecordInfo(const std::string &self, SQUICK_SHARE_PTR<IRecordManager> pRecordManager, const bool cache, const bool save,
+bool CommonRedisModule::SaveRecordInfo(const std::string &self, std::shared_ptr<IRecordManager> pRecordManager, const bool cache, const bool save,
                                        const int nExpireSecond) {
     if (!pRecordManager) {
         return false;
@@ -258,7 +258,7 @@ bool CommonRedisModule::SaveRecordInfo(const std::string &self, SQUICK_SHARE_PTR
 }
 
 bool CommonRedisModule::SaveRecordInfo(const std::string &self, const SquickStruct::ObjectRecordList &xRecordData, const int nExpireSecond) {
-    SQUICK_SHARE_PTR<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
     if (!pDriver) {
         return false;
     }
@@ -295,7 +295,7 @@ bool CommonRedisModule::SaveRecordInfo(const std::string &self, const SquickStru
 }
 
 bool CommonRedisModule::GetPropertyList(const std::string &self, const std::vector<std::string> &fields, std::vector<std::string> &values) {
-    SQUICK_SHARE_PTR<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
     if (!pDriver) {
         return false;
     }
@@ -309,7 +309,7 @@ bool CommonRedisModule::GetPropertyList(const std::string &self, const std::vect
 }
 
 INT64 CommonRedisModule::GetPropertyInt(const std::string &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
     if (!pDriver) {
         return 0;
     }
@@ -324,7 +324,7 @@ INT64 CommonRedisModule::GetPropertyInt(const std::string &self, const std::stri
 }
 
 int CommonRedisModule::GetPropertyInt32(const std::string &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
     if (!pDriver) {
         return 0;
     }
@@ -339,7 +339,7 @@ int CommonRedisModule::GetPropertyInt32(const std::string &self, const std::stri
 }
 
 double CommonRedisModule::GetPropertyFloat(const std::string &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
     if (!pDriver) {
         return 0;
     }
@@ -354,7 +354,7 @@ double CommonRedisModule::GetPropertyFloat(const std::string &self, const std::s
 }
 
 std::string CommonRedisModule::GetPropertyString(const std::string &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
     if (!pDriver) {
         return "";
     }
@@ -369,7 +369,7 @@ std::string CommonRedisModule::GetPropertyString(const std::string &self, const 
 }
 
 Guid CommonRedisModule::GetPropertyObject(const std::string &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
     if (!pDriver) {
         return Guid();
     }
@@ -385,7 +385,7 @@ Guid CommonRedisModule::GetPropertyObject(const std::string &self, const std::st
 }
 
 Vector2 CommonRedisModule::GetPropertyVector2(const std::string &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
     if (!pDriver) {
         return Vector2();
     }
@@ -402,7 +402,7 @@ Vector2 CommonRedisModule::GetPropertyVector2(const std::string &self, const std
 }
 
 Vector3 CommonRedisModule::GetPropertyVector3(const std::string &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
     if (!pDriver) {
         return Vector3();
     }
@@ -419,7 +419,7 @@ Vector3 CommonRedisModule::GetPropertyVector3(const std::string &self, const std
 }
 
 bool CommonRedisModule::ConvertVectorToPropertyManager(std::vector<std::string> &vKeyList, std::vector<std::string> &vValueList,
-                                                       SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager, const bool cache, const bool save) {
+                                                       std::shared_ptr<IPropertyManager> pPropertyManager, const bool cache, const bool save) {
     if (vKeyList.size() == vValueList.size()) {
         for (int i = 0; i < vKeyList.size(); ++i) {
             const std::string &strKey = vKeyList[i];
@@ -430,7 +430,7 @@ bool CommonRedisModule::ConvertVectorToPropertyManager(std::vector<std::string> 
 
             // std::cout << strKey << ":" << strValue << std::endl;
 
-            SQUICK_SHARE_PTR<IProperty> pProperty = pPropertyManager->GetElement(strKey);
+            std::shared_ptr<IProperty> pProperty = pPropertyManager->GetElement(strKey);
             if ((cache && pProperty->GetCache()) || (save && pProperty->GetSave())) {
                 if (!pProperty->FromString(value)) {
                     // TODO
@@ -444,7 +444,7 @@ bool CommonRedisModule::ConvertVectorToPropertyManager(std::vector<std::string> 
 }
 
 bool CommonRedisModule::ConvertVectorToRecordManager(std::vector<std::string> &vKeyList, std::vector<std::string> &vValueList,
-                                                     SQUICK_SHARE_PTR<IRecordManager> pRecordManager, const bool cache, const bool save) {
+                                                     std::shared_ptr<IRecordManager> pRecordManager, const bool cache, const bool save) {
     if (vKeyList.size() == vValueList.size()) {
         for (int i = 0; i < vKeyList.size(); ++i) {
             const std::string &strKey = vKeyList[i];
@@ -453,7 +453,7 @@ bool CommonRedisModule::ConvertVectorToRecordManager(std::vector<std::string> &v
                 continue;
             }
 
-            SQUICK_SHARE_PTR<IRecord> pRecord = pRecordManager->GetElement(strKey);
+            std::shared_ptr<IRecord> pRecord = pRecordManager->GetElement(strKey);
             if ((cache && pRecord->GetCache()) || (save && pRecord->GetSave())) {
                 SquickStruct::ObjectRecordBase xRecordData;
                 if (xRecordData.ParseFromString(value)) {
@@ -469,9 +469,9 @@ bool CommonRedisModule::ConvertVectorToRecordManager(std::vector<std::string> &v
     return true;
 }
 
-bool CommonRedisModule::ConvertPropertyManagerToVector(SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager, std::vector<std::string> &vKeyList,
+bool CommonRedisModule::ConvertPropertyManagerToVector(std::shared_ptr<IPropertyManager> pPropertyManager, std::vector<std::string> &vKeyList,
                                                        std::vector<std::string> &vValueList, const bool cache, const bool save) {
-    for (SQUICK_SHARE_PTR<IProperty> pProperty = pPropertyManager->First(); pProperty != NULL; pProperty = pPropertyManager->Next()) {
+    for (std::shared_ptr<IProperty> pProperty = pPropertyManager->First(); pProperty != NULL; pProperty = pPropertyManager->Next()) {
         // const int type = pProperty->GetType();
         if ((cache && pProperty->GetCache()) || (save && pProperty->GetSave())) {
             const std::string &propertyName = pProperty->GetKey();
@@ -487,9 +487,9 @@ bool CommonRedisModule::ConvertPropertyManagerToVector(SQUICK_SHARE_PTR<IPropert
     return true;
 }
 
-bool CommonRedisModule::ConvertRecordManagerToVector(SQUICK_SHARE_PTR<IRecordManager> pRecordManager, std::vector<std::string> &vKeyList,
+bool CommonRedisModule::ConvertRecordManagerToVector(std::shared_ptr<IRecordManager> pRecordManager, std::vector<std::string> &vKeyList,
                                                      std::vector<std::string> &vValueList, const bool cache, const bool save) {
-    for (SQUICK_SHARE_PTR<IRecord> pRecord = pRecordManager->First(); pRecord != NULL; pRecord = pRecordManager->Next()) {
+    for (std::shared_ptr<IRecord> pRecord = pRecordManager->First(); pRecord != NULL; pRecord = pRecordManager->Next()) {
         if ((cache && pRecord->GetCache()) || (save && pRecord->GetSave())) {
             SquickStruct::ObjectRecordBase xRecordData;
 
@@ -509,22 +509,22 @@ bool CommonRedisModule::ConvertRecordManagerToVector(SQUICK_SHARE_PTR<IRecordMan
     return true;
 }
 
-// bool CommonRedisModule::ConvertRecordToPB(const SQUICK_SHARE_PTR<IRecord> pRecord, SquickStruct::ObjectRecordBase * pRecordData)
+// bool CommonRedisModule::ConvertRecordToPB(const std::shared_ptr<IRecord> pRecord, SquickStruct::ObjectRecordBase * pRecordData)
 
-// bool CommonRedisModule::ConvertPBToRecord(const SquickStruct::ObjectRecordBase& pRecordData, SQUICK_SHARE_PTR<IRecord> pRecord)
+// bool CommonRedisModule::ConvertPBToRecord(const SquickStruct::ObjectRecordBase& pRecordData, std::shared_ptr<IRecord> pRecord)
 
-// bool CommonRedisModule::ConvertRecordManagerToPB(const SQUICK_SHARE_PTR<IRecordManager> pRecordManager, SquickStruct::ObjectRecordList * pRecordDataList,
+// bool CommonRedisModule::ConvertRecordManagerToPB(const std::shared_ptr<IRecordManager> pRecordManager, SquickStruct::ObjectRecordList * pRecordDataList,
 // const bool cache, const bool save)
 
-// bool CommonRedisModule::ConvertPBToRecordManager(const SquickStruct::ObjectRecordList & pRecordData, SQUICK_SHARE_PTR<IRecordManager> pRecord)
+// bool CommonRedisModule::ConvertPBToRecordManager(const SquickStruct::ObjectRecordList & pRecordData, std::shared_ptr<IRecordManager> pRecord)
 
-// bool CommonRedisModule::ConvertPropertyManagerToPB(const SQUICK_SHARE_PTR<IPropertyManager> pProps, SquickStruct::ObjectPropertyList * pPropertyData, const
+// bool CommonRedisModule::ConvertPropertyManagerToPB(const std::shared_ptr<IPropertyManager> pProps, SquickStruct::ObjectPropertyList * pPropertyData, const
 // bool cache, const bool save)
 
-// bool CommonRedisModule::ConvertPBToPropertyManager(const SquickStruct::ObjectPropertyList& pPropertyData, SQUICK_SHARE_PTR<IPropertyManager> pProps)
+// bool CommonRedisModule::ConvertPBToPropertyManager(const SquickStruct::ObjectPropertyList& pPropertyData, std::shared_ptr<IPropertyManager> pProps)
 
 bool CommonRedisModule::SavePropertyInfo(const std::string &self, const std::string &propertyName, const std::string &propertyValue) {
-    SQUICK_SHARE_PTR<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
     if (!pDriver) {
         return false;
     }
@@ -549,7 +549,7 @@ bool CommonRedisModule::SavePropertyInfo(const std::string &self, const std::str
 }
 
 bool CommonRedisModule::GetPropertyList(const std::string &self, std::vector<std::pair<std::string, std::string>> &values) {
-    SQUICK_SHARE_PTR<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
+    std::shared_ptr<IRedisClient> pDriver = m_pNoSqlModule->GetDriverBySuit(self);
     if (!pDriver) {
         return false;
     }

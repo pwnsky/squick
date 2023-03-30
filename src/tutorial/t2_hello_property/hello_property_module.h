@@ -7,8 +7,8 @@ class IHelloProperty : public IModule {};
 class HelloProperty : public IHelloProperty {
   public:
     HelloProperty(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
+        is_update_ = true;
+        pm_ = p;
     }
 
     virtual bool Start();

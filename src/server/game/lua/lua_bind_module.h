@@ -17,8 +17,8 @@ class ILuaBindModule : public IModule {};
 class LuaBindModule : public ILuaBindModule {
   public:
     LuaBindModule(IPluginManager *p) {
-        pPluginManager = p;
-        m_bIsUpdate = true;
+        pm_ = p;
+        is_update_ = true;
     }
 
     virtual bool Start();
@@ -28,15 +28,15 @@ class LuaBindModule : public ILuaBindModule {
     virtual bool Update();
 
   protected:
-    bool OnGetServerList(SQUICK_SHARE_PTR<HttpRequest> req);
+    bool OnGetServerList(std::shared_ptr<HttpRequest> req);
     bool Bind();
 
-    void SendToPlayer(string &player_guid_str, uint16_t msgID, std::string &data);
-    void Test(const uint16_t msgID, string &msg, int a);
+    void SendToPlayer(string &player_guid_str, uint16_t msg_id, std::string &data);
+    void Test(const uint16_t msg_id, string &msg, int a);
 
   private:
-    ILuaScriptModule *m_pLuaScriptModule;
-    player::IPlayerManagerModule *m_pPlayerManagerModule;
+    ILuaScriptModule *m_lua_script_;
+    player::IPlayerManagerModule *m_player_manager_;
     IGameServerNet_ServerModule *m_pGameServerNet_ServerModule;
 };
 

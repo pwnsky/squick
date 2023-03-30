@@ -4,7 +4,7 @@
 //////////////////////////////////////////////////////////////////////////
 class DBNet_ServerPlugin : public IPlugin {
   public:
-    DBNet_ServerPlugin(IPluginManager *p) { pPluginManager = p; }
+    DBNet_ServerPlugin(IPluginManager *p) { pm_ = p; }
     virtual const int GetPluginVersion();
 
     virtual const std::string GetPluginName();

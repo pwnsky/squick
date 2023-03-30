@@ -15,7 +15,7 @@ class IHelloWorld6 : public IModule {};
 
 class HelloWorld6 : public IHelloWorld6 {
   public:
-    HelloWorld6(IPluginManager *p) { pPluginManager = p; }
+    HelloWorld6(IPluginManager *p) { pm_ = p; }
 
     virtual bool Start();
     virtual bool AfterStart();

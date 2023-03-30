@@ -9,12 +9,12 @@
 #include <server/db_proxy/logic/common_redis_module.h>
 
 bool GameServerToWorldModule::Start() {
-    m_pNetClientModule = pPluginManager->FindModule<INetClientModule>();
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pElementModule = pPluginManager->FindModule<IElementModule>();
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
-    m_pGameServerNet_ServerModule = pPluginManager->FindModule<IGameServerNet_ServerModule>();
+    m_net_client_ = pm_->FindModule<INetClientModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_element_ = pm_->FindModule<IElementModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
+    m_pGameServerNet_ServerModule = pm_->FindModule<IGameServerNet_ServerModule>();
 
     return true;
 }
@@ -27,20 +27,20 @@ bool GameServerToWorldModule::Update() {
 }
 
 void GameServerToWorldModule::Register(INet *pNet) {
-    SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
         for (int i = 0; i < strIdList.size(); ++i) {
             const std::string &strId = strIdList[i];
 
-            const int serverType = m_pElementModule->GetPropertyInt32(strId, excel::Server::Type());
-            const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (serverType == SQUICK_SERVER_TYPES::SQUICK_ST_GAME && pPluginManager->GetAppID() == serverID) {
-                const int nPort = m_pElementModule->GetPropertyInt32(strId, excel::Server::Port());
-                const int maxConnect = m_pElementModule->GetPropertyInt32(strId, excel::Server::MaxOnline());
-                // const int nCpus = m_pElementModule->GetPropertyInt32(strId, SquickProtocol::Server::CpuCount());
-                const std::string &name = m_pElementModule->GetPropertyString(strId, excel::Server::ID());
-                const std::string &ip = m_pElementModule->GetPropertyString(strId, excel::Server::IP());
+            const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
+            const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
+            if (serverType == ServerType::SQUICK_ST_GAME && pm_->GetAppID() == serverID) {
+                const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
+                const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
+                // const int nCpus = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::CpuCount());
+                const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
+                const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
                 SquickStruct::ServerInfoReportList xMsg;
                 SquickStruct::ServerInfoReport *pData = xMsg.add_server_list();
@@ -54,12 +54,12 @@ void GameServerToWorldModule::Register(INet *pNet) {
                 pData->set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
                 pData->set_server_type(serverType);
 
-                SQUICK_SHARE_PTR<ConnectData> pServerData = m_pNetClientModule->GetServerNetInfo(pNet);
+                std::shared_ptr<ConnectData> pServerData = m_net_client_->GetServerNetInfo(pNet);
                 if (pServerData) {
                     int nTargetID = pServerData->nGameID;
-                    m_pNetClientModule->SendToServerByPB(nTargetID, SquickStruct::ServerRPC::GAME_TO_WORLD_REGISTERED, xMsg);
+                    m_net_client_->SendToServerByPB(nTargetID, SquickStruct::ServerRPC::GAME_TO_WORLD_REGISTERED, xMsg);
 
-                    m_pLogModule->LogInfo(Guid(0, pData->server_id()), pData->server_name(), "Register");
+                    m_log_->LogInfo(Guid(0, pData->server_id()), pData->server_name(), "Register");
                 }
             }
         }
@@ -67,129 +67,129 @@ void GameServerToWorldModule::Register(INet *pNet) {
 }
 
 void GameServerToWorldModule::ServerReport() {
-    if (mLastReportTime + 10 > pPluginManager->GetNowTime()) {
+    if (mLastReportTime + 10 > pm_->GetNowTime()) {
         return;
     }
-    mLastReportTime = pPluginManager->GetNowTime();
+    mLastReportTime = pm_->GetNowTime();
 
-    std::shared_ptr<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
         for (int i = 0; i < strIdList.size(); ++i) {
             const std::string &strId = strIdList[i];
 
-            const int serverType = m_pElementModule->GetPropertyInt32(strId, excel::Server::Type());
-            const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (pPluginManager->GetAppID() == serverID) {
-                const int nPort = m_pElementModule->GetPropertyInt32(strId, excel::Server::Port());
-                const int maxConnect = m_pElementModule->GetPropertyInt32(strId, excel::Server::MaxOnline());
-                const std::string &name = m_pElementModule->GetPropertyString(strId, excel::Server::ID());
-                const std::string &ip = m_pElementModule->GetPropertyString(strId, excel::Server::IP());
+            const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
+            const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
+            if (pm_->GetAppID() == serverID) {
+                const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
+                const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
+                const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
+                const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
                 SquickStruct::ServerInfoReport reqMsg;
 
                 reqMsg.set_server_id(serverID);
                 reqMsg.set_server_name(strId);
-                reqMsg.set_server_cur_count(m_pKernelModule->GetOnLineCount());
+                reqMsg.set_server_cur_count(m_kernel_->GetOnLineCount());
                 reqMsg.set_server_ip(ip);
                 reqMsg.set_server_port(nPort);
                 reqMsg.set_server_max_online(maxConnect);
                 reqMsg.set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
                 reqMsg.set_server_type(serverType);
 
-                m_pNetClientModule->SendToAllServerByPB(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
+                m_net_client_->SendToAllServerByPB(ServerType::SQUICK_ST_WORLD, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
             }
         }
     }
 }
 
 bool GameServerToWorldModule::AfterStart() {
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_INT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_INT, this,
                                            &GameServerToWorldModule::OnWorldPropertyIntProcess);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_FLOAT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_FLOAT, this,
                                            &GameServerToWorldModule::OnWorldPropertyFloatProcess);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_STRING, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_STRING, this,
                                            &GameServerToWorldModule::OnWorldPropertyStringProcess);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_OBJECT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_OBJECT, this,
                                            &GameServerToWorldModule::OnWorldPropertyObjectProcess);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_VECTOR2, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_VECTOR2, this,
                                            &GameServerToWorldModule::OnWorldPropertyVector2Process);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_VECTOR3, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_PROPERTY_VECTOR3, this,
                                            &GameServerToWorldModule::OnWorldPropertyVector3Process);
 
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_OBJECT_RECORD_ENTRY, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_OBJECT_RECORD_ENTRY, this,
                                            &GameServerToWorldModule::OnWorldRecordEnterProcess);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_ADD_ROW, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_ADD_ROW, this,
                                            &GameServerToWorldModule::OnWorldAddRowProcess);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_REMOVE_ROW, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_REMOVE_ROW, this,
                                            &GameServerToWorldModule::OnWorldRemoveRowProcess);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_SWAP_ROW, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_SWAP_ROW, this,
                                            &GameServerToWorldModule::OnWorldSwapRowProcess);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_INT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_INT, this,
                                            &GameServerToWorldModule::OnWorldRecordIntProcess);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_FLOAT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_FLOAT, this,
                                            &GameServerToWorldModule::OnWorldRecordFloatProcess);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_STRING, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_STRING, this,
                                            &GameServerToWorldModule::OnWorldRecordStringProcess);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_OBJECT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_OBJECT, this,
                                            &GameServerToWorldModule::OnWorldRecordObjectProcess);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_VECTOR2, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_VECTOR2, this,
                                            &GameServerToWorldModule::OnWorldRecordVector2Process);
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_VECTOR3, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_RECORD_VECTOR3, this,
                                            &GameServerToWorldModule::OnWorldRecordVector3Process);
 
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::STS_NET_INFO, this,
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, SquickStruct::STS_NET_INFO, this,
                                            &GameServerToWorldModule::OnServerInfoProcess);
 
-    m_pNetClientModule->AddReceiveCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, this, &GameServerToWorldModule::TransPBToProxy);
+    m_net_client_->AddReceiveCallBack(ServerType::SQUICK_ST_WORLD, this, &GameServerToWorldModule::TransPBToProxy);
 
-    m_pNetClientModule->AddEventCallBack(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, this, &GameServerToWorldModule::OnSocketWSEvent);
+    m_net_client_->AddEventCallBack(ServerType::SQUICK_ST_WORLD, this, &GameServerToWorldModule::OnSocketWSEvent);
 
-    m_pKernelModule->AddClassCallBack(excel::Player::ThisName(), this, &GameServerToWorldModule::OnObjectClassEvent);
+    m_kernel_->AddClassCallBack(excel::Player::ThisName(), this, &GameServerToWorldModule::OnObjectClassEvent);
 
-    m_pNetClientModule->ExpandBufferSize();
+    m_net_client_->ExpandBufferSize();
 
-    SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
 
-        const int nCurAppID = pPluginManager->GetAppID();
+        const int nCurAppID = pm_->GetAppID();
         std::vector<std::string>::const_iterator itr = std::find_if(strIdList.begin(), strIdList.end(), [&](const std::string &strConfigId) {
-            return nCurAppID == m_pElementModule->GetPropertyInt32(strConfigId, excel::Server::ServerID());
+            return nCurAppID == m_element_->GetPropertyInt32(strConfigId, excel::Server::ServerID());
         });
 
         if (strIdList.end() == itr) {
             std::ostringstream strLog;
             strLog << "Cannot find current server, AppID = " << nCurAppID;
-            m_pLogModule->LogError(NULL_OBJECT, strLog, __FILE__, __LINE__);
-            NFASSERT(-1, "Cannot find current server", __FILE__, __FUNCTION__);
+            m_log_->LogError(NULL_OBJECT, strLog, __FILE__, __LINE__);
+            SQUICK_ASSERT(-1, "Cannot find current server", __FILE__, __FUNCTION__);
             exit(0);
         }
 
-        const int nCurArea = m_pElementModule->GetPropertyInt32(*itr, excel::Server::Area());
+        const int nCurArea = m_element_->GetPropertyInt32(*itr, excel::Server::Area());
 
         for (int i = 0; i < strIdList.size(); ++i) {
             const std::string &strId = strIdList[i];
 
-            const int serverType = m_pElementModule->GetPropertyInt32(strId, excel::Server::Type());
-            const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::Server::ServerID());
-            const int nServerArea = m_pElementModule->GetPropertyInt32(strId, excel::Server::Area());
-            if (serverType == SQUICK_SERVER_TYPES::SQUICK_ST_WORLD && nCurArea == nServerArea) {
-                const int nPort = m_pElementModule->GetPropertyInt32(strId, excel::Server::Port());
-                // const int maxConnect = m_pElementModule->GetPropertyInt32(strId, SquickProtocol::Server::MaxOnline());
-                // const int nCpus = m_pElementModule->GetPropertyInt32(strId, SquickProtocol::Server::CpuCount());
-                const std::string &name = m_pElementModule->GetPropertyString(strId, excel::Server::ID());
-                const std::string &ip = m_pElementModule->GetPropertyString(strId, excel::Server::IP());
+            const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
+            const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
+            const int nServerArea = m_element_->GetPropertyInt32(strId, excel::Server::Area());
+            if (serverType == ServerType::SQUICK_ST_WORLD && nCurArea == nServerArea) {
+                const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
+                // const int maxConnect = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::MaxOnline());
+                // const int nCpus = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::CpuCount());
+                const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
+                const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
                 ConnectData xServerData;
 
                 xServerData.nGameID = serverID;
-                xServerData.eServerType = (SQUICK_SERVER_TYPES)serverType;
+                xServerData.eServerType = (ServerType)serverType;
                 xServerData.ip = ip;
                 xServerData.nPort = nPort;
                 xServerData.name = strId;
 
-                m_pNetClientModule->AddServer(xServerData);
+                m_net_client_->AddServer(xServerData);
             }
         }
     }
@@ -197,10 +197,10 @@ bool GameServerToWorldModule::AfterStart() {
     return true;
 }
 
-void GameServerToWorldModule::OnServerInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
+void GameServerToWorldModule::OnServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
     SquickStruct::ServerInfoReportList xMsg;
-    if (!INetModule::ReceivePB(msgID, msg, len, xMsg, nPlayerID)) {
+    if (!INetModule::ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
@@ -215,22 +215,22 @@ void GameServerToWorldModule::OnServerInfoProcess(const SQUICK_SOCKET sockIndex,
         xServerData.nPort = xData.server_port();
         xServerData.name = xData.server_name();
         xServerData.nWorkLoad = xData.server_cur_count();
-        xServerData.eServerType = (SQUICK_SERVER_TYPES)xData.server_type();
+        xServerData.eServerType = (ServerType)xData.server_type();
 
-        if (SQUICK_SERVER_TYPES::SQUICK_ST_WORLD == xServerData.eServerType) {
-            m_pNetClientModule->AddServer(xServerData);
-        } else if (SQUICK_SERVER_TYPES::SQUICK_ST_DB_PROXY == xServerData.eServerType) {
-            m_pNetClientModule->AddServer(xServerData);
+        if (ServerType::SQUICK_ST_WORLD == xServerData.eServerType) {
+            m_net_client_->AddServer(xServerData);
+        } else if (ServerType::SQUICK_ST_DB_PROXY == xServerData.eServerType) {
+            m_net_client_->AddServer(xServerData);
         }
     }
 }
 
-void GameServerToWorldModule::OnSocketWSEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet) {
+void GameServerToWorldModule::OnSocketWSEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
     if (eEvent & SQUICK_NET_EVENT_EOF) {
     } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
     } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
     } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
-        m_pLogModule->LogInfo(Guid(0, sockIndex), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
+        m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
         Register(pNet);
     }
 }
@@ -249,116 +249,116 @@ int GameServerToWorldModule::OnObjectClassEvent(const Guid &self, const std::str
 
 void GameServerToWorldModule::SendOnline(const Guid &self) {
     /*
-    if (m_pKernelModule->ExistObject(self))
+    if (m_kernel_->ExistObject(self))
     {
             SquickStruct::RoleOnlineNotify xMsg;
-            const int& gateID = m_pKernelModule->GetPropertyInt(self, SquickProtocol::Player::GateID());
-            const std::string& playerName = m_pKernelModule->GetPropertyString(self, SquickProtocol::Player::Name());
-            const int bp = m_pKernelModule->GetPropertyInt(self, SquickProtocol::Player::BattlePoint());
+            const int& gateID = m_kernel_->GetPropertyInt(self, SquickProtocol::Player::GateID());
+            const std::string& playerName = m_kernel_->GetPropertyString(self, SquickProtocol::Player::Name());
+            const int bp = m_kernel_->GetPropertyInt(self, SquickProtocol::Player::BattlePoint());
 
             *xMsg.mutable_self() = INetModule::StructToProtobuf(self);
-            xMsg.set_game(pPluginManager->GetAppID());
+            xMsg.set_game(pm_->GetAppID());
             xMsg.set_proxy(gateID);
             xMsg.set_name(playerName);
             xMsg.set_bp(bp);
 
-            m_pNetClientModule->SendToAllServerByPB(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ACK_ONLINE_NOTIFY, xMsg, self);
+            m_net_client_->SendToAllServerByPB(ServerType::SQUICK_ST_WORLD, SquickStruct::ACK_ONLINE_NOTIFY, xMsg, self);
     }*/
 }
 
 void GameServerToWorldModule::SendOffline(const Guid &self) {
-    if (m_pKernelModule->ExistObject(self)) {
+    if (m_kernel_->ExistObject(self)) {
         SquickStruct::AckPlayerOffline xMsg;
 
-        // const Guid& xClan = m_pKernelModule->GetPropertyObject(self, SquickProtocol::Player::Clan_ID());
+        // const Guid& xClan = m_kernel_->GetPropertyObject(self, SquickProtocol::Player::Clan_ID());
 
         *xMsg.mutable_self() = INetModule::StructToProtobuf(self);
         *xMsg.mutable_object() = INetModule::StructToProtobuf(Guid());
-        xMsg.set_game(pPluginManager->GetAppID());
+        xMsg.set_game(pm_->GetAppID());
         xMsg.set_proxy(0);
 
-        m_pNetClientModule->SendToAllServerByPB(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, SquickStruct::ServerRPC::ACK_PLAYER_OFFLINE, xMsg, self);
+        m_net_client_->SendToAllServerByPB(ServerType::SQUICK_ST_WORLD, SquickStruct::ServerRPC::ACK_PLAYER_OFFLINE, xMsg, self);
     }
 }
 
-void GameServerToWorldModule::TransPBToProxy(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
+void GameServerToWorldModule::TransPBToProxy(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
     std::string strData;
-    if (!INetModule::ReceivePB(msgID, msg, len, strData, nPlayerID)) {
+    if (!INetModule::ReceivePB(msg_id, msg, len, strData, nPlayerID)) {
         return;
     }
 
-    m_pGameServerNet_ServerModule->SendMsgToProxy(msgID, strData, nPlayerID);
+    m_pGameServerNet_ServerModule->SendMsgToProxy(msg_id, strData, nPlayerID);
 
     return;
 }
 
-void GameServerToWorldModule::TransmitToWorld(const int nHashKey, const int msgID, const google::protobuf::Message &xData) {
-    m_pNetClientModule->SendSuitByPB(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD, nHashKey, msgID, xData);
+void GameServerToWorldModule::TransmitToWorld(const int nHashKey, const int msg_id, const google::protobuf::Message &xData) {
+    m_net_client_->SendSuitByPB(ServerType::SQUICK_ST_WORLD, nHashKey, msg_id, xData);
 }
 
-void GameServerToWorldModule::OnWorldPropertyIntProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::ObjectPropertyInt)
+void GameServerToWorldModule::OnWorldPropertyIntProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectPropertyInt)
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
         const SquickStruct::PropertyInt &xProperty = xMsg.property_list().Get(i);
-        m_pKernelModule->SetPropertyInt(nPlayerID, xProperty.property_name(), xProperty.data());
+        m_kernel_->SetPropertyInt(nPlayerID, xProperty.property_name(), xProperty.data());
     }
 }
 
-void GameServerToWorldModule::OnWorldPropertyFloatProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::ObjectPropertyFloat)
+void GameServerToWorldModule::OnWorldPropertyFloatProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectPropertyFloat)
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
         const SquickStruct::PropertyFloat &xProperty = xMsg.property_list().Get(i);
-        m_pKernelModule->SetPropertyFloat(nPlayerID, xProperty.property_name(), xProperty.data());
+        m_kernel_->SetPropertyFloat(nPlayerID, xProperty.property_name(), xProperty.data());
     }
 }
 
-void GameServerToWorldModule::OnWorldPropertyStringProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::ObjectPropertyString)
+void GameServerToWorldModule::OnWorldPropertyStringProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectPropertyString)
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
         const SquickStruct::PropertyString &xProperty = xMsg.property_list().Get(i);
-        m_pKernelModule->SetPropertyString(nPlayerID, xProperty.property_name(), xProperty.data());
+        m_kernel_->SetPropertyString(nPlayerID, xProperty.property_name(), xProperty.data());
     }
 }
 
-void GameServerToWorldModule::OnWorldPropertyObjectProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::ObjectPropertyObject)
+void GameServerToWorldModule::OnWorldPropertyObjectProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectPropertyObject)
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
         const SquickStruct::PropertyObject &xProperty = xMsg.property_list().Get(i);
-        m_pKernelModule->SetPropertyObject(nPlayerID, xProperty.property_name(), INetModule::ProtobufToStruct(xProperty.data()));
+        m_kernel_->SetPropertyObject(nPlayerID, xProperty.property_name(), INetModule::ProtobufToStruct(xProperty.data()));
     }
 }
 
-void GameServerToWorldModule::OnWorldPropertyVector2Process(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::ObjectPropertyVector2)
+void GameServerToWorldModule::OnWorldPropertyVector2Process(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectPropertyVector2)
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
         const SquickStruct::PropertyVector2 &xProperty = xMsg.property_list().Get(i);
-        m_pKernelModule->SetPropertyVector2(nPlayerID, xProperty.property_name(), INetModule::ProtobufToStruct(xProperty.data()));
+        m_kernel_->SetPropertyVector2(nPlayerID, xProperty.property_name(), INetModule::ProtobufToStruct(xProperty.data()));
     }
 }
 
-void GameServerToWorldModule::OnWorldPropertyVector3Process(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::ObjectPropertyVector3)
+void GameServerToWorldModule::OnWorldPropertyVector3Process(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectPropertyVector3)
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
         const SquickStruct::PropertyVector3 &xProperty = xMsg.property_list().Get(i);
-        m_pKernelModule->SetPropertyVector3(nPlayerID, xProperty.property_name(), INetModule::ProtobufToStruct(xProperty.data()));
+        m_kernel_->SetPropertyVector3(nPlayerID, xProperty.property_name(), INetModule::ProtobufToStruct(xProperty.data()));
     }
 }
 
-void GameServerToWorldModule::OnWorldRecordEnterProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::MultiObjectRecordList)
+void GameServerToWorldModule::OnWorldRecordEnterProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::MultiObjectRecordList)
 
     for (int playerIndex = 0; playerIndex < xMsg.multi_player_record_size(); playerIndex++) {
         const SquickStruct::ObjectRecordList &objectRecordList = xMsg.multi_player_record(playerIndex);
         for (int j = 0; j < objectRecordList.record_list_size(); ++j) {
             const SquickStruct::ObjectRecordBase &recordBase = objectRecordList.record_list(j);
-            auto record = m_pKernelModule->FindRecord(nPlayerID, recordBase.record_name());
+            auto record = m_kernel_->FindRecord(nPlayerID, recordBase.record_name());
             if (record) {
                 CommonRedisModule::ConvertPBToRecord(recordBase, record);
             }
@@ -366,10 +366,10 @@ void GameServerToWorldModule::OnWorldRecordEnterProcess(const SQUICK_SOCKET sock
     }
 }
 
-void GameServerToWorldModule::OnWorldAddRowProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::ObjectRecordAddRow)
+void GameServerToWorldModule::OnWorldAddRowProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordAddRow)
 
-    auto pRecord = m_pKernelModule->FindRecord(nPlayerID, xMsg.record_name());
+    auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (pRecord) {
         for (int i = 0; i < xMsg.row_data_size(); i++) {
             const SquickStruct::RecordAddRowStruct &xAddRowStruct = xMsg.row_data().Get(i);
@@ -421,129 +421,129 @@ void GameServerToWorldModule::OnWorldAddRowProcess(const SQUICK_SOCKET sockIndex
                 if (colDataMap.find(j) != colDataMap.end()) {
                     xDataList.Append(colDataMap[j]);
                 } else {
-                    m_pLogModule->LogInfo(nPlayerID, "Upload From Client add row record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
+                    m_log_->LogInfo(nPlayerID, "Upload From Client add row record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
                     return;
                 }
             }
 
             if (pRecord->AddRow(row, xDataList) >= 0) {
-                m_pLogModule->LogInfo(nPlayerID, "Upload From Client add row record " + xMsg.record_name(), __FUNCTION__, __LINE__);
+                m_log_->LogInfo(nPlayerID, "Upload From Client add row record " + xMsg.record_name(), __FUNCTION__, __LINE__);
             } else {
-                m_pLogModule->LogInfo(nPlayerID, "Upload From Client add row record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
+                m_log_->LogInfo(nPlayerID, "Upload From Client add row record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
             }
         }
     }
 }
 
-void GameServerToWorldModule::OnWorldRemoveRowProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::ObjectRecordRemove)
+void GameServerToWorldModule::OnWorldRemoveRowProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordRemove)
 
-    auto pRecord = m_pKernelModule->FindRecord(nPlayerID, xMsg.record_name());
+    auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (pRecord) {
         for (int i = 0; i < xMsg.remove_row_size(); i++) {
             if (pRecord->Remove(xMsg.remove_row().Get(i))) {
-                m_pLogModule->LogInfo(nPlayerID, "Upload From Client remove row record " + xMsg.record_name(), __FUNCTION__, __LINE__);
+                m_log_->LogInfo(nPlayerID, "Upload From Client remove row record " + xMsg.record_name(), __FUNCTION__, __LINE__);
             } else {
-                m_pLogModule->LogInfo(nPlayerID, "Upload From Client remove row record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
+                m_log_->LogInfo(nPlayerID, "Upload From Client remove row record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
             }
         }
     }
 }
 
-void GameServerToWorldModule::OnWorldSwapRowProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {}
+void GameServerToWorldModule::OnWorldSwapRowProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
 
-void GameServerToWorldModule::OnWorldRecordIntProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::ObjectRecordInt)
+void GameServerToWorldModule::OnWorldRecordIntProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordInt)
 
-    auto pRecord = m_pKernelModule->FindRecord(nPlayerID, xMsg.record_name());
+    auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (!pRecord) {
-        m_pLogModule->LogError(nPlayerID, "Upload From Client int set record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
+        m_log_->LogError(nPlayerID, "Upload From Client int set record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
         return;
     }
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
         const SquickStruct::RecordInt &xRecordInt = xMsg.property_list().Get(i);
         pRecord->SetInt(xRecordInt.row(), xRecordInt.col(), xRecordInt.data());
-        m_pLogModule->LogInfo(nPlayerID, "Upload From Client int set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
+        m_log_->LogInfo(nPlayerID, "Upload From Client int set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
     }
 }
 
-void GameServerToWorldModule::OnWorldRecordFloatProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::ObjectRecordFloat)
+void GameServerToWorldModule::OnWorldRecordFloatProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordFloat)
 
-    auto pRecord = m_pKernelModule->FindRecord(nPlayerID, xMsg.record_name());
+    auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (!pRecord) {
-        m_pLogModule->LogError(nPlayerID, "Upload From Client float set record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
+        m_log_->LogError(nPlayerID, "Upload From Client float set record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
         return;
     }
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
         const SquickStruct::RecordFloat &xRecordFloat = xMsg.property_list().Get(i);
         pRecord->SetFloat(xRecordFloat.row(), xRecordFloat.col(), xRecordFloat.data());
-        m_pLogModule->LogInfo(nPlayerID, "Upload From Client float set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
+        m_log_->LogInfo(nPlayerID, "Upload From Client float set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
     }
 }
 
-void GameServerToWorldModule::OnWorldRecordStringProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::ObjectRecordString)
+void GameServerToWorldModule::OnWorldRecordStringProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordString)
 
-    auto pRecord = m_pKernelModule->FindRecord(nPlayerID, xMsg.record_name());
+    auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (!pRecord) {
-        m_pLogModule->LogError(nPlayerID, "String set record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
+        m_log_->LogError(nPlayerID, "String set record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
         return;
     }
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
         const SquickStruct::RecordString &xRecordString = xMsg.property_list().Get(i);
         pRecord->SetString(xRecordString.row(), xRecordString.col(), xRecordString.data());
-        m_pLogModule->LogInfo(nPlayerID, "String set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
+        m_log_->LogInfo(nPlayerID, "String set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
     }
 }
 
-void GameServerToWorldModule::OnWorldRecordObjectProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::ObjectRecordObject)
+void GameServerToWorldModule::OnWorldRecordObjectProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordObject)
 
-    auto pRecord = m_pKernelModule->FindRecord(nPlayerID, xMsg.record_name());
+    auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (!pRecord) {
-        m_pLogModule->LogError(nPlayerID, "Upload From Client Object set record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
+        m_log_->LogError(nPlayerID, "Upload From Client Object set record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
         return;
     }
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
         const SquickStruct::RecordObject &xRecordObject = xMsg.property_list().Get(i);
         pRecord->SetObject(xRecordObject.row(), xRecordObject.col(), INetModule::ProtobufToStruct(xRecordObject.data()));
-        m_pLogModule->LogInfo(nPlayerID, "Upload From Client Object set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
+        m_log_->LogInfo(nPlayerID, "Upload From Client Object set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
     }
 }
 
-void GameServerToWorldModule::OnWorldRecordVector2Process(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::ObjectRecordVector2)
+void GameServerToWorldModule::OnWorldRecordVector2Process(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordVector2)
 
-    auto pRecord = m_pKernelModule->FindRecord(nPlayerID, xMsg.record_name());
+    auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (!pRecord) {
-        m_pLogModule->LogError(nPlayerID, "Upload From Client vector2 set record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
+        m_log_->LogError(nPlayerID, "Upload From Client vector2 set record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
         return;
     }
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
         const SquickStruct::RecordVector2 &xRecordVector2 = xMsg.property_list().Get(i);
         pRecord->SetVector2(xRecordVector2.row(), xRecordVector2.col(), INetModule::ProtobufToStruct(xRecordVector2.data()));
-        m_pLogModule->LogInfo(nPlayerID, "Upload From Client vector2 set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
+        m_log_->LogInfo(nPlayerID, "Upload From Client vector2 set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
     }
 }
 
-void GameServerToWorldModule::OnWorldRecordVector3Process(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msgID, msg, len, SquickStruct::ObjectRecordVector3)
+void GameServerToWorldModule::OnWorldRecordVector3Process(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordVector3)
 
-    auto pRecord = m_pKernelModule->FindRecord(nPlayerID, xMsg.record_name());
+    auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (!pRecord) {
-        m_pLogModule->LogError(nPlayerID, "Upload From Client vector3 set record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
+        m_log_->LogError(nPlayerID, "Upload From Client vector3 set record error " + xMsg.record_name(), __FUNCTION__, __LINE__);
         return;
     }
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
         const SquickStruct::RecordVector3 &xRecordVector3 = xMsg.property_list().Get(i);
         pRecord->SetVector3(xRecordVector3.row(), xRecordVector3.col(), INetModule::ProtobufToStruct(xRecordVector3.data()));
-        m_pLogModule->LogInfo(nPlayerID, "Upload From Client vector3 set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
+        m_log_->LogInfo(nPlayerID, "Upload From Client vector3 set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
     }
 }

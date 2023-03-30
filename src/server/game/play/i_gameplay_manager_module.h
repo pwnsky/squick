@@ -14,7 +14,7 @@
 
 namespace game::play {
 
-typedef std::function<void(const Guid &clientID, const int msgID, const std::string &data)> GAME_PLAY_RECEIVE_FUNCTOR;
+typedef std::function<void(const Guid &clientID, const int msg_id, const std::string &data)> GAME_PLAY_RECEIVE_FUNCTOR;
 typedef std::shared_ptr<GAME_PLAY_RECEIVE_FUNCTOR> GAME_PLAY_RECEIVE_FUNCTOR_PTR;
 
 class IGameplayManagerModule : public IModule {
@@ -25,48 +25,48 @@ class IGameplayManagerModule : public IModule {
     virtual bool SingleGameplayCreate(int id, const string& key) = 0;
     virtual bool SingleGameplayDestroy(int id) = 0;
     template <typename BaseType>
-    bool AddReceiveCallBack(const int msgID, const int id, BaseType *pBase,
-                            void (BaseType::*handleReceiver)(const Guid &clientID, const int msgID, const std::string &data)) {
+    bool AddReceiveCallBack(const int msg_id, const int id, BaseType *pBase,
+                            void (BaseType::*handleReceiver)(const Guid &clientID, const int msg_id, const std::string &data)) {
         GAME_PLAY_RECEIVE_FUNCTOR functor = std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
         GAME_PLAY_RECEIVE_FUNCTOR_PTR functorPtr(new GAME_PLAY_RECEIVE_FUNCTOR(functor));
 
-        if (mxReceiveCallBack.find(msgID) == mxReceiveCallBack.end()) // 之前未绑定
+        if (mxReceiveCallBack.find(msg_id) == mxReceiveCallBack.end()) // 之前未绑定
         {
-            m_pNetModule->RemoveReceiveCallBack(msgID);
-            m_pNetModule->AddReceiveCallBack(msgID, this, &IGameplayManagerModule::OnRecv);
+            m_net_->RemoveReceiveCallBack(msg_id);
+            m_net_->AddReceiveCallBack(msg_id, this, &IGameplayManagerModule::OnRecv);
 
-            std::map<int, GAME_PLAY_RECEIVE_FUNCTOR_PTR> msgIdMap;
-            msgIdMap[id] = functorPtr;
-            mxReceiveCallBack.insert(std::map<int, std::map<int, GAME_PLAY_RECEIVE_FUNCTOR_PTR>>::value_type(msgID, msgIdMap));
+            std::map<int, GAME_PLAY_RECEIVE_FUNCTOR_PTR> msg_idMap;
+            msg_idMap[id] = functorPtr;
+            mxReceiveCallBack.insert(std::map<int, std::map<int, GAME_PLAY_RECEIVE_FUNCTOR_PTR>>::value_type(msg_id, msg_idMap));
             return true;
         }
 
-        auto it = mxReceiveCallBack.find(msgID);
+        auto it = mxReceiveCallBack.find(msg_id);
         it->second[id] = functorPtr;
         return true;
     }
 
-    virtual void OnRecv(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) = 0;
+    virtual void OnRecv(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) = 0;
 
-    GAME_PLAY_RECEIVE_FUNCTOR_PTR &GetCallback(int msgID, int id) {
-        auto &group = mxReceiveCallBack[msgID];
+    GAME_PLAY_RECEIVE_FUNCTOR_PTR &GetCallback(int msg_id, int id) {
+        auto &group = mxReceiveCallBack[msg_id];
         return group[id];
     }
 
-    INetModule *m_pNetModule;
-    IClassModule *m_pClassModule;
-    IElementModule *m_pElementModule;
-    IKernelModule *m_pKernelModule;
-    ISceneModule *m_pSceneModule;
+    INetModule *m_net_;
+    IClassModule *m_class_;
+    IElementModule *m_element_;
+    IKernelModule *m_kernel_;
+    ISceneModule *m_scene_;
     IGameServerNet_ServerModule *m_pGameServerNet_ServerModule;
     IGameServerToDBModule *m_pGameToDBModule;
-    INetClientModule *m_pNetClientModule;
-    IScheduleModule *m_pScheduleModule;
-    IDataTailModule *m_pDataTailModule;
-    IEventModule *m_pEventModule;
+    INetClientModule *m_net_client_;
+    IScheduleModule *m_schedule_;
+    IDataTailModule *m_data_tail_;
+    IEventModule *m_event_;
 
-    player::IPlayerManagerModule *m_pPlayerManagerModule;
-    player::IRoomModule *m_pRoomModule;
+    player::IPlayerManagerModule *m_player_manager_;
+    player::IRoomModule *m_room_;
 
   private:
     std::unordered_map<int, std::map<int, GAME_PLAY_RECEIVE_FUNCTOR_PTR>> mxReceiveCallBack;

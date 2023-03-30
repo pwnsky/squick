@@ -20,6 +20,6 @@ const int SecurityPlugin::GetPluginVersion() { return 0; }
 
 const std::string SecurityPlugin::GetPluginName() { return GET_CLASS_NAME(SecurityPlugin); }
 
-void SecurityPlugin::Install() { REGISTER_MODULE(pPluginManager, ISecurityModule, SecurityModule) }
+void SecurityPlugin::Install() { REGISTER_MODULE(pm_, ISecurityModule, SecurityModule) }
 
-void SecurityPlugin::Uninstall() { UNREGISTER_MODULE(pPluginManager, ISecurityModule, SecurityModule) }
+void SecurityPlugin::Uninstall() { UNREGISTER_MODULE(pm_, ISecurityModule, SecurityModule) }

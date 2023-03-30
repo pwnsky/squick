@@ -13,8 +13,8 @@ const int Plugin::GetPluginVersion() { return 0; }
 
 const std::string Plugin::GetPluginName() { return GET_CLASS_NAME(Plugin); }
 
-void Plugin::Install() { REGISTER_MODULE(pPluginManager, IGameplayManagerModule, GameplayManagerModule) }
+void Plugin::Install() { REGISTER_MODULE(pm_, IGameplayManagerModule, GameplayManagerModule) }
 
-void Plugin::Uninstall() { UNREGISTER_MODULE(pPluginManager, IGameplayManagerModule, GameplayManagerModule) }
+void Plugin::Uninstall() { UNREGISTER_MODULE(pm_, IGameplayManagerModule, GameplayManagerModule) }
 
 } // namespace game::play

@@ -17,7 +17,7 @@
 #include "i_scene_module.h"
 #include "i_schedule_module.h"
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
 #include "squick/core/exception.h"
 #endif
 
@@ -43,7 +43,7 @@ class ScheduleModule : public IScheduleModule {
     virtual bool RemoveSchedule(const Guid self);
     virtual bool RemoveSchedule(const Guid self, const std::string &scheduleName);
     virtual bool ExistSchedule(const Guid self, const std::string &scheduleName);
-    virtual SQUICK_SHARE_PTR<ScheduleElement> GetSchedule(const Guid self, const std::string &scheduleName);
+    virtual std::shared_ptr<ScheduleElement> GetSchedule(const Guid self, const std::string &scheduleName);
 
   protected:
     int OnClassCommonEvent(const Guid &self, const std::string &className, const CLASS_OBJECT_EVENT classEvent, const DataList &var);
@@ -55,9 +55,9 @@ class ScheduleModule : public IScheduleModule {
 
     std::multiset<TickElement> mScheduleMap;
 
-    ILogModule *m_pLogModule;
-    IKernelModule *m_pKernelModule;
-    ISceneModule *m_pSceneModule;
+    ILogModule *m_log_;
+    IKernelModule *m_kernel_;
+    ISceneModule *m_scene_;
 };
 
 #endif

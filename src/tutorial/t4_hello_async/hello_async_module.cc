@@ -4,14 +4,14 @@
 #include <third_party/concurrentqueue/concurrentqueue.h>
 
 bool HelloWorld4Module::Start() {
-    m_pActorModule = pPluginManager->FindModule<IActorModule>();
-    m_pThreadPoolModule = pPluginManager->FindModule<IThreadPoolModule>();
+    m_pActorModule = pm_->FindModule<IActorModule>();
+    m_pThreadPoolModule = pm_->FindModule<IThreadPoolModule>();
 
     return true;
 }
 
 void HelloWorld4Module::RequestAsyEnd(ActorMessage &actorMessage) {
-    // std::cout << "Main thread: " << std::this_thread::get_id() << " Actor: " << actorMessage.id.ToString() << " MsgID: " << actorMessage.msgID << " Data:" <<
+    // std::cout << "Main thread: " << std::this_thread::get_id() << " Actor: " << actorMessage.id.ToString() << " MsgID: " << actorMessage.msg_id << " Data:" <<
     // actorMessage.data << std::endl;
 }
 
@@ -184,7 +184,7 @@ bool HelloWorld4Module::AfterStart() {
 
         for (int i = 5; i < 10; ++i) {
             m_pActorModule->AddEndFunc(i, [](ActorMessage &actorMessage) -> void {
-                // std::cout << "example 2 AddEndFunc " << actorMessage.id.ToString() << " MSGID: " << actorMessage.msgID << std::endl;
+                // std::cout << "example 2 AddEndFunc " << actorMessage.id.ToString() << " MSGID: " << actorMessage.msg_id << std::endl;
             });
         }
 

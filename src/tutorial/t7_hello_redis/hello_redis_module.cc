@@ -98,7 +98,7 @@ void HelloWorld7::TestHash() {
     assert(mxRedisClient.HSETNX("12123ddd121wssdsdsdd", "12444441212", "121212") == true);
     assert(mxRedisClient.HSETNX("12123ddd121wssdsdsdd", "12444441212", "121212") == false);
 
-    // SQUICK_SHARE_PTR<NFRedisResult> HSCAN(const std::string& key, const std::string& field);
+    // std::shared_ptr<NFRedisResult> HSCAN(const std::string& key, const std::string& field);
 
     std::string strKey = "TestHash::TestHash";
     std::string strField1 = "TestField1";
@@ -225,9 +225,9 @@ void HelloWorld7::TestKey() {
 
 void HelloWorld7::TestList() {
     /*
-    SQUICK_SHARE_PTR<NFRedisResult> RPUSHX(const std::string& key, const std::string& value);
+    std::shared_ptr<NFRedisResult> RPUSHX(const std::string& key, const std::string& value);
 
-    SQUICK_SHARE_PTR<NFRedisResult> LSET(const std::string& key, const int index, const std::string& value);
+    std::shared_ptr<NFRedisResult> LSET(const std::string& key, const int index, const std::string& value);
 
     */
 

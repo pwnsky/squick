@@ -13,7 +13,7 @@
 
 template <typename T, typename TD> class MapEx {
   public:
-    typedef std::map<T, SQUICK_SHARE_PTR<TD>> MapOBJECT;
+    typedef std::map<T, std::shared_ptr<TD>> MapOBJECT;
 
     MapEx(){};
     virtual ~MapEx(){};
@@ -27,20 +27,20 @@ template <typename T, typename TD> class MapEx {
         }
     }
     /*
-            virtual SQUICK_SHARE_PTR<TD> AddElement(const T& name)
+            virtual std::shared_ptr<TD> AddElement(const T& name)
             {
                     typename MapOBJECT::iterator itr = mObjectList.find(name);
                     if (itr == mObjectList.end())
                     {
-                            SQUICK_SHARE_PTR<TD> data(SQUICK_NEW TD());
+                            std::shared_ptr<TD> data(new TD());
                             mObjectList.insert(typename MapOBJECT::value_type(name, data));
                             return data;
                     }
 
-                    return SQUICK_SHARE_PTR<TD>();
+                    return std::shared_ptr<TD>();
             }
             */
-    virtual bool AddElement(const T &name, const SQUICK_SHARE_PTR<TD> data) {
+    virtual bool AddElement(const T &name, const std::shared_ptr<TD> data) {
         if (data == nullptr) {
             std::cout << "AddElement failed : " << std::endl;
             return false;
@@ -76,7 +76,7 @@ template <typename T, typename TD> class MapEx {
         }
     }
 
-    virtual SQUICK_SHARE_PTR<TD> GetElement(const T &name) {
+    virtual std::shared_ptr<TD> GetElement(const T &name) {
         typename MapOBJECT::iterator itr = mObjectList.find(name);
         if (itr != mObjectList.end()) {
             return itr->second;
@@ -137,7 +137,7 @@ template <typename T, typename TD> class MapEx {
         }
     }
 
-    virtual SQUICK_SHARE_PTR<TD> First() {
+    virtual std::shared_ptr<TD> First() {
         if (mObjectList.size() <= 0) {
             return nullptr;
         }
@@ -150,7 +150,7 @@ template <typename T, typename TD> class MapEx {
         }
     }
 
-    virtual SQUICK_SHARE_PTR<TD> Next() {
+    virtual std::shared_ptr<TD> Next() {
         if (mObjectCurIter == mObjectList.end()) {
             return nullptr;
         }
@@ -163,7 +163,7 @@ template <typename T, typename TD> class MapEx {
         }
     }
 
-    virtual SQUICK_SHARE_PTR<TD> First(T &name) {
+    virtual std::shared_ptr<TD> First(T &name) {
         if (mObjectList.size() <= 0) {
             return nullptr;
         }
@@ -177,7 +177,7 @@ template <typename T, typename TD> class MapEx {
         }
     }
 
-    virtual SQUICK_SHARE_PTR<TD> Next(T &name) {
+    virtual std::shared_ptr<TD> Next(T &name) {
         if (mObjectCurIter == mObjectList.end()) {
             return nullptr;
         }
@@ -205,7 +205,7 @@ template <typename T, typename TD> class MapEx {
 
 template <typename T, typename TD> class NFConsistentHashMapEx : public MapEx<T, TD> {
   public:
-    virtual SQUICK_SHARE_PTR<TD> GetElementBySuitRandom() {
+    virtual std::shared_ptr<TD> GetElementBySuitRandom() {
         NFVirtualNode<T> vNode;
         if (mxConsistentHash.GetSuitNodeRandom(vNode)) {
             typename MapEx<T, TD>::MapOBJECT::iterator itr = MapEx<T, TD>::mObjectList.find(vNode.mxData);
@@ -217,7 +217,7 @@ template <typename T, typename TD> class NFConsistentHashMapEx : public MapEx<T,
         return NULL;
     }
 
-    virtual SQUICK_SHARE_PTR<TD> GetElementBySuitConsistent() {
+    virtual std::shared_ptr<TD> GetElementBySuitConsistent() {
         NFVirtualNode<T> vNode;
         if (mxConsistentHash.GetSuitNodeConsistent(vNode)) {
             typename MapEx<T, TD>::MapOBJECT::iterator itr = MapEx<T, TD>::mObjectList.find(vNode.mxData);
@@ -229,7 +229,7 @@ template <typename T, typename TD> class NFConsistentHashMapEx : public MapEx<T,
         return NULL;
     }
 
-    virtual SQUICK_SHARE_PTR<TD> GetElementBySuit(const T &name) {
+    virtual std::shared_ptr<TD> GetElementBySuit(const T &name) {
         NFVirtualNode<T> vNode;
         if (mxConsistentHash.GetSuitNode(name, vNode)) {
             typename MapEx<T, TD>::MapOBJECT::iterator itr = MapEx<T, TD>::mObjectList.find(vNode.mxData);
@@ -241,7 +241,7 @@ template <typename T, typename TD> class NFConsistentHashMapEx : public MapEx<T,
         return NULL;
     }
 
-    virtual bool AddElement(const T &name, const SQUICK_SHARE_PTR<TD> data) override {
+    virtual bool AddElement(const T &name, const std::shared_ptr<TD> data) override {
         if (data == nullptr) {
             return false;
         }

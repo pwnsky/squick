@@ -11,8 +11,8 @@ class IHelloWorld7 : public IModule {};
 class HelloWorld7 : public IHelloWorld7 {
   public:
     HelloWorld7(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
+        is_update_ = true;
+        pm_ = p;
     }
 
     virtual bool Start();

@@ -9,20 +9,20 @@ SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){CREATE_PLUGIN(pm, Config
 SQUICK_EXPORT void SquickPluginUnload(IPluginManager *pm){DESTROY_PLUGIN(pm, ConfigPlugin)};
 
 //////////////////////////////////////////////////////////////////////////
-ConfigPlugin::ConfigPlugin(IPluginManager *p) { pPluginManager = p; }
+ConfigPlugin::ConfigPlugin(IPluginManager *p) { pm_ = p; }
 
 const int ConfigPlugin::GetPluginVersion() { return 0; }
 
 const std::string ConfigPlugin::GetPluginName() { return GET_CLASS_NAME(ConfigPlugin); }
 
 void ConfigPlugin::Install() {
-    REGISTER_MODULE(pPluginManager, IClassModule, ClassModule)
-    REGISTER_MODULE(pPluginManager, IElementModule, ElementModule)
-    REGISTER_MODULE(pPluginManager, ICommonConfigModule, ConfigModule);
+    REGISTER_MODULE(pm_, IClassModule, ClassModule)
+    REGISTER_MODULE(pm_, IElementModule, ElementModule)
+    REGISTER_MODULE(pm_, ICommonConfigModule, ConfigModule);
 }
 
 void ConfigPlugin::Uninstall() {
-    UNREGISTER_MODULE(pPluginManager, IElementModule, ElementModule)
-    UNREGISTER_MODULE(pPluginManager, IClassModule, ClassModule)
-    UNREGISTER_MODULE(pPluginManager, ICommonConfigModule, ConfigModule);
+    UNREGISTER_MODULE(pm_, IElementModule, ElementModule)
+    UNREGISTER_MODULE(pm_, IClassModule, ClassModule)
+    UNREGISTER_MODULE(pm_, ICommonConfigModule, ConfigModule);
 }

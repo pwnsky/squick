@@ -18,8 +18,8 @@
 class DBToWorldModule : public IDBToWorldModule {
   public:
     DBToWorldModule(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
+        is_update_ = true;
+        pm_ = p;
         mLastReportTime = 0;
     }
 
@@ -30,29 +30,29 @@ class DBToWorldModule : public IDBToWorldModule {
     virtual bool AfterStart();
 
   protected:
-    void OnSocketMSEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
+    void OnSocketMSEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 
-    void OnClientDisconnect(const SQUICK_SOCKET nAddress);
+    void OnClientDisconnect(const socket_t sock);
 
-    void OnClientConnected(const SQUICK_SOCKET nAddress);
+    void OnClientConnected(const socket_t sock);
 
     virtual void LogServerInfo(const std::string &strServerInfo);
 
     void Register(INet *pNet);
     void ServerReport();
-    void OnServerInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
-    void InvalidMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   private:
     INT64 mLastReportTime;
 
-    ILogModule *m_pLogModule;
-    IElementModule *m_pElementModule;
-    IClassModule *m_pClassModule;
-    INetClientModule *m_pNetClientModule;
-    INetModule *m_pNetModule;
-    ISecurityModule *m_pSecurityModule;
+    ILogModule *m_log_;
+    IElementModule *m_element_;
+    IClassModule *m_class_;
+    INetClientModule *m_net_client_;
+    INetModule *m_net_;
+    ISecurityModule *m_security_;
 };
 
 #endif

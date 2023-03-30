@@ -3,11 +3,11 @@
 #include "third_party/common/lexical_cast.hpp"
 #include <squick/core/platform.h>
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#else if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#else if PLATFORM == PLATFORM_WIN
 #include <corecrt_io.h>
 #include <io.h>
 #endif
@@ -65,7 +65,7 @@ class Files {
         depth--;
 
         std::vector<std::string> result;
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
         _finddata_t FileInfo;
         std::string strfind = folderPath + "\\*";
         long long Handle = _findfirst(strfind.c_str(), &FileInfo);
@@ -123,7 +123,7 @@ class Files {
 
     static std::vector<std::string> GetFolderListInFolder(std::string folderPath) {
         std::vector<std::string> result;
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
         _finddata_t FileInfo;
         std::string strfind = folderPath + "\\*";
         long long Handle = _findfirst(strfind.c_str(), &FileInfo);

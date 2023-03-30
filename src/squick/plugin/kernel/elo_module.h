@@ -7,7 +7,7 @@
 
 class ELOModule : public IELOModule {
   public:
-    ELOModule(IPluginManager *p) { pPluginManager = p; }
+    ELOModule(IPluginManager *p) { pm_ = p; }
     virtual ~ELOModule(){};
 
     virtual bool Start() override;

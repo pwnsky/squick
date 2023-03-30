@@ -41,7 +41,7 @@ class _SquickExport IObject : public MemoryCounter {
                              int (BaseType::*handler)(const Guid &, const std::string &, const SquickData &, const SquickData &, const INT64)) {
         PROPERTY_EVENT_FUNCTOR functor =
             std::bind(handler, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
-        PROPERTY_EVENT_FUNCTOR_PTR functorPtr(SQUICK_NEW PROPERTY_EVENT_FUNCTOR(functor));
+        PROPERTY_EVENT_FUNCTOR_PTR functorPtr(new PROPERTY_EVENT_FUNCTOR(functor));
         return AddPropertyCallBack(propertyName, functorPtr);
     }
 
@@ -49,7 +49,7 @@ class _SquickExport IObject : public MemoryCounter {
     bool AddRecordCallBack(const std::string &recordName, BaseType *pBase,
                            int (BaseType::*handler)(const Guid &, const RECORD_EVENT_DATA &, const SquickData &, const SquickData &)) {
         RECORD_EVENT_FUNCTOR functor = std::bind(handler, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        RECORD_EVENT_FUNCTOR_PTR functorPtr(SQUICK_NEW RECORD_EVENT_FUNCTOR(functor));
+        RECORD_EVENT_FUNCTOR_PTR functorPtr(new RECORD_EVENT_FUNCTOR(functor));
         return AddRecordCallBack(recordName, functorPtr);
     }
 
@@ -59,7 +59,7 @@ class _SquickExport IObject : public MemoryCounter {
     virtual bool ObjectReady() = 0;
 
     virtual bool FindProperty(const std::string &propertyName) = 0;
-    virtual SQUICK_SHARE_PTR<IProperty> AddProperty(const std::string &propertyName, const DATA_TYPE varType) = 0;
+    virtual std::shared_ptr<IProperty> AddProperty(const std::string &propertyName, const DATA_TYPE varType) = 0;
 
     virtual bool SetPropertyInt(const std::string &propertyName, const INT64 nValue, const INT64 reason = 0) = 0;
     virtual bool SetPropertyFloat(const std::string &propertyName, const double dwValue, const INT64 reason = 0) = 0;
@@ -76,7 +76,7 @@ class _SquickExport IObject : public MemoryCounter {
     virtual const Vector2 &GetPropertyVector2(const std::string &propertyName) = 0;
     virtual const Vector3 &GetPropertyVector3(const std::string &propertyName) = 0;
 
-    virtual SQUICK_SHARE_PTR<IRecord> FindRecord(const std::string &recordName) = 0;
+    virtual std::shared_ptr<IRecord> FindRecord(const std::string &recordName) = 0;
 
     virtual bool SetRecordInt(const std::string &recordName, const int row, const int col, const INT64 nValue) = 0;
     virtual bool SetRecordFloat(const std::string &recordName, const int row, const int col, const double dwValue) = 0;
@@ -106,13 +106,13 @@ class _SquickExport IObject : public MemoryCounter {
     virtual const Vector2 &GetRecordVector2(const std::string &recordName, const int row, const std::string &colTag) = 0;
     virtual const Vector3 &GetRecordVector3(const std::string &recordName, const int row, const std::string &colTag) = 0;
 
-    //  virtual SQUICK_SHARE_PTR<IComponent> AddComponent(const std::string& componentName, const std::string& strLanguageName) = 0;
-    //  virtual SQUICK_SHARE_PTR<IComponent> FindComponent(const std::string& componentName) = 0;
+    //  virtual std::shared_ptr<IComponent> AddComponent(const std::string& componentName, const std::string& strLanguageName) = 0;
+    //  virtual std::shared_ptr<IComponent> FindComponent(const std::string& componentName) = 0;
 
-    virtual SQUICK_SHARE_PTR<IRecordManager> GetRecordManager() = 0;
-    virtual SQUICK_SHARE_PTR<IPropertyManager> GetPropertyManager() = 0;
-    virtual void SetRecordManager(SQUICK_SHARE_PTR<IRecordManager> xRecordManager) = 0;
-    virtual void SetPropertyManager(SQUICK_SHARE_PTR<IPropertyManager> xPropertyManager) = 0;
+    virtual std::shared_ptr<IRecordManager> GetRecordManager() = 0;
+    virtual std::shared_ptr<IPropertyManager> GetPropertyManager() = 0;
+    virtual void SetRecordManager(std::shared_ptr<IRecordManager> xRecordManager) = 0;
+    virtual void SetPropertyManager(std::shared_ptr<IPropertyManager> xPropertyManager) = 0;
 
   protected:
     virtual bool AddRecordCallBack(const std::string &recordName, const RECORD_EVENT_FUNCTOR_PTR &cb) = 0;
@@ -120,7 +120,7 @@ class _SquickExport IObject : public MemoryCounter {
     virtual bool AddPropertyCallBack(const std::string &propertyName, const PROPERTY_EVENT_FUNCTOR_PTR &cb) = 0;
 
   protected:
-    IPluginManager *m_pPluginManager;
+    IPluginManager *m_pm_;
 
   private:
 };

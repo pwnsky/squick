@@ -15,14 +15,14 @@ namespace login::mysql {
 using namespace ::mysqlx;
 class MysqlModule : public IMysqlModule {
   public:
-    MysqlModule(IPluginManager *p) { pPluginManager = p; }
+    MysqlModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Start();
     virtual bool Destory();
     virtual bool ReadyUpdate();
     virtual bool Update();
     virtual bool AfterStart();
-    virtual void OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    virtual void OnLoginProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     
     virtual bool RegisterAccount(const std::string& guid, const std::string& account, const std::string& password) override;
     virtual bool IsHave(const std::string& column_name, const std::string& value) override;

@@ -5,7 +5,7 @@
 //////////////////////////////////////////////////////////////////////////
 class KernelPlugin : public IPlugin {
   public:
-    KernelPlugin(IPluginManager *p) { pPluginManager = p; }
+    KernelPlugin(IPluginManager *p) { pm_ = p; }
 
     virtual const int GetPluginVersion();
 

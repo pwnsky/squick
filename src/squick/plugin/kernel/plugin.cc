@@ -22,24 +22,24 @@ const int KernelPlugin::GetPluginVersion() { return 0; }
 const std::string KernelPlugin::GetPluginName() { return GET_CLASS_NAME(KernelPlugin); }
 
 void KernelPlugin::Install() {
-    REGISTER_MODULE(pPluginManager, ISceneModule, SceneModule)
-    REGISTER_MODULE(pPluginManager, IKernelModule, KernelModule)
-    REGISTER_MODULE(pPluginManager, IEventModule, EventModule)
-    REGISTER_MODULE(pPluginManager, IScheduleModule, ScheduleModule)
-    REGISTER_MODULE(pPluginManager, IDataTailModule, DataTailModule)
-    REGISTER_MODULE(pPluginManager, ICellModule, CellModule)
-    REGISTER_MODULE(pPluginManager, IThreadPoolModule, ThreadPoolModule)
-    REGISTER_MODULE(pPluginManager, IELOModule, ELOModule)
+    REGISTER_MODULE(pm_, ISceneModule, SceneModule)
+    REGISTER_MODULE(pm_, IKernelModule, KernelModule)
+    REGISTER_MODULE(pm_, IEventModule, EventModule)
+    REGISTER_MODULE(pm_, IScheduleModule, ScheduleModule)
+    REGISTER_MODULE(pm_, IDataTailModule, DataTailModule)
+    REGISTER_MODULE(pm_, ICellModule, CellModule)
+    REGISTER_MODULE(pm_, IThreadPoolModule, ThreadPoolModule)
+    REGISTER_MODULE(pm_, IELOModule, ELOModule)
 }
 
 void KernelPlugin::Uninstall() {
 
-    UNREGISTER_MODULE(pPluginManager, IELOModule, ELOModule)
-    UNREGISTER_MODULE(pPluginManager, IThreadPoolModule, ThreadPoolModule)
-    UNREGISTER_MODULE(pPluginManager, ICellModule, CellModule)
-    UNREGISTER_MODULE(pPluginManager, IDataTailModule, DataTailModule)
-    UNREGISTER_MODULE(pPluginManager, IEventModule, EventModule)
-    UNREGISTER_MODULE(pPluginManager, IKernelModule, KernelModule)
-    UNREGISTER_MODULE(pPluginManager, ISceneModule, SceneModule)
-    UNREGISTER_MODULE(pPluginManager, IScheduleModule, ScheduleModule)
+    UNREGISTER_MODULE(pm_, IELOModule, ELOModule)
+    UNREGISTER_MODULE(pm_, IThreadPoolModule, ThreadPoolModule)
+    UNREGISTER_MODULE(pm_, ICellModule, CellModule)
+    UNREGISTER_MODULE(pm_, IDataTailModule, DataTailModule)
+    UNREGISTER_MODULE(pm_, IEventModule, EventModule)
+    UNREGISTER_MODULE(pm_, IKernelModule, KernelModule)
+    UNREGISTER_MODULE(pm_, ISceneModule, SceneModule)
+    UNREGISTER_MODULE(pm_, IScheduleModule, ScheduleModule)
 }

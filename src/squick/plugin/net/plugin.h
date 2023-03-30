@@ -6,7 +6,7 @@
 //////////////////////////////////////////////////////////////////////////
 class NetPlugin : public IPlugin {
   public:
-    NetPlugin(IPluginManager *p) { pPluginManager = p; }
+    NetPlugin(IPluginManager *p) { pm_ = p; }
 
     virtual const int GetPluginVersion();
 
