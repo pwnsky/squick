@@ -39,7 +39,7 @@ enum class Month {
     December = 12,
 };
 
-class NFDateTime;
+class DateTime;
 
 class NFTimeSpan {
   public:
@@ -103,17 +103,17 @@ class NFTimeSpan {
 
   protected:
     int64_t totalSecond;
-    friend class NFDateTime;
+    friend class DateTime;
 };
 
-class NFDateTime {
+class DateTime {
   public:
     // seconds, from 1970-01-01
     // std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() / 1000
-    NFDateTime(const int64_t seconds) : _totalSecond(seconds) { UpdateTM(); }
+    DateTime(const int64_t seconds) : _totalSecond(seconds) { UpdateTM(); }
 
     // yyyy-MM-dd hh:mm:ss
-    NFDateTime(const std::string &data) {
+    DateTime(const std::string &data) {
         try {
             std::stringstream ss(data);
             ss >> std::get_time(&_tm, "%Y-%m-%d %H:%M:%S");
@@ -122,13 +122,13 @@ class NFDateTime {
         }
     }
 
-    NFDateTime(int year, int month, int day) : NFDateTime(year, month, day, 0, 0, 0) {}
+    DateTime(int year, int month, int day) : DateTime(year, month, day, 0, 0, 0) {}
 
-    NFDateTime(int year, int month, int day, int hour, int minute, int second) : _tm{second, minute, hour, day, month, year - 1900, 0, 0, -1} {
+    DateTime(int year, int month, int day, int hour, int minute, int second) : _tm{second, minute, hour, day, month, year - 1900, 0, 0, -1} {
         _totalSecond = mktime(&_tm);
     }
 
-    static NFDateTime Now() { return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); }
+    static DateTime Now() { return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); }
 
     inline int Month() const { return _tm.tm_mon + 1; }
 
@@ -206,27 +206,27 @@ class NFDateTime {
         UpdateTM();
     }
 
-    inline NFDateTime AddMonths(const int value) const {
+    inline DateTime AddMonths(const int value) const {
         auto new_month = _tm.tm_mon + value;
         auto new_year = _tm.tm_year + new_month / 12 + 1900;
         new_month = new_month % 12 + 1;
         auto daysInMonth = DaysInMonth(new_year, new_month);
         auto new_day = _tm.tm_mday < daysInMonth ? _tm.tm_mday : daysInMonth;
-        return NFDateTime(_tm.tm_year, new_month, new_day, _tm.tm_hour, _tm.tm_min, _tm.tm_sec);
+        return DateTime(_tm.tm_year, new_month, new_day, _tm.tm_hour, _tm.tm_min, _tm.tm_sec);
     }
 
-    inline NFDateTime AddYears(const int value) const {
+    inline DateTime AddYears(const int value) const {
         auto new_year = _tm.tm_year + value + 1900;
         auto daysInMonth = DaysInMonth(new_year, _tm.tm_mon);
         auto new_day = _tm.tm_mday < daysInMonth ? _tm.tm_mday : daysInMonth;
-        return NFDateTime(_tm.tm_year, _tm.tm_mon, new_day, _tm.tm_hour, _tm.tm_min, _tm.tm_sec);
+        return DateTime(_tm.tm_year, _tm.tm_mon, new_day, _tm.tm_hour, _tm.tm_min, _tm.tm_sec);
     }
 
-    inline bool Equals(const NFDateTime &value) { return *this == value; }
+    inline bool Equals(const DateTime &value) { return *this == value; }
 
     inline bool IsDaylightSavingTime() const { return _tm.tm_isdst; }
 
-    inline NFTimeSpan Subtract(const NFDateTime &value) const { return _totalSecond - value._totalSecond; }
+    inline NFTimeSpan Subtract(const DateTime &value) const { return _totalSecond - value._totalSecond; }
 
     inline void Subtract(const NFTimeSpan &value) {
         _totalSecond -= value.totalSecond;
@@ -243,19 +243,19 @@ class NFDateTime {
         return ss.str();
     }
 
-    inline NFTimeSpan operator-(const NFDateTime &d) const { return Subtract(d); }
+    inline NFTimeSpan operator-(const DateTime &d) const { return Subtract(d); }
 
-    inline bool operator==(const NFDateTime &dt) const { return _totalSecond == dt._totalSecond; }
+    inline bool operator==(const DateTime &dt) const { return _totalSecond == dt._totalSecond; }
 
-    inline bool operator!=(const NFDateTime &dt) const { return _totalSecond != dt._totalSecond; }
+    inline bool operator!=(const DateTime &dt) const { return _totalSecond != dt._totalSecond; }
 
-    inline bool operator<(const NFDateTime &dt) const { return _totalSecond < dt._totalSecond; }
+    inline bool operator<(const DateTime &dt) const { return _totalSecond < dt._totalSecond; }
 
-    inline bool operator>(const NFDateTime &dt) const { return _totalSecond > dt._totalSecond; }
+    inline bool operator>(const DateTime &dt) const { return _totalSecond > dt._totalSecond; }
 
-    inline bool operator<=(const NFDateTime &dt) const { return _totalSecond <= dt._totalSecond; }
+    inline bool operator<=(const DateTime &dt) const { return _totalSecond <= dt._totalSecond; }
 
-    inline bool operator>=(const NFDateTime &dt) const { return _totalSecond >= dt._totalSecond; }
+    inline bool operator>=(const DateTime &dt) const { return _totalSecond >= dt._totalSecond; }
 
   protected:
     int _totalSecond;

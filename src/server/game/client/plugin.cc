@@ -17,11 +17,11 @@ const int GameServerNet_ClientPlugin::GetPluginVersion() { return 0; }
 const std::string GameServerNet_ClientPlugin::GetPluginName() { return GET_CLASS_NAME(GameServerNet_ClientPlugin); }
 
 void GameServerNet_ClientPlugin::Install() {
-    REGISTER_MODULE(pPluginManager, IGameServerToWorldModule, GameServerToWorldModule)
-    REGISTER_MODULE(pPluginManager, IGameServerToDBModule, GameServerToDBModule)
+    REGISTER_MODULE(pm_, IGameServerToWorldModule, GameServerToWorldModule)
+    REGISTER_MODULE(pm_, IGameServerToDBModule, GameServerToDBModule)
 }
 
 void GameServerNet_ClientPlugin::Uninstall() {
-    UNREGISTER_MODULE(pPluginManager, IGameServerToDBModule, GameServerToDBModule)
-    UNREGISTER_MODULE(pPluginManager, IGameServerToWorldModule, GameServerToWorldModule)
+    UNREGISTER_MODULE(pm_, IGameServerToDBModule, GameServerToDBModule)
+    UNREGISTER_MODULE(pm_, IGameServerToWorldModule, GameServerToWorldModule)
 }

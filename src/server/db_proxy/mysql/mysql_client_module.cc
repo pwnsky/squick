@@ -5,8 +5,8 @@
 using namespace ::mysqlx;
 
 MysqlModule::MysqlModule(IPluginManager *p) {
-    m_bIsUpdate = true;
-    pPluginManager = p;
+    is_update_ = true;
+    pm_ = p;
 
     srand((unsigned)time(NULL));
 }

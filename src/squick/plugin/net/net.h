@@ -14,6 +14,7 @@
 #include <event2/util.h>
 #include <set>
 #include <thread>
+#include <unordered_map>
 
 #pragma pack(push, 1)
 
@@ -37,8 +38,8 @@ class Net : public INet {
     }
 
     template <typename BaseType>
-    Net(BaseType *pBaseType, void (BaseType::*handleReceive)(const SQUICK_SOCKET, const int, const char *, const uint32_t),
-        void (BaseType::*handleEvent)(const SQUICK_SOCKET, const SQUICK_NET_EVENT, INet *), bool tcpStream = false) {
+    Net(BaseType *pBaseType, void (BaseType::*handleReceive)(const socket_t, const int, const char *, const uint32_t),
+        void (BaseType::*handleEvent)(const socket_t, const SQUICK_NET_EVENT, INet *), bool tcpStream = false) {
         mxBase = NULL;
         listener = NULL;
 
@@ -68,25 +69,25 @@ class Net : public INet {
 
     virtual bool Final() override;
 
-    virtual bool SendMsg(const char *msg, const size_t len, const SQUICK_SOCKET sockIndex) override;
+    virtual bool SendMsg(const char *msg, const size_t len, const socket_t sock) override;
 
-    virtual bool SendMsgWithOutHead(const int16_t msgID, const char *msg, const size_t len, const SQUICK_SOCKET sockIndex) override;
+    virtual bool SendMsgWithOutHead(const int16_t msg_id, const char *msg, const size_t len, const socket_t sock) override;
 
     bool SendMsgToAllClient(const char *msg, const size_t len) override;
 
-    virtual bool SendMsgToAllClientWithOutHead(const int16_t msgID, const char *msg, const size_t len) override;
+    virtual bool SendMsgToAllClientWithOutHead(const int16_t msg_id, const char *msg, const size_t len) override;
 
-    virtual bool CloseNetObject(const SQUICK_SOCKET sockIndex) override;
-    virtual bool AddNetObject(const SQUICK_SOCKET sockIndex, NetObject *pObject) override;
-    virtual NetObject *GetNetObject(const SQUICK_SOCKET sockIndex) override;
+    virtual bool CloseNetObject(const socket_t sock) override;
+    virtual bool AddNetObject(const socket_t sock, NetObject *pObject) override;
+    virtual NetObject *GetNetObject(const socket_t sock) override;
 
     virtual bool IsServer() override;
     virtual bool Log(int severity, const char *msg) override;
 
   private:
-    bool SendMsgWithOutHead(const int16_t msgID, const char *msg, const size_t len, const std::list<SQUICK_SOCKET> &fdList);
+    bool SendMsgWithOutHead(const int16_t msg_id, const char *msg, const size_t len, const std::list<socket_t> &fdList);
 
-    bool SendMsg(const char *msg, const size_t len, const std::list<SQUICK_SOCKET> &fdList);
+    bool SendMsg(const char *msg, const size_t len, const std::list<socket_t> &fdList);
 
   private:
     void UpdateClose();
@@ -96,7 +97,7 @@ class Net : public INet {
 
     int StartClientNet();
     int StartServerNet();
-    void CloseObject(const SQUICK_SOCKET sockIndex);
+    void CloseObject(const socket_t sock);
 
     static void listener_cb(struct evconnlistener *listener, evutil_socket_t fd, struct sockaddr *sa, int socklen, void *user_data);
     static void conn_readcb(struct bufferevent *bev, void *user_data);
@@ -106,8 +107,8 @@ class Net : public INet {
     static void event_fatal_cb(int err);
 
   protected:
-    int DeCode(const char *strData, const uint32_t ulen, SquickStructHead &xHead);
-    int EnCode(const uint16_t umsgID, const char *strData, const uint32_t unDataLen, std::string &strOutData);
+    int DeCode(const char *strData, const uint32_t ulen, rpcHead &xHead);
+    int EnCode(const uint16_t umsg_id, const char *strData, const uint32_t unDataLen, std::string &strOutData);
 
   private:
     //<fd,object>
@@ -115,8 +116,8 @@ class Net : public INet {
     // std::multiset<NetObject*> mLiveBeatMap;
 
     // Use share pointer replace C-style pointer
-    std::map<SQUICK_SOCKET, NetObject *> mmObject;
-    std::vector<SQUICK_SOCKET> mvRemoveObject;
+    std::unordered_map<socket_t, NetObject *> mmObject;
+    std::vector<socket_t> mvRemoveObject;
 
     int mnMaxConnect;
     std::string mstrIP;

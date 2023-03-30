@@ -13,7 +13,7 @@
 #include <google/protobuf/dynamic_message.h>
 #include <squick/core/base.h>
 #include <squick/plugin/log/i_log_module.h>
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
 #include "squick/core/exception.h"
 #endif
 
@@ -36,7 +36,7 @@ class ILuaPBModule : public IModule {
 
 class LuaPBModule : public ILuaPBModule {
   public:
-    LuaPBModule(IPluginManager *p) { pPluginManager = p; }
+    LuaPBModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Awake();
     virtual bool Init();
@@ -77,7 +77,7 @@ class LuaPBModule : public ILuaPBModule {
     int GetEnumValue(google::protobuf::Message &message, const LuaIntf::LuaRef &luaValue, const google::protobuf::FieldDescriptor *field) const;
 
   protected:
-    ILogModule *m_pLogModule;
+    ILogModule *m_log_;
 
     int64_t mnTime;
     std::string strVersionCode;

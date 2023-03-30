@@ -16,9 +16,9 @@
 class WorldToMasterModule : public IWorldToMasterModule {
   public:
     WorldToMasterModule(IPluginManager *p) {
-        pPluginManager = p;
+        pm_ = p;
         mLastReportTime = 0;
-        m_bIsUpdate = true;
+        is_update_ = true;
     }
 
     virtual bool Start();
@@ -28,32 +28,32 @@ class WorldToMasterModule : public IWorldToMasterModule {
     virtual bool AfterStart();
 
   protected:
-    void OnSocketMSEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
+    void OnSocketMSEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 
-    void OnClientDisconnect(const SQUICK_SOCKET nAddress);
+    void OnClientDisconnect(const socket_t sock);
 
-    void OnClientConnected(const SQUICK_SOCKET nAddress);
+    void OnClientConnected(const socket_t sock);
 
     virtual void LogServerInfo(const std::string &strServerInfo);
 
     void Register(INet *pNet);
     void ServerReport();
     void RefreshWorldInfo();
-    void OnServerInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
-    void OnSelectServerProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnKickClientProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnSelectServerProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnKickClientProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
-    void InvalidMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   private:
     INT64 mLastReportTime;
 
-    ILogModule *m_pLogModule;
-    IElementModule *m_pElementModule;
-    IClassModule *m_pClassModule;
+    ILogModule *m_log_;
+    IElementModule *m_element_;
+    IClassModule *m_class_;
     IWorldNet_ServerModule *m_pWorldNet_ServerModule;
-    INetClientModule *m_pNetClientModule;
-    INetModule *m_pNetModule;
-    ISecurityModule *m_pSecurityModule;
+    INetClientModule *m_net_client_;
+    INetModule *m_net_;
+    ISecurityModule *m_security_;
 };

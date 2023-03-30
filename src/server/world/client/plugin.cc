@@ -19,6 +19,6 @@ const int WorldNet_ClientPlugin::GetPluginVersion() { return 0; }
 
 const std::string WorldNet_ClientPlugin::GetPluginName() { return GET_CLASS_NAME(WorldNet_ClientPlugin); }
 
-void WorldNet_ClientPlugin::Install() { REGISTER_MODULE(pPluginManager, IWorldToMasterModule, WorldToMasterModule) }
+void WorldNet_ClientPlugin::Install() { REGISTER_MODULE(pm_, IWorldToMasterModule, WorldToMasterModule) }
 
-void WorldNet_ClientPlugin::Uninstall() { UNREGISTER_MODULE(pPluginManager, IWorldToMasterModule, WorldToMasterModule) }
+void WorldNet_ClientPlugin::Uninstall() { UNREGISTER_MODULE(pm_, IWorldToMasterModule, WorldToMasterModule) }

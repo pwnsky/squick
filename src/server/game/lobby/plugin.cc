@@ -12,10 +12,10 @@ const int Plugin::GetPluginVersion() { return 0; }
 const std::string Plugin::GetPluginName() { return GET_CLASS_NAME(Plugin); }
 
 void Plugin::Install() {
-    REGISTER_MODULE(pPluginManager, IPlayerManagerModule, PlayerManagerModule)
-    REGISTER_MODULE(pPluginManager, IRoomModule, RoomModule)
+    REGISTER_MODULE(pm_, IPlayerManagerModule, PlayerManagerModule)
+    REGISTER_MODULE(pm_, IRoomModule, RoomModule)
 }
 
-void Plugin::Uninstall() { UNREGISTER_MODULE(pPluginManager, IRoomModule, RoomModule) }
+void Plugin::Uninstall() { UNREGISTER_MODULE(pm_, IRoomModule, RoomModule) }
 
 } // namespace game::player

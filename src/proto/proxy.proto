@@ -1,6 +1,6 @@
 // 代理服务器RPC
 syntax = "proto3";
-package SquickStruct;
+package rpc;
 import "base.proto";
 
 // 8000 ~ 10000

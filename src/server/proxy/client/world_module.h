@@ -17,8 +17,8 @@ namespace proxy::client {
 class WorldModule : public IWorldModule {
   public:
     WorldModule(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
+        is_update_ = true;
+        pm_ = p;
         mLastReportTime = 0;
     }
 
@@ -35,17 +35,17 @@ class WorldModule : public IWorldModule {
     virtual bool VerifyConnectData(const std::string &account, const std::string &strKey);
 
   protected:
-    void OnSocketWSEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
+    void OnSocketWSEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 
     void Register(INet *pNet);
     void ServerReport();
 
-    void OnSelectServerResultProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnServerInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnSelectServerResultProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
     void LogServerInfo(const std::string &strServerInfo);
 
-    void OnOtherMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnOtherMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   private:
     struct ClientConnectData {
@@ -63,14 +63,14 @@ class WorldModule : public IWorldModule {
   private:
     INT64 mLastReportTime;
 
-    ILogModule *m_pLogModule;
+    ILogModule *m_log_;
     logic::ILogicModule * m_logic_;
-    IKernelModule *m_pKernelModule;
+    IKernelModule *m_kernel_;
     server::IServerModule *server_module_;
-    IElementModule *m_pElementModule;
-    IClassModule *m_pClassModule;
-    INetClientModule *m_pNetClientModule;
-    ISecurityModule *m_pSecurityModule;
+    IElementModule *m_element_;
+    IClassModule *m_class_;
+    INetClientModule *m_net_client_;
+    ISecurityModule *m_security_;
 };
 
 } // namespace proxy::client

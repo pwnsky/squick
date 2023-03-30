@@ -3,7 +3,7 @@
 #include "../files.h"
 #include "config_generator_data.h"
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 #include <direct.h>
 #endif
 

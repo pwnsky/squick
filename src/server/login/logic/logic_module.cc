@@ -4,15 +4,15 @@
 
 namespace login::logic {
 bool LogicModule::Start() {
-    m_pNetModule = pPluginManager->FindModule<INetModule>();
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
+    m_net_ = pm_->FindModule<INetModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
 
     return true;
 }
 
 bool LogicModule::Destory() { return true; }
 
-void LogicModule::OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
+void LogicModule::OnLoginProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
 }
 
 bool LogicModule::ReadyUpdate() {

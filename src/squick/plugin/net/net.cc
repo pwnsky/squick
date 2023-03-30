@@ -88,7 +88,7 @@ void Net::listener_cb(struct evconnlistener *listener, evutil_socket_t fd, struc
     NetObject *pObject = new NetObject(pNet, fd, *pSin, bev);
     pObject->GetNet()->AddNetObject(fd, pObject);
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
     int optval = 1;
     int result = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(optval));
     // setsockopt(fd, IPPROTO_TCP, TCP_CORK, &optval, sizeof(optval));
@@ -233,7 +233,7 @@ bool Net::SendMsgToAllClient(const char *msg, const size_t len) {
     return true;
 }
 
-bool Net::SendMsg(const char *msg, const size_t len, const SQUICK_SOCKET sockIndex) {
+bool Net::SendMsg(const char *msg, const size_t len, const socket_t sock) {
     if (len <= 0) {
         return false;
     }
@@ -242,7 +242,7 @@ bool Net::SendMsg(const char *msg, const size_t len, const SQUICK_SOCKET sockInd
         return false;
     }
 
-    auto it = mmObject.find(sockIndex);
+    auto it = mmObject.find(sock);
     if (it != mmObject.end()) {
         NetObject *pNetObject = (NetObject *)it->second;
         if (pNetObject) {
@@ -259,7 +259,7 @@ bool Net::SendMsg(const char *msg, const size_t len, const SQUICK_SOCKET sockInd
     return false;
 }
 
-bool Net::SendMsg(const char *msg, const size_t len, const std::list<SQUICK_SOCKET> &fdList) {
+bool Net::SendMsg(const char *msg, const size_t len, const std::list<socket_t> &fdList) {
     auto it = fdList.begin();
     for (; it != fdList.end(); ++it) {
         SendMsg(msg, len, *it);
@@ -268,13 +268,13 @@ bool Net::SendMsg(const char *msg, const size_t len, const std::list<SQUICK_SOCK
     return true;
 }
 
-bool Net::CloseNetObject(const SQUICK_SOCKET sockIndex) {
-    auto it = mmObject.find(sockIndex);
+bool Net::CloseNetObject(const socket_t sock) {
+    auto it = mmObject.find(sock);
     if (it != mmObject.end()) {
         NetObject *pObject = it->second;
 
         pObject->SetNeedRemove(true);
-        mvRemoveObject.push_back(sockIndex);
+        mvRemoveObject.push_back(sock);
 
         return true;
     }
@@ -288,17 +288,17 @@ bool Net::Dismantle(NetObject *pObject) {
 
     int len = pObject->GetBuffLen();
     if (len > IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
-        SquickStructHead xHead;
+        rpcHead xHead;
         int nMsgBodyLength = DeCode(pObject->GetBuff(), len, xHead); // 解析头部
         if (nMsgBodyLength > 0 && xHead.GetMsgID() > 0) {
             if (mRecvCB) {
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
                 try {
 #endif
 
                     mRecvCB(pObject->GetRealFD(), xHead.GetMsgID(), pObject->GetBuff() + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH, nMsgBodyLength);
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
                 } catch (const std::exception &e) {
                     Exception::StackTrace(xHead.GetMsgID());
                 } catch (...) {
@@ -322,9 +322,9 @@ bool Net::Dismantle(NetObject *pObject) {
     return bNeedDismantle;
 }
 
-bool Net::AddNetObject(const SQUICK_SOCKET sockIndex, NetObject *pObject) {
+bool Net::AddNetObject(const socket_t sock, NetObject *pObject) {
     // lock
-    return mmObject.insert(std::map<SQUICK_SOCKET, NetObject *>::value_type(sockIndex, pObject)).second;
+    return mmObject.insert(std::map<socket_t, NetObject *>::value_type(sock, pObject)).second;
 }
 
 int Net::StartClientNet() {
@@ -362,7 +362,7 @@ int Net::StartClientNet() {
         return -1;
     }
 
-    SQUICK_SOCKET sockfd = bufferevent_getfd(bev);
+    socket_t sockfd = bufferevent_getfd(bev);
     NetObject *pObject = new NetObject(this, sockfd, addr, bev);
     if (!AddNetObject(0, pObject)) {
         assert(0);
@@ -371,7 +371,7 @@ int Net::StartClientNet() {
 
     mbServer = false;
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
     int optval = 1;
     int result = setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(optval));
     // setsockopt(fd, IPPROTO_TCP, TCP_CORK, &optval, sizeof(optval));
@@ -452,7 +452,7 @@ int Net::StartServerNet() {
 bool Net::CloseSocketAll() {
     auto it = mmObject.begin();
     for (; it != mmObject.end(); ++it) {
-        SQUICK_SOCKET nFD = it->first;
+        socket_t nFD = it->first;
         mvRemoveObject.push_back(nFD);
     }
 
@@ -463,8 +463,8 @@ bool Net::CloseSocketAll() {
     return true;
 }
 
-NetObject *Net::GetNetObject(const SQUICK_SOCKET sockIndex) {
-    auto it = mmObject.find(sockIndex);
+NetObject *Net::GetNetObject(const socket_t sock) {
+    auto it = mmObject.find(sock);
     if (it != mmObject.end()) {
         return it->second;
     }
@@ -472,8 +472,8 @@ NetObject *Net::GetNetObject(const SQUICK_SOCKET sockIndex) {
     return NULL;
 }
 
-void Net::CloseObject(const SQUICK_SOCKET sockIndex) {
-    auto it = mmObject.find(sockIndex);
+void Net::CloseObject(const socket_t sock) {
+    auto it = mmObject.find(sock);
     if (it != mmObject.end()) {
         NetObject *pObject = it->second;
 
@@ -490,7 +490,7 @@ void Net::CloseObject(const SQUICK_SOCKET sockIndex) {
 
 void Net::UpdateClose() {
     for (int i = 0; i < mvRemoveObject.size(); ++i) {
-        SQUICK_SOCKET nSocketIndex = mvRemoveObject[i];
+        socket_t nSocketIndex = mvRemoveObject[i];
         CloseObject(nSocketIndex);
     }
 
@@ -509,20 +509,20 @@ bool Net::Log(int severity, const char *msg) {
 }
 
 // 发送带有头部的消息
-bool Net::SendMsgWithOutHead(const int16_t msgID, const char *msg, const size_t len, const SQUICK_SOCKET sockIndex /*= 0*/) {
+bool Net::SendMsgWithOutHead(const int16_t msg_id, const char *msg, const size_t len, const socket_t sock /*= 0*/) {
     std::string strOutData;
-    int nAllLen = EnCode(msgID, msg, len, strOutData);
+    int nAllLen = EnCode(msg_id, msg, len, strOutData);
     if (nAllLen == len + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
 
-        return SendMsg(strOutData.c_str(), strOutData.length(), sockIndex);
+        return SendMsg(strOutData.c_str(), strOutData.length(), sock);
     }
 
     return false;
 }
 
-bool Net::SendMsgWithOutHead(const int16_t msgID, const char *msg, const size_t len, const std::list<SQUICK_SOCKET> &fdList) {
+bool Net::SendMsgWithOutHead(const int16_t msg_id, const char *msg, const size_t len, const std::list<socket_t> &fdList) {
     std::string strOutData;
-    int nAllLen = EnCode(msgID, msg, len, strOutData);
+    int nAllLen = EnCode(msg_id, msg, len, strOutData);
     if (nAllLen == len + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
         return SendMsg(strOutData.c_str(), strOutData.length(), fdList);
     }
@@ -530,9 +530,9 @@ bool Net::SendMsgWithOutHead(const int16_t msgID, const char *msg, const size_t 
     return false;
 }
 
-bool Net::SendMsgToAllClientWithOutHead(const int16_t msgID, const char *msg, const size_t len) {
+bool Net::SendMsgToAllClientWithOutHead(const int16_t msg_id, const char *msg, const size_t len) {
     std::string strOutData;
-    int nAllLen = EnCode(msgID, msg, len, strOutData);
+    int nAllLen = EnCode(msg_id, msg, len, strOutData);
     if (nAllLen == len + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
         return SendMsgToAllClient(strOutData.c_str(), (uint32_t)strOutData.length());
     }
@@ -540,9 +540,9 @@ bool Net::SendMsgToAllClientWithOutHead(const int16_t msgID, const char *msg, co
     return false;
 }
 
-int Net::EnCode(const uint16_t umsgID, const char *strData, const uint32_t unDataLen, std::string &strOutData) {
-    SquickStructHead xHead;
-    xHead.SetMsgID(umsgID);
+int Net::EnCode(const uint16_t umsg_id, const char *strData, const uint32_t unDataLen, std::string &strOutData) {
+    rpcHead xHead;
+    xHead.SetMsgID(umsg_id);
     xHead.SetBodyLength(unDataLen);
 
     char szHead[IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH] = {0};
@@ -555,7 +555,7 @@ int Net::EnCode(const uint16_t umsgID, const char *strData, const uint32_t unDat
     return xHead.GetBodyLength() + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH;
 }
 
-int Net::DeCode(const char *strData, const uint32_t unAllLen, SquickStructHead &xHead) {
+int Net::DeCode(const char *strData, const uint32_t unAllLen, rpcHead &xHead) {
 
     if (unAllLen < IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
 

@@ -4,11 +4,11 @@
 #include <squick/struct/excel.h>
 
 bool NavigationModule::Start() {
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
-    m_pClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pElementModule = pPluginManager->FindModule<IElementModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_element_ = pm_->FindModule<IElementModule>();
 
-    SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Scene::ThisName());
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Scene::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
 
@@ -16,7 +16,7 @@ bool NavigationModule::Start() {
             const std::string &strId = strIdList[i];
 
             int sceneId = lexical_cast<int>(strIdList[i]);
-            // std::string navigationResPath = m_pElementModule->GetPropertyManager(strId)->GetPropertyString(excel::Scene::NavigationResPath());
+            // std::string navigationResPath = m_element_->GetPropertyManager(strId)->GetPropertyString(excel::Scene::NavigationResPath());
             // LoadNavigation(sceneId, navigationResPath);
 
             // const std::string& strId = strIdList[i];
@@ -25,7 +25,7 @@ bool NavigationModule::Start() {
             // loadNavigation(sceneId, navigationResPath);
             // std::ostringstream strLog;
             // strLog << "strId: (" << strId.c_str() << ") is destroyed!\n";
-            // m_pLogModule->LogInfo(NULL_OBJECT, strLog, __FUNCTION__, __LINE__);
+            // m_log_->LogInfo(NULL_OBJECT, strLog, __FUNCTION__, __LINE__);
             /*elementModule->
             int sceneID = lexical_cast<int>(strIdList[i]);*/
         }
@@ -35,16 +35,16 @@ bool NavigationModule::Start() {
 
 bool NavigationModule::AfterStart() { return true; }
 
-SQUICK_SHARE_PTR<NFNavigationHandle> NavigationModule::LoadNavigation(INT64 scendId, string resPath) {
+std::shared_ptr<NFNavigationHandle> NavigationModule::LoadNavigation(INT64 scendId, string resPath) {
     if (resPath == "")
         return NULL;
 
-    std::unordered_map<INT64, SQUICK_SHARE_PTR<NFNavigationHandle>>::iterator iter = m_Navhandles.find(scendId);
+    std::unordered_map<INT64, std::shared_ptr<NFNavigationHandle>>::iterator iter = m_Navhandles.find(scendId);
     if (iter != m_Navhandles.end()) {
         return iter->second;
     }
 
-    SQUICK_SHARE_PTR<NFNavigationHandle> pNavigationHandle = NULL;
+    std::shared_ptr<NFNavigationHandle> pNavigationHandle = NULL;
     pNavigationHandle = NFNavigationHandle::Create(resPath);
     m_Navhandles[scendId] = pNavigationHandle;
     return pNavigationHandle;
@@ -53,21 +53,21 @@ SQUICK_SHARE_PTR<NFNavigationHandle> NavigationModule::LoadNavigation(INT64 scen
 bool NavigationModule::ExistNavigation(INT64 scendId) { return m_Navhandles.find(scendId) != m_Navhandles.end(); }
 
 bool NavigationModule::RemoveNavigation(INT64 scendId) {
-    std::unordered_map<INT64, SQUICK_SHARE_PTR<NFNavigationHandle>>::iterator iter = m_Navhandles.find(scendId);
+    std::unordered_map<INT64, std::shared_ptr<NFNavigationHandle>>::iterator iter = m_Navhandles.find(scendId);
     if (m_Navhandles.find(scendId) != m_Navhandles.end()) {
         m_Navhandles.erase(iter);
 
         std::ostringstream strLog;
         strLog << "Navigation::removeNavigation: (" << scendId << ") is destroyed!\n";
-        m_pLogModule->LogInfo(strLog, __FUNCTION__, __LINE__);
+        m_log_->LogInfo(strLog, __FUNCTION__, __LINE__);
         return true;
     }
 
     return false;
 }
 
-SQUICK_SHARE_PTR<NFNavigationHandle> NavigationModule::FindNavigation(INT64 scendId) {
-    std::unordered_map<INT64, SQUICK_SHARE_PTR<NFNavigationHandle>>::iterator iter = m_Navhandles.find(scendId);
+std::shared_ptr<NFNavigationHandle> NavigationModule::FindNavigation(INT64 scendId) {
+    std::unordered_map<INT64, std::shared_ptr<NFNavigationHandle>>::iterator iter = m_Navhandles.find(scendId);
     if (m_Navhandles.find(scendId) != m_Navhandles.end()) {
         if (iter->second == NULL) {
             return NULL;
@@ -78,7 +78,7 @@ SQUICK_SHARE_PTR<NFNavigationHandle> NavigationModule::FindNavigation(INT64 scen
 }
 
 int NavigationModule::FindPath(INT64 scendId, const Vector3 &start, const Vector3 &end, std::vector<Vector3> &paths) {
-    SQUICK_SHARE_PTR<NFNavigationHandle> pNavMeshHandle = FindNavigation(scendId);
+    std::shared_ptr<NFNavigationHandle> pNavMeshHandle = FindNavigation(scendId);
     if (pNavMeshHandle) {
         return pNavMeshHandle->FindStraightPath(start, end, paths);
     }
@@ -86,7 +86,7 @@ int NavigationModule::FindPath(INT64 scendId, const Vector3 &start, const Vector
 }
 
 int NavigationModule::FindRandomPointAroundCircle(INT64 scendId, const Vector3 &centerPos, std::vector<Vector3> &points, NFINT32 max_points, float maxRadius) {
-    SQUICK_SHARE_PTR<NFNavigationHandle> pNavMeshHandle = FindNavigation(scendId);
+    std::shared_ptr<NFNavigationHandle> pNavMeshHandle = FindNavigation(scendId);
     if (pNavMeshHandle) {
         return pNavMeshHandle->FindRandomPointAroundCircle(centerPos, points, max_points, maxRadius);
     }
@@ -94,7 +94,7 @@ int NavigationModule::FindRandomPointAroundCircle(INT64 scendId, const Vector3 &
 }
 
 int NavigationModule::Raycast(INT64 scendId, const Vector3 &start, const Vector3 &end, std::vector<Vector3> &hitPointVec) {
-    SQUICK_SHARE_PTR<NFNavigationHandle> pNavMeshHandle = FindNavigation(scendId);
+    std::shared_ptr<NFNavigationHandle> pNavMeshHandle = FindNavigation(scendId);
     if (pNavMeshHandle) {
         return pNavMeshHandle->Raycast(start, end, hitPointVec);
     }

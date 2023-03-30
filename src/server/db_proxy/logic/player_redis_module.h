@@ -27,8 +27,8 @@ class PlayerRedisModule : public IPlayerRedisModule {
     virtual bool CreateRole(const std::string &account, const std::string &strRoleName, const Guid &id, const int nHomeSceneID);
     virtual bool GetRoleInfo(const std::string &account, std::string &strRoleName, Guid &id);
 
-    virtual bool LoadPlayerData(const Guid &self, SquickStruct::PlayerData &playerData);
-    virtual bool SavePlayerData(const Guid &self, const SquickStruct::PlayerData &playerData);
+    virtual bool LoadPlayerData(const Guid &self, rpc::PlayerData &playerData);
+    virtual bool SavePlayerData(const Guid &self, const rpc::PlayerData &playerData);
 
   protected:
     std::string GetOnlineGameServerKey();
@@ -36,10 +36,10 @@ class PlayerRedisModule : public IPlayerRedisModule {
 
   private:
   private:
-    IClassModule *m_pLogicClassModule;
+    IClassModule *m_class_;
     IAccountRedisModule *m_pAccountRedisModule;
-    INoSqlModule *m_pNoSqlModule;
+    IRedisModule *m_redis_;
     ICommonRedisModule *m_pCommonRedisModule;
-    IKernelModule *m_pKernelModule;
-    ILogModule *m_pLogModule;
+    IKernelModule *m_kernel_;
+    ILogModule *m_log_;
 };

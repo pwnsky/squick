@@ -9,13 +9,13 @@
 */
 
 bool NavigationDataModule::Start() {
-    m_pNetModule = pPluginManager->FindModule<INetModule>();
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pElementModule = pPluginManager->FindModule<IElementModule>();
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
-    m_pEventModule = pPluginManager->FindModule<IEventModule>();
-    m_pSceneModule = pPluginManager->FindModule<ISceneModule>();
+    m_net_ = pm_->FindModule<INetModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_element_ = pm_->FindModule<IElementModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
+    m_event_ = pm_->FindModule<IEventModule>();
+    m_scene_ = pm_->FindModule<ISceneModule>();
 
     return true;
 }
@@ -34,15 +34,15 @@ bool NavigationDataModule::AfterStart() {
     */
 
     // public Dictionary<int, Dictionary<Guid, Voxel>> data;
-    auto sceneElement = m_pClassModule->GetElement(excel::Scene::ThisName());
+    auto sceneElement = m_class_->GetElement(excel::Scene::ThisName());
     auto sceneList = sceneElement->GetIDList();
     for (auto it = sceneList.begin(); it != sceneList.end(); ++it) {
         const std::string &sceneID = *it;
         const int scene = std::atoi(sceneID.c_str());
-        const std::string &sceneName = m_pElementModule->GetPropertyString(sceneID, excel::Scene::SceneName());
+        const std::string &sceneName = m_element_->GetPropertyString(sceneID, excel::Scene::SceneName());
 
         std::string jsonData;
-        pPluginManager->GetFileContent("../config/ini/scene/" + sceneName + ".json", jsonData);
+        pm_->GetFileContent("../config/ini/scene/" + sceneName + ".json", jsonData);
         if (jsonData.empty()) {
             continue;
         }
@@ -63,11 +63,11 @@ const std::string &NavigationDataModule::GetDefaultMapData(const int scene) {
     return NULL_STR;
 }
 
-const SQUICK_SHARE_PTR<GroupNavigationData> NavigationDataModule::GetMapData(const int scene, const int group) {
+const std::shared_ptr<GroupNavigationData> NavigationDataModule::GetMapData(const int scene, const int group) {
     return mGroupNavigationData.GetElement(Guid(scene, group));
 }
 
-const SQUICK_SHARE_PTR<Voxel> NavigationDataModule::GetMapData(const int scene, const int group, const int x, int z) {
+const std::shared_ptr<Voxel> NavigationDataModule::GetMapData(const int scene, const int group, const int x, int z) {
     auto data = mGroupNavigationData.GetElement(Guid(scene, group));
     if (data) {
         return data->data.GetElement(Guid(x, z));
@@ -136,4 +136,4 @@ bool NavigationDataModule::Destory() { return true; }
 
 bool NavigationDataModule::Update() { return true; }
 
-const SQUICK_SHARE_PTR<GroupNavigationData> NavigationDataModule::GetMapData(const int scene) { return GetMapData(scene, 0); }
+const std::shared_ptr<GroupNavigationData> NavigationDataModule::GetMapData(const int scene) { return GetMapData(scene, 0); }

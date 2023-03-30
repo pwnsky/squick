@@ -5,8 +5,8 @@
     "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Mobile Safari/537.36"
 
 HttpClientModule::HttpClientModule(IPluginManager *p) {
-    m_bIsUpdate = true;
-    pPluginManager = p;
+    is_update_ = true;
+    pm_ = p;
     m_pHttpClient = new HttpClient();
     m_xDefaultHttpHeaders["Connection"] = "close";
     // evhttp_add_header(output_headers, "Connection", "keep-alive");
@@ -28,7 +28,7 @@ bool HttpClientModule::Start() {
 }
 
 bool HttpClientModule::AfterStart() {
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
     return true;
 }
 
@@ -51,13 +51,13 @@ int HttpClientModule::Post(const std::string &strUri, const std::map<std::string
     HTTP_RESP_FUNCTOR_PTR pd(
         new HTTP_RESP_FUNCTOR(std::bind(&HttpClientModule::CallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)));
 
-    Guid id = m_pKernelModule->CreateGUID();
+    Guid id = m_kernel_->CreateGUID();
     std::string memo;
     m_pHttpClient->DoPost(strUri, strData, memo, pd, xHeaders, id);
 
-    mxRespDataMap.AddElement(id, SQUICK_SHARE_PTR<RespData>(SQUICK_NEW RespData()));
+    mxRespDataMap.AddElement(id, std::shared_ptr<RespData>(new RespData()));
 
-    SQUICK_SHARE_PTR<RespData> xRespData = mxRespDataMap.GetElement(id);
+    std::shared_ptr<RespData> xRespData = mxRespDataMap.GetElement(id);
     while (!xRespData->resp) {
         NFSLEEP(1);
     }
@@ -73,12 +73,12 @@ int HttpClientModule::Get(const std::string &strUri, const std::map<std::string,
     HTTP_RESP_FUNCTOR_PTR pd(
         new HTTP_RESP_FUNCTOR(std::bind(&HttpClientModule::CallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)));
 
-    Guid id = m_pKernelModule->CreateGUID();
+    Guid id = m_kernel_->CreateGUID();
     m_pHttpClient->DoGet(strUri, pd, m_xDefaultHttpHeaders, id);
 
-    mxRespDataMap.AddElement(id, SQUICK_SHARE_PTR<RespData>(SQUICK_NEW RespData()));
+    mxRespDataMap.AddElement(id, std::shared_ptr<RespData>(new RespData()));
 
-    SQUICK_SHARE_PTR<RespData> xRespData = mxRespDataMap.GetElement(id);
+    std::shared_ptr<RespData> xRespData = mxRespDataMap.GetElement(id);
     while (!xRespData->resp) {
         NFSLEEP(1);
     }
@@ -93,13 +93,13 @@ bool HttpClientModule::DoGet(const std::string &strUri, const std::map<std::stri
 
 bool HttpClientModule::DoPost(const std::string &strUri, const std::map<std::string, std::string> &xHeaders, const std::string &strPostData,
                               HTTP_RESP_FUNCTOR_PTR pCB, const std::string &strMemo) {
-    Guid aid = m_pKernelModule->CreateGUID();
+    Guid aid = m_kernel_->CreateGUID();
 
     return m_pHttpClient->DoPost(strUri, strPostData, strMemo, pCB, xHeaders.size() == 0 ? m_xDefaultHttpHeaders : xHeaders, aid);
 }
 
 void HttpClientModule::CallBack(const Guid id, const int state_code, const std::string &strRespData) {
-    SQUICK_SHARE_PTR<RespData> xRespData = mxRespDataMap.GetElement(id);
+    std::shared_ptr<RespData> xRespData = mxRespDataMap.GetElement(id);
     if (xRespData) {
         xRespData->resp = true;
         xRespData->state_code = state_code;

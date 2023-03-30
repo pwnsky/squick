@@ -272,7 +272,7 @@ class NFNavigationHandle {
         return 1;
     }
 
-    static SQUICK_SHARE_PTR<NFNavigationHandle> Create(std::string resPath) {
+    static std::shared_ptr<NFNavigationHandle> Create(std::string resPath) {
         FILE *fp = fopen(resPath.c_str(), "rb");
         if (!fp) {
             printf("NFNavigationHandle::create: open({%s}) is error!\n", resPath.c_str());
@@ -385,7 +385,7 @@ class NFNavigationHandle {
             return NULL;
         }
 
-        SQUICK_SHARE_PTR<NFNavigationHandle> pNavMeshHandle = SQUICK_SHARE_PTR<NFNavigationHandle>(SQUICK_NEW NFNavigationHandle());
+        std::shared_ptr<NFNavigationHandle> pNavMeshHandle = std::shared_ptr<NFNavigationHandle>(new NFNavigationHandle());
         dtNavMeshQuery *pNavmeshQuery = new dtNavMeshQuery();
 
         pNavmeshQuery->init(mesh, 1024);
@@ -433,7 +433,7 @@ class NFNavigationHandle {
 
 class NavigationModule : public INavigationModule {
   public:
-    NavigationModule(IPluginManager *p) { pPluginManager = p; }
+    NavigationModule(IPluginManager *p) { pm_ = p; }
 
     virtual ~NavigationModule() {}
 
@@ -443,9 +443,9 @@ class NavigationModule : public INavigationModule {
     virtual bool Destory();
     virtual bool Update();
 
-    SQUICK_SHARE_PTR<NFNavigationHandle> LoadNavigation(INT64 scendId, std::string resPath);
+    std::shared_ptr<NFNavigationHandle> LoadNavigation(INT64 scendId, std::string resPath);
 
-    SQUICK_SHARE_PTR<NFNavigationHandle> FindNavigation(INT64 scendId);
+    std::shared_ptr<NFNavigationHandle> FindNavigation(INT64 scendId);
 
     virtual bool ExistNavigation(INT64 scendId);
 
@@ -458,9 +458,9 @@ class NavigationModule : public INavigationModule {
     virtual int Raycast(INT64 scendId, const Vector3 &start, const Vector3 &end, std::vector<Vector3> &hitPointVec);
 
   private:
-    ILogModule *m_pLogModule;
-    IClassModule *m_pClassModule;
-    IElementModule *m_pElementModule;
+    ILogModule *m_log_;
+    IClassModule *m_class_;
+    IElementModule *m_element_;
 
-    std::unordered_map<INT64, SQUICK_SHARE_PTR<NFNavigationHandle>> m_Navhandles;
+    std::unordered_map<INT64, std::shared_ptr<NFNavigationHandle>> m_Navhandles;
 };

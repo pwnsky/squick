@@ -6,16 +6,16 @@
 #include <squick/struct/excel.h>
 
 bool SceneModule::Start() {
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pElementModule = pPluginManager->FindModule<IElementModule>();
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
-    m_pEventModule = pPluginManager->FindModule<IEventModule>();
-    m_pCellModule = pPluginManager->FindModule<ICellModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_element_ = pm_->FindModule<IElementModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
+    m_event_ = pm_->FindModule<IEventModule>();
+    m_pCellModule = pm_->FindModule<ICellModule>();
 
-    m_pKernelModule->RegisterCommonClassEvent(this, &SceneModule::OnClassCommonEvent);
-    m_pKernelModule->RegisterCommonPropertyEvent(this, &SceneModule::OnPropertyCommonEvent);
-    m_pKernelModule->RegisterCommonRecordEvent(this, &SceneModule::OnRecordCommonEvent);
+    m_kernel_->RegisterCommonClassEvent(this, &SceneModule::OnClassCommonEvent);
+    m_kernel_->RegisterCommonPropertyEvent(this, &SceneModule::OnPropertyCommonEvent);
+    m_kernel_->RegisterCommonRecordEvent(this, &SceneModule::OnRecordCommonEvent);
 
     return true;
 }
@@ -24,7 +24,7 @@ bool SceneModule::AfterStart() {
     // init all scene, scene module cant create scene at Start() function as scene module depends IClassModule
     // and class module will load data at Start() function.
     // as a result, developer cant create game object at function AfterStart().
-    SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Scene::ThisName());
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Scene::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
 
@@ -32,7 +32,7 @@ bool SceneModule::AfterStart() {
             const std::string &strId = strIdList[i];
 
             int sceneID = lexical_cast<int>(strId);
-            m_pKernelModule->CreateScene(sceneID);
+            m_kernel_->CreateScene(sceneID);
         }
     }
     return true;
@@ -58,22 +58,22 @@ bool SceneModule::Destory() { return true; }
 bool SceneModule::Update() { return true; }
 
 int SceneModule::RequestGroupScene(const int sceneID) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(sceneID);
     if (pSceneInfo) {
         int nNewGroupID = pSceneInfo->NewGroupID();
         if (!pSceneInfo->GetElement(nNewGroupID)) {
-            SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager(SQUICK_NEW PropertyManager(Guid(sceneID, nNewGroupID)));
-            SQUICK_SHARE_PTR<IRecordManager> pRecordManager(SQUICK_NEW RecordManager(Guid(sceneID, nNewGroupID)));
-            SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo(SQUICK_NEW SceneGroupInfo(sceneID, nNewGroupID, pPropertyManager, pRecordManager));
+            std::shared_ptr<IPropertyManager> pPropertyManager(new PropertyManager(Guid(sceneID, nNewGroupID)));
+            std::shared_ptr<IRecordManager> pRecordManager(new RecordManager(Guid(sceneID, nNewGroupID)));
+            std::shared_ptr<SceneGroupInfo> pGroupInfo(new SceneGroupInfo(sceneID, nNewGroupID, pPropertyManager, pRecordManager));
             if (pGroupInfo) {
                 Guid ident(sceneID, nNewGroupID);
 
-                SQUICK_SHARE_PTR<IPropertyManager> pStaticClassPropertyManager = m_pClassModule->GetClassPropertyManager(excel::Group::ThisName());
-                SQUICK_SHARE_PTR<IRecordManager> pStaticClassRecordManager = m_pClassModule->GetClassRecordManager(excel::Group::ThisName());
+                std::shared_ptr<IPropertyManager> pStaticClassPropertyManager = m_class_->GetClassPropertyManager(excel::Group::ThisName());
+                std::shared_ptr<IRecordManager> pStaticClassRecordManager = m_class_->GetClassRecordManager(excel::Group::ThisName());
                 if (pStaticClassPropertyManager && pStaticClassRecordManager) {
-                    SQUICK_SHARE_PTR<IProperty> pStaticConfigPropertyInfo = pStaticClassPropertyManager->First();
+                    std::shared_ptr<IProperty> pStaticConfigPropertyInfo = pStaticClassPropertyManager->First();
                     while (pStaticConfigPropertyInfo) {
-                        SQUICK_SHARE_PTR<IProperty> xProperty =
+                        std::shared_ptr<IProperty> xProperty =
                             pPropertyManager->AddProperty(ident, pStaticConfigPropertyInfo->GetKey(), pStaticConfigPropertyInfo->GetType());
 
                         xProperty->SetPublic(pStaticConfigPropertyInfo->GetPublic());
@@ -85,15 +85,15 @@ int SceneModule::RequestGroupScene(const int sceneID) {
 
                         PROPERTY_EVENT_FUNCTOR functor = std::bind(&SceneModule::OnScenePropertyCommonEvent, this, std::placeholders::_1, std::placeholders::_2,
                                                                    std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
-                        PROPERTY_EVENT_FUNCTOR_PTR functorPtr(SQUICK_NEW PROPERTY_EVENT_FUNCTOR(functor));
+                        PROPERTY_EVENT_FUNCTOR_PTR functorPtr(new PROPERTY_EVENT_FUNCTOR(functor));
                         pPropertyManager->RegisterCallback(pStaticConfigPropertyInfo->GetKey(), functorPtr);
 
                         pStaticConfigPropertyInfo = pStaticClassPropertyManager->Next();
                     }
 
-                    SQUICK_SHARE_PTR<IRecord> pConfigRecordInfo = pStaticClassRecordManager->First();
+                    std::shared_ptr<IRecord> pConfigRecordInfo = pStaticClassRecordManager->First();
                     while (pConfigRecordInfo) {
-                        SQUICK_SHARE_PTR<IRecord> xRecord = pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(),
+                        std::shared_ptr<IRecord> xRecord = pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(),
                                                                                       pConfigRecordInfo->GetTag(), pConfigRecordInfo->GetRows());
 
                         xRecord->SetPublic(pConfigRecordInfo->GetPublic());
@@ -104,7 +104,7 @@ int SceneModule::RequestGroupScene(const int sceneID) {
 
                         RECORD_EVENT_FUNCTOR functor = std::bind(&SceneModule::OnSceneRecordCommonEvent, this, std::placeholders::_1, std::placeholders::_2,
                                                                  std::placeholders::_3, std::placeholders::_4);
-                        RECORD_EVENT_FUNCTOR_PTR functorPtr(SQUICK_NEW RECORD_EVENT_FUNCTOR(functor));
+                        RECORD_EVENT_FUNCTOR_PTR functorPtr(new RECORD_EVENT_FUNCTOR(functor));
 
                         xRecord->AddRecordHook(functorPtr);
                         pConfigRecordInfo = pStaticClassRecordManager->Next();
@@ -113,7 +113,7 @@ int SceneModule::RequestGroupScene(const int sceneID) {
 
                 pSceneInfo->AddElement(nNewGroupID, pGroupInfo);
 
-                int sceneType = m_pElementModule->GetPropertyInt32(std::to_string(sceneID), excel::Scene::Type());
+                int sceneType = m_element_->GetPropertyInt32(std::to_string(sceneID), excel::Scene::Type());
                 SceneGroupCreatedEvent(Guid(), sceneID, nNewGroupID, sceneType, DataList::Empty());
 
                 m_pCellModule->CreateGroupCell(sceneID, nNewGroupID);
@@ -131,16 +131,16 @@ bool SceneModule::RequestEnterScene(const Guid &self, const int sceneID, const i
         return false;
     }
 
-    const int nNowSceneID = m_pKernelModule->GetPropertyInt32(self, excel::Player::SceneID());
-    const int nNowGroupID = m_pKernelModule->GetPropertyInt32(self, excel::Player::GroupID());
+    const int nNowSceneID = m_kernel_->GetPropertyInt32(self, excel::Player::SceneID());
+    const int nNowGroupID = m_kernel_->GetPropertyInt32(self, excel::Player::GroupID());
 
     if (nNowSceneID == sceneID && nNowGroupID == groupID) {
-        m_pLogModule->LogInfo(self, "in same scene and group but it not a clone scene " + std::to_string(sceneID));
+        m_log_->LogInfo(self, "in same scene and group but it not a clone scene " + std::to_string(sceneID));
 
         return false;
     }
 
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(sceneID);
     if (!pSceneInfo) {
         return false;
     }
@@ -154,12 +154,12 @@ bool SceneModule::RequestEnterScene(const Guid &self, const int sceneID, const i
 
     int nEnterConditionCode = EnterSceneCondition(self, sceneID, groupID, type, argList);
     if (nEnterConditionCode != 0) {
-        m_pLogModule->LogInfo(self, "before enter condition code: " + std::to_string(nEnterConditionCode), __FUNCTION__, __LINE__);
+        m_log_->LogInfo(self, "before enter condition code: " + std::to_string(nEnterConditionCode), __FUNCTION__, __LINE__);
         return false;
     }
 
     if (!SwitchScene(self, sceneID, groupID, type, pos, 0.0f, argList)) {
-        m_pLogModule->LogInfo(self, "SwitchScene failed " + std::to_string(sceneID));
+        m_log_->LogInfo(self, "SwitchScene failed " + std::to_string(sceneID));
 
         return false;
     }
@@ -168,14 +168,14 @@ bool SceneModule::RequestEnterScene(const Guid &self, const int sceneID, const i
 }
 
 bool SceneModule::ReleaseGroupScene(const int sceneID, const int groupID) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(sceneID);
     if (pSceneInfo) {
         if (groupID > 0) {
             DestroySceneNPC(sceneID, groupID);
 
             m_pCellModule->DestroyGroupCell(sceneID, groupID);
 
-            int sceneType = m_pElementModule->GetPropertyInt32(std::to_string(sceneID), excel::Scene::Type());
+            int sceneType = m_element_->GetPropertyInt32(std::to_string(sceneID), excel::Scene::Type());
             SceneGroupDestroyedEvent(Guid(), sceneID, groupID, sceneType, DataList::Empty());
 
             pSceneInfo->RemoveElement(groupID);
@@ -188,28 +188,28 @@ bool SceneModule::ReleaseGroupScene(const int sceneID, const int groupID) {
 }
 
 bool SceneModule::LeaveSceneGroup(const Guid &self) {
-    SQUICK_SHARE_PTR<IObject> pObject = m_pKernelModule->GetObject(self);
+    std::shared_ptr<IObject> pObject = m_kernel_->GetObject(self);
     if (pObject) {
         int nOldSceneID = pObject->GetPropertyInt32(excel::Scene::SceneID());
         int nOldGroupID = pObject->GetPropertyInt32(excel::Scene::GroupID());
         if (nOldGroupID <= 0) {
-            // m_pLogModule->LogError(self, "no this group == 0 " + std::to_string(nOldSceneID), __FUNCTION__, __LINE__);
+            // m_log_->LogError(self, "no this group == 0 " + std::to_string(nOldSceneID), __FUNCTION__, __LINE__);
             // return false;
         }
 
-        SQUICK_SHARE_PTR<SceneInfo> pOldSceneInfo = this->GetElement(nOldSceneID);
+        std::shared_ptr<SceneInfo> pOldSceneInfo = this->GetElement(nOldSceneID);
         if (!pOldSceneInfo) {
-            m_pLogModule->LogError(self, "no this container " + std::to_string(nOldSceneID), __FUNCTION__, __LINE__);
+            m_log_->LogError(self, "no this container " + std::to_string(nOldSceneID), __FUNCTION__, __LINE__);
             return false;
         }
 
         if (!pOldSceneInfo->GetElement(nOldGroupID)) {
-            m_pLogModule->LogError(self, "no this group " + std::to_string(nOldGroupID), __FUNCTION__, __LINE__);
+            m_log_->LogError(self, "no this group " + std::to_string(nOldGroupID), __FUNCTION__, __LINE__);
             return false;
         }
         /////////
 
-        const Vector3 &lastPos = m_pKernelModule->GetPropertyVector3(self, excel::IObject::Position());
+        const Vector3 &lastPos = m_kernel_->GetPropertyVector3(self, excel::IObject::Position());
         BeforeLeaveSceneGroup(self, nOldSceneID, nOldGroupID, 0, DataList::Empty());
 
         const Guid lastCell = m_pCellModule->ComputeCellID(lastPos);
@@ -227,7 +227,7 @@ bool SceneModule::LeaveSceneGroup(const Guid &self) {
         return true;
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
 
     return false;
 }
@@ -236,9 +236,9 @@ const std::vector<int> &SceneModule::GetGroups(const int sceneID) {
     static std::vector<int> vec;
     vec.clear();
 
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(sceneID);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->First();
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->First();
         while (pGroupInfo) {
             vec.push_back(pGroupInfo->groupID);
 
@@ -250,7 +250,7 @@ const std::vector<int> &SceneModule::GetGroups(const int sceneID) {
 }
 
 bool SceneModule::AddSeedData(const int sceneID, const std::string &seedID, const std::string &configID, const Vector3 &vPos, const int nWeight) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(sceneID);
     if (pSceneInfo) {
         return pSceneInfo->AddSeedObjectInfo(seedID, configID, vPos, nWeight);
     }
@@ -259,7 +259,7 @@ bool SceneModule::AddSeedData(const int sceneID, const std::string &seedID, cons
 }
 
 const Vector3 &SceneModule::GetSeedPos(const int sceneID, const std::string &seedID) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(sceneID);
     if (pSceneInfo) {
         auto seedDnata = pSceneInfo->GetSeedObjectInfo(seedID);
         if (seedDnata) {
@@ -271,7 +271,7 @@ const Vector3 &SceneModule::GetSeedPos(const int sceneID, const std::string &see
 }
 
 const int SceneModule::GetSeedPWeight(const int sceneID, const std::string &seedID) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(sceneID);
     if (pSceneInfo) {
         auto seedDnata = pSceneInfo->GetSeedObjectInfo(seedID);
         if (seedDnata) {
@@ -283,7 +283,7 @@ const int SceneModule::GetSeedPWeight(const int sceneID, const std::string &seed
 }
 
 bool SceneModule::AddRelivePosition(const int sceneID, const int nIndex, const Vector3 &vPos) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(sceneID);
     if (pSceneInfo) {
         return pSceneInfo->AddReliveInfo(nIndex, vPos);
     }
@@ -292,7 +292,7 @@ bool SceneModule::AddRelivePosition(const int sceneID, const int nIndex, const V
 }
 
 const Vector3 &SceneModule::GetRelivePosition(const int sceneID, const int nIndex) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(sceneID);
     if (pSceneInfo) {
         return pSceneInfo->GetReliveInfo(nIndex);
     }
@@ -301,7 +301,7 @@ const Vector3 &SceneModule::GetRelivePosition(const int sceneID, const int nInde
 }
 
 bool SceneModule::AddTagPosition(const int sceneID, const int nIndex, const Vector3 &vPos) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(sceneID);
     if (pSceneInfo) {
         return pSceneInfo->AddTagInfo(nIndex, vPos);
     }
@@ -310,7 +310,7 @@ bool SceneModule::AddTagPosition(const int sceneID, const int nIndex, const Vect
 }
 
 const Vector3 &SceneModule::GetTagPosition(const int sceneID, const int nIndex) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(sceneID);
     if (pSceneInfo) {
         return pSceneInfo->GetTagInfo(nIndex);
     }
@@ -397,21 +397,21 @@ bool SceneModule::AddSceneGroupDestroyedCallBack(const SCENE_EVENT_FUNCTOR_PTR &
 bool SceneModule::CreateSceneNPC(const int sceneID, const int groupID) { return CreateSceneNPC(sceneID, groupID, DataList::Empty()); }
 
 bool SceneModule::CreateSceneNPC(const int sceneID, const int groupID, const DataList &argList) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(sceneID);
     if (!pSceneInfo) {
         return false;
     }
 
-    SQUICK_SHARE_PTR<SceneSeedResource> pResource = pSceneInfo->mtSceneResourceConfig.First();
+    std::shared_ptr<SceneSeedResource> pResource = pSceneInfo->mtSceneResourceConfig.First();
     for (; pResource; pResource = pSceneInfo->mtSceneResourceConfig.Next()) {
-        int nWeight = m_pKernelModule->Random(0, 100);
+        int nWeight = m_kernel_->Random(0, 100);
         if (nWeight <= pResource->nWeight) {
             DataList arg;
             arg << excel::IObject::Position() << pResource->vSeedPos;
             // arg << SquickProtocol::NPC::SeedID() << pResource->seedID;
             arg.Append(argList);
 
-            // m_pKernelModule->CreateObject(Guid(), sceneID, groupID, SquickProtocol::NPC::ThisName(), pResource->configID, arg);
+            // m_kernel_->CreateObject(Guid(), sceneID, groupID, SquickProtocol::NPC::ThisName(), pResource->configID, arg);
         }
     }
 
@@ -419,14 +419,14 @@ bool SceneModule::CreateSceneNPC(const int sceneID, const int groupID, const Dat
 }
 
 bool SceneModule::DestroySceneNPC(const int sceneID, const int groupID) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(sceneID);
     if (pSceneInfo) {
         if (pSceneInfo->GetElement(groupID)) {
             DataList xMonsterlistObject;
-            if (m_pKernelModule->GetGroupObjectList(sceneID, groupID, xMonsterlistObject, false)) {
+            if (m_kernel_->GetGroupObjectList(sceneID, groupID, xMonsterlistObject, false)) {
                 for (int i = 0; i < xMonsterlistObject.GetCount(); ++i) {
                     Guid ident = xMonsterlistObject.Object(i);
-                    m_pKernelModule->DestroyObject(ident);
+                    m_kernel_->DestroyObject(ident);
                 }
             }
 
@@ -446,9 +446,9 @@ bool SceneModule::RemoveSwapSceneEventCallBack() {
 }
 
 bool SceneModule::SetPropertyInt(const int scene, const int group, const std::string &propertyName, const INT64 nValue) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxPropertyManager->SetPropertyInt(propertyName, nValue);
         }
@@ -458,9 +458,9 @@ bool SceneModule::SetPropertyInt(const int scene, const int group, const std::st
 }
 
 bool SceneModule::SetPropertyFloat(const int scene, const int group, const std::string &propertyName, const double dValue) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxPropertyManager->SetPropertyFloat(propertyName, dValue);
         }
@@ -470,9 +470,9 @@ bool SceneModule::SetPropertyFloat(const int scene, const int group, const std::
 }
 
 bool SceneModule::SetPropertyString(const int scene, const int group, const std::string &propertyName, const std::string &value) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxPropertyManager->SetPropertyString(propertyName, value);
         }
@@ -482,9 +482,9 @@ bool SceneModule::SetPropertyString(const int scene, const int group, const std:
 }
 
 bool SceneModule::SetPropertyObject(const int scene, const int group, const std::string &propertyName, const Guid &objectValue) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxPropertyManager->SetPropertyObject(propertyName, objectValue);
         }
@@ -494,9 +494,9 @@ bool SceneModule::SetPropertyObject(const int scene, const int group, const std:
 }
 
 bool SceneModule::SetPropertyVector2(const int scene, const int group, const std::string &propertyName, const Vector2 &value) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxPropertyManager->SetPropertyVector2(propertyName, value);
         }
@@ -506,9 +506,9 @@ bool SceneModule::SetPropertyVector2(const int scene, const int group, const std
 }
 
 bool SceneModule::SetPropertyVector3(const int scene, const int group, const std::string &propertyName, const Vector3 &value) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxPropertyManager->SetPropertyVector3(propertyName, value);
         }
@@ -518,9 +518,9 @@ bool SceneModule::SetPropertyVector3(const int scene, const int group, const std
 }
 
 INT64 SceneModule::GetPropertyInt(const int scene, const int group, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxPropertyManager->GetPropertyInt(propertyName);
         }
@@ -532,9 +532,9 @@ INT64 SceneModule::GetPropertyInt(const int scene, const int group, const std::s
 int SceneModule::GetPropertyInt32(const int scene, const int group, const std::string &propertyName) { return (int)GetPropertyInt(scene, group, propertyName); }
 
 double SceneModule::GetPropertyFloat(const int scene, const int group, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxPropertyManager->GetPropertyFloat(propertyName);
         }
@@ -545,9 +545,9 @@ double SceneModule::GetPropertyFloat(const int scene, const int group, const std
 
 const std::string &SceneModule::GetPropertyString(const int scene, const int group, const std::string &propertyName) {
 
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxPropertyManager->GetPropertyString(propertyName);
         }
@@ -559,9 +559,9 @@ const std::string &SceneModule::GetPropertyString(const int scene, const int gro
 
 const Guid &SceneModule::GetPropertyObject(const int scene, const int group, const std::string &propertyName) {
 
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxPropertyManager->GetPropertyObject(propertyName);
         }
@@ -571,9 +571,9 @@ const Guid &SceneModule::GetPropertyObject(const int scene, const int group, con
 }
 
 const Vector2 &SceneModule::GetPropertyVector2(const int scene, const int group, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxPropertyManager->GetPropertyVector2(propertyName);
         }
@@ -583,9 +583,9 @@ const Vector2 &SceneModule::GetPropertyVector2(const int scene, const int group,
 }
 
 const Vector3 &SceneModule::GetPropertyVector3(const int scene, const int group, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxPropertyManager->GetPropertyVector3(propertyName);
         }
@@ -594,10 +594,10 @@ const Vector3 &SceneModule::GetPropertyVector3(const int scene, const int group,
     return Vector3::Zero();
 }
 
-SQUICK_SHARE_PTR<IPropertyManager> SceneModule::FindPropertyManager(const int scene, const int group) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+std::shared_ptr<IPropertyManager> SceneModule::FindPropertyManager(const int scene, const int group) {
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxPropertyManager;
         }
@@ -606,10 +606,10 @@ SQUICK_SHARE_PTR<IPropertyManager> SceneModule::FindPropertyManager(const int sc
     return nullptr;
 }
 
-SQUICK_SHARE_PTR<IRecordManager> SceneModule::FindRecordManager(const int scene, const int group) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+std::shared_ptr<IRecordManager> SceneModule::FindRecordManager(const int scene, const int group) {
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxRecordManager;
         }
@@ -618,10 +618,10 @@ SQUICK_SHARE_PTR<IRecordManager> SceneModule::FindRecordManager(const int scene,
     return nullptr;
 }
 
-SQUICK_SHARE_PTR<IRecord> SceneModule::FindRecord(const int scene, const int group, const std::string &recordName) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = GetElement(scene);
+std::shared_ptr<IRecord> SceneModule::FindRecord(const int scene, const int group, const std::string &recordName) {
+    std::shared_ptr<SceneInfo> pSceneInfo = GetElement(scene);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(group);
         if (pGroupInfo) {
             return pGroupInfo->mxRecordManager->GetElement(recordName);
         }
@@ -631,7 +631,7 @@ SQUICK_SHARE_PTR<IRecord> SceneModule::FindRecord(const int scene, const int gro
 }
 
 bool SceneModule::ClearRecord(const int scene, const int group, const std::string &recordName) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->Clear();
     }
@@ -640,7 +640,7 @@ bool SceneModule::ClearRecord(const int scene, const int group, const std::strin
 }
 
 bool SceneModule::SetRecordInt(const int scene, const int group, const std::string &recordName, const int row, const int col, const INT64 nValue) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->SetInt(row, col, nValue);
     }
@@ -649,7 +649,7 @@ bool SceneModule::SetRecordInt(const int scene, const int group, const std::stri
 }
 
 bool SceneModule::SetRecordFloat(const int scene, const int group, const std::string &recordName, const int row, const int col, const double dwValue) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->SetFloat(row, col, dwValue);
     }
@@ -658,7 +658,7 @@ bool SceneModule::SetRecordFloat(const int scene, const int group, const std::st
 }
 
 bool SceneModule::SetRecordString(const int scene, const int group, const std::string &recordName, const int row, const int col, const std::string &value) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->SetString(row, col, value);
     }
@@ -667,7 +667,7 @@ bool SceneModule::SetRecordString(const int scene, const int group, const std::s
 }
 
 bool SceneModule::SetRecordObject(const int scene, const int group, const std::string &recordName, const int row, const int col, const Guid &objectValue) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->SetObject(row, col, objectValue);
     }
@@ -676,7 +676,7 @@ bool SceneModule::SetRecordObject(const int scene, const int group, const std::s
 }
 
 bool SceneModule::SetRecordVector2(const int scene, const int group, const std::string &recordName, const int row, const int col, const Vector2 &value) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->SetVector2(row, col, value);
     }
@@ -685,7 +685,7 @@ bool SceneModule::SetRecordVector2(const int scene, const int group, const std::
 }
 
 bool SceneModule::SetRecordVector3(const int scene, const int group, const std::string &recordName, const int row, const int col, const Vector3 &value) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->SetVector3(row, col, value);
     }
@@ -694,7 +694,7 @@ bool SceneModule::SetRecordVector3(const int scene, const int group, const std::
 }
 
 bool SceneModule::SetRecordInt(const int scene, const int group, const std::string &recordName, const int row, const std::string &colTag, const INT64 value) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->SetInt(row, colTag, value);
     }
@@ -704,7 +704,7 @@ bool SceneModule::SetRecordInt(const int scene, const int group, const std::stri
 
 bool SceneModule::SetRecordFloat(const int scene, const int group, const std::string &recordName, const int row, const std::string &colTag,
                                  const double value) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->SetFloat(row, colTag, value);
     }
@@ -714,7 +714,7 @@ bool SceneModule::SetRecordFloat(const int scene, const int group, const std::st
 
 bool SceneModule::SetRecordString(const int scene, const int group, const std::string &recordName, const int row, const std::string &colTag,
                                   const std::string &value) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->SetString(row, colTag, value);
     }
@@ -724,7 +724,7 @@ bool SceneModule::SetRecordString(const int scene, const int group, const std::s
 
 bool SceneModule::SetRecordObject(const int scene, const int group, const std::string &recordName, const int row, const std::string &colTag,
                                   const Guid &value) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->SetObject(row, colTag, value);
     }
@@ -734,7 +734,7 @@ bool SceneModule::SetRecordObject(const int scene, const int group, const std::s
 
 bool SceneModule::SetRecordVector2(const int scene, const int group, const std::string &recordName, const int row, const std::string &colTag,
                                    const Vector2 &value) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->SetVector2(row, colTag, value);
     }
@@ -744,7 +744,7 @@ bool SceneModule::SetRecordVector2(const int scene, const int group, const std::
 
 bool SceneModule::SetRecordVector3(const int scene, const int group, const std::string &recordName, const int row, const std::string &colTag,
                                    const Vector3 &value) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->SetVector3(row, colTag, value);
     }
@@ -753,7 +753,7 @@ bool SceneModule::SetRecordVector3(const int scene, const int group, const std::
 }
 
 INT64 SceneModule::GetRecordInt(const int scene, const int group, const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->GetInt(row, col);
     }
@@ -762,7 +762,7 @@ INT64 SceneModule::GetRecordInt(const int scene, const int group, const std::str
 }
 
 double SceneModule::GetRecordFloat(const int scene, const int group, const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->GetFloat(row, col);
     }
@@ -771,7 +771,7 @@ double SceneModule::GetRecordFloat(const int scene, const int group, const std::
 }
 
 const std::string &SceneModule::GetRecordString(const int scene, const int group, const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->GetString(row, col);
     }
@@ -780,7 +780,7 @@ const std::string &SceneModule::GetRecordString(const int scene, const int group
 }
 
 const Guid &SceneModule::GetRecordObject(const int scene, const int group, const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->GetObject(row, col);
     }
@@ -789,7 +789,7 @@ const Guid &SceneModule::GetRecordObject(const int scene, const int group, const
 }
 
 const Vector2 &SceneModule::GetRecordVector2(const int scene, const int group, const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->GetVector2(row, col);
     }
@@ -798,7 +798,7 @@ const Vector2 &SceneModule::GetRecordVector2(const int scene, const int group, c
 }
 
 const Vector3 &SceneModule::GetRecordVector3(const int scene, const int group, const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->GetVector3(row, col);
     }
@@ -807,7 +807,7 @@ const Vector3 &SceneModule::GetRecordVector3(const int scene, const int group, c
 }
 
 INT64 SceneModule::GetRecordInt(const int scene, const int group, const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->GetInt(row, colTag);
     }
@@ -816,7 +816,7 @@ INT64 SceneModule::GetRecordInt(const int scene, const int group, const std::str
 }
 
 double SceneModule::GetRecordFloat(const int scene, const int group, const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->GetFloat(row, colTag);
     }
@@ -825,7 +825,7 @@ double SceneModule::GetRecordFloat(const int scene, const int group, const std::
 }
 
 const std::string &SceneModule::GetRecordString(const int scene, const int group, const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->GetString(row, colTag);
     }
@@ -834,7 +834,7 @@ const std::string &SceneModule::GetRecordString(const int scene, const int group
 }
 
 const Guid &SceneModule::GetRecordObject(const int scene, const int group, const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->GetObject(row, colTag);
     }
@@ -843,7 +843,7 @@ const Guid &SceneModule::GetRecordObject(const int scene, const int group, const
 }
 
 const Vector2 &SceneModule::GetRecordVector2(const int scene, const int group, const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->GetVector2(row, colTag);
     }
@@ -852,7 +852,7 @@ const Vector2 &SceneModule::GetRecordVector2(const int scene, const int group, c
 }
 
 const Vector3 &SceneModule::GetRecordVector3(const int scene, const int group, const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IRecord> xRecord = FindRecord(scene, group, recordName);
+    std::shared_ptr<IRecord> xRecord = FindRecord(scene, group, recordName);
     if (xRecord) {
         return xRecord->GetVector3(row, colTag);
     }
@@ -906,30 +906,30 @@ bool SceneModule::AddGroupRecordCommCallBack(const RECORD_EVENT_FUNCTOR_PTR &cb)
 
 bool SceneModule::SwitchScene(const Guid &self, const int nTargetSceneID, const int nTargetGroupID, const int type, const Vector3 v, const float fOrient,
                               const DataList &arg) {
-    SQUICK_SHARE_PTR<IObject> pObject = m_pKernelModule->GetObject(self);
+    std::shared_ptr<IObject> pObject = m_kernel_->GetObject(self);
     if (pObject) {
         int nOldSceneID = pObject->GetPropertyInt32(excel::Scene::SceneID());
         int nOldGroupID = pObject->GetPropertyInt32(excel::Scene::GroupID());
 
-        SQUICK_SHARE_PTR<SceneInfo> pOldSceneInfo = this->GetElement(nOldSceneID);
-        SQUICK_SHARE_PTR<SceneInfo> pNewSceneInfo = this->GetElement(nTargetSceneID);
+        std::shared_ptr<SceneInfo> pOldSceneInfo = this->GetElement(nOldSceneID);
+        std::shared_ptr<SceneInfo> pNewSceneInfo = this->GetElement(nTargetSceneID);
         if (!pOldSceneInfo) {
-            m_pLogModule->LogError(self, "no this container " + std::to_string(nOldSceneID), __FUNCTION__, __LINE__);
+            m_log_->LogError(self, "no this container " + std::to_string(nOldSceneID), __FUNCTION__, __LINE__);
             return false;
         }
 
         if (!pNewSceneInfo) {
-            m_pLogModule->LogError(self, "no this container " + std::to_string(nTargetSceneID), __FUNCTION__, __LINE__);
+            m_log_->LogError(self, "no this container " + std::to_string(nTargetSceneID), __FUNCTION__, __LINE__);
             return false;
         }
 
         if (!pNewSceneInfo->GetElement(nTargetGroupID)) {
-            m_pLogModule->LogError(self, "no this group " + std::to_string(nTargetGroupID), __FUNCTION__, __LINE__);
+            m_log_->LogError(self, "no this group " + std::to_string(nTargetGroupID), __FUNCTION__, __LINE__);
             return false;
         }
         /////////
 
-        const Vector3 &lastPos = m_pKernelModule->GetPropertyVector3(self, excel::IObject::Position());
+        const Vector3 &lastPos = m_kernel_->GetPropertyVector3(self, excel::IObject::Position());
         BeforeLeaveSceneGroup(self, nOldSceneID, nOldGroupID, type, arg);
 
         const Guid lastCell = m_pCellModule->ComputeCellID(lastPos);
@@ -967,7 +967,7 @@ bool SceneModule::SwitchScene(const Guid &self, const int nTargetSceneID, const 
         return true;
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
 
     return false;
 }
@@ -1017,7 +1017,7 @@ int SceneModule::OnSceneRecordCommonEvent(const Guid &self, const RECORD_EVENT_D
 
 int SceneModule::OnPropertyCommonEvent(const Guid &self, const std::string &propertyName, const SquickData &oldVar, const SquickData &newVar,
                                        const INT64 reason) {
-    const std::string &className = m_pKernelModule->GetPropertyString(self, excel::IObject::ClassName());
+    const std::string &className = m_kernel_->GetPropertyString(self, excel::IObject::ClassName());
     if (className == excel::Player::ThisName()) {
         // only player can change grupid and sceneid
         if (excel::Player::GroupID() == propertyName) {
@@ -1044,7 +1044,7 @@ int SceneModule::OnPropertyCommonEvent(const Guid &self, const std::string &prop
 int SceneModule::OnRecordCommonEvent(const Guid &self, const RECORD_EVENT_DATA &eventData, const SquickData &oldVar, const SquickData &newVar) {
     const std::string &recordName = eventData.recordName;
 
-    int nObjectGroupID = m_pKernelModule->GetPropertyInt32(self, excel::Player::GroupID());
+    int nObjectGroupID = m_kernel_->GetPropertyInt32(self, excel::Player::GroupID());
 
     if (nObjectGroupID < 0) {
         return 0;
@@ -1060,14 +1060,14 @@ int SceneModule::OnRecordCommonEvent(const Guid &self, const RECORD_EVENT_DATA &
 
 int SceneModule::OnClassCommonEvent(const Guid &self, const std::string &className, const CLASS_OBJECT_EVENT classEvent, const DataList &var) {
     if (CLASS_OBJECT_EVENT::COE_DESTROY == classEvent) {
-        const int nObjectSceneID = m_pKernelModule->GetPropertyInt32(self, excel::IObject::SceneID());
-        const int nObjectGroupID = m_pKernelModule->GetPropertyInt32(self, excel::IObject::GroupID());
+        const int nObjectSceneID = m_kernel_->GetPropertyInt32(self, excel::IObject::SceneID());
+        const int nObjectGroupID = m_kernel_->GetPropertyInt32(self, excel::IObject::GroupID());
 
         if (nObjectGroupID < 0 || nObjectSceneID <= 0) {
             return 0;
         }
 
-        const Vector3 &pos = m_pKernelModule->GetPropertyVector3(self, excel::Player::Position());
+        const Vector3 &pos = m_kernel_->GetPropertyVector3(self, excel::Player::Position());
         DataList valueAllPlayrNoSelfList;
         m_pCellModule->GetCellObjectList(nObjectSceneID, nObjectGroupID, pos, valueAllPlayrNoSelfList, true, self);
 
@@ -1093,13 +1093,13 @@ int SceneModule::OnClassCommonEvent(const Guid &self, const std::string &classNa
 
             OnObjectListEnterFinished(selfVar, selfVar);
         } else {
-            const int nObjectSceneID = m_pKernelModule->GetPropertyInt32(self, excel::IObject::SceneID());
-            const int nObjectGroupID = m_pKernelModule->GetPropertyInt32(self, excel::IObject::GroupID());
+            const int nObjectSceneID = m_kernel_->GetPropertyInt32(self, excel::IObject::SceneID());
+            const int nObjectGroupID = m_kernel_->GetPropertyInt32(self, excel::IObject::GroupID());
 
             if (nObjectGroupID < 0 || nObjectSceneID <= 0) {
                 return 0;
             }
-            const Vector3 &pos = m_pKernelModule->GetPropertyVector3(self, excel::Player::Position());
+            const Vector3 &pos = m_kernel_->GetPropertyVector3(self, excel::Player::Position());
             DataList valueAllPlayrObjectList;
             m_pCellModule->GetCellObjectList(nObjectSceneID, nObjectGroupID, pos, valueAllPlayrObjectList, true);
 
@@ -1118,8 +1118,8 @@ int SceneModule::OnClassCommonEvent(const Guid &self, const std::string &classNa
 
 int SceneModule::OnPlayerGroupEvent(const Guid &self, const std::string &propertyName, const SquickData &oldVar, const SquickData &newVar) {
     // this event only happened in the same scene
-    const int sceneID = m_pKernelModule->GetPropertyInt32(self, excel::IObject::SceneID());
-    const Vector3 position = m_pKernelModule->GetPropertyVector3(self, excel::IObject::Position());
+    const int sceneID = m_kernel_->GetPropertyInt32(self, excel::IObject::SceneID());
+    const Vector3 position = m_kernel_->GetPropertyVector3(self, excel::IObject::Position());
     int nOldGroupID = oldVar.GetInt32();
     int nNewGroupID = newVar.GetInt32();
 
@@ -1219,16 +1219,16 @@ int SceneModule::OnPlayerSceneEvent(const Guid &self, const std::string &propert
 }
 
 int SceneModule::GetBroadCastObject(const Guid &self, const std::string &propertyName, const bool bTable, DataList &valueObject) {
-    const int nObjectContainerID = m_pKernelModule->GetPropertyInt32(self, excel::IObject::SceneID());
-    const int nObjectGroupID = m_pKernelModule->GetPropertyInt32(self, excel::IObject::GroupID());
-    const Vector3 &position = m_pKernelModule->GetPropertyVector3(self, excel::IObject::Position());
+    const int nObjectContainerID = m_kernel_->GetPropertyInt32(self, excel::IObject::SceneID());
+    const int nObjectGroupID = m_kernel_->GetPropertyInt32(self, excel::IObject::GroupID());
+    const Vector3 &position = m_kernel_->GetPropertyVector3(self, excel::IObject::Position());
 
-    const std::string &className = m_pKernelModule->GetPropertyString(self, excel::IObject::ClassName());
-    SQUICK_SHARE_PTR<IRecordManager> pClassRecordManager = m_pClassModule->GetClassRecordManager(className);
-    SQUICK_SHARE_PTR<IPropertyManager> pClassPropertyManager = m_pClassModule->GetClassPropertyManager(className);
+    const std::string &className = m_kernel_->GetPropertyString(self, excel::IObject::ClassName());
+    std::shared_ptr<IRecordManager> pClassRecordManager = m_class_->GetClassRecordManager(className);
+    std::shared_ptr<IPropertyManager> pClassPropertyManager = m_class_->GetClassPropertyManager(className);
 
-    SQUICK_SHARE_PTR<IRecord> pRecord(NULL);
-    SQUICK_SHARE_PTR<IProperty> pProperty(NULL);
+    std::shared_ptr<IRecord> pRecord(NULL);
+    std::shared_ptr<IProperty> pProperty(NULL);
     if (bTable) {
         if (NULL == pClassRecordManager) {
             return -1;

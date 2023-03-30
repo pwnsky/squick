@@ -2,10 +2,10 @@
 #include <squick/plugin/kernel/i_event_module.h>
 
 bool SecurityModule::Start() {
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
-    m_pElementModule = pPluginManager->FindModule<IElementModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
+    m_element_ = pm_->FindModule<IElementModule>();
 
     return true;
 }

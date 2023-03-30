@@ -13,14 +13,14 @@ bool LuaPBModule::Awake() {
     m_pImporter = new google::protobuf::compiler::Importer(&mSourceTree, &mErrorCollector);
     m_pFactory = new google::protobuf::DynamicMessageFactory();
 
-    mnTime = pPluginManager->GetNowTime();
+    mnTime = pm_->GetNowTime();
 
     return true;
 }
 
 bool LuaPBModule::Init() {
 
-    m_pLogModule = this->pPluginManager->FindModule<ILogModule>();
+    m_log_ = this->pm_->FindModule<ILogModule>();
 
     return true;
 }
@@ -46,7 +46,7 @@ bool LuaPBModule::BeforeShut() { return true; }
 void LuaPBModule::ImportProtoFile(const std::string &strFile) {
     const google::protobuf::FileDescriptor *pDesc = m_pImporter->Import(strFile);
     if (!pDesc) {
-        m_pLogModule->LogError("unknow protocol  file to import struct name: " + strFile);
+        m_log_->LogError("unknow protocol  file to import struct name: " + strFile);
     };
 }
 
@@ -178,7 +178,7 @@ LuaIntf::LuaRef LuaPBModule::GetField(const google::protobuf::Message &message, 
     case google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE: {
         // For message field, the default value is null.
         if (pReflection->HasField(message, field)) {
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 #pragma push_macro("GetMessage")
 #undef GetMessage
             const google::protobuf::Message &subMsg = pReflection->GetMessage(message, field);

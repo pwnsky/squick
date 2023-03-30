@@ -4,7 +4,7 @@
 namespace db_proxy::mongo {
     class Plugin : public IPlugin {
     public:
-        Plugin(IPluginManager* p) { pPluginManager = p; }
+        Plugin(IPluginManager* p) { pm_ = p; }
 
         virtual const int GetPluginVersion();
 

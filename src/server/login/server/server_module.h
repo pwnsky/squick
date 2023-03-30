@@ -17,7 +17,7 @@ namespace login::server {
 class ServerModule : public IServerModule {
     
   public:
-    ServerModule(IPluginManager *p) { pPluginManager = p; }
+    ServerModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Start();
     virtual bool Destory();
@@ -30,29 +30,29 @@ class ServerModule : public IServerModule {
     virtual void LogSend(const char *str) {}
 
   protected:
-    void OnSocketClientEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
+    void OnSocketClientEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 
   protected:
-    void OnClientDisconnect(const SQUICK_SOCKET nAddress);
-    void OnClientConnected(const SQUICK_SOCKET nAddress);
-    void OnSelectWorldProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void InvalidMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnClientDisconnect(const socket_t sock);
+    void OnClientConnected(const socket_t sock);
+    void OnSelectWorldProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   protected:
   protected:
-    void SynWorldToClient(const SQUICK_SOCKET nFD);
+    void SynWorldToClient(const socket_t nFD);
 
-    MapEx<Guid, SQUICK_SOCKET> mxClientIdent;
+    MapEx<Guid, socket_t> mxClientIdent;
 
   private:
-    INetModule *m_pNetModule;
-    INetClientModule *m_pNetClientModule;
-    IClassModule *m_pClassModule;
-    IElementModule *m_pElementModule;
-    IKernelModule *m_pKernelModule;
-    ILogModule *m_pLogModule;
+    INetModule *m_net_;
+    INetClientModule *m_net_client_;
+    IClassModule *m_class_;
+    IElementModule *m_element_;
+    IKernelModule *m_kernel_;
+    ILogModule *m_log_;
     client::IMasterModule *m_pLoginToMasterModule;
-    IThreadPoolModule *m_pThreadPoolModule;
+    IThreadPoolModule *m_thread_pool_;
 };
 
 } // namespace login::server

@@ -1,6 +1,6 @@
 #pragma once
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 #include <direct.h>
 #endif
 #include "i_generator.h"
@@ -32,7 +32,7 @@ class StructGenerator : public IGenerator {
                 Files::StringReplace(folder, strExcelIniPath, "");
                 std::string fileFolder = strXMLStructPath + folder;
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
                 mkdir(fileFolder.c_str());
 #else
                 mkdir(fileFolder.c_str(), 0777);

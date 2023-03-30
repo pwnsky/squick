@@ -1,12 +1,12 @@
-#ifndef SQUICK_PLATFORM_H
-#define SQUICK_PLATFORM_H
+#ifndef PLATFORM_H
+#define PLATFORM_H
 
-#define SQUICK_PLATFORM_WIN 1
-#define SQUICK_PLATFORM_LINUX 2
-#define SQUICK_PLATFORM_APPLE 3
-#define SQUICK_PLATFORM_SYMBIAN 4
-#define SQUICK_PLATFORM_APPLE_IOS 5
-#define SQUICK_PLATFORM_ANDROID 6
+#define PLATFORM_WIN 1
+#define PLATFORM_LINUX 2
+#define PLATFORM_APPLE 3
+#define PLATFORM_SYMBIAN 4
+#define PLATFORM_APPLE_IOS 5
+#define PLATFORM_ANDROID 6
 
 #define SQUICK_COMPILER_MSVC 1
 #define SQUICK_COMPILER_GNUC 2
@@ -67,26 +67,26 @@
 /* Finds the current platform */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if defined(__WIN32__) || defined(_WIN32) || defined(_WINDOWS) || defined(WIN) || defined(_WIN64) || defined(__WIN64__)
-#define SQUICK_PLATFORM SQUICK_PLATFORM_WIN
+#define PLATFORM PLATFORM_WIN
 //////////////////////////////////////////////////////////////////////////
 #elif defined(__APPLE_CC__) || defined(__APPLE__) || defined(__OSX__)
 // Device                                                     Simulator
 // Both requiring OS version 4.0 or greater
 #if __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ >= 40000 || __IPHONE_OS_VERSION_MIN_REQUIRED >= 40000
-#define SQUICK_PLATFORM SQUICK_PLATFORM_APPLE_IOS
+#define PLATFORM PLATFORM_APPLE_IOS
 #else
-#define SQUICK_PLATFORM SQUICK_PLATFORM_APPLE
+#define PLATFORM PLATFORM_APPLE
 #endif
 //////////////////////////////////////////////////////////////////////////
 #elif defined(linux) && defined(__arm__)
 // TODO: This is NOT the correct way to detect the Tegra 2 platform but it works for now.
 // It doesn't appear that GCC defines any platform specific macros.
-#define SQUICK_PLATFORM SQUICK_PLATFORM_TEGRA2
+#define PLATFORM PLATFORM_TEGRA2
 #elif defined(__ANDROID__)
-#define SQUICK_PLATFORM SQUICK_PLATFORM_ANDROID
+#define PLATFORM PLATFORM_ANDROID
 //////////////////////////////////////////////////////////////////////////
 #elif defined(__native_client__)
-#define SQUICK_PLATFORM SQUICK_PLATFORM_NACL
+#define PLATFORM PLATFORM_NACL
 #ifndef SQUICK_STATIC_LIB
 #error NF must be built as static for NaCl (SQUICK_STATIC=true in cmake)
 #endif
@@ -100,7 +100,7 @@
 #error GLES2 render system is needed for NaCl (OSQUICK_BUILD_RENDERSYSTEM_GLES2=false in cmake)
 #endif
 #else
-#define SQUICK_PLATFORM SQUICK_PLATFORM_LINUX
+#define PLATFORM PLATFORM_LINUX
 #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* Find the arch type */
@@ -119,7 +119,7 @@
 
 //----------------------------------------------------------------------------
 // Windows Settings
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
@@ -177,11 +177,11 @@
 #define SQUICK_UNICODE_SUPPORT 1
 #endif
 
-#endif // SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#endif // PLATFORM == PLATFORM_WIN
 //----------------------------------------------------------------------------
 // Android Settings
 /*
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_ANDROID
+#if PLATFORM == PLATFORM_ANDROID
 #   define _SquickExport
 #   define SQUICK_UNICODE_SUPPORT 1
 #   define SQUICK_DEBUG_MODE 0
@@ -201,8 +201,8 @@ warn_unusedarg off #     pragma warn_emptydecl off #     pragma warn_possunwant 
 */
 //----------------------------------------------------------------------------
 // Linux/Apple/iOs/Android/Symbian/Tegra2/NaCl Settings
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_LINUX || SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE || SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE_IOS ||                    \
-    SQUICK_PLATFORM == SQUICK_PLATFORM_ANDROID || SQUICK_PLATFORM == SQUICK_PLATFORM_TEGRA2 || SQUICK_PLATFORM == SQUICK_PLATFORM_NACL
+#if PLATFORM == PLATFORM_LINUX || PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS ||                    \
+    PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_TEGRA2 || PLATFORM == PLATFORM_NACL
 
 // #include <syswait.h>
 
@@ -261,17 +261,17 @@ typedef int16_t NFINT16;
 typedef int8_t NFINT8;
 typedef uint64_t NFUINT64;
 typedef int64_t INT64;
-typedef int64_t SQUICK_SOCKET;
+typedef int64_t socket_t;
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 #include <crtdbg.h>
-#define NFASSERT(exp_, msg_, file_, func_)                                                                                                                     \
+#define SQUICK_ASSERT(exp_, msg_, file_, func_)                                                                                                                     \
     std::string strInfo("Message:");                                                                                                                           \
     strInfo += msg_ + std::string(" don't exist or some warning") + std::string("\n\nFile:") + std::string(file_) + std::string("\n Function:") + func_;       \
     MessageBoxA(0, strInfo.c_str(), ("Error_" #exp_), MB_RETRYCANCEL | MB_ICONERROR);                                                                          \
     assert(0);
 #else
-#define NFASSERT(exp_, msg_, file_, func_)
+#define SQUICK_ASSERT(exp_, msg_, file_, func_)
 #endif
 
 // #define GOOGLE_GLOG_DLL_DECL=
@@ -307,7 +307,7 @@ typedef int64_t SQUICK_SOCKET;
 
 #define ELPP_DISABLE_DEFAULT_CRASH_HANDLING
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 #define NFSPRINTF sprintf_s
 #define NFSTRICMP stricmp
 #define NFSLEEP(s) Sleep(s) // millisecond
@@ -319,14 +319,14 @@ typedef int64_t SQUICK_SOCKET;
 #define NFGetPID() lexical_cast<std::string>(getpid())
 #endif
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 #ifndef SQUICK_DYNAMIC_PLUGIN
 // #define SQUICK_DYNAMIC_PLUGIN 1
 #endif
 #endif
 
 // using tcmalloc
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
 #ifndef SQUICK_USE_TCMALLOC
 // #define SQUICK_USE_TCMALLOC 1
 #endif
@@ -334,8 +334,6 @@ typedef int64_t SQUICK_SOCKET;
 
 #define GET_CLASS_NAME(className) typeid(className).name()
 
-#define SQUICK_SHARE_PTR std::shared_ptr
-#define SQUICK_NEW new
 
 template <typename DTYPE> bool SQUICK_StrTo(const std::string &value, DTYPE &nValue) {
     try {

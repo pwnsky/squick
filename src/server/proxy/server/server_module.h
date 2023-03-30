@@ -21,7 +21,7 @@
 namespace proxy::server {
 class ServerModule : public IServerModule {
   public:
-    ServerModule(IPluginManager *p) { pPluginManager = p; }
+    ServerModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Start();
     virtual bool Destory();
@@ -29,18 +29,18 @@ class ServerModule : public IServerModule {
     virtual bool AfterStart();
 
   protected:
-    void OnSocketClientEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
+    void OnSocketClientEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
   protected:
-    INetClientModule *m_pNetClientModule;
-    IKernelModule *m_pKernelModule;
-    ILogModule *m_pLogModule;
-    IElementModule *m_pElementModule;
-    IClassModule *m_pClassModule;
-    INetModule *m_pNetModule;
-    ISecurityModule *m_pSecurityModule;
+    INetClientModule *m_net_client_;
+    IKernelModule *m_kernel_;
+    ILogModule *m_log_;
+    IElementModule *m_element_;
+    IClassModule *m_class_;
+    INetModule *m_net_;
+    ISecurityModule *m_security_;
     client::IWorldModule *m_pProxyToWorldModule;
     logic::ILogicModule* m_logic_;
-    IThreadPoolModule *m_pThreadPoolModule;
+    IThreadPoolModule *m_thread_pool_;
 };
 
 } // namespace proxy::server

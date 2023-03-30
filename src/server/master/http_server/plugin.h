@@ -4,7 +4,7 @@
 
 class MasterNet_HttpServerPlugin : public IPlugin {
   public:
-    MasterNet_HttpServerPlugin(IPluginManager *p) { pPluginManager = p; }
+    MasterNet_HttpServerPlugin(IPluginManager *p) { pm_ = p; }
     virtual const int GetPluginVersion();
 
     virtual const std::string GetPluginName();

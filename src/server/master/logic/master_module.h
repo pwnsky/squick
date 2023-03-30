@@ -6,7 +6,7 @@
 class MasterModule : public IMasterModule {
 
   public:
-    MasterModule(IPluginManager *p) { pPluginManager = p; }
+    MasterModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Start();
     virtual bool Destory();
@@ -14,5 +14,5 @@ class MasterModule : public IMasterModule {
 
   protected:
   private:
-    IKernelModule *m_pKernelModule;
+    IKernelModule *m_kernel_;
 };

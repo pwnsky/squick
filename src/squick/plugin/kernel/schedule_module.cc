@@ -8,7 +8,7 @@ void ScheduleElement::DoHeartBeatEvent(INT64 nowTime) {
 
     mnTriggerTime = nowTime + (INT64)(mfIntervalTime * 1000);
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
     SQUICK_CRASH_TRY
 #endif
     OBJECT_SCHEDULE_FUNCTOR_PTR cb;
@@ -19,25 +19,25 @@ void ScheduleElement::DoHeartBeatEvent(INT64 nowTime) {
 
         bRet = this->mxObjectFunctor.Next(cb);
     }
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
     SQUICK_CRASH_END
 #endif
 }
 
 ScheduleModule::ScheduleModule(IPluginManager *p) {
-    pPluginManager = p;
-    m_bIsUpdate = true;
+    pm_ = p;
+    is_update_ = true;
 }
 
 ScheduleModule::~ScheduleModule() { mObjectScheduleMap.ClearAll(); }
 
 bool ScheduleModule::Start() {
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pSceneModule = pPluginManager->FindModule<ISceneModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_scene_ = pm_->FindModule<ISceneModule>();
 
-    m_pKernelModule->RegisterCommonClassEvent(this, &ScheduleModule::OnClassCommonEvent);
-    m_pSceneModule->AddSceneGroupDestroyedCallBack(this, &ScheduleModule::OnGroupCommonEvent);
+    m_kernel_->RegisterCommonClassEvent(this, &ScheduleModule::OnClassCommonEvent);
+    m_scene_->AddSceneGroupDestroyedCallBack(this, &ScheduleModule::OnGroupCommonEvent);
 
     return true;
 }
@@ -88,7 +88,7 @@ bool ScheduleModule::Update() {
         os << "---------------module schedule performance problem ";
         os << performanceObject.TimeScope();
         os << "---------- ";
-        m_pLogModule->LogWarning(Guid(), os, __FUNCTION__, __LINE__);
+        m_log_->LogWarning(Guid(), os, __FUNCTION__, __LINE__);
     }
 
     return true;
@@ -97,13 +97,13 @@ bool ScheduleModule::Update() {
 bool ScheduleModule::AddSchedule(const Guid self, const std::string &scheduleName, const OBJECT_SCHEDULE_FUNCTOR_PTR &cb, const float time, const int count) {
     auto objectMap = mObjectScheduleMap.GetElement(self);
     if (!objectMap) {
-        objectMap = SQUICK_SHARE_PTR<MapEx<std::string, ScheduleElement>>(SQUICK_NEW MapEx<std::string, ScheduleElement>());
+        objectMap = std::shared_ptr<MapEx<std::string, ScheduleElement>>(new MapEx<std::string, ScheduleElement>());
         mObjectScheduleMap.AddElement(self, objectMap);
     }
 
     auto scheduleObject = objectMap->GetElement(scheduleName);
     if (!scheduleObject) {
-        scheduleObject = SQUICK_SHARE_PTR<ScheduleElement>(SQUICK_NEW ScheduleElement());
+        scheduleObject = std::shared_ptr<ScheduleElement>(new ScheduleElement());
         scheduleObject->mstrScheduleName = scheduleName;
         scheduleObject->mfIntervalTime = time;
         scheduleObject->mnTriggerTime = SquickGetTimeMS() + (INT64)(time * 1000);
@@ -145,8 +145,8 @@ bool ScheduleModule::ExistSchedule(const Guid self, const std::string &scheduleN
     return objectScheduleMap->ExistElement(scheduleName);
 }
 
-SQUICK_SHARE_PTR<ScheduleElement> ScheduleModule::GetSchedule(const Guid self, const std::string &scheduleName) {
-    SQUICK_SHARE_PTR<MapEx<std::string, ScheduleElement>> xObjectScheduleMap = mObjectScheduleMap.GetElement(self);
+std::shared_ptr<ScheduleElement> ScheduleModule::GetSchedule(const Guid self, const std::string &scheduleName) {
+    std::shared_ptr<MapEx<std::string, ScheduleElement>> xObjectScheduleMap = mObjectScheduleMap.GetElement(self);
     if (NULL == xObjectScheduleMap) {
         return nullptr;
     }

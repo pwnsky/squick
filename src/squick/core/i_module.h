@@ -10,7 +10,7 @@
 class IModule {
 
   public:
-    IModule() : m_bIsUpdate(false), pPluginManager(NULL) {}
+    IModule() : is_update_(false), pm_(NULL) {}
 
     virtual ~IModule() {}
 
@@ -34,11 +34,11 @@ class IModule {
 
     virtual bool OnReloadPlugin() { return true; }
 
-    virtual IPluginManager *GetPluginManager() const { return pPluginManager; }
+    virtual IPluginManager *GetPluginManager() const { return pm_; }
 
     std::string name;
-    bool m_bIsUpdate;
+    bool is_update_;
 
   protected:
-    IPluginManager *pPluginManager;
+    IPluginManager *pm_;
 };

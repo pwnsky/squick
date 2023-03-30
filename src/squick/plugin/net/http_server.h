@@ -6,7 +6,7 @@
 #include "i_http_server.h"
 #include <squick/core/map_ex.h>
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 #include <fcntl.h>
 #include <io.h>
 #include <winsock2.h>
@@ -48,8 +48,8 @@ class HttpServer : public IHttpServer {
     HttpServer() {}
 
     template <typename BaseType>
-    HttpServer(BaseType *pBaseType, bool (BaseType::*handleReceiver)(SQUICK_SHARE_PTR<HttpRequest> req),
-               WebStatus (BaseType::*handleFilter)(SQUICK_SHARE_PTR<HttpRequest> req)) {
+    HttpServer(BaseType *pBaseType, bool (BaseType::*handleReceiver)(std::shared_ptr<HttpRequest> req),
+               WebStatus (BaseType::*handleFilter)(std::shared_ptr<HttpRequest> req)) {
         mxBase = NULL;
         mReceiveCB = std::bind(handleReceiver, pBaseType, std::placeholders::_1);
         mFilter = std::bind(handleFilter, pBaseType, std::placeholders::_1);
@@ -69,14 +69,14 @@ class HttpServer : public IHttpServer {
 
     virtual int StartServer(const unsigned short nPort);
 
-    virtual bool ResponseMsg(SQUICK_SHARE_PTR<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason = "OK");
+    virtual bool ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason = "OK");
 
-    virtual SQUICK_SHARE_PTR<HttpRequest> GetHttpRequest(const int64_t index);
+    virtual std::shared_ptr<HttpRequest> GetHttpRequest(const int64_t index);
 
   private:
     static void listener_cb(struct evhttp_request *req, void *arg);
 
-    SQUICK_SHARE_PTR<HttpRequest> AllocHttpRequest();
+    std::shared_ptr<HttpRequest> AllocHttpRequest();
 
   private:
     int64_t mIndex = 0;
@@ -86,7 +86,7 @@ class HttpServer : public IHttpServer {
     HTTP_FILTER_FUNCTOR mFilter;
 
     MapEx<int64_t, HttpRequest> mxHttpRequestMap;
-    std::list<SQUICK_SHARE_PTR<HttpRequest>> mxHttpRequestPool;
+    std::list<std::shared_ptr<HttpRequest>> mxHttpRequestPool;
 };
 
 #endif

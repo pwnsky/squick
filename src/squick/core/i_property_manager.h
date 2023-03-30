@@ -13,9 +13,9 @@ class _SquickExport IPropertyManager : public MapEx<std::string, IProperty> {
 
     virtual bool RegisterCallback(const std::string &propertyName, const PROPERTY_EVENT_FUNCTOR_PTR &cb) = 0;
 
-    virtual SQUICK_SHARE_PTR<IProperty> AddProperty(const Guid &self, SQUICK_SHARE_PTR<IProperty> pProperty) = 0;
+    virtual std::shared_ptr<IProperty> AddProperty(const Guid &self, std::shared_ptr<IProperty> pProperty) = 0;
 
-    virtual SQUICK_SHARE_PTR<IProperty> AddProperty(const Guid &self, const std::string &propertyName, const DATA_TYPE varType) = 0;
+    virtual std::shared_ptr<IProperty> AddProperty(const Guid &self, const std::string &propertyName, const DATA_TYPE varType) = 0;
 
     virtual const Guid &Self() = 0;
 

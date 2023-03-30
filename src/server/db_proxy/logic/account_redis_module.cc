@@ -2,10 +2,10 @@
 #include "account_redis_module.h"
 
 bool AccountRedisModule::Start() {
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pLogicClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pNoSqlModule = pPluginManager->FindModule<INoSqlModule>();
-    m_pCommonRedisModule = pPluginManager->FindModule<ICommonRedisModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_redis_ = pm_->FindModule<IRedisModule>();
+    m_pCommonRedisModule = pm_->FindModule<ICommonRedisModule>();
 
     return true;
 }
@@ -22,10 +22,10 @@ bool AccountRedisModule::VerifyAccount(const std::string &account, const std::st
     }
 
     std::string strAccountKey = m_pCommonRedisModule->GetAccountCacheKey(account);
-    SQUICK_SHARE_PTR<IRedisClient> xNoSqlDriver = m_pNoSqlModule->GetDriverBySuit(account);
-    if (xNoSqlDriver) {
+    std::shared_ptr<IRedisClient> driver = m_redis_->GetDriverBySuit(account);
+    if (driver) {
         std::string strPassword;
-        if (xNoSqlDriver->HGET(strAccountKey, "Password", strPassword) && strPassword == strPwd) {
+        if (driver->HGET(strAccountKey, "Password", strPassword) && strPassword == strPwd) {
             return true;
         }
     }
@@ -35,18 +35,18 @@ bool AccountRedisModule::VerifyAccount(const std::string &account, const std::st
 
 bool AccountRedisModule::AddAccount(const std::string &account, const std::string &strPwd) {
     std::string strAccountKey = m_pCommonRedisModule->GetAccountCacheKey(account);
-    SQUICK_SHARE_PTR<IRedisClient> xNoSqlDriver = m_pNoSqlModule->GetDriverBySuit(account);
-    if (xNoSqlDriver) {
-        return xNoSqlDriver->HSET(strAccountKey, "Password", strPwd);
+    std::shared_ptr<IRedisClient> driver = m_redis_->GetDriverBySuit(account);
+    if (driver) {
+        return driver->HSET(strAccountKey, "Password", strPwd);
     }
     return false;
 }
 
 bool AccountRedisModule::ExistAccount(const std::string &account) {
     std::string strAccountKey = m_pCommonRedisModule->GetAccountCacheKey(account);
-    SQUICK_SHARE_PTR<IRedisClient> xNoSqlDriver = m_pNoSqlModule->GetDriverBySuit(account);
-    if (xNoSqlDriver) {
-        return xNoSqlDriver->EXISTS(strAccountKey);
+    std::shared_ptr<IRedisClient> driver = m_redis_->GetDriverBySuit(account);
+    if (driver) {
+        return driver->EXISTS(strAccountKey);
     }
 
     return false;

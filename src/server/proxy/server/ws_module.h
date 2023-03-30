@@ -16,7 +16,7 @@
 namespace proxy::server {
 class ProxyServerNet_WSModule : public IWS_Module {
   public:
-    ProxyServerNet_WSModule(IPluginManager *p) { pPluginManager = p; }
+    ProxyServerNet_WSModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Start();
     virtual bool Destory();
@@ -24,24 +24,24 @@ class ProxyServerNet_WSModule : public IWS_Module {
     virtual bool AfterStart();
 
   protected:
-    void OnSocketClientEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
+    void OnSocketClientEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 
-    void OnClientDisconnect(const SQUICK_SOCKET nAddress);
-    void OnClientConnected(const SQUICK_SOCKET nAddress);
+    void OnClientDisconnect(const socket_t sock);
+    void OnClientConnected(const socket_t sock);
 
-    void OnWebSocketTestProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-
-  protected:
-    MapEx<Guid, SQUICK_SOCKET> mxClientIdent;
+    void OnWebSocketTestProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   protected:
-    INetClientModule *m_pNetClientModule;
-    IKernelModule *m_pKernelModule;
-    ILogModule *m_pLogModule;
-    IElementModule *m_pElementModule;
-    IClassModule *m_pClassModule;
+    MapEx<Guid, socket_t> mxClientIdent;
+
+  protected:
+    INetClientModule *m_net_client_;
+    IKernelModule *m_kernel_;
+    ILogModule *m_log_;
+    IElementModule *m_element_;
+    IClassModule *m_class_;
     IWSModule *m_pWSModule;
-    ISecurityModule *m_pSecurityModule;
+    ISecurityModule *m_security_;
     client::IWorldModule *m_pProxyToWorldModule;
 };
 

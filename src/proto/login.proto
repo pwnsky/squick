@@ -1,5 +1,5 @@
 syntax = "proto3";
-package SquickStruct;
+package rpc;
 import "base.proto";
 
 // 6000 ~ 7000

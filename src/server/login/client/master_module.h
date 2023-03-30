@@ -14,8 +14,8 @@ namespace login::client {
 class MasterModule : public IMasterModule {
   public:
     MasterModule(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
+        is_update_ = true;
+        pm_ = p;
         mLastReportTime = 0;
     }
 
@@ -30,16 +30,16 @@ class MasterModule : public IMasterModule {
     virtual void LogSend(const char *str) {}
 
     virtual INetClientModule *GetClusterModule();
-    virtual map<int, SquickStruct::ServerInfoReport> & GetWorldServers();
-    virtual map<int, SquickStruct::ServerInfoReport>& GetProxyServers();
+    virtual map<int, rpc::ServerInfoReport> & GetWorldServers();
+    virtual map<int, rpc::ServerInfoReport>& GetProxyServers();
 
   protected:
-    void OnSocketMSEvent(const SQUICK_SOCKET sock, const SQUICK_NET_EVENT event, INet *net);
+    void OnSocketMSEvent(const socket_t sock, const SQUICK_NET_EVENT event, INet *net);
 
   protected:
     //////////////////////////////////////////////////////////////////////////
-    void OnSelectServerResultProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnWorldInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnSelectServerResultProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnWorldInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
     //////////////////////////////////////////////////////////////////////////
     void Register(INet *pNet);
@@ -47,15 +47,15 @@ class MasterModule : public IMasterModule {
 
   private:
     INT64 mLastReportTime;
-    map<int, SquickStruct::ServerInfoReport> world_servers_;
-    map<int, SquickStruct::ServerInfoReport> proxy_servers_;
+    map<int, rpc::ServerInfoReport> world_servers_;
+    map<int, rpc::ServerInfoReport> proxy_servers_;
 
     server::IServerModule *m_pLoginNet_ServerModule;
-    IElementModule *m_pElementModule;
-    IKernelModule *m_pKernelModule;
-    IClassModule *m_pClassModule;
-    ILogModule *m_pLogModule;
-    INetClientModule *m_pNetClientModule;
+    IElementModule *m_element_;
+    IKernelModule *m_kernel_;
+    IClassModule *m_class_;
+    ILogModule *m_log_;
+    INetClientModule *m_net_client_;
 };
 
 } // namespace login::client

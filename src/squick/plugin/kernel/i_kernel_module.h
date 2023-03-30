@@ -17,7 +17,7 @@ class IKernelModule : public IModule {
     template <typename BaseType>
     bool AddPropertyCallBack(const Guid &self, const std::string &propertyName, BaseType *pBase,
                              int (BaseType::*handler)(const Guid &, const std::string &, const SquickData &, const SquickData &, const INT64)) {
-        SQUICK_SHARE_PTR<IObject> pObject = GetObject(self);
+        std::shared_ptr<IObject> pObject = GetObject(self);
         if (pObject.get()) {
             return pObject->AddPropertyCallBack(propertyName, pBase, handler);
         }
@@ -28,7 +28,7 @@ class IKernelModule : public IModule {
     template <typename BaseType>
     bool AddRecordCallBack(const Guid &self, const std::string &recordName, BaseType *pBase,
                            int (BaseType::*handler)(const Guid &, const RECORD_EVENT_DATA &, const SquickData &, const SquickData &)) {
-        SQUICK_SHARE_PTR<IObject> pObject = GetObject(self);
+        std::shared_ptr<IObject> pObject = GetObject(self);
         if (pObject.get()) {
             return pObject->AddRecordCallBack(recordName, pBase, handler);
         }
@@ -95,8 +95,8 @@ class IKernelModule : public IModule {
     virtual bool ObjectReady(const Guid &ident) = 0;
     virtual bool ExistObject(const Guid &ident, const int sceneID, const int groupID) = 0;
 
-    virtual SQUICK_SHARE_PTR<IObject> GetObject(const Guid &ident) = 0;
-    virtual SQUICK_SHARE_PTR<IObject> CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className,
+    virtual std::shared_ptr<IObject> GetObject(const Guid &ident) = 0;
+    virtual std::shared_ptr<IObject> CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className,
                                                    const std::string &configIndex, const DataList &arg) = 0;
 
     virtual bool DestroySelf(const Guid &self) = 0;
@@ -120,7 +120,7 @@ class IKernelModule : public IModule {
     virtual const Vector2 &GetPropertyVector2(const Guid &self, const std::string &propertyName) = 0;
     virtual const Vector3 &GetPropertyVector3(const Guid &self, const std::string &propertyName) = 0;
 
-    virtual SQUICK_SHARE_PTR<IRecord> FindRecord(const Guid &self, const std::string &recordName) = 0;
+    virtual std::shared_ptr<IRecord> FindRecord(const Guid &self, const std::string &recordName) = 0;
     virtual bool ClearRecord(const Guid &self, const std::string &recordName) = 0;
 
     virtual bool SetRecordInt(const Guid &self, const std::string &recordName, const int row, const int col, const INT64 nValue) = 0;

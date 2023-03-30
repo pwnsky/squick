@@ -12,22 +12,22 @@
 
 #ifdef SQUICK_DEBUG_MODE
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 #pragma comment(lib, "libtcmalloc_minimal.lib")
 #pragma comment(linker, "/include:__tcmalloc")
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_LINUX || SQUICK_PLATFORM == SQUICK_PLATFORM_ANDROID
+#elif PLATFORM == PLATFORM_LINUX || PLATFORM == PLATFORM_ANDROID
 #pragma comment(lib, "libtcmalloc_minimal.a")
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE || SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE_IOS
+#elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS
 #endif
 
 #else
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 #pragma comment(lib, "libtcmalloc_minimal.lib")
 #pragma comment(linker, "/include:__tcmalloc")
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_LINUX || SQUICK_PLATFORM == SQUICK_PLATFORM_ANDROID
+#elif PLATFORM == PLATFORM_LINUX || PLATFORM == PLATFORM_ANDROID
 #pragma comment(lib, "libtcmalloc_minimal.a")
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE || SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE_IOS
+#elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS
 #endif
 
 #endif // SQUICK_USE_TCMALLOC

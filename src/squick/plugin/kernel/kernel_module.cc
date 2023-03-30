@@ -12,13 +12,13 @@
 #include <squick/struct/excel.h>
 
 KernelModule::KernelModule(IPluginManager *p) {
-    m_bIsUpdate = true;
+    is_update_ = true;
     nGUIDIndex = 0;
     nLastTime = 0;
 
-    pPluginManager = p;
+    pm_ = p;
 
-    nLastTime = pPluginManager->GetNowTime();
+    nLastTime = pm_->GetNowTime();
     StartRandom();
 }
 
@@ -44,14 +44,14 @@ void KernelModule::StartRandom() {
 bool KernelModule::Start() {
     mtDeleteSelfList.clear();
 
-    m_pSceneModule = pPluginManager->FindModule<ISceneModule>();
-    m_pClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pElementModule = pPluginManager->FindModule<IElementModule>();
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
-    m_pScheduleModule = pPluginManager->FindModule<IScheduleModule>();
-    m_pEventModule = pPluginManager->FindModule<IEventModule>();
-    m_pCellModule = pPluginManager->FindModule<ICellModule>();
-    m_pThreadPoolModule = pPluginManager->FindModule<IThreadPoolModule>();
+    m_scene_ = pm_->FindModule<ISceneModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_element_ = pm_->FindModule<IElementModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
+    m_schedule_ = pm_->FindModule<IScheduleModule>();
+    m_event_ = pm_->FindModule<IEventModule>();
+    m_pCellModule = pm_->FindModule<ICellModule>();
+    m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
     return true;
 }
 
@@ -74,25 +74,25 @@ bool KernelModule::Update() {
     return true;
 }
 
-SQUICK_SHARE_PTR<IObject> KernelModule::CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className,
+std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className,
                                                      const std::string &configIndex, const DataList &arg) {
-    SQUICK_SHARE_PTR<IObject> pObject;
+    std::shared_ptr<IObject> pObject;
     Guid ident = self;
 
-    SQUICK_SHARE_PTR<SceneInfo> pContainerInfo = m_pSceneModule->GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pContainerInfo = m_scene_->GetElement(sceneID);
     if (!pContainerInfo) {
-        m_pLogModule->LogError(Guid(0, sceneID), "There is no scene " + std::to_string(sceneID), __FUNCTION__, __LINE__);
+        m_log_->LogError(Guid(0, sceneID), "There is no scene " + std::to_string(sceneID), __FUNCTION__, __LINE__);
         return pObject;
     }
 
     if (!pContainerInfo->GetElement(groupID)) {
-        m_pLogModule->LogError("There is no group " + std::to_string(groupID), __FUNCTION__, __LINE__);
+        m_log_->LogError("There is no group " + std::to_string(groupID), __FUNCTION__, __LINE__);
         return pObject;
     }
 
-    //  if (!m_pElementModule->ExistElement(configIndex))
+    //  if (!m_element_->ExistElement(configIndex))
     //  {
-    //      m_pLogModule->LogError(Guid(0, sceneID), "There is no group", groupID, __FUNCTION__, __LINE__);
+    //      m_log_->LogError(Guid(0, sceneID), "There is no group", groupID, __FUNCTION__, __LINE__);
     //      return pObject;
     //  }
 
@@ -101,28 +101,28 @@ SQUICK_SHARE_PTR<IObject> KernelModule::CreateObject(const Guid &self, const int
     }
 
     if (GetElement(ident)) {
-        m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, ident, "The object has Exists", __FUNCTION__, __LINE__);
+        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, ident, "The object has Exists", __FUNCTION__, __LINE__);
         return pObject;
     }
 
-    pObject = SQUICK_SHARE_PTR<IObject>(SQUICK_NEW Object(ident, pPluginManager));
+    pObject = std::shared_ptr<IObject>(new Object(ident, pm_));
     AddElement(ident, pObject);
 
-    if (pPluginManager->UsingBackThread()) {
-        m_pThreadPoolModule->DoAsyncTask(
+    if (pm_->UsingBackThread()) {
+        m_thread_pool_->DoAsyncTask(
             Guid(), "",
             [=](ThreadTask &task) -> void {
                 // backup thread for async task
                 {
-                    SQUICK_SHARE_PTR<IPropertyManager> pStaticClassPropertyManager = m_pClassModule->GetThreadClassModule()->GetClassPropertyManager(className);
-                    SQUICK_SHARE_PTR<IRecordManager> pStaticClassRecordManager = m_pClassModule->GetThreadClassModule()->GetClassRecordManager(className);
+                    std::shared_ptr<IPropertyManager> pStaticClassPropertyManager = m_class_->GetThreadClassModule()->GetClassPropertyManager(className);
+                    std::shared_ptr<IRecordManager> pStaticClassRecordManager = m_class_->GetThreadClassModule()->GetClassRecordManager(className);
                     if (pStaticClassPropertyManager && pStaticClassRecordManager) {
-                        SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
-                        SQUICK_SHARE_PTR<IRecordManager> pRecordManager = pObject->GetRecordManager();
+                        std::shared_ptr<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
+                        std::shared_ptr<IRecordManager> pRecordManager = pObject->GetRecordManager();
 
-                        SQUICK_SHARE_PTR<IProperty> pStaticConfigPropertyInfo = pStaticClassPropertyManager->First();
+                        std::shared_ptr<IProperty> pStaticConfigPropertyInfo = pStaticClassPropertyManager->First();
                         while (pStaticConfigPropertyInfo) {
-                            SQUICK_SHARE_PTR<IProperty> xProperty =
+                            std::shared_ptr<IProperty> xProperty =
                                 pPropertyManager->AddProperty(ident, pStaticConfigPropertyInfo->GetKey(), pStaticConfigPropertyInfo->GetType());
 
                             xProperty->SetPublic(pStaticConfigPropertyInfo->GetPublic());
@@ -138,9 +138,9 @@ SQUICK_SHARE_PTR<IObject> KernelModule::CreateObject(const Guid &self, const int
                             pStaticConfigPropertyInfo = pStaticClassPropertyManager->Next();
                         }
 
-                        SQUICK_SHARE_PTR<IRecord> pConfigRecordInfo = pStaticClassRecordManager->First();
+                        std::shared_ptr<IRecord> pConfigRecordInfo = pStaticClassRecordManager->First();
                         while (pConfigRecordInfo) {
-                            SQUICK_SHARE_PTR<IRecord> xRecord =
+                            std::shared_ptr<IRecord> xRecord =
                                 pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(), pConfigRecordInfo->GetTag(),
                                                           pConfigRecordInfo->GetRows());
 
@@ -161,7 +161,7 @@ SQUICK_SHARE_PTR<IObject> KernelModule::CreateObject(const Guid &self, const int
             [=](ThreadTask &task) -> void {
                 // no data--main thread
                 {
-                    Vector3 vRelivePos = m_pSceneModule->GetRelivePosition(sceneID, 0);
+                    Vector3 vRelivePos = m_scene_->GetRelivePosition(sceneID, 0);
 
                     pObject->SetPropertyString(excel::IObject::ConfigID(), configIndex);
                     pObject->SetPropertyString(excel::IObject::ClassName(), className);
@@ -174,18 +174,18 @@ SQUICK_SHARE_PTR<IObject> KernelModule::CreateObject(const Guid &self, const int
                     DoEvent(ident, className, pObject->GetState(), arg);
                 }
 
-                m_pThreadPoolModule->DoAsyncTask(
+                m_thread_pool_->DoAsyncTask(
                     Guid(), "",
                     [=](ThreadTask &task) -> void {
                         // backup thread
                         {
-                            SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
-                            SQUICK_SHARE_PTR<IPropertyManager> pConfigPropertyManager =
-                                m_pElementModule->GetThreadElementModule()->GetPropertyManager(configIndex);
-                            SQUICK_SHARE_PTR<IRecordManager> pConfigRecordManager = m_pElementModule->GetThreadElementModule()->GetRecordManager(configIndex);
+                            std::shared_ptr<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
+                            std::shared_ptr<IPropertyManager> pConfigPropertyManager =
+                                m_element_->GetThreadElementModule()->GetPropertyManager(configIndex);
+                            std::shared_ptr<IRecordManager> pConfigRecordManager = m_element_->GetThreadElementModule()->GetRecordManager(configIndex);
 
                             if (pConfigPropertyManager && pConfigRecordManager) {
-                                SQUICK_SHARE_PTR<IProperty> pConfigPropertyInfo = pConfigPropertyManager->First();
+                                std::shared_ptr<IProperty> pConfigPropertyInfo = pConfigPropertyManager->First();
                                 while (nullptr != pConfigPropertyInfo) {
                                     if (pConfigPropertyInfo->Changed()) {
                                         pPropertyManager->SetProperty(pConfigPropertyInfo->GetKey(), pConfigPropertyInfo->GetValue());
@@ -199,13 +199,13 @@ SQUICK_SHARE_PTR<IObject> KernelModule::CreateObject(const Guid &self, const int
                     [=](ThreadTask &task) -> void {
                         // main thread
                         {
-                            SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
+                            std::shared_ptr<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
                             for (int i = 0; i < arg.GetCount() - 1; i += 2) {
                                 const std::string &propertyName = arg.String(i);
                                 if (excel::IObject::ConfigID() != propertyName && excel::IObject::ClassName() != propertyName &&
                                     excel::IObject::SceneID() != propertyName && excel::IObject::ID() != propertyName &&
                                     excel::IObject::GroupID() != propertyName) {
-                                    SQUICK_SHARE_PTR<IProperty> pArgProperty = pPropertyManager->GetElement(propertyName);
+                                    std::shared_ptr<IProperty> pArgProperty = pPropertyManager->GetElement(propertyName);
                                     if (pArgProperty) {
                                         switch (pArgProperty->GetType()) {
                                         case TDATA_INT:
@@ -240,13 +240,13 @@ SQUICK_SHARE_PTR<IObject> KernelModule::CreateObject(const Guid &self, const int
                             stream << " group_id: " << groupID;
                             stream << " position: " << pObject->GetPropertyVector3(excel::IObject::Position()).ToString();
 
-                            m_pLogModule->LogInfo(stream);
+                            m_log_->LogInfo(stream);
 
                             pObject->SetState(COE_CREATE_BEFORE_ATTACHDATA);
                             DoEvent(ident, className, pObject->GetState(), arg);
                         }
 
-                        m_pThreadPoolModule->DoAsyncTask(
+                        m_thread_pool_->DoAsyncTask(
                             Guid(), "",
                             [=](ThreadTask &task) -> void {
                                 // back up thread
@@ -286,15 +286,15 @@ SQUICK_SHARE_PTR<IObject> KernelModule::CreateObject(const Guid &self, const int
     } else {
         // backup thread for async task
         {
-            SQUICK_SHARE_PTR<IPropertyManager> pStaticClassPropertyManager = m_pClassModule->GetClassPropertyManager(className);
-            SQUICK_SHARE_PTR<IRecordManager> pStaticClassRecordManager = m_pClassModule->GetClassRecordManager(className);
+            std::shared_ptr<IPropertyManager> pStaticClassPropertyManager = m_class_->GetClassPropertyManager(className);
+            std::shared_ptr<IRecordManager> pStaticClassRecordManager = m_class_->GetClassRecordManager(className);
             if (pStaticClassPropertyManager && pStaticClassRecordManager) {
-                SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
-                SQUICK_SHARE_PTR<IRecordManager> pRecordManager = pObject->GetRecordManager();
+                std::shared_ptr<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
+                std::shared_ptr<IRecordManager> pRecordManager = pObject->GetRecordManager();
 
-                SQUICK_SHARE_PTR<IProperty> pStaticConfigPropertyInfo = pStaticClassPropertyManager->First();
+                std::shared_ptr<IProperty> pStaticConfigPropertyInfo = pStaticClassPropertyManager->First();
                 while (pStaticConfigPropertyInfo) {
-                    SQUICK_SHARE_PTR<IProperty> xProperty =
+                    std::shared_ptr<IProperty> xProperty =
                         pPropertyManager->AddProperty(ident, pStaticConfigPropertyInfo->GetKey(), pStaticConfigPropertyInfo->GetType());
 
                     xProperty->SetPublic(pStaticConfigPropertyInfo->GetPublic());
@@ -309,9 +309,9 @@ SQUICK_SHARE_PTR<IObject> KernelModule::CreateObject(const Guid &self, const int
                     pStaticConfigPropertyInfo = pStaticClassPropertyManager->Next();
                 }
 
-                SQUICK_SHARE_PTR<IRecord> pConfigRecordInfo = pStaticClassRecordManager->First();
+                std::shared_ptr<IRecord> pConfigRecordInfo = pStaticClassRecordManager->First();
                 while (pConfigRecordInfo) {
-                    SQUICK_SHARE_PTR<IRecord> xRecord = pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(),
+                    std::shared_ptr<IRecord> xRecord = pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(),
                                                                                   pConfigRecordInfo->GetTag(), pConfigRecordInfo->GetRows());
 
                     xRecord->SetPublic(pConfigRecordInfo->GetPublic());
@@ -329,7 +329,7 @@ SQUICK_SHARE_PTR<IObject> KernelModule::CreateObject(const Guid &self, const int
 
         // no data--main thread
         {
-            Vector3 vRelivePos = m_pSceneModule->GetRelivePosition(sceneID, 0);
+            Vector3 vRelivePos = m_scene_->GetRelivePosition(sceneID, 0);
 
             pObject->SetPropertyObject(excel::IObject::ID(), ident);
             pObject->SetPropertyString(excel::IObject::ConfigID(), configIndex);
@@ -346,12 +346,12 @@ SQUICK_SHARE_PTR<IObject> KernelModule::CreateObject(const Guid &self, const int
         //////////////////////////////////////////////////////////////////////////
         // backup thread
         {
-            SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
-            SQUICK_SHARE_PTR<IPropertyManager> pConfigPropertyManager = m_pElementModule->GetPropertyManager(configIndex);
-            SQUICK_SHARE_PTR<IRecordManager> pConfigRecordManager = m_pElementModule->GetRecordManager(configIndex);
+            std::shared_ptr<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
+            std::shared_ptr<IPropertyManager> pConfigPropertyManager = m_element_->GetPropertyManager(configIndex);
+            std::shared_ptr<IRecordManager> pConfigRecordManager = m_element_->GetRecordManager(configIndex);
 
             if (pConfigPropertyManager && pConfigRecordManager) {
-                SQUICK_SHARE_PTR<IProperty> pConfigPropertyInfo = pConfigPropertyManager->First();
+                std::shared_ptr<IProperty> pConfigPropertyInfo = pConfigPropertyManager->First();
                 while (nullptr != pConfigPropertyInfo) {
                     if (pConfigPropertyInfo->Changed()) {
                         pPropertyManager->SetProperty(pConfigPropertyInfo->GetKey(), pConfigPropertyInfo->GetValue());
@@ -364,12 +364,12 @@ SQUICK_SHARE_PTR<IObject> KernelModule::CreateObject(const Guid &self, const int
 
         // main thread
         {
-            SQUICK_SHARE_PTR<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
+            std::shared_ptr<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
             for (int i = 0; i < arg.GetCount() - 1; i += 2) {
                 const std::string &propertyName = arg.String(i);
                 if (excel::IObject::ConfigID() != propertyName && excel::IObject::ClassName() != propertyName && excel::IObject::SceneID() != propertyName &&
                     excel::IObject::ID() != propertyName && excel::IObject::GroupID() != propertyName) {
-                    SQUICK_SHARE_PTR<IProperty> pArgProperty = pPropertyManager->GetElement(propertyName);
+                    std::shared_ptr<IProperty> pArgProperty = pPropertyManager->GetElement(propertyName);
                     if (pArgProperty) {
                         switch (pArgProperty->GetType()) {
                         case TDATA_INT:
@@ -404,7 +404,7 @@ SQUICK_SHARE_PTR<IObject> KernelModule::CreateObject(const Guid &self, const int
             stream << " group_id: " << groupID;
             stream << " position: " << pObject->GetPropertyVector3(excel::IObject::Position()).ToString();
 
-            // m_pLogModule->LogInfo(stream);
+            // m_log_->LogInfo(stream);
 
             pObject->SetState(COE_CREATE_BEFORE_ATTACHDATA);
             DoEvent(ident, className, pObject->GetState(), arg);
@@ -453,11 +453,11 @@ bool KernelModule::DestroyObject(const Guid &self) {
     const int sceneID = GetPropertyInt32(self, excel::IObject::SceneID());
     const int groupID = GetPropertyInt32(self, excel::IObject::GroupID());
 
-    SQUICK_SHARE_PTR<SceneInfo> pContainerInfo = m_pSceneModule->GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pContainerInfo = m_scene_->GetElement(sceneID);
     if (pContainerInfo) {
         const std::string &className = GetPropertyString(self, excel::IObject::ClassName());
         if (className == excel::Player::ThisName()) {
-            m_pSceneModule->LeaveSceneGroup(self);
+            m_scene_->LeaveSceneGroup(self);
         }
 
         DoEvent(self, className, COE_BEFOREDESTROY, DataList::Empty());
@@ -469,501 +469,501 @@ bool KernelModule::DestroyObject(const Guid &self) {
 
         RemoveElement(self);
 
-        m_pEventModule->RemoveEventCallBack(self);
-        m_pScheduleModule->RemoveSchedule(self);
+        m_event_->RemoveEventCallBack(self);
+        m_schedule_->RemoveSchedule(self);
 
         return true;
     }
 
-    m_pLogModule->LogError(self, "There is no scene " + std::to_string(sceneID), __FUNCTION__, __LINE__);
+    m_log_->LogError(self, "There is no scene " + std::to_string(sceneID), __FUNCTION__, __LINE__);
 
     return false;
 }
 
 bool KernelModule::FindProperty(const Guid &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->FindProperty(propertyName);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
 
     return false;
 }
 
 bool KernelModule::SetPropertyInt(const Guid &self, const std::string &propertyName, const INT64 nValue, const INT64 reason) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->SetPropertyInt(propertyName, nValue, reason);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
 
     return false;
 }
 
 bool KernelModule::SetPropertyFloat(const Guid &self, const std::string &propertyName, const double dValue, const INT64 reason) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->SetPropertyFloat(propertyName, dValue, reason);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
 
     return false;
 }
 
 bool KernelModule::SetPropertyString(const Guid &self, const std::string &propertyName, const std::string &value, const INT64 reason) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->SetPropertyString(propertyName, value, reason);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
 
     return false;
 }
 
 bool KernelModule::SetPropertyObject(const Guid &self, const std::string &propertyName, const Guid &objectValue, const INT64 reason) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->SetPropertyObject(propertyName, objectValue, reason);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
 
     return false;
 }
 
 bool KernelModule::SetPropertyVector2(const Guid &self, const std::string &propertyName, const Vector2 &value, const INT64 reason) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->SetPropertyVector2(propertyName, value, reason);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no vector2", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no vector2", __FUNCTION__, __LINE__);
 
     return false;
 }
 
 bool KernelModule::SetPropertyVector3(const Guid &self, const std::string &propertyName, const Vector3 &value, const INT64 reason) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->SetPropertyVector3(propertyName, value, reason);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no vector3", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no vector3", __FUNCTION__, __LINE__);
 
     return false;
 }
 
 INT64 KernelModule::GetPropertyInt(const Guid &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetPropertyInt(propertyName);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
 
     return NULL_INT;
 }
 
 int KernelModule::GetPropertyInt32(const Guid &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetPropertyInt32(propertyName);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
 
     return (int)NULL_INT;
 }
 
 double KernelModule::GetPropertyFloat(const Guid &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetPropertyFloat(propertyName);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
 
     return NULL_FLOAT;
 }
 
 const std::string &KernelModule::GetPropertyString(const Guid &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetPropertyString(propertyName);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
 
     return NULL_STR;
 }
 
 const Guid &KernelModule::GetPropertyObject(const Guid &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetPropertyObject(propertyName);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
 
     return NULL_OBJECT;
 }
 
 const Vector2 &KernelModule::GetPropertyVector2(const Guid &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetPropertyVector2(propertyName);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no vector2", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no vector2", __FUNCTION__, __LINE__);
 
     return NULL_VECTOR2;
 }
 
 const Vector3 &KernelModule::GetPropertyVector3(const Guid &self, const std::string &propertyName) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetPropertyVector3(propertyName);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no vector3", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no vector3", __FUNCTION__, __LINE__);
 
     return NULL_VECTOR3;
 }
 
-SQUICK_SHARE_PTR<IRecord> KernelModule::FindRecord(const Guid &self, const std::string &recordName) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+std::shared_ptr<IRecord> KernelModule::FindRecord(const Guid &self, const std::string &recordName) {
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordManager()->GetElement(recordName);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
 
     return nullptr;
 }
 
 bool KernelModule::ClearRecord(const Guid &self, const std::string &recordName) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = FindRecord(self, recordName);
+    std::shared_ptr<IRecord> pRecord = FindRecord(self, recordName);
     if (pRecord) {
         return pRecord->Clear();
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no record", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no record", __FUNCTION__, __LINE__);
 
     return false;
 }
 
 bool KernelModule::SetRecordInt(const Guid &self, const std::string &recordName, const int row, const int col, const INT64 nValue) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordInt(recordName, row, col, nValue)) {
-            m_pLogModule->LogError(self, recordName + " error for row or col", __FUNCTION__, __LINE__);
+            m_log_->LogError(self, recordName + " error for row or col", __FUNCTION__, __LINE__);
         } else {
             return true;
         }
     } else {
-        m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
     }
 
     return false;
 }
 
 bool KernelModule::SetRecordInt(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const INT64 value) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordInt(recordName, row, colTag, value)) {
-            m_pLogModule->LogError(self, recordName + " error for row or col", __FUNCTION__, __LINE__);
+            m_log_->LogError(self, recordName + " error for row or col", __FUNCTION__, __LINE__);
         } else {
             return true;
         }
     } else {
-        m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
     }
 
     return false;
 }
 
 bool KernelModule::SetRecordFloat(const Guid &self, const std::string &recordName, const int row, const int col, const double dwValue) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordFloat(recordName, row, col, dwValue)) {
-            m_pLogModule->LogError(self, recordName + " error SetRecordFloat for row  or col", __FUNCTION__, __LINE__);
+            m_log_->LogError(self, recordName + " error SetRecordFloat for row  or col", __FUNCTION__, __LINE__);
         } else {
             return true;
         }
     } else {
-        m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
     }
 
     return false;
 }
 
 bool KernelModule::SetRecordFloat(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const double value) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordFloat(recordName, row, colTag, value)) {
-            m_pLogModule->LogError(self, recordName + " error SetRecordFloat for row  or col", __FUNCTION__, __LINE__);
+            m_log_->LogError(self, recordName + " error SetRecordFloat for row  or col", __FUNCTION__, __LINE__);
         } else {
             return true;
         }
     } else {
-        m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
     }
 
     return false;
 }
 
 bool KernelModule::SetRecordString(const Guid &self, const std::string &recordName, const int row, const int col, const std::string &value) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordString(recordName, row, col, value)) {
-            m_pLogModule->LogError(self, recordName + " error SetRecordString for row  or col", __FUNCTION__, __LINE__);
+            m_log_->LogError(self, recordName + " error SetRecordString for row  or col", __FUNCTION__, __LINE__);
         } else {
             return true;
         }
     } else {
-        m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
     }
 
     return false;
 }
 
 bool KernelModule::SetRecordString(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const std::string &value) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordString(recordName, row, colTag, value)) {
-            m_pLogModule->LogError(self, recordName + " error SetRecordObject for row  or col", __FUNCTION__, __LINE__);
+            m_log_->LogError(self, recordName + " error SetRecordObject for row  or col", __FUNCTION__, __LINE__);
         } else {
             return true;
         }
     } else {
-        m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
     }
 
     return false;
 }
 
 bool KernelModule::SetRecordObject(const Guid &self, const std::string &recordName, const int row, const int col, const Guid &objectValue) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordObject(recordName, row, col, objectValue)) {
-            m_pLogModule->LogError(self, recordName + " error SetRecordObject for row  or col", __FUNCTION__, __LINE__);
+            m_log_->LogError(self, recordName + " error SetRecordObject for row  or col", __FUNCTION__, __LINE__);
         } else {
             return true;
         }
     } else {
-        m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
     }
 
     return false;
 }
 
 bool KernelModule::SetRecordObject(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Guid &value) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordObject(recordName, row, colTag, value)) {
-            m_pLogModule->LogError(self, recordName + " error SetRecordObject for row  or col", __FUNCTION__, __LINE__);
+            m_log_->LogError(self, recordName + " error SetRecordObject for row  or col", __FUNCTION__, __LINE__);
         } else {
             return true;
         }
     } else {
-        m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
     }
 
     return false;
 }
 
 bool KernelModule::SetRecordVector2(const Guid &self, const std::string &recordName, const int row, const int col, const Vector2 &value) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordVector2(recordName, row, col, value)) {
-            m_pLogModule->LogError(self, recordName + " error SetRecordVector2 for row  or col", __FUNCTION__, __LINE__);
+            m_log_->LogError(self, recordName + " error SetRecordVector2 for row  or col", __FUNCTION__, __LINE__);
         } else {
             return true;
         }
     } else {
-        m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
     }
 
     return false;
 }
 
 bool KernelModule::SetRecordVector2(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Vector2 &value) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordVector2(recordName, row, colTag, value)) {
-            m_pLogModule->LogError(self, recordName + " error SetRecordVector2 for row  or col", __FUNCTION__, __LINE__);
+            m_log_->LogError(self, recordName + " error SetRecordVector2 for row  or col", __FUNCTION__, __LINE__);
         } else {
             return true;
         }
     } else {
-        m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
     }
 
     return false;
 }
 
 bool KernelModule::SetRecordVector3(const Guid &self, const std::string &recordName, const int row, const int col, const Vector3 &value) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordVector3(recordName, row, col, value)) {
-            m_pLogModule->LogError(self, recordName + " error SetRecordVector3 for row  or col", __FUNCTION__, __LINE__);
+            m_log_->LogError(self, recordName + " error SetRecordVector3 for row  or col", __FUNCTION__, __LINE__);
         } else {
             return true;
         }
     } else {
-        m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
     }
 
     return false;
 }
 
 bool KernelModule::SetRecordVector3(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Vector3 &value) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordVector3(recordName, row, colTag, value)) {
-            m_pLogModule->LogError(self, recordName + " error SetRecordVector3 for row  or col", __FUNCTION__, __LINE__);
+            m_log_->LogError(self, recordName + " error SetRecordVector3 for row  or col", __FUNCTION__, __LINE__);
         } else {
             return true;
         }
     } else {
-        m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
     }
 
     return false;
 }
 
 INT64 KernelModule::GetRecordInt(const Guid &self, const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordInt(recordName, row, col);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
 
     return 0;
 }
 
 INT64 KernelModule::GetRecordInt(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordInt(recordName, row, colTag);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
 
     return 0;
 }
 
 double KernelModule::GetRecordFloat(const Guid &self, const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordFloat(recordName, row, col);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
 
     return 0.0;
 }
 
 double KernelModule::GetRecordFloat(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordFloat(recordName, row, colTag);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
 
     return 0.0;
 }
 
 const std::string &KernelModule::GetRecordString(const Guid &self, const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordString(recordName, row, col);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
 
     return NULL_STR;
 }
 
 const std::string &KernelModule::GetRecordString(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordString(recordName, row, colTag);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
 
     return NULL_STR;
 }
 
 const Guid &KernelModule::GetRecordObject(const Guid &self, const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordObject(recordName, row, col);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
 
     return NULL_OBJECT;
 }
 
 const Guid &KernelModule::GetRecordObject(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordObject(recordName, row, colTag);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
 
     return NULL_OBJECT;
 }
 
 const Vector2 &KernelModule::GetRecordVector2(const Guid &self, const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordVector2(recordName, row, col);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no vector2", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no vector2", __FUNCTION__, __LINE__);
 
     return NULL_VECTOR2;
 }
 
 const Vector2 &KernelModule::GetRecordVector2(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordVector2(recordName, row, colTag);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no vector2", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no vector2", __FUNCTION__, __LINE__);
 
     return NULL_VECTOR2;
 }
 
 const Vector3 &KernelModule::GetRecordVector3(const Guid &self, const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordVector3(recordName, row, col);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no vector3", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no vector3", __FUNCTION__, __LINE__);
 
     return NULL_VECTOR3;
 }
 
 const Vector3 &KernelModule::GetRecordVector3(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IObject> pObject = GetElement(self);
+    std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordVector3(recordName, row, colTag);
     }
 
-    m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no vector3", __FUNCTION__, __LINE__);
+    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no vector3", __FUNCTION__, __LINE__);
 
     return NULL_VECTOR3;
 }
@@ -984,21 +984,21 @@ Guid KernelModule::CreateGUID() {
     }
 
     Guid xID;
-    xID.nHead64 = pPluginManager->GetAppID();
+    xID.nHead64 = pm_->GetAppID();
     xID.nData64 = value;
 
     return xID;
 }
 
 bool KernelModule::CreateScene(const int sceneID) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = m_pSceneModule->GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (pSceneInfo) {
         return false;
     }
 
-    pSceneInfo = SQUICK_SHARE_PTR<SceneInfo>(SQUICK_NEW SceneInfo(sceneID));
+    pSceneInfo = std::shared_ptr<SceneInfo>(new SceneInfo(sceneID));
     if (pSceneInfo) {
-        m_pSceneModule->AddElement(sceneID, pSceneInfo);
+        m_scene_->AddElement(sceneID, pSceneInfo);
         RequestGroupScene(sceneID);
         return true;
     }
@@ -1007,22 +1007,22 @@ bool KernelModule::CreateScene(const int sceneID) {
 }
 
 bool KernelModule::DestroyScene(const int sceneID) {
-    m_pSceneModule->RemoveElement(sceneID);
+    m_scene_->RemoveElement(sceneID);
 
     return true;
 }
 
 int KernelModule::GetOnLineCount() {
     int count = 0;
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = m_pSceneModule->First();
+    std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->First();
     while (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->First();
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->First();
         while (pGroupInfo) {
             count += pGroupInfo->mxPlayerList.Count();
             pGroupInfo = pSceneInfo->Next();
         }
 
-        pSceneInfo = m_pSceneModule->Next();
+        pSceneInfo = m_scene_->Next();
     }
 
     return count;
@@ -1035,14 +1035,14 @@ int KernelModule::GetMaxOnLineCount() {
     return 10000;
 }
 
-int KernelModule::RequestGroupScene(const int sceneID) { return m_pSceneModule->RequestGroupScene(sceneID); }
+int KernelModule::RequestGroupScene(const int sceneID) { return m_scene_->RequestGroupScene(sceneID); }
 
-bool KernelModule::ReleaseGroupScene(const int sceneID, const int groupID) { return m_pSceneModule->ReleaseGroupScene(sceneID, groupID); }
+bool KernelModule::ReleaseGroupScene(const int sceneID, const int groupID) { return m_scene_->ReleaseGroupScene(sceneID, groupID); }
 
 bool KernelModule::ExitGroupScene(const int sceneID, const int groupID) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = m_pSceneModule->GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(groupID);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(groupID);
         if (pGroupInfo) {
             return true;
         }
@@ -1052,13 +1052,13 @@ bool KernelModule::ExitGroupScene(const int sceneID, const int groupID) {
 }
 
 bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, DataList &list, const Guid &noSelf) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = m_pSceneModule->GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (pSceneInfo) {
 
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(groupID);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(groupID);
         if (pGroupInfo) {
             Guid ident = Guid();
-            SQUICK_SHARE_PTR<int> pRet = pGroupInfo->mxPlayerList.First(ident);
+            std::shared_ptr<int> pRet = pGroupInfo->mxPlayerList.First(ident);
             while (!ident.IsNull()) {
                 if (ident != noSelf) {
                     list.Add(ident);
@@ -1088,12 +1088,12 @@ bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, Data
 
 int KernelModule::GetGroupObjectList(const int sceneID, const int groupID, const bool bPlayer, const Guid &noSelf) {
     int objectCount = 0;
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = m_pSceneModule->GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (pSceneInfo) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(groupID);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(groupID);
         if (pGroupInfo) {
             Guid ident = Guid();
-            SQUICK_SHARE_PTR<int> pRet = pGroupInfo->mxPlayerList.First(ident);
+            std::shared_ptr<int> pRet = pGroupInfo->mxPlayerList.First(ident);
             while (!ident.IsNull()) {
                 if (ident != noSelf) {
                     objectCount++;
@@ -1122,14 +1122,14 @@ int KernelModule::GetGroupObjectList(const int sceneID, const int groupID, const
 bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, DataList &list) { return GetGroupObjectList(sceneID, groupID, list, Guid()); }
 
 bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, DataList &list, const bool bPlayer, const Guid &noSelf) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = m_pSceneModule->GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (pSceneInfo) {
 
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(groupID);
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(groupID);
         if (pGroupInfo) {
             if (bPlayer) {
                 Guid ident = Guid();
-                SQUICK_SHARE_PTR<int> pRet = pGroupInfo->mxPlayerList.First(ident);
+                std::shared_ptr<int> pRet = pGroupInfo->mxPlayerList.First(ident);
                 while (!ident.IsNull()) {
                     if (ident != noSelf) {
                         list.Add(ident);
@@ -1140,7 +1140,7 @@ bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, Data
                 }
             } else {
                 Guid ident = Guid();
-                SQUICK_SHARE_PTR<int> pRet = pGroupInfo->mxOtherList.First(ident);
+                std::shared_ptr<int> pRet = pGroupInfo->mxOtherList.First(ident);
                 while (!ident.IsNull()) {
                     if (ident != noSelf) {
                         list.Add(ident);
@@ -1185,29 +1185,29 @@ bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, cons
 }
 
 bool KernelModule::LogStack() {
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
 #else
 #endif
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 #else
-#endif // SQUICK_PLATFORM
+#endif // PLATFORM
 
     return true;
 }
 
 bool KernelModule::LogInfo(const Guid ident) {
 
-    SQUICK_SHARE_PTR<IObject> pObject = GetObject(ident);
+    std::shared_ptr<IObject> pObject = GetObject(ident);
     if (pObject) {
         int sceneID = GetPropertyInt32(ident, excel::IObject::SceneID());
         int groupID = GetPropertyInt32(ident, excel::IObject::GroupID());
 
-        m_pLogModule->LogInfo(ident, "//----------child object list-------- SceneID = " + std::to_string(sceneID));
+        m_log_->LogInfo(ident, "//----------child object list-------- SceneID = " + std::to_string(sceneID));
     } else {
-        m_pLogModule->LogObject(ILogModule::NLL_ERROR_NORMAL, ident, "", __FUNCTION__, __LINE__);
+        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, ident, "", __FUNCTION__, __LINE__);
     }
 
     return true;
@@ -1217,7 +1217,7 @@ int KernelModule::OnPropertyCommonEvent(const Guid &self, const std::string &pro
                                         const INT64 reason) {
     Performance performance;
 
-    SQUICK_SHARE_PTR<IObject> xObject = GetElement(self);
+    std::shared_ptr<IObject> xObject = GetElement(self);
     if (xObject) {
         if (xObject->GetState() >= CLASS_OBJECT_EVENT::COE_CREATE_HASDATA) {
             std::list<PROPERTY_EVENT_FUNCTOR_PTR>::iterator it = mtCommonPropertyCallBackList.begin();
@@ -1246,13 +1246,13 @@ int KernelModule::OnPropertyCommonEvent(const Guid &self, const std::string &pro
         os << performance.TimeScope();
         os << "---------- ";
         os << propertyName;
-        // m_pLogModule->LogWarning(self, os, __FUNCTION__, __LINE__);
+        // m_log_->LogWarning(self, os, __FUNCTION__, __LINE__);
     }
 
     return 0;
 }
 
-SQUICK_SHARE_PTR<IObject> KernelModule::GetObject(const Guid &ident) { return GetElement(ident); }
+std::shared_ptr<IObject> KernelModule::GetObject(const Guid &ident) { return GetElement(ident); }
 
 int KernelModule::GetObjectByProperty(const int sceneID, const int groupID, const std::string &propertyName, const DataList &valueArg, DataList &list) {
     DataList varObjectList;
@@ -1293,7 +1293,7 @@ int KernelModule::GetObjectByProperty(const int sceneID, const int groupID, cons
 }
 
 bool KernelModule::ExistScene(const int sceneID) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = m_pSceneModule->GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (pSceneInfo) {
         return true;
     }
@@ -1313,7 +1313,7 @@ bool KernelModule::ObjectReady(const Guid &ident) {
 }
 
 bool KernelModule::ExistObject(const Guid &ident, const int sceneID, const int groupID) {
-    SQUICK_SHARE_PTR<SceneInfo> pSceneInfo = m_pSceneModule->GetElement(sceneID);
+    std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (!pSceneInfo) {
         return false;
     }
@@ -1329,7 +1329,7 @@ bool KernelModule::DestroySelf(const Guid &self) {
 int KernelModule::OnRecordCommonEvent(const Guid &self, const RECORD_EVENT_DATA &eventData, const SquickData &oldVar, const SquickData &newVar) {
     Performance performance;
 
-    SQUICK_SHARE_PTR<IObject> xObject = GetElement(self);
+    std::shared_ptr<IObject> xObject = GetElement(self);
     if (xObject) {
         if (xObject->GetState() >= CLASS_OBJECT_EVENT::COE_CREATE_HASDATA) {
             std::list<RECORD_EVENT_FUNCTOR_PTR>::iterator it = mtCommonRecordCallBackList.begin();
@@ -1359,7 +1359,7 @@ int KernelModule::OnRecordCommonEvent(const Guid &self, const RECORD_EVENT_DATA 
         os << "---------- ";
         os << eventData.recordName;
         os << " event type " << eventData.nOpType;
-        // m_pLogModule->LogWarning(self, os, __FUNCTION__, __LINE__);
+        // m_log_->LogWarning(self, os, __FUNCTION__, __LINE__);
     }
 
     return 0;
@@ -1382,7 +1382,7 @@ int KernelModule::OnClassCommonEvent(const Guid &self, const std::string &classN
         os << "---------- ";
         os << className;
         os << " event type " << classEvent;
-        // m_pLogModule->LogWarning(self, os, __FUNCTION__, __LINE__);
+        // m_log_->LogWarning(self, os, __FUNCTION__, __LINE__);
     }
 
     return 0;
@@ -1438,18 +1438,18 @@ bool KernelModule::RegisterClassRecordEvent(const std::string &className, const 
 bool KernelModule::LogSelfInfo(const Guid ident) { return false; }
 
 bool KernelModule::AfterStart() {
-    SQUICK_SHARE_PTR<IClass> pClass = m_pClassModule->First();
+    std::shared_ptr<IClass> pClass = m_class_->First();
     while (pClass) {
         IKernelModule::AddClassCallBack(pClass->GetClassName(), this, &KernelModule::OnClassCommonEvent);
 
-        pClass = m_pClassModule->Next();
+        pClass = m_class_->Next();
     }
 
     return true;
 }
 
 bool KernelModule::DestroyAll() {
-    SQUICK_SHARE_PTR<IObject> pObject = First();
+    std::shared_ptr<IObject> pObject = First();
     while (pObject) {
         mtDeleteSelfList.push_back(pObject->Self());
 
@@ -1458,7 +1458,7 @@ bool KernelModule::DestroyAll() {
 
     Update();
 
-    m_pSceneModule->ClearAll();
+    m_scene_->ClearAll();
 
     return true;
 }
@@ -1493,26 +1493,26 @@ float KernelModule::Random() {
     return *mxRandomItor;
 }
 
-bool KernelModule::AddClassCallBack(const std::string &className, const CLASS_EVENT_FUNCTOR_PTR &cb) { return m_pClassModule->AddClassCallBack(className, cb); }
+bool KernelModule::AddClassCallBack(const std::string &className, const CLASS_EVENT_FUNCTOR_PTR &cb) { return m_class_->AddClassCallBack(className, cb); }
 
 void KernelModule::ProcessMemFree() {
-    if (nLastTime + 30 > pPluginManager->GetNowTime()) {
+    if (nLastTime + 30 > pm_->GetNowTime()) {
         return;
     }
 
-    nLastTime = pPluginManager->GetNowTime();
+    nLastTime = pm_->GetNowTime();
 
     std::string info;
 
     // SQUICK_WILL_DO
     // MemoryCounter::PrintMemoryInfo(info);
 
-    // m_pLogModule->LogInfo(info, __FUNCTION__, __LINE__);
+    // m_log_->LogInfo(info, __FUNCTION__, __LINE__);
 
     // MemManager::GetSingletonPtr()->FreeMem();
     // MallocExtension::instance()->ReleaseFreeMemory();
 }
 
 bool KernelModule::DoEvent(const Guid &self, const std::string &className, CLASS_OBJECT_EVENT eEvent, const DataList &valueList) {
-    return m_pClassModule->DoEvent(self, className, eEvent, valueList);
+    return m_class_->DoEvent(self, className, eEvent, valueList);
 }

@@ -35,13 +35,13 @@ void LogModule::rolloutHandler(const char *filename, std::size_t size) {
 // 获取日志配置文件全路径
 std::string LogModule::GetConfigPath(const std::string &fileName) {
     std::string strAppLogName;
-    strAppLogName = pPluginManager->GetConfigPath() + "/config/log/" + fileName + ".conf";
+    strAppLogName = pm_->GetConfigPath() + "/config/log/" + fileName + ".conf";
 
     return strAppLogName;
 }
 
 LogModule::LogModule(IPluginManager *p) {
-    pPluginManager = p;
+    pm_ = p;
 
     el::Loggers::addFlag(el::LoggingFlag::StrictLogFileSizeCheck);
     el::Loggers::addFlag(el::LoggingFlag::DisableApplicationAbortOnFatalLog);
@@ -50,9 +50,9 @@ LogModule::LogModule(IPluginManager *p) {
 bool LogModule::Awake() {
     mnLogCountTotal = 0;
 
-    std::string strLogConfigName = pPluginManager->GetLogConfigName();
+    std::string strLogConfigName = pm_->GetLogConfigName();
     if (strLogConfigName.empty()) {
-        strLogConfigName = pPluginManager->GetAppName();
+        strLogConfigName = pm_->GetAppName();
     }
 
     string strAppLogName = GetConfigPath(strLogConfigName);
@@ -66,7 +66,7 @@ bool LogModule::Awake() {
     }
 
     const std::string &fileName = pConfiguration->value();
-    pConfiguration->setValue(pPluginManager->GetConfigPath() + fileName);
+    pConfiguration->setValue(pm_->GetConfigPath() + fileName);
 
 #ifdef DEBUG
     std::cout << "LogConfig: " << strAppLogName << std::endl;
@@ -78,7 +78,7 @@ bool LogModule::Awake() {
 }
 
 bool LogModule::Start() {
-    m_pKernelModule = this->pPluginManager->FindModule<IKernelModule>();
+    m_kernel_ = this->pm_->FindModule<IKernelModule>();
 
     return true;
 }
@@ -109,7 +109,7 @@ bool LogModule::Log(const SQUICK_LOG_LEVEL nll, const char *format, ...) {
 
     mstrLocalStream.append(std::to_string(mnLogCountTotal));
     mstrLocalStream.append(" | ");
-    mstrLocalStream.append(std::to_string(pPluginManager->GetAppID()));
+    mstrLocalStream.append(std::to_string(pm_->GetAppID()));
     mstrLocalStream.append(" | ");
     mstrLocalStream.append(szBuffer);
 
@@ -152,7 +152,7 @@ bool LogModule::Log(const SQUICK_LOG_LEVEL nll, const char *format, ...) {
 
 bool LogModule::LogRecord(const SQUICK_LOG_LEVEL nll, const Guid ident, const std::string &recordName, const std::string &strDesc, const char *func, int line) {
     std::ostringstream os;
-    auto record = m_pKernelModule->FindRecord(ident, recordName);
+    auto record = m_kernel_->FindRecord(ident, recordName);
     if (record) {
 
         if (line > 0) {
@@ -176,7 +176,7 @@ bool LogModule::LogObject(const SQUICK_LOG_LEVEL nll, const Guid ident, const st
 }
 
 void LogModule::LogStack() {
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
     Exception::CrashHandler(0);
 #endif
 }

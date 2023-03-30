@@ -12,16 +12,16 @@ class ActorMessage;
 class IComponent;
 
 typedef std::function<void(ActorMessage &)> ACTOR_PROCESS_FUNCTOR;
-typedef SQUICK_SHARE_PTR<ACTOR_PROCESS_FUNCTOR> ACTOR_PROCESS_FUNCTOR_PTR;
+typedef std::shared_ptr<ACTOR_PROCESS_FUNCTOR> ACTOR_PROCESS_FUNCTOR_PTR;
 
 class ActorMessage {
   public:
     ActorMessage() {
-        msgID = 0;
+        msg_id = 0;
         index = 0;
     }
 
-    int msgID;
+    int msg_id;
     uint64_t index;
     Guid id;
     std::string data;
@@ -42,8 +42,8 @@ class IActor // : MemoryCounter
     virtual const Guid ID() = 0;
     virtual bool Update() = 0;
 
-    template <typename T> SQUICK_SHARE_PTR<T> AddComponent() {
-        SQUICK_SHARE_PTR<IComponent> component = FindComponent(typeid(T).name());
+    template <typename T> std::shared_ptr<T> AddComponent() {
+        std::shared_ptr<IComponent> component = FindComponent(typeid(T).name());
         if (component) {
             return NULL;
         }
@@ -53,7 +53,7 @@ class IActor // : MemoryCounter
                 return NULL;
             }
 
-            SQUICK_SHARE_PTR<T> component = SQUICK_SHARE_PTR<T>(SQUICK_NEW T());
+            std::shared_ptr<T> component = std::shared_ptr<T>(new T());
 
             assert(NULL != component);
 
@@ -65,10 +65,10 @@ class IActor // : MemoryCounter
         return nullptr;
     }
 
-    template <typename T> SQUICK_SHARE_PTR<T> FindComponent() {
-        SQUICK_SHARE_PTR<IComponent> component = FindComponent(typeid(T).name());
+    template <typename T> std::shared_ptr<T> FindComponent() {
+        std::shared_ptr<IComponent> component = FindComponent(typeid(T).name());
         if (component) {
-            SQUICK_SHARE_PTR<T> pT = std::dynamic_pointer_cast<T>(component);
+            std::shared_ptr<T> pT = std::dynamic_pointer_cast<T>(component);
 
             assert(NULL != pT);
 
@@ -87,9 +87,9 @@ class IActor // : MemoryCounter
     virtual bool AddMessageHandler(const int nSubMsgID, ACTOR_PROCESS_FUNCTOR_PTR xBeginFunctor) = 0;
 
   protected:
-    virtual bool AddComponent(SQUICK_SHARE_PTR<IComponent> component) = 0;
+    virtual bool AddComponent(std::shared_ptr<IComponent> component) = 0;
     virtual bool RemoveComponent(const std::string &componentName) = 0;
-    virtual SQUICK_SHARE_PTR<IComponent> FindComponent(const std::string &componentName) = 0;
+    virtual std::shared_ptr<IComponent> FindComponent(const std::string &componentName) = 0;
 };
 
 class IComponent // : MemoryCounter
@@ -109,9 +109,9 @@ class IComponent // : MemoryCounter
 
     virtual ~IComponent() {}
 
-    virtual void SetActor(SQUICK_SHARE_PTR<IActor> self) { mSelf = self; }
+    virtual void SetActor(std::shared_ptr<IActor> self) { mSelf = self; }
 
-    virtual SQUICK_SHARE_PTR<IActor> GetActor() { return mSelf; }
+    virtual std::shared_ptr<IActor> GetActor() { return mSelf; }
 
     virtual bool Awake() { return true; }
 
@@ -156,7 +156,7 @@ class IComponent // : MemoryCounter
 
   private:
     bool mbEnable;
-    SQUICK_SHARE_PTR<IActor> mSelf;
+    std::shared_ptr<IActor> mSelf;
     std::string mstrName;
 };
 

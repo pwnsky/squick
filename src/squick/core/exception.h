@@ -22,7 +22,7 @@
 
 #include "platform.h"
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
 #include <arpa/inet.h>
 #include <execinfo.h>
 #include <netdb.h>
@@ -30,7 +30,7 @@
 #include <signal.h>
 #include <unistd.h>
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_LINUX
+#if PLATFORM == PLATFORM_LINUX
 #include <sys/prctl.h>
 #endif
 

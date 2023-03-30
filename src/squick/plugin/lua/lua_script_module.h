@@ -20,8 +20,8 @@
 #include <squick/plugin/net/i_net_client_module.h>
 #include <squick/plugin/net/i_net_module.h>
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_LINUX
+#if PLATFORM == PLATFORM_WIN
+#elif PLATFORM == PLATFORM_LINUX
 #include <sys/inotify.h>
 #endif
 
@@ -72,8 +72,8 @@ class LuaScriptModule : public ILuaScriptModule {
 
   public:
     LuaScriptModule(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
+        is_update_ = true;
+        pm_ = p;
     }
 
     virtual bool Awake();
@@ -161,12 +161,12 @@ class LuaScriptModule : public ILuaScriptModule {
 
     // FOR NET MODULE
     // as server
-    void RemoveCallBackAsServer(const int msgID);
-    void AddMsgCallBackAsServer(const int msgID, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
+    void RemoveCallBackAsServer(const int msg_id);
+    void AddMsgCallBackAsServer(const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
 
     // as client
-    void RemoveMsgCallBackAsClient(const SQUICK_SERVER_TYPES serverType, const int msgID);
-    void AddMsgCallBackAsClient(const SQUICK_SERVER_TYPES serverType, const int msgID, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
+    void RemoveMsgCallBackAsClient(const ServerType serverType, const int msg_id);
+    void AddMsgCallBackAsClient(const ServerType serverType, const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
 
     /*
             void RemoveHttpCallBack(const std::string& path);
@@ -177,16 +177,16 @@ class LuaScriptModule : public ILuaScriptModule {
     const std::string Encode(const std::string &msgTypeName, const LuaIntf::LuaRef &luaTable);
     LuaIntf::LuaRef Decode(const std::string &msgTypeName, const std::string &data);
 
-    void SendToServerByServerID(const int serverID, const uint16_t msgID, const std::string &data);
-    void SendToServerBySuit(const SQUICK_SERVER_TYPES eType, const uint16_t msgID, const std::string &data, const std::string &hash);
-    void SendToAllServerByServerType(const SQUICK_SERVER_TYPES eType, const uint16_t msgID, const std::string &data);
+    void SendToServerByServerID(const int serverID, const uint16_t msg_id, const std::string &data);
+    void SendToServerBySuit(const ServerType eType, const uint16_t msg_id, const std::string &data, const std::string &hash);
+    void SendToAllServerByServerType(const ServerType eType, const uint16_t msg_id, const std::string &data);
 
     // for net module
-    void SendMsgToClientByFD(const SQUICK_SOCKET fd, const uint16_t msgID, const std::string &data);
+    void SendMsgToClientByFD(const socket_t fd, const uint16_t msg_id, const std::string &data);
 
-    void SendMsgToPlayer(const Guid &player, const uint16_t msgID, const std::string &data);
-    void SendToAllPlayer(const uint16_t msgID, const std::string &data);
-    void SendToGroupPlayer(const uint16_t msgID, const std::string &data);
+    void SendMsgToPlayer(const Guid &player, const uint16_t msg_id, const std::string &data);
+    void SendToAllPlayer(const uint16_t msg_id, const std::string &data);
+    void SendToGroupPlayer(const uint16_t msg_id, const std::string &data);
 
     // for log
     void LogInfo(const std::string &logData);
@@ -216,24 +216,24 @@ class LuaScriptModule : public ILuaScriptModule {
 
     void OnScriptReload();
 
-    void OnNetMsgCallBackAsServer(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnNetMsgCallBackAsClientForMasterServer(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnNetMsgCallBackAsClientForWorldServer(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnNetMsgCallBackAsClientForGameServer(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnNetMsgCallBackAsServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnNetMsgCallBackAsClientForMasterServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnNetMsgCallBackAsClientForWorldServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnNetMsgCallBackAsClientForGameServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   protected:
     bool Register();
     std::string FindFuncName(const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
 
   protected:
-    IElementModule *m_pElementModule;
-    IKernelModule *m_pKernelModule;
-    IClassModule *m_pClassModule;
-    IEventModule *m_pEventModule;
-    IScheduleModule *m_pScheduleModule;
-    INetClientModule *m_pNetClientModule;
-    INetModule *m_pNetModule;
-    ILogModule *m_pLogModule;
+    IElementModule *m_element_;
+    IKernelModule *m_kernel_;
+    IClassModule *m_class_;
+    IEventModule *m_event_;
+    IScheduleModule *m_schedule_;
+    INetClientModule *m_net_client_;
+    INetModule *m_net_;
+    ILogModule *m_log_;
     ILuaPBModule *m_pLuaPBModule;
 
   protected:
@@ -248,7 +248,7 @@ class LuaScriptModule : public ILuaScriptModule {
     Map<std::string, Map<Guid, List<LuaCallBack>>> mxLuaHeartBeatCallBackFuncMap;
     Map<std::string, List<LuaCallBack>> mxClassEventFuncMap;
     Map<int, List<LuaCallBack>> mxNetMsgCallBackFuncMapAsServer;
-    Map<SQUICK_SERVER_TYPES, Map<int, List<LuaCallBack>>> mxNetMsgCallBackFuncMapAsClient;
+    Map<ServerType, Map<int, List<LuaCallBack>>> mxNetMsgCallBackFuncMapAsClient;
 
     std::string scriptPath = "";
     int hotFixNotifyFd = -1;

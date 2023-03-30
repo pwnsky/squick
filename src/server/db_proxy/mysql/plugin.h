@@ -4,7 +4,7 @@
 //////////////////////////////////////////////////////////////////////////
 class MysqlPlugin : public IPlugin {
   public:
-    MysqlPlugin(IPluginManager *p) { pPluginManager = p; }
+    MysqlPlugin(IPluginManager *p) { pm_ = p; }
 
     virtual const int GetPluginVersion();
 

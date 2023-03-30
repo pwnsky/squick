@@ -19,8 +19,8 @@ class IWorldModule : public IModule {
 class WorldModule : public IWorldModule {
   public:
     WorldModule(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
+        is_update_ = true;
+        pm_ = p;
         mLastReportTime = 0;
     }
 
@@ -37,13 +37,13 @@ class WorldModule : public IWorldModule {
     virtual INetClientModule *GetClusterModule();
 
   protected:
-    void OnSocketMSEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
+    void OnSocketMSEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 
   protected:
     //////////////////////////////////////////////////////////////////////////
-    void OnSelectServerResultProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    // void OnWorldInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len);
-    void OnServerInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnSelectServerResultProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    // void OnWorldInfoProcess(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
     //////////////////////////////////////////////////////////////////////////
     void Register(INet *pNet);
@@ -51,11 +51,11 @@ class WorldModule : public IWorldModule {
 
   private:
     INT64 mLastReportTime;
-    IElementModule *m_pElementModule;
-    IKernelModule *m_pKernelModule;
-    IClassModule *m_pClassModule;
-    ILogModule *m_pLogModule;
-    INetClientModule *m_pNetClientModule;
+    IElementModule *m_element_;
+    IKernelModule *m_kernel_;
+    IClassModule *m_class_;
+    ILogModule *m_log_;
+    INetClientModule *m_net_client_;
 };
 
 } // namespace gameplay_manager::client

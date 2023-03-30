@@ -16,9 +16,9 @@
 class WorldNet_ServerModule : public IWorldNet_ServerModule {
   public:
     WorldNet_ServerModule(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
-        mnLastCheckTime = pPluginManager->GetNowTime();
+        is_update_ = true;
+        pm_ = p;
+        mnLastCheckTime = pm_->GetNowTime();
     }
 
     virtual bool Start();
@@ -26,80 +26,80 @@ class WorldNet_ServerModule : public IWorldNet_ServerModule {
     virtual bool Update();
 
     virtual bool AfterStart();
-    virtual void OnServerInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    virtual void OnServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
     virtual bool IsPrimaryWorldServer();
     virtual int GetWorldAreaID();
 
-    virtual bool SendMsgToGame(const int gameID, const int msgID, const std::string &xData);
-    virtual bool SendMsgToGame(const int gameID, const int msgID, const google::protobuf::Message &xData);
+    virtual bool SendMsgToGame(const int gameID, const int msg_id, const std::string &xData);
+    virtual bool SendMsgToGame(const int gameID, const int msg_id, const google::protobuf::Message &xData);
 
-    virtual bool SendMsgToGamePlayer(const Guid nPlayer, const int msgID, const std::string &xData);
-    virtual bool SendMsgToGamePlayer(const Guid nPlayer, const int msgID, const google::protobuf::Message &xData);
-    virtual bool SendMsgToGamePlayer(const DataList &argObjectVar, const int msgID, google::protobuf::Message &xData);
+    virtual bool SendMsgToGamePlayer(const Guid nPlayer, const int msg_id, const std::string &xData);
+    virtual bool SendMsgToGamePlayer(const Guid nPlayer, const int msg_id, const google::protobuf::Message &xData);
+    virtual bool SendMsgToGamePlayer(const DataList &argObjectVar, const int msg_id, google::protobuf::Message &xData);
 
-    virtual SQUICK_SHARE_PTR<ServerData> GetSuitProxyToEnter();
-    virtual SQUICK_SHARE_PTR<ServerData> GetSuitGameToEnter(const int arg);
+    virtual std::shared_ptr<ServerData> GetSuitProxyToEnter();
+    virtual std::shared_ptr<ServerData> GetSuitGameToEnter(const int arg);
 
     virtual int GetPlayerGameID(const Guid self);
     virtual const std::vector<Guid> &GetOnlinePlayers();
 
-    virtual SQUICK_SHARE_PTR<IWorldNet_ServerModule::PlayerData> GetPlayerData(const Guid &id);
+    virtual std::shared_ptr<IWorldNet_ServerModule::PlayerData> GetPlayerData(const Guid &id);
 
   protected:
     virtual bool AddOnLineReceiveCallBack(std::shared_ptr<std::function<void(const Guid)>> cb);
     virtual bool AddOffLineReceiveCallBack(std::shared_ptr<std::function<void(const Guid)>> cb);
 
   protected:
-    void OnSocketEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
+    void OnSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 
-    void OnClientDisconnect(const SQUICK_SOCKET nAddress);
-    void OnClientConnected(const SQUICK_SOCKET nAddress);
+    void OnClientDisconnect(const socket_t sock);
+    void OnClientConnected(const socket_t sock);
 
-    void OnOnlineProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnOfflineProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnOnlineProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnOfflineProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
-    void OnTransmitServerReport(const SQUICK_SOCKET nFd, const int msgId, const char *buffer, const uint32_t len);
-    void ServerReport(int reportServerId, SquickStruct::ServerState serverStatus);
+    void OnTransmitServerReport(const socket_t nFd, const int msg_id, const char *buffer, const uint32_t len);
+    void ServerReport(int reportServerId, rpc::ServerState serverStatus);
 
   protected:
-    void OnGameServerRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnGameServerUnRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnRefreshGameServerInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnGameServerRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnGameServerUnRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnRefreshGameServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
-    void OnProxyServerRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnProxyServerUnRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnRefreshProxyServerInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnProxyServerRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnProxyServerUnRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnRefreshProxyServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
-    void OnDBServerRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnDBServerUnRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnRefreshDBServerInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnDBServerRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnDBServerUnRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnRefreshDBServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
-    void OnGameplayManagerServerRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnGameplayManagerServerUnRegisteredProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnRefreshGameplayManagerServerInfoProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnGameplayManagerServerRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnGameplayManagerServerUnRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnRefreshGameplayManagerServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
     void SynGameToProxy();
-    void SynGameToProxy(const SQUICK_SOCKET nFD);
+    void SynGameToProxy(const socket_t nFD);
 
     void SynWorldToProxy();
-    void SynWorldToProxy(const SQUICK_SOCKET nFD);
+    void SynWorldToProxy(const socket_t nFD);
 
     void SynWorldToGame();
-    void SynWorldToGame(const SQUICK_SOCKET nFD);
+    void SynWorldToGame(const socket_t nFD);
 
     void SynWorldToDB();
-    void SynWorldToDB(const SQUICK_SOCKET nFD);
+    void SynWorldToDB(const socket_t nFD);
 
     void SynDBToGame();
-    void SynDBToGame(const SQUICK_SOCKET nFD);
+    void SynDBToGame(const socket_t nFD);
 
     // Gameplay Manager < -> World
     void SynGameToGameplayManager();
-    void SynGameToGameplayManager(const SQUICK_SOCKET nFD);
+    void SynGameToGameplayManager(const socket_t nFD);
 
     void SynWorldToGameplayManager();
-    void SynWorldToGameplayManager(const SQUICK_SOCKET nFD);
+    void SynWorldToGameplayManager(const socket_t nFD);
 
     void LogGameServer();
 
@@ -113,17 +113,17 @@ class WorldNet_ServerModule : public IWorldNet_ServerModule {
     INT64 mnLastCheckTime;
 
     // 同一区服，所有服务器
-    NFConsistentHashMapEx<int, ServerData> mWorldMap;
-    NFConsistentHashMapEx<int, ServerData> mGameMap;
-    NFConsistentHashMapEx<int, ServerData> mProxyMap;
-    NFConsistentHashMapEx<int, ServerData> mDBMap;
-    NFConsistentHashMapEx<int, ServerData> mGameplayManagerMap;
+    ConsistentHashMapEx<int, ServerData> mWorldMap;
+    ConsistentHashMapEx<int, ServerData> mGameMap;
+    ConsistentHashMapEx<int, ServerData> mProxyMap;
+    ConsistentHashMapEx<int, ServerData> mDBMap;
+    ConsistentHashMapEx<int, ServerData> mGameplayManagerMap;
 
-    IElementModule *m_pElementModule;
-    IClassModule *m_pClassModule;
-    IKernelModule *m_pKernelModule;
-    ILogModule *m_pLogModule;
-    INetModule *m_pNetModule;
-    INetClientModule *m_pNetClientModule;
-    IThreadPoolModule *m_pThreadPoolModule;
+    IElementModule *m_element_;
+    IClassModule *m_class_;
+    IKernelModule *m_kernel_;
+    ILogModule *m_log_;
+    INetModule *m_net_;
+    INetClientModule *m_net_client_;
+    IThreadPoolModule *m_thread_pool_;
 };

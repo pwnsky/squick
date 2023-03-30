@@ -12,8 +12,8 @@
 class EventModule : public IEventModule {
   public:
     EventModule(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
+        is_update_ = true;
+        pm_ = p;
     }
 
     virtual ~EventModule() {}
@@ -44,7 +44,7 @@ class EventModule : public IEventModule {
     virtual bool AddCommonEventCallBack(const OBJECT_EVENT_FUNCTOR cb);
 
   private:
-    IKernelModule *m_pKernelModule;
+    IKernelModule *m_kernel_;
 
   private:
     // for module

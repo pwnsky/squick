@@ -18,11 +18,11 @@
 
 #include <squick/core/guid.h>
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE || SQUICK_PLATFORM == SQUICK_PLATFORM_LINUX || SQUICK_PLATFORM == SQUICK_PLATFORM_ANDROID
+#elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_LINUX || PLATFORM == PLATFORM_ANDROID
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE
+#if PLATFORM == PLATFORM_APPLE
 
 #include <libkern/OSByteOrder.h>
 
@@ -47,7 +47,7 @@
 #include <event2/listener.h>
 #include <event2/thread.h>
 #include <event2/util.h>
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 #include <hiredis_win/hiredis.h>
 #else
 #include <hiredis/hiredis.h>

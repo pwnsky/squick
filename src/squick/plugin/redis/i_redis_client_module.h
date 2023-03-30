@@ -56,7 +56,7 @@ class IRedisClient {
      */
     virtual bool DEL(const std::string &key) = 0;
 
-    // SQUICK_SHARE_PTR<NFRedisResult> DUMP(const std::string& key, std::string& out);
+    // std::shared_ptr<NFRedisResult> DUMP(const std::string& key, std::string& out);
 
     /**
      * @brie Returns if key exists.
@@ -105,7 +105,7 @@ class IRedisClient {
      * @return Simple string reply: type of key, or none when key does not exist.
      */
     virtual std::string TYPE(const std::string &key) = 0;
-    // SQUICK_SHARE_PTR<NFRedisResult> SCAN(const std::string& key);
+    // std::shared_ptr<NFRedisResult> SCAN(const std::string& key);
 
     /////////client String//////////////
     /**
@@ -116,9 +116,9 @@ class IRedisClient {
      * @return the length of the string after the append operation.
      */
     virtual bool APPEND(const std::string &key, const std::string &value, int &length) = 0;
-    // SQUICK_SHARE_PTR<NFRedisResult> BITCOUNT
-    // SQUICK_SHARE_PTR<NFRedisResult> BITOP
-    // SQUICK_SHARE_PTR<NFRedisResult> BITFIELD(const std::string& key);
+    // std::shared_ptr<NFRedisResult> BITCOUNT
+    // std::shared_ptr<NFRedisResult> BITOP
+    // std::shared_ptr<NFRedisResult> BITFIELD(const std::string& key);
 
     /**
      * @brief Decrements the number stored at key by one.
@@ -147,8 +147,8 @@ class IRedisClient {
      */
     virtual bool GET(const std::string &key, std::string &value) = 0;
 
-    // SQUICK_SHARE_PTR<NFRedisResult> GETBIT(const std::string& key);
-    // SQUICK_SHARE_PTR<NFRedisResult> GETRANGE(const std::string& key);
+    // std::shared_ptr<NFRedisResult> GETBIT(const std::string& key);
+    // std::shared_ptr<NFRedisResult> GETRANGE(const std::string& key);
     /**
      * @brief Atomically sets key to value and returns the old value stored at key
      * @param keys [in] name of key
@@ -200,8 +200,8 @@ class IRedisClient {
      */
     virtual void MSET(const string_pair_vector &values) = 0;
 
-    // SQUICK_SHARE_PTR<NFRedisResult> MSETNX(const std::string& key);
-    // SQUICK_SHARE_PTR<NFRedisResult> PSETEX(const std::string& key);
+    // std::shared_ptr<NFRedisResult> MSETNX(const std::string& key);
+    // std::shared_ptr<NFRedisResult> PSETEX(const std::string& key);
     /**
      * @brief Set key to hold the string value. If key already holds a value, it is overwritten, regardless of its type
      * @param key [in] name of key
@@ -211,7 +211,7 @@ class IRedisClient {
      */
     virtual bool SET(const std::string &key, const std::string &value) = 0;
 
-    // SQUICK_SHARE_PTR<NFRedisResult> SETBIT(const std::string& key);
+    // std::shared_ptr<NFRedisResult> SETBIT(const std::string& key);
     /**
      * @brief Set key to hold the string value and set key to timeout after a given number of seconds
      * @param key [in] name of key
@@ -228,7 +228,7 @@ class IRedisClient {
      * @return true if the key was set, false if the key was not set
      */
     virtual bool SETNX(const std::string &key, const std::string &value) = 0;
-    // SQUICK_SHARE_PTR<NFRedisResult> SETRANGE(const std::string& key);
+    // std::shared_ptr<NFRedisResult> SETRANGE(const std::string& key);
 
     /**
      * @brief Returns the length of the string value stored at key
@@ -352,7 +352,7 @@ class IRedisClient {
      * @return false when key does not exist or not a hashmap key
      */
     virtual bool HVALS(const std::string &key, string_vector &values) = 0;
-    // SQUICK_SHARE_PTR<NFRedisResult> HSCAN(const std::string& key, const std::string& field);
+    // std::shared_ptr<NFRedisResult> HSCAN(const std::string& key, const std::string& field);
 
     /**
      * @brief Returns the length of the string value stored at key
@@ -365,9 +365,9 @@ class IRedisClient {
 
     /////////client list//////////////
 
-    // SQUICK_SHARE_PTR<NFRedisResult> BLPOP(const std::string& key, string_vector& values);
-    // SQUICK_SHARE_PTR<NFRedisResult> BRPOP(const std::string& key, string_vector& values);
-    // SQUICK_SHARE_PTR<NFRedisResult> BRPOPLPUSH(const std::string& key, string_vector& values);
+    // std::shared_ptr<NFRedisResult> BLPOP(const std::string& key, string_vector& values);
+    // std::shared_ptr<NFRedisResult> BRPOP(const std::string& key, string_vector& values);
+    // std::shared_ptr<NFRedisResult> BRPOPLPUSH(const std::string& key, string_vector& values);
     /**
      * @brief Returns the element at index index in the list stored at key
      * @param key [in] name of key
@@ -376,7 +376,7 @@ class IRedisClient {
      * @return true when cmd success, false when key does not exist or not a list key.
      */
     virtual bool LINDEX(const std::string &key, const int index, std::string &value) = 0;
-    // SQUICK_SHARE_PTR<NFRedisResult> LINSERT(const std::string& key, const std::string& value1, const std::string& value2);
+    // std::shared_ptr<NFRedisResult> LINSERT(const std::string& key, const std::string& value1, const std::string& value2);
 
     /**
      * @brief Returns the length of the list stored at key
@@ -420,7 +420,7 @@ class IRedisClient {
      * @return true when cmd success, false when key does not exist or dose not a list key.
      */
     virtual bool LRANGE(const std::string &key, const int start, const int end, string_vector &values) = 0;
-    // SQUICK_SHARE_PTR<NFRedisResult> LREM(const std::string& key, string_vector& values);
+    // std::shared_ptr<NFRedisResult> LREM(const std::string& key, string_vector& values);
 
     /**
      * @brief Sets the list element at index to value
@@ -430,7 +430,7 @@ class IRedisClient {
      * @return true when cmd success, false when key dose not a list key.
      */
     virtual bool LSET(const std::string &key, const int index, const std::string &value) = 0;
-    // SQUICK_SHARE_PTR<NFRedisResult> LTRIM(const std::string& key, string_vector& values);
+    // std::shared_ptr<NFRedisResult> LTRIM(const std::string& key, string_vector& values);
 
     /**
      * @brief Removes and returns the last element of the list stored at key.
@@ -439,7 +439,7 @@ class IRedisClient {
      * @return true when cmd success, false when key does not exist or not a list key.
      */
     virtual bool RPOP(const std::string &key, std::string &value) = 0;
-    // SQUICK_SHARE_PTR<NFRedisResult> RPOPLPUSH(const std::string& key, string_vector& values);
+    // std::shared_ptr<NFRedisResult> RPOPLPUSH(const std::string& key, string_vector& values);
 
     /**
      * @brief Insert all the specified values at the last of the list stored at key
@@ -751,17 +751,17 @@ class IRedisClient {
     std::string mstrAuthKey;
 };
 
-class INoSqlModule : public IModule {
+class IRedisModule : public IModule {
   public:
     virtual bool AddConnectSql(const std::string &strID, const std::string &ip) = 0;
     virtual bool AddConnectSql(const std::string &strID, const std::string &ip, const int nPort) = 0;
     virtual bool AddConnectSql(const std::string &strID, const std::string &ip, const int nPort, const std::string &strPass) = 0;
 
     virtual List<std::string> GetDriverIdList() = 0;
-    virtual SQUICK_SHARE_PTR<IRedisClient> GetDriver(const std::string &strID) = 0;
-    virtual SQUICK_SHARE_PTR<IRedisClient> GetDriverBySuitRandom() = 0;
-    virtual SQUICK_SHARE_PTR<IRedisClient> GetDriverBySuitConsistent() = 0;
-    virtual SQUICK_SHARE_PTR<IRedisClient> GetDriverBySuit(const std::string &strHash) = 0;
-    // virtual SQUICK_SHARE_PTR<IRedisClient>  GetDriverBySuit(const int nHash) = 0;
+    virtual std::shared_ptr<IRedisClient> GetDriver(const std::string &strID) = 0;
+    virtual std::shared_ptr<IRedisClient> GetDriverBySuitRandom() = 0;
+    virtual std::shared_ptr<IRedisClient> GetDriverBySuitConsistent() = 0;
+    virtual std::shared_ptr<IRedisClient> GetDriverBySuit(const std::string &strHash) = 0;
+    // virtual std::shared_ptr<IRedisClient>  GetDriverBySuit(const int nHash) = 0;
     virtual bool RemoveConnectSql(const std::string &strID) = 0;
 };

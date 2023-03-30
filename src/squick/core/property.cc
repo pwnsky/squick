@@ -50,7 +50,7 @@ void Property::SetValue(const SquickData &xData) {
     }
 
     if (nullptr == mxData) {
-        mxData = SQUICK_SHARE_PTR<SquickData>(SQUICK_NEW SquickData(xData));
+        mxData = std::shared_ptr<SquickData>(new SquickData(xData));
     }
 
     if (mtPropertyCallback.size() == 0) {
@@ -194,7 +194,7 @@ bool Property::SetInt(const INT64 value, const INT64 reason) {
             return false;
         }
 
-        mxData = SQUICK_SHARE_PTR<SquickData>(SQUICK_NEW SquickData(TDATA_INT));
+        mxData = std::shared_ptr<SquickData>(new SquickData(TDATA_INT));
         mxData->SetInt(0);
     }
 
@@ -227,7 +227,7 @@ bool Property::SetFloat(const double value, const INT64 reason) {
             return false;
         }
 
-        mxData = SQUICK_SHARE_PTR<SquickData>(SQUICK_NEW SquickData(TDATA_FLOAT));
+        mxData = std::shared_ptr<SquickData>(new SquickData(TDATA_FLOAT));
         mxData->SetFloat(0.0);
     }
 
@@ -260,7 +260,7 @@ bool Property::SetString(const std::string &value, const INT64 reason) {
             return false;
         }
 
-        mxData = SQUICK_SHARE_PTR<SquickData>(SQUICK_NEW SquickData(TDATA_STRING));
+        mxData = std::shared_ptr<SquickData>(new SquickData(TDATA_STRING));
         mxData->SetString(NULL_STR);
     }
 
@@ -293,7 +293,7 @@ bool Property::SetObject(const Guid &value, const INT64 reason) {
             return false;
         }
 
-        mxData = SQUICK_SHARE_PTR<SquickData>(SQUICK_NEW SquickData(TDATA_OBJECT));
+        mxData = std::shared_ptr<SquickData>(new SquickData(TDATA_OBJECT));
         mxData->SetObject(Guid());
     }
 
@@ -326,7 +326,7 @@ bool Property::SetVector2(const Vector2 &value, const INT64 reason) {
             return false;
         }
 
-        mxData = SQUICK_SHARE_PTR<SquickData>(SQUICK_NEW SquickData(TDATA_VECTOR2));
+        mxData = std::shared_ptr<SquickData>(new SquickData(TDATA_VECTOR2));
         mxData->SetVector2(Vector2());
     }
 
@@ -359,7 +359,7 @@ bool Property::SetVector3(const Vector3 &value, const INT64 reason) {
             return false;
         }
 
-        mxData = SQUICK_SHARE_PTR<SquickData>(SQUICK_NEW SquickData(TDATA_VECTOR3));
+        mxData = std::shared_ptr<SquickData>(new SquickData(TDATA_VECTOR3));
         mxData->SetVector3(Vector3());
     }
 
@@ -497,14 +497,14 @@ bool Property::DeSerialization() {
         }
 
         if (nullptr == mxEmbeddedList) {
-            mxEmbeddedList = SQUICK_SHARE_PTR<List<std::string>>(SQUICK_NEW List<std::string>());
+            mxEmbeddedList = std::shared_ptr<List<std::string>>(new List<std::string>());
         } else {
             mxEmbeddedList->ClearAll();
         }
 
         for (int i = 0; i < xDataList.GetCount(); ++i) {
             if (xDataList.String(i).empty()) {
-                NFASSERT(0, strData, __FILE__, __FUNCTION__);
+                SQUICK_ASSERT(0, strData, __FILE__, __FUNCTION__);
             }
 
             mxEmbeddedList->Add(xDataList.String(i));
@@ -517,7 +517,7 @@ bool Property::DeSerialization() {
         }
 
         if (nullptr == mxEmbeddedMap) {
-            mxEmbeddedMap = SQUICK_SHARE_PTR<MapEx<std::string, std::string>>(SQUICK_NEW MapEx<std::string, std::string>());
+            mxEmbeddedMap = std::shared_ptr<MapEx<std::string, std::string>>(new MapEx<std::string, std::string>());
         } else {
             mxEmbeddedMap->ClearAll();
         }
@@ -528,17 +528,17 @@ bool Property::DeSerialization() {
             xTemDataList.Split(strTemData.c_str(), ",");
             {
                 if (xTemDataList.GetCount() != nSubDataLength) {
-                    NFASSERT(0, strTemData, __FILE__, __FUNCTION__);
+                    SQUICK_ASSERT(0, strTemData, __FILE__, __FUNCTION__);
                 }
 
                 const std::string &strKey = xTemDataList.String(0);
                 const std::string &value = xTemDataList.String(1);
 
                 if (strKey.empty() || value.empty()) {
-                    NFASSERT(0, strTemData, __FILE__, __FUNCTION__);
+                    SQUICK_ASSERT(0, strTemData, __FILE__, __FUNCTION__);
                 }
 
-                mxEmbeddedMap->AddElement(strKey, SQUICK_SHARE_PTR<std::string>(SQUICK_NEW std::string(value)));
+                mxEmbeddedMap->AddElement(strKey, std::shared_ptr<std::string>(new std::string(value)));
             }
         }
 
@@ -548,6 +548,6 @@ bool Property::DeSerialization() {
     return bRet;
 }
 
-const SQUICK_SHARE_PTR<List<std::string>> Property::GetEmbeddedList() const { return this->mxEmbeddedList; }
+const std::shared_ptr<List<std::string>> Property::GetEmbeddedList() const { return this->mxEmbeddedList; }
 
-const SQUICK_SHARE_PTR<MapEx<std::string, std::string>> Property::GetEmbeddedMap() const { return this->mxEmbeddedMap; }
+const std::shared_ptr<MapEx<std::string, std::string>> Property::GetEmbeddedMap() const { return this->mxEmbeddedMap; }

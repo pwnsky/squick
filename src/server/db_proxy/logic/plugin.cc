@@ -18,13 +18,13 @@ const int DBLogicPlugin::GetPluginVersion() { return 0; }
 const std::string DBLogicPlugin::GetPluginName() { return GET_CLASS_NAME(DBLogicPlugin); }
 
 void DBLogicPlugin::Install() {
-    REGISTER_MODULE(pPluginManager, IPlayerRedisModule, PlayerRedisModule)
-    REGISTER_MODULE(pPluginManager, ICommonRedisModule, CommonRedisModule)
-    REGISTER_MODULE(pPluginManager, IAccountRedisModule, AccountRedisModule)
+    REGISTER_MODULE(pm_, IPlayerRedisModule, PlayerRedisModule)
+    REGISTER_MODULE(pm_, ICommonRedisModule, CommonRedisModule)
+    REGISTER_MODULE(pm_, IAccountRedisModule, AccountRedisModule)
 }
 
 void DBLogicPlugin::Uninstall() {
-    UNREGISTER_MODULE(pPluginManager, IAccountRedisModule, AccountRedisModule)
-    UNREGISTER_MODULE(pPluginManager, ICommonRedisModule, CommonRedisModule)
-    UNREGISTER_MODULE(pPluginManager, IPlayerRedisModule, PlayerRedisModule)
+    UNREGISTER_MODULE(pm_, IAccountRedisModule, AccountRedisModule)
+    UNREGISTER_MODULE(pm_, ICommonRedisModule, CommonRedisModule)
+    UNREGISTER_MODULE(pm_, IPlayerRedisModule, PlayerRedisModule)
 }

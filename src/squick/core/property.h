@@ -56,8 +56,8 @@ class _SquickExport Property : public IProperty {
     virtual const Vector3 &GetVector3() const;
 
     virtual const SquickData &GetValue() const;
-    virtual const SQUICK_SHARE_PTR<List<std::string>> GetEmbeddedList() const;
-    virtual const SQUICK_SHARE_PTR<MapEx<std::string, std::string>> GetEmbeddedMap() const;
+    virtual const std::shared_ptr<List<std::string>> GetEmbeddedList() const;
+    virtual const std::shared_ptr<MapEx<std::string, std::string>> GetEmbeddedMap() const;
 
     virtual bool Changed() const;
 
@@ -79,9 +79,9 @@ class _SquickExport Property : public IProperty {
     std::string msPropertyName;
     DATA_TYPE eType;
 
-    SQUICK_SHARE_PTR<SquickData> mxData;
-    SQUICK_SHARE_PTR<MapEx<std::string, std::string>> mxEmbeddedMap;
-    SQUICK_SHARE_PTR<List<std::string>> mxEmbeddedList;
+    std::shared_ptr<SquickData> mxData;
+    std::shared_ptr<MapEx<std::string, std::string>> mxEmbeddedMap;
+    std::shared_ptr<List<std::string>> mxEmbeddedList;
 
     bool mbPublic;
     bool mbPrivate;

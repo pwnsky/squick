@@ -36,7 +36,7 @@ struct TransformSync {
 
 class SceneGroupInfo {
   public:
-    SceneGroupInfo(const int sceneID, const int groupID, SQUICK_SHARE_PTR<IPropertyManager> xPropertyManager, SQUICK_SHARE_PTR<IRecordManager> xRecordManager) {
+    SceneGroupInfo(const int sceneID, const int groupID, std::shared_ptr<IPropertyManager> xPropertyManager, std::shared_ptr<IRecordManager> xRecordManager) {
         this->groupID = groupID;
         this->mxPropertyManager = xPropertyManager;
         this->mxRecordManager = xRecordManager;
@@ -52,8 +52,8 @@ class SceneGroupInfo {
 
     int sequence = 0;
     std::map<Guid, std::forward_list<TransformSync>> mPlayerPosition;
-    SQUICK_SHARE_PTR<IPropertyManager> mxPropertyManager;
-    SQUICK_SHARE_PTR<IRecordManager> mxRecordManager;
+    std::shared_ptr<IPropertyManager> mxPropertyManager;
+    std::shared_ptr<IRecordManager> mxRecordManager;
 };
 
 // all group in this scene
@@ -81,12 +81,12 @@ class SceneInfo : public MapEx<int, SceneGroupInfo> {
     int GetWidth() { return width; }
 
     bool AddObjectToGroup(const int groupID, const Guid &ident, bool bPlayer) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pInfo = GetElement(groupID);
+        std::shared_ptr<SceneGroupInfo> pInfo = GetElement(groupID);
         if (pInfo.get()) {
             if (bPlayer) {
-                return pInfo->mxPlayerList.AddElement(ident, SQUICK_SHARE_PTR<int>(new int(0)));
+                return pInfo->mxPlayerList.AddElement(ident, std::shared_ptr<int>(new int(0)));
             } else {
-                return pInfo->mxOtherList.AddElement(ident, SQUICK_SHARE_PTR<int>(new int(0)));
+                return pInfo->mxOtherList.AddElement(ident, std::shared_ptr<int>(new int(0)));
             }
         }
 
@@ -94,7 +94,7 @@ class SceneInfo : public MapEx<int, SceneGroupInfo> {
     }
 
     bool RemoveObjectFromGroup(const int groupID, const Guid &ident, bool bPlayer) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pInfo = GetElement(groupID);
+        std::shared_ptr<SceneGroupInfo> pInfo = GetElement(groupID);
         if (pInfo) {
             if (bPlayer) {
                 return pInfo->mxPlayerList.RemoveElement(ident);
@@ -107,7 +107,7 @@ class SceneInfo : public MapEx<int, SceneGroupInfo> {
     }
 
     bool ExistObjectInGroup(const int groupID, const Guid &ident) {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pInfo = GetElement(groupID);
+        std::shared_ptr<SceneGroupInfo> pInfo = GetElement(groupID);
         if (pInfo) {
             return pInfo->mxPlayerList.ExistElement(ident) || pInfo->mxOtherList.ExistElement(ident);
         }
@@ -116,7 +116,7 @@ class SceneInfo : public MapEx<int, SceneGroupInfo> {
     }
 
     bool Update() {
-        SQUICK_SHARE_PTR<SceneGroupInfo> pGroupInfo = First();
+        std::shared_ptr<SceneGroupInfo> pGroupInfo = First();
         while (pGroupInfo.get()) {
             pGroupInfo->Update();
 
@@ -126,9 +126,9 @@ class SceneInfo : public MapEx<int, SceneGroupInfo> {
     }
 
     bool AddSeedObjectInfo(const std::string &seedID, const std::string &configID, const Vector3 &vPos, const int nWeight) {
-        SQUICK_SHARE_PTR<SceneSeedResource> pInfo = mtSceneResourceConfig.GetElement(seedID);
+        std::shared_ptr<SceneSeedResource> pInfo = mtSceneResourceConfig.GetElement(seedID);
         if (!pInfo) {
-            pInfo = SQUICK_SHARE_PTR<SceneSeedResource>(new SceneSeedResource());
+            pInfo = std::shared_ptr<SceneSeedResource>(new SceneSeedResource());
             pInfo->seedID = seedID;
             pInfo->configID = configID;
             pInfo->vSeedPos = vPos;
@@ -139,12 +139,12 @@ class SceneInfo : public MapEx<int, SceneGroupInfo> {
         return true;
     }
 
-    SQUICK_SHARE_PTR<SceneSeedResource> GetSeedObjectInfo(const std::string &seedID) { return mtSceneResourceConfig.GetElement(seedID); }
+    std::shared_ptr<SceneSeedResource> GetSeedObjectInfo(const std::string &seedID) { return mtSceneResourceConfig.GetElement(seedID); }
 
     bool RemoveSeedObject(const std::string &seedID) { return true; }
 
     bool AddReliveInfo(const int nIndex, const Vector3 &vPos) {
-        return mtSceneRelivePos.AddElement(nIndex, SQUICK_SHARE_PTR<Vector3>(SQUICK_NEW Vector3(vPos)));
+        return mtSceneRelivePos.AddElement(nIndex, std::shared_ptr<Vector3>(new Vector3(vPos)));
     }
 
     const Vector3 &GetReliveInfo(const int nIndex) {
@@ -155,7 +155,7 @@ class SceneInfo : public MapEx<int, SceneGroupInfo> {
             }
 
             if (nIndex < mtSceneRelivePos.Count()) {
-                SQUICK_SHARE_PTR<Vector3> vPos = mtSceneRelivePos.GetElement(nIndex);
+                std::shared_ptr<Vector3> vPos = mtSceneRelivePos.GetElement(nIndex);
                 if (vPos) {
                     return *vPos;
                 }
@@ -165,7 +165,7 @@ class SceneInfo : public MapEx<int, SceneGroupInfo> {
         return Vector3::Zero();
     }
 
-    bool AddTagInfo(const int nIndex, const Vector3 &vPos) { return mtTagPos.AddElement(nIndex, SQUICK_SHARE_PTR<Vector3>(SQUICK_NEW Vector3(vPos))); }
+    bool AddTagInfo(const int nIndex, const Vector3 &vPos) { return mtTagPos.AddElement(nIndex, std::shared_ptr<Vector3>(new Vector3(vPos))); }
 
     const Vector3 &GetTagInfo(const int nIndex) {
         if (mtTagPos.Count() > 0) {
@@ -175,7 +175,7 @@ class SceneInfo : public MapEx<int, SceneGroupInfo> {
             }
 
             if (nIndex < mtTagPos.Count()) {
-                SQUICK_SHARE_PTR<Vector3> vPos = mtTagPos.GetElement(nIndex);
+                std::shared_ptr<Vector3> vPos = mtTagPos.GetElement(nIndex);
                 if (vPos) {
                     return *vPos;
                 }
@@ -196,7 +196,7 @@ class SceneInfo : public MapEx<int, SceneGroupInfo> {
 
 class SceneModule : public ISceneModule {
   public:
-    SceneModule(IPluginManager *p) { pPluginManager = p; }
+    SceneModule(IPluginManager *p) { pm_ = p; }
 
     virtual ~SceneModule() {}
 
@@ -246,9 +246,9 @@ class SceneModule : public ISceneModule {
     virtual const Vector3 &GetPropertyVector3(const int scene, const int group, const std::string &propertyName);
 
     //////////////////////////////////////////////////////////////////////////
-    virtual SQUICK_SHARE_PTR<IPropertyManager> FindPropertyManager(const int scene, const int group);
-    virtual SQUICK_SHARE_PTR<IRecordManager> FindRecordManager(const int scene, const int group);
-    virtual SQUICK_SHARE_PTR<IRecord> FindRecord(const int scene, const int group, const std::string &recordName);
+    virtual std::shared_ptr<IPropertyManager> FindPropertyManager(const int scene, const int group);
+    virtual std::shared_ptr<IRecordManager> FindRecordManager(const int scene, const int group);
+    virtual std::shared_ptr<IRecord> FindRecord(const int scene, const int group, const std::string &recordName);
     virtual bool ClearRecord(const int scene, const int group, const std::string &recordName);
 
     virtual bool SetRecordInt(const int scene, const int group, const std::string &recordName, const int row, const int col, const INT64 nValue);
@@ -394,11 +394,11 @@ class SceneModule : public ISceneModule {
     std::vector<SCENE_EVENT_FUNCTOR_PTR> mvSceneGroupDestroyedCallback;
 
   private:
-    IKernelModule *m_pKernelModule;
-    IClassModule *m_pClassModule;
-    ILogModule *m_pLogModule;
-    IElementModule *m_pElementModule;
-    IEventModule *m_pEventModule;
+    IKernelModule *m_kernel_;
+    IClassModule *m_class_;
+    ILogModule *m_log_;
+    IElementModule *m_element_;
+    IEventModule *m_event_;
     ICellModule *m_pCellModule;
 };
 

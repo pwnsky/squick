@@ -5,7 +5,7 @@
 #include "i_http_client.h"
 #include "i_http_server.h"
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 #include <fcntl.h>
 #include <io.h>
 #include <winsock2.h>

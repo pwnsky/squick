@@ -33,7 +33,7 @@ class _SquickExport Object : public IObject {
     virtual bool ObjectReady() override;
 
     virtual bool FindProperty(const std::string &propertyName) override;
-    virtual SQUICK_SHARE_PTR<IProperty> AddProperty(const std::string &propertyName, const DATA_TYPE varType) override;
+    virtual std::shared_ptr<IProperty> AddProperty(const std::string &propertyName, const DATA_TYPE varType) override;
 
     virtual bool SetPropertyInt(const std::string &propertyName, const INT64 nValue, const INT64 reason = 0) override;
     virtual bool SetPropertyFloat(const std::string &propertyName, const double dwValue, const INT64 reason = 0) override;
@@ -50,7 +50,7 @@ class _SquickExport Object : public IObject {
     virtual const Vector2 &GetPropertyVector2(const std::string &propertyName) override;
     virtual const Vector3 &GetPropertyVector3(const std::string &propertyName) override;
 
-    virtual SQUICK_SHARE_PTR<IRecord> FindRecord(const std::string &recordName) override;
+    virtual std::shared_ptr<IRecord> FindRecord(const std::string &recordName) override;
 
     virtual bool SetRecordInt(const std::string &recordName, const int row, const int col, const INT64 nValue) override;
     virtual bool SetRecordFloat(const std::string &recordName, const int row, const int col, const double dwValue) override;
@@ -80,11 +80,11 @@ class _SquickExport Object : public IObject {
     virtual const Vector2 &GetRecordVector2(const std::string &recordName, const int row, const std::string &colTag) override;
     virtual const Vector3 &GetRecordVector3(const std::string &recordName, const int row, const std::string &colTag) override;
 
-    virtual SQUICK_SHARE_PTR<IRecordManager> GetRecordManager() override;
-    virtual SQUICK_SHARE_PTR<IPropertyManager> GetPropertyManager() override;
+    virtual std::shared_ptr<IRecordManager> GetRecordManager() override;
+    virtual std::shared_ptr<IPropertyManager> GetPropertyManager() override;
 
-    virtual void SetRecordManager(SQUICK_SHARE_PTR<IRecordManager> xRecordManager) override;
-    virtual void SetPropertyManager(SQUICK_SHARE_PTR<IPropertyManager> xPropertyManager) override;
+    virtual void SetRecordManager(std::shared_ptr<IRecordManager> xRecordManager) override;
+    virtual void SetPropertyManager(std::shared_ptr<IPropertyManager> xPropertyManager) override;
 
   protected:
     virtual bool AddRecordCallBack(const std::string &recordName, const RECORD_EVENT_FUNCTOR_PTR &cb) override;
@@ -95,8 +95,8 @@ class _SquickExport Object : public IObject {
     Guid mSelf;
     Vector3 mPosition;
     CLASS_OBJECT_EVENT mObjectEventState;
-    SQUICK_SHARE_PTR<IRecordManager> m_pRecordManager;
-    SQUICK_SHARE_PTR<IPropertyManager> m_pPropertyManager;
+    std::shared_ptr<IRecordManager> m_pRecordManager;
+    std::shared_ptr<IPropertyManager> m_pPropertyManager;
 };
 
 #endif

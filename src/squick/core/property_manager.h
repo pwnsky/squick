@@ -15,9 +15,9 @@ class _SquickExport PropertyManager : public IPropertyManager {
 
     virtual bool RegisterCallback(const std::string &propertyName, const PROPERTY_EVENT_FUNCTOR_PTR &cb);
 
-    virtual SQUICK_SHARE_PTR<IProperty> AddProperty(const Guid &self, SQUICK_SHARE_PTR<IProperty> pProperty);
+    virtual std::shared_ptr<IProperty> AddProperty(const Guid &self, std::shared_ptr<IProperty> pProperty);
 
-    virtual SQUICK_SHARE_PTR<IProperty> AddProperty(const Guid &self, const std::string &propertyName, const DATA_TYPE varType);
+    virtual std::shared_ptr<IProperty> AddProperty(const Guid &self, const std::string &propertyName, const DATA_TYPE varType);
 
     virtual const Guid &Self();
 

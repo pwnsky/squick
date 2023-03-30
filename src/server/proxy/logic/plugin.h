@@ -5,7 +5,7 @@
 namespace proxy::logic {
 class Plugin : public IPlugin {
   public:
-    Plugin(IPluginManager *p) { pPluginManager = p; }
+    Plugin(IPluginManager *p) { pm_ = p; }
     virtual const int GetPluginVersion();
     virtual const std::string GetPluginName();
     virtual void Install();

@@ -10,22 +10,22 @@
 ClassModule::ClassModule() { mConfigFileName = "config/struct/logic_class.xml"; }
 
 ClassModule::ClassModule(IPluginManager *p) {
-    pPluginManager = p;
+    pm_ = p;
     mConfigFileName = "config/struct/logic_class.xml";
 
 #ifdef DEBUG
-    std::cout << "Using [" << pPluginManager->GetConfigPath() << "/" + mConfigFileName << "]" << std::endl;
+    std::cout << "Using [" << pm_->GetConfigPath() << "/" + mConfigFileName << "]" << std::endl;
 #endif
 
     if (!this->mbBackup) {
-        // IThreadPoolModule *threadPoolModule = pPluginManager->FindModule<IThreadPoolModule>();
+        // IThreadPoolModule *threadPoolModule = pm_->FindModule<IThreadPoolModule>();
         // const int threadCount = threadPoolModule->GetThreadCount();
         for (int i = 0; i < 10; ++i) {
             ThreadClassModule threadElement;
             threadElement.used = false;
             threadElement.classModule = new ClassModule();
             threadElement.classModule->mbBackup = true;
-            threadElement.classModule->pPluginManager = pPluginManager;
+            threadElement.classModule->pm_ = pm_;
 
             threadElement.classModule->Awake();
             threadElement.classModule->Start();
@@ -107,13 +107,13 @@ DATA_TYPE ClassModule::ComputerType(const char *pstrTypeName, SquickData &var) {
     return TDATA_UNKNOWN;
 }
 
-bool ClassModule::AddProperties(rapidxml::xml_node<> *pPropertyRootNode, SQUICK_SHARE_PTR<IClass> pClass) {
+bool ClassModule::AddProperties(rapidxml::xml_node<> *pPropertyRootNode, std::shared_ptr<IClass> pClass) {
     for (rapidxml::xml_node<> *pPropertyNode = pPropertyRootNode->first_node(); pPropertyNode; pPropertyNode = pPropertyNode->next_sibling()) {
         if (pPropertyNode) {
             const char *propertyName = pPropertyNode->first_attribute("Id")->value();
             if (pClass->GetPropertyManager()->GetElement(propertyName)) {
                 // error
-                NFASSERT(0, propertyName, __FILE__, __FUNCTION__);
+                SQUICK_ASSERT(0, propertyName, __FILE__, __FUNCTION__);
                 continue;
             }
 
@@ -138,12 +138,12 @@ bool ClassModule::AddProperties(rapidxml::xml_node<> *pPropertyRootNode, SQUICK_
             if (TDATA_UNKNOWN == ComputerType(pstrType, varProperty)) {
                 // std::cout << "error:" << pClass->GetTypeName() << "  " << pClass->GetInstancePath() << ": " << propertyName << " type error!!!" << std::endl;
 
-                NFASSERT(0, propertyName, __FILE__, __FUNCTION__);
+                SQUICK_ASSERT(0, propertyName, __FILE__, __FUNCTION__);
             }
 
             // printf( " Property:%s[%s]\n", propertyName, pstrType );
 
-            SQUICK_SHARE_PTR<IProperty> xProperty = pClass->GetPropertyManager()->AddProperty(Guid(), propertyName, varProperty.GetType());
+            std::shared_ptr<IProperty> xProperty = pClass->GetPropertyManager()->AddProperty(Guid(), propertyName, varProperty.GetType());
             xProperty->SetPublic(bPublic);
             xProperty->SetPrivate(bPrivate);
             xProperty->SetSave(bSave);
@@ -157,7 +157,7 @@ bool ClassModule::AddProperties(rapidxml::xml_node<> *pPropertyRootNode, SQUICK_
     return true;
 }
 
-bool ClassModule::AddRecords(rapidxml::xml_node<> *pRecordRootNode, SQUICK_SHARE_PTR<IClass> pClass) {
+bool ClassModule::AddRecords(rapidxml::xml_node<> *pRecordRootNode, std::shared_ptr<IClass> pClass) {
     for (rapidxml::xml_node<> *pRecordNode = pRecordRootNode->first_node(); pRecordNode; pRecordNode = pRecordNode->next_sibling()) {
         if (pRecordNode) {
             const char *pstrRecordName = pRecordNode->first_attribute("Id")->value();
@@ -166,7 +166,7 @@ bool ClassModule::AddRecords(rapidxml::xml_node<> *pRecordRootNode, SQUICK_SHARE
                 // error
                 // file << pClass->mstrType << ":" << pstrRecordName << std::endl;
                 // assert(0);
-                NFASSERT(0, pstrRecordName, __FILE__, __FUNCTION__);
+                SQUICK_ASSERT(0, pstrRecordName, __FILE__, __FUNCTION__);
                 continue;
             }
 
@@ -194,8 +194,8 @@ bool ClassModule::AddRecords(rapidxml::xml_node<> *pRecordRootNode, SQUICK_SHARE
             bool bForce = lexical_cast<bool>(pstrCache);
             bool bUpload = lexical_cast<bool>(pstrUpload);
 
-            SQUICK_SHARE_PTR<DataList> recordVar(SQUICK_NEW DataList());
-            SQUICK_SHARE_PTR<DataList> recordTag(SQUICK_NEW DataList());
+            std::shared_ptr<DataList> recordVar(new DataList());
+            std::shared_ptr<DataList> recordTag(new DataList());
 
             for (rapidxml::xml_node<> *recordColNode = pRecordNode->first_node(); recordColNode; recordColNode = recordColNode->next_sibling()) {
                 // const char* pstrColName = recordColNode->first_attribute( "Id" )->value();
@@ -203,7 +203,7 @@ bool ClassModule::AddRecords(rapidxml::xml_node<> *pRecordRootNode, SQUICK_SHARE
                 const char *pstrColType = recordColNode->first_attribute("Type")->value();
                 if (TDATA_UNKNOWN == ComputerType(pstrColType, TData)) {
                     // assert(0);
-                    NFASSERT(0, pstrRecordName, __FILE__, __FUNCTION__);
+                    SQUICK_ASSERT(0, pstrRecordName, __FILE__, __FUNCTION__);
                 }
 
                 recordVar->Append(TData);
@@ -216,7 +216,7 @@ bool ClassModule::AddRecords(rapidxml::xml_node<> *pRecordRootNode, SQUICK_SHARE
                 }
             }
 
-            SQUICK_SHARE_PTR<IRecord> xRecord = pClass->GetRecordManager()->AddRecord(Guid(), pstrRecordName, recordVar, recordTag, atoi(pstrRow));
+            std::shared_ptr<IRecord> xRecord = pClass->GetRecordManager()->AddRecord(Guid(), pstrRecordName, recordVar, recordTag, atoi(pstrRow));
 
             xRecord->SetPublic(bPublic);
             xRecord->SetPrivate(bPrivate);
@@ -231,7 +231,7 @@ bool ClassModule::AddRecords(rapidxml::xml_node<> *pRecordRootNode, SQUICK_SHARE
     return true;
 }
 
-bool ClassModule::AddComponents(rapidxml::xml_node<> *pComponentRootNode, SQUICK_SHARE_PTR<IClass> pClass) {
+bool ClassModule::AddComponents(rapidxml::xml_node<> *pComponentRootNode, std::shared_ptr<IClass> pClass) {
     /*
 for (rapidxml::xml_node<>* pComponentNode = pComponentRootNode->first_node(); pComponentNode; pComponentNode = pComponentNode->next_sibling())
 {
@@ -246,10 +246,10 @@ for (rapidxml::xml_node<>* pComponentNode = pComponentRootNode->first_node(); pC
             if (pClass->GetComponentManager()->GetElement(componentName))
             {
                 //error
-                NFASSERT(0, componentName, __FILE__, __FUNCTION__);
+                SQUICK_ASSERT(0, componentName, __FILE__, __FUNCTION__);
                 continue;
             }
-            SQUICK_SHARE_PTR<IComponent> xComponent(SQUICK_NEW IComponent(Guid(), componentName));
+            std::shared_ptr<IComponent> xComponent(new IComponent(Guid(), componentName));
             pClass->GetComponentManager()->AddComponent(componentName, xComponent);
         }
     }
@@ -258,15 +258,15 @@ for (rapidxml::xml_node<>* pComponentNode = pComponentRootNode->first_node(); pC
     return true;
 }
 
-bool ClassModule::AddClassInclude(const char *pstrClassFilePath, SQUICK_SHARE_PTR<IClass> pClass) {
+bool ClassModule::AddClassInclude(const char *pstrClassFilePath, std::shared_ptr<IClass> pClass) {
     if (pClass->Find(pstrClassFilePath)) {
         return false;
     }
 
     //////////////////////////////////////////////////////////////////////////
-    std::string strFile = pPluginManager->GetConfigPath() + "/" + pstrClassFilePath;
+    std::string strFile = pm_->GetConfigPath() + "/" + pstrClassFilePath;
     std::string content;
-    pPluginManager->GetFileContent(strFile, content);
+    pm_->GetFileContent(strFile, content);
 
     rapidxml::xml_document<> xDoc;
     xDoc.parse<0>((char *)content.c_str());
@@ -309,8 +309,8 @@ bool ClassModule::AddClassInclude(const char *pstrClassFilePath, SQUICK_SHARE_PT
     return true;
 }
 
-bool ClassModule::AddClass(const char *pstrClassFilePath, SQUICK_SHARE_PTR<IClass> pClass) {
-    SQUICK_SHARE_PTR<IClass> pParent = pClass->GetParent();
+bool ClassModule::AddClass(const char *pstrClassFilePath, std::shared_ptr<IClass> pClass) {
+    std::shared_ptr<IClass> pParent = pClass->GetParent();
     while (pParent) {
         // inherited some properties form class of parent
         std::string fileName = "";
@@ -343,10 +343,10 @@ bool ClassModule::AddClass(const char *pstrClassFilePath, SQUICK_SHARE_PTR<IClas
 }
 
 bool ClassModule::AddClass(const std::string &className, const std::string &strParentName) {
-    SQUICK_SHARE_PTR<IClass> pParentClass = GetElement(strParentName);
-    SQUICK_SHARE_PTR<IClass> pChildClass = GetElement(className);
+    std::shared_ptr<IClass> pParentClass = GetElement(strParentName);
+    std::shared_ptr<IClass> pChildClass = GetElement(className);
     if (!pChildClass) {
-        pChildClass = SQUICK_SHARE_PTR<IClass>(SQUICK_NEW Class(className));
+        pChildClass = std::shared_ptr<IClass>(new Class(className));
         AddElement(className, pChildClass);
         // pChildClass = CreateElement( className );
 
@@ -361,7 +361,7 @@ bool ClassModule::AddClass(const std::string &className, const std::string &strP
     return true;
 }
 
-bool ClassModule::Load(rapidxml::xml_node<> *attrNode, SQUICK_SHARE_PTR<IClass> pParentClass) {
+bool ClassModule::Load(rapidxml::xml_node<> *attrNode, std::shared_ptr<IClass> pParentClass) {
     const char *pstrLogicClassName = attrNode->first_attribute("Id")->value();
     const char *pstrPath = attrNode->first_attribute("Path")->value();
     const char *pstrInstancePath = attrNode->first_attribute("InstancePath")->value();
@@ -369,7 +369,7 @@ bool ClassModule::Load(rapidxml::xml_node<> *attrNode, SQUICK_SHARE_PTR<IClass> 
     // printf( "-----------------------------------------------------\n");
     // printf( "%s:\n", pstrLogicClassName );
 
-    SQUICK_SHARE_PTR<IClass> pClass(SQUICK_NEW Class(pstrLogicClassName));
+    std::shared_ptr<IClass> pClass(new Class(pstrLogicClassName));
     AddElement(pstrLogicClassName, pClass);
     pClass->SetParent(pParentClass);
     pClass->SetInstancePath(pstrInstancePath);
@@ -386,9 +386,9 @@ bool ClassModule::Load(rapidxml::xml_node<> *attrNode, SQUICK_SHARE_PTR<IClass> 
 
 bool ClassModule::Load() {
     //////////////////////////////////////////////////////////////////////////
-    std::string strFile = pPluginManager->GetConfigPath() + "/" + mConfigFileName;
+    std::string strFile = pm_->GetConfigPath() + "/" + mConfigFileName;
     std::string content;
-    pPluginManager->GetFileContent(strFile, content);
+    pm_->GetFileContent(strFile, content);
 
     rapidxml::xml_document<> xDoc;
     xDoc.parse<0>((char *)content.c_str());
@@ -408,8 +408,8 @@ bool ClassModule::Load() {
 
 bool ClassModule::Save() { return true; }
 
-SQUICK_SHARE_PTR<IPropertyManager> ClassModule::GetClassPropertyManager(const std::string &className) {
-    SQUICK_SHARE_PTR<IClass> pClass = GetElement(className);
+std::shared_ptr<IPropertyManager> ClassModule::GetClassPropertyManager(const std::string &className) {
+    std::shared_ptr<IClass> pClass = GetElement(className);
     if (pClass) {
         return pClass->GetPropertyManager();
     }
@@ -417,8 +417,8 @@ SQUICK_SHARE_PTR<IPropertyManager> ClassModule::GetClassPropertyManager(const st
     return NULL;
 }
 
-SQUICK_SHARE_PTR<IRecordManager> ClassModule::GetClassRecordManager(const std::string &className) {
-    SQUICK_SHARE_PTR<IClass> pClass = GetElement(className);
+std::shared_ptr<IRecordManager> ClassModule::GetClassRecordManager(const std::string &className) {
+    std::shared_ptr<IClass> pClass = GetElement(className);
     if (pClass) {
         return pClass->GetRecordManager();
     }
@@ -429,7 +429,7 @@ SQUICK_SHARE_PTR<IRecordManager> ClassModule::GetClassRecordManager(const std::s
 bool ClassModule::Clear() { return true; }
 
 bool ClassModule::AddClassCallBack(const std::string &className, const CLASS_EVENT_FUNCTOR_PTR &cb) {
-    SQUICK_SHARE_PTR<IClass> pClass = GetElement(className);
+    std::shared_ptr<IClass> pClass = GetElement(className);
     if (nullptr == pClass) {
         return false;
     }
@@ -438,7 +438,7 @@ bool ClassModule::AddClassCallBack(const std::string &className, const CLASS_EVE
 }
 
 bool ClassModule::DoEvent(const Guid &objectID, const std::string &className, const CLASS_OBJECT_EVENT classEvent, const DataList &valueList) {
-    SQUICK_SHARE_PTR<IClass> pClass = GetElement(className);
+    std::shared_ptr<IClass> pClass = GetElement(className);
     if (nullptr == pClass) {
         return false;
     }

@@ -22,8 +22,8 @@ class HttpModule : public IHttpModule {
     using json = nlohmann::json;
   public:
     HttpModule(IPluginManager *p) {
-        pPluginManager = p;
-        m_bIsUpdate = true;
+        pm_ = p;
+        is_update_ = true;
     }
 
     virtual bool Start();
@@ -32,16 +32,16 @@ class HttpModule : public IHttpModule {
     virtual bool Update();
 
   protected:
-    bool OnLogin(SQUICK_SHARE_PTR<HttpRequest> request);
-    bool OnWorldList(SQUICK_SHARE_PTR<HttpRequest> request);
-    bool OnWorldEnter(SQUICK_SHARE_PTR<HttpRequest> request);
-    WebStatus OnFilter(SQUICK_SHARE_PTR<HttpRequest> request);
-    std::string GetUserID(SQUICK_SHARE_PTR<HttpRequest> request);
-    std::string GetUserJWT(SQUICK_SHARE_PTR<HttpRequest> request);
+    bool OnLogin(std::shared_ptr<HttpRequest> request);
+    bool OnWorldList(std::shared_ptr<HttpRequest> request);
+    bool OnWorldEnter(std::shared_ptr<HttpRequest> request);
+    WebStatus OnFilter(std::shared_ptr<HttpRequest> request);
+    std::string GetUserID(std::shared_ptr<HttpRequest> request);
+    std::string GetUserJWT(std::shared_ptr<HttpRequest> request);
     bool CheckUserJWT(const std::string &user, const std::string &jwt);
     std::unordered_map<std::string, std::string> tokens_;
     
-    bool OnGetCDN(SQUICK_SHARE_PTR<HttpRequest> request);
+    bool OnGetCDN(std::shared_ptr<HttpRequest> request);
   private:
     INetClientModule *m_net_client_;
     IKernelModule *m_kernel_;

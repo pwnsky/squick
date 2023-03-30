@@ -1,6 +1,6 @@
 // 数据库 RPC
 syntax = "proto3";
-package SquickStruct;
+package rpc;
 import "base.proto";
 // 30000 ~ 35000
 enum DbProxyRPC {

@@ -16,7 +16,7 @@
 
 class NavigationDataModule : public INavigationDataModule {
   public:
-    NavigationDataModule(IPluginManager *p) { pPluginManager = p; }
+    NavigationDataModule(IPluginManager *p) { pm_ = p; }
     virtual bool Start() override;
     virtual bool Destory() override;
     virtual bool Update() override;
@@ -25,9 +25,9 @@ class NavigationDataModule : public INavigationDataModule {
 
     virtual const std::string &GetDefaultMapData(const int scene) override;
 
-    virtual const SQUICK_SHARE_PTR<GroupNavigationData> GetMapData(const int scene) override;
-    virtual const SQUICK_SHARE_PTR<GroupNavigationData> GetMapData(const int scene, const int group) override;
-    virtual const SQUICK_SHARE_PTR<Voxel> GetMapData(const int scene, const int group, const int x, int z) override;
+    virtual const std::shared_ptr<GroupNavigationData> GetMapData(const int scene) override;
+    virtual const std::shared_ptr<GroupNavigationData> GetMapData(const int scene, const int group) override;
+    virtual const std::shared_ptr<Voxel> GetMapData(const int scene, const int group, const int x, int z) override;
 
     // modify map data in run time
     virtual bool SetMapDataOccupyItem(const int scene, const int group, const int x, const int z, const std::string &item) override;
@@ -41,11 +41,11 @@ class NavigationDataModule : public INavigationDataModule {
 
     //////////////////////////////////////////////////////////////////////////
 
-    IKernelModule *m_pKernelModule;
-    IClassModule *m_pClassModule;
-    ILogModule *m_pLogModule;
-    IElementModule *m_pElementModule;
-    INetModule *m_pNetModule;
-    IEventModule *m_pEventModule;
-    ISceneModule *m_pSceneModule;
+    IKernelModule *m_kernel_;
+    IClassModule *m_class_;
+    ILogModule *m_log_;
+    IElementModule *m_element_;
+    INetModule *m_net_;
+    IEventModule *m_event_;
+    ISceneModule *m_scene_;
 };

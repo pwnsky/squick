@@ -16,7 +16,7 @@
 namespace gameplay::server {
 class ServerModule : public IServerModule {
   public:
-    ServerModule(IPluginManager *p) { pPluginManager = p; }
+    ServerModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Start();
     virtual bool Destory();

@@ -65,7 +65,7 @@ class IPlugin : public IModule {
         for (const auto &it : mModules) {
             IModule *pModule = it.second;
 
-            pPluginManager->SetCurrentModule(pModule);
+            pm_->SetCurrentModule(pModule);
 
             bool bRet = pModule->Awake();
             if (!bRet) {
@@ -81,7 +81,7 @@ class IPlugin : public IModule {
         for (const auto &it : mModules) {
             IModule *pModule = it.second;
 
-            pPluginManager->SetCurrentModule(pModule);
+            pm_->SetCurrentModule(pModule);
             bool bRet = pModule->Start();
             if (!bRet) {
                 std::cout << pModule->name << std::endl;
@@ -96,7 +96,7 @@ class IPlugin : public IModule {
         for (const auto &it : mModules) {
             IModule *pModule = it.second;
 
-            pPluginManager->SetCurrentModule(pModule);
+            pm_->SetCurrentModule(pModule);
             bool bRet = pModule->AfterStart();
             if (!bRet) {
                 std::cout << pModule->name << std::endl;
@@ -110,7 +110,7 @@ class IPlugin : public IModule {
         for (const auto &it : mModules) {
             IModule *pModule = it.second;
 
-            pPluginManager->SetCurrentModule(pModule);
+            pm_->SetCurrentModule(pModule);
             pModule->CheckConfig();
         }
 
@@ -121,7 +121,7 @@ class IPlugin : public IModule {
         for (const auto &it : mModules) {
             IModule *pModule = it.second;
 
-            pPluginManager->SetCurrentModule(pModule);
+            pm_->SetCurrentModule(pModule);
             pModule->ReadyUpdate();
         }
 
@@ -132,7 +132,7 @@ class IPlugin : public IModule {
         for (const auto &it : mModules) {
             IModule *pModule = it.second;
 
-            pPluginManager->SetCurrentModule(pModule);
+            pm_->SetCurrentModule(pModule);
             pModule->Update();
         }
 
@@ -143,7 +143,7 @@ class IPlugin : public IModule {
         for (const auto &it : mModules) {
             IModule *pModule = it.second;
 
-            pPluginManager->SetCurrentModule(pModule);
+            pm_->SetCurrentModule(pModule);
             pModule->BeforeDestory();
         }
 
@@ -154,7 +154,7 @@ class IPlugin : public IModule {
         for (const auto &it : mModules) {
             IModule *pModule = it.second;
 
-            pPluginManager->SetCurrentModule(pModule);
+            pm_->SetCurrentModule(pModule);
             pModule->Destory();
         }
 
@@ -165,7 +165,7 @@ class IPlugin : public IModule {
         for (const auto &it : mModules) {
             IModule *pModule = it.second;
 
-            pPluginManager->SetCurrentModule(pModule);
+            pm_->SetCurrentModule(pModule);
             pModule->Finalize();
         }
 
@@ -176,7 +176,7 @@ class IPlugin : public IModule {
         for (const auto &it : mModules) {
             IModule *pModule = it.second;
 
-            pPluginManager->SetCurrentModule(pModule);
+            pm_->SetCurrentModule(pModule);
             pModule->OnReloadPlugin();
         }
 

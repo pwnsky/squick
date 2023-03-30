@@ -2,15 +2,15 @@
 #include "player_redis_module.h"
 #include "common_redis_module.h"
 
-PlayerRedisModule::PlayerRedisModule(IPluginManager *p) { pPluginManager = p; }
+PlayerRedisModule::PlayerRedisModule(IPluginManager *p) { pm_ = p; }
 
 bool PlayerRedisModule::Start() {
-    m_pLogicClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pNoSqlModule = pPluginManager->FindModule<INoSqlModule>();
-    m_pCommonRedisModule = pPluginManager->FindModule<ICommonRedisModule>();
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
-    m_pAccountRedisModule = pPluginManager->FindModule<IAccountRedisModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_redis_ = pm_->FindModule<IRedisModule>();
+    m_pCommonRedisModule = pm_->FindModule<ICommonRedisModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
+    m_pAccountRedisModule = pm_->FindModule<IAccountRedisModule>();
 
     return true;
 }
@@ -21,9 +21,9 @@ bool PlayerRedisModule::Update() { return true; }
 
 bool PlayerRedisModule::AfterStart() { return true; }
 
-bool PlayerRedisModule::LoadPlayerData(const Guid &self, SquickStruct::PlayerData &playerData) {
+bool PlayerRedisModule::LoadPlayerData(const Guid &self, rpc::PlayerData &playerData) {
     CommonRedisModule *pCommonRedisModule = (CommonRedisModule *)(m_pCommonRedisModule);
-    SQUICK_SHARE_PTR<IPropertyManager> xPropertyManager = m_pCommonRedisModule->GetPropertyInfo(self.ToString(), excel::Player::ThisName(), false, true);
+    std::shared_ptr<IPropertyManager> xPropertyManager = m_pCommonRedisModule->GetPropertyInfo(self.ToString(), excel::Player::ThisName(), false, true);
     if (xPropertyManager) {
         *(playerData.mutable_property()->mutable_player_id()) = INetModule::StructToProtobuf(self);
         pCommonRedisModule->ConvertPropertyManagerToPB(xPropertyManager, playerData.mutable_property(), false, true);
@@ -31,15 +31,15 @@ bool PlayerRedisModule::LoadPlayerData(const Guid &self, SquickStruct::PlayerDat
         return true;
     }
 
-    m_pLogModule->LogError(self, "loaded data false", __FUNCTION__, __LINE__);
+    m_log_->LogError(self, "loaded data false", __FUNCTION__, __LINE__);
 
     return false;
 }
 
-bool PlayerRedisModule::SavePlayerData(const Guid &self, const SquickStruct::PlayerData &playerData) {
+bool PlayerRedisModule::SavePlayerData(const Guid &self, const rpc::PlayerData &playerData) {
     CommonRedisModule *pCommonRedisModule = (CommonRedisModule *)m_pCommonRedisModule;
 
-    SQUICK_SHARE_PTR<IPropertyManager> xPropManager = pCommonRedisModule->NewPropertyManager(excel::Player::ThisName());
+    std::shared_ptr<IPropertyManager> xPropManager = pCommonRedisModule->NewPropertyManager(excel::Player::ThisName());
     if (pCommonRedisModule->ConvertPBToPropertyManager(playerData.property(), xPropManager)) {
         m_pCommonRedisModule->SavePropertyInfo(self.ToString(), xPropManager, false, true);
     }
@@ -57,9 +57,9 @@ std::string PlayerRedisModule::GetOnlineGameServerKey() {
 std::string PlayerRedisModule::GetOnlineProxyServerKey() { return "OnlineProxyKey"; }
 
 bool PlayerRedisModule::ExistRoleName(const std::string &strRoleName) {
-    SQUICK_SHARE_PTR<IRedisClient> xNoSqlDriver = m_pNoSqlModule->GetDriverBySuitConsistent();
-    if (xNoSqlDriver) {
-        return xNoSqlDriver->EXISTS(strRoleName);
+    std::shared_ptr<IRedisClient> driver = m_redis_->GetDriverBySuitConsistent();
+    if (driver) {
+        return driver->EXISTS(strRoleName);
     }
 
     return false;
@@ -67,31 +67,31 @@ bool PlayerRedisModule::ExistRoleName(const std::string &strRoleName) {
 
 bool PlayerRedisModule::CreateRole(const std::string &account, const std::string &strRoleName, const Guid &id, const int nHomeSceneID) {
     const std::string strAccountKey = m_pCommonRedisModule->GetAccountCacheKey(account);
-    SQUICK_SHARE_PTR<IRedisClient> xNoSqlDriver = m_pNoSqlModule->GetDriverBySuit(account);
-    if (xNoSqlDriver) {
+    std::shared_ptr<IRedisClient> driver = m_redis_->GetDriverBySuit(account);
+    if (driver) {
 #ifdef SQUICK_DEV
         std::cout << "在数据库中创建角色 account: " << account << " role_name: " << strRoleName << "\n";
 #endif
-        if (!xNoSqlDriver->EXISTS(strAccountKey)) {
+        if (!driver->EXISTS(strAccountKey)) {
             m_pAccountRedisModule->AddAccount(account, account);
 #ifdef SQUICK_DEV
             std::cout << "不存在该账号，创建账号\n";
 #endif
         }
 
-        if (xNoSqlDriver->EXISTS(strRoleName)) {
+        if (driver->EXISTS(strRoleName)) {
 #ifdef SQUICK_DEV
             std::cout << "已存在该角色名称" << strRoleName << "\n";
 #endif
         }
 
-        if (!xNoSqlDriver->EXISTS(strAccountKey)) {
+        if (!driver->EXISTS(strAccountKey)) {
 #ifdef SQUICK_DEV
             std::cout << "不存在该账号\n";
 #endif
         }
 
-        if (xNoSqlDriver->EXISTS(strAccountKey) && !xNoSqlDriver->EXISTS(strRoleName)) {
+        if (driver->EXISTS(strAccountKey) && !driver->EXISTS(strRoleName)) {
 #ifdef SQUICK_DEV
             std::cout << "正在创建角色\n";
 #endif
@@ -104,18 +104,18 @@ bool PlayerRedisModule::CreateRole(const std::string &account, const std::string
             vecValues.push_back(strRoleName);
             vecValues.push_back(id.ToString());
 
-            xNoSqlDriver->HMSET(strAccountKey, vecFields, vecValues);
+            driver->HMSET(strAccountKey, vecFields, vecValues);
 
-            SQUICK_SHARE_PTR<IRedisClient> xRoleNameNoSqlDriver = m_pNoSqlModule->GetDriverBySuitConsistent();
+            std::shared_ptr<IRedisClient> xRoleNameNoSqlDriver = m_redis_->GetDriverBySuitConsistent();
             if (xRoleNameNoSqlDriver) {
                 // the name ref to the guid
                 xRoleNameNoSqlDriver->HSET(strRoleName, excel::Player::ID(), id.ToString());
             }
 
-            SQUICK_SHARE_PTR<IPropertyManager> xPropertyManager = m_pCommonRedisModule->NewPropertyManager(excel::Player::ThisName());
+            std::shared_ptr<IPropertyManager> xPropertyManager = m_pCommonRedisModule->NewPropertyManager(excel::Player::ThisName());
             if (xPropertyManager) {
                 /*
-                SQUICK_SHARE_PTR<IProperty> xProperty = xPropertyManager->GetElement(excel::Player::Account());
+                std::shared_ptr<IProperty> xProperty = xPropertyManager->GetElement(excel::Player::Account());
                 if (xProperty)
                 {
                         xProperty->SetString(account);
@@ -146,12 +146,12 @@ bool PlayerRedisModule::CreateRole(const std::string &account, const std::string
 
 bool PlayerRedisModule::GetRoleInfo(const std::string &account, std::string &strRoleName, Guid &id) {
     std::string strAccountKey = m_pCommonRedisModule->GetAccountCacheKey(account);
-    SQUICK_SHARE_PTR<IRedisClient> xNoSqlDriver = m_pNoSqlModule->GetDriverBySuit(account);
-    if (xNoSqlDriver) {
-        if (xNoSqlDriver->EXISTS(strAccountKey)) {
+    std::shared_ptr<IRedisClient> driver = m_redis_->GetDriverBySuit(account);
+    if (driver) {
+        if (driver->EXISTS(strAccountKey)) {
             std::string strID;
-            bool bRoleNameRet = xNoSqlDriver->HGET(strAccountKey, excel::Player::Name(), strRoleName);
-            bool bRoleIDRet = xNoSqlDriver->HGET(strAccountKey, excel::Player::ID(), strID);
+            bool bRoleNameRet = driver->HGET(strAccountKey, excel::Player::Name(), strRoleName);
+            bool bRoleIDRet = driver->HGET(strAccountKey, excel::Player::ID(), strID);
             if (bRoleNameRet && bRoleIDRet && !strRoleName.empty() && !strID.empty()) {
                 return id.FromString(strID);
             }

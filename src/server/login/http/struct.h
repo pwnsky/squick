@@ -88,7 +88,7 @@ class AckWorldList : public IResponse {
       public:
         int id;
         std::string name;
-        SquickStruct::ServerState state;
+        rpc::ServerState state;
         int count;
     };
     std::list<World> world;

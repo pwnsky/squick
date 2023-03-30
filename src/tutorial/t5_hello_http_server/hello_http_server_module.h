@@ -20,8 +20,8 @@ class IHelloWorld5 : public IModule {};
 class HelloWorld5 : public IHelloWorld5 {
   public:
     HelloWorld5(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
+        is_update_ = true;
+        pm_ = p;
     }
 
     virtual bool Start();
@@ -33,29 +33,29 @@ class HelloWorld5 : public IHelloWorld5 {
     virtual bool Destory();
 
   protected:
-    bool OnCommandQuery(SQUICK_SHARE_PTR<HttpRequest> req);
+    bool OnCommandQuery(std::shared_ptr<HttpRequest> req);
 
-    WebStatus OnFilter(SQUICK_SHARE_PTR<HttpRequest> req);
+    WebStatus OnFilter(std::shared_ptr<HttpRequest> req);
 
     int OnHeartBeat(const Guid &self, const std::string &heartBeat, const float time, const int count);
 
     void OnGetCallBack(const Guid id, const int state_code, const std::string &strRespData);
     void OnPostCallBack(const Guid id, const int state_code, const std::string &strRespData, const std::string &strMemoData);
 
-    void OnWebSocketTestProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnWebSocketTestProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
-    void OnTCPEvent(const SQUICK_SOCKET fd, const SQUICK_NET_EVENT event, INet *pNet);
+    void OnTCPEvent(const socket_t fd, const SQUICK_NET_EVENT event, INet *pNet);
 
-    void OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnLoginProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   private:
-    IClassModule *m_pLogicClassModule;
-    IHttpServerModule *m_pHttpNetModule;
+    IClassModule *m_class_;
+    IHttpServerModule *m_http_server_;
     IHttpClientModule *m_pHttpClientModule;
     IWSModule *m_pWSModule;
-    IElementModule *m_pElementModule;
-    IScheduleModule *m_pScheduleModule;
-    INetModule *m_pNetModule;
+    IElementModule *m_element_;
+    IScheduleModule *m_schedule_;
+    INetModule *m_net_;
 };
 
 #endif

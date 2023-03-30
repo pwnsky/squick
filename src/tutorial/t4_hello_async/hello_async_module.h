@@ -34,7 +34,7 @@ class HttpComponent : public IComponent {
     // so, you wouldnot use the data which not thread-safe in this function
     virtual int OnMsgEvent(ActorMessage &arg) {
 
-        std::cout << "Thread: " << std::this_thread::get_id() << " MsgID: " << arg.msgID << " Data:" << arg.data << std::endl;
+        std::cout << "Thread: " << std::this_thread::get_id() << " MsgID: " << arg.msg_id << " Data:" << arg.data << std::endl;
 
         return 0;
     }
@@ -45,8 +45,8 @@ class IHelloWorld4Module : public IModule {};
 class HelloWorld4Module : public IHelloWorld4Module {
   public:
     HelloWorld4Module(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
+        is_update_ = true;
+        pm_ = p;
     }
 
     virtual bool Start();
@@ -62,7 +62,7 @@ class HelloWorld4Module : public IHelloWorld4Module {
 
   protected:
     IActorModule *m_pActorModule;
-    IThreadPoolModule *m_pThreadPoolModule;
+    IThreadPoolModule *m_thread_pool_;
 };
 
 #endif

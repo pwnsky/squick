@@ -20,11 +20,11 @@ const int NavigationPlugin::GetPluginVersion() { return 0; }
 const std::string NavigationPlugin::GetPluginName() { return GET_CLASS_NAME(NavigationPlugin); }
 
 void NavigationPlugin::Install() {
-    REGISTER_MODULE(pPluginManager, INavigationModule, NavigationModule)
-    REGISTER_MODULE(pPluginManager, INavigationDataModule, NavigationDataModule)
+    REGISTER_MODULE(pm_, INavigationModule, NavigationModule)
+    REGISTER_MODULE(pm_, INavigationDataModule, NavigationDataModule)
 }
 
 void NavigationPlugin::Uninstall() {
-    UNREGISTER_MODULE(pPluginManager, INavigationDataModule, NavigationDataModule)
-    UNREGISTER_MODULE(pPluginManager, INavigationModule, NavigationModule)
+    UNREGISTER_MODULE(pm_, INavigationDataModule, NavigationDataModule)
+    UNREGISTER_MODULE(pm_, INavigationModule, NavigationModule)
 }

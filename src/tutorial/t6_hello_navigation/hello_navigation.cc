@@ -9,7 +9,7 @@ bool HelloWorld6::Start() {
 }
 
 bool HelloWorld6::AfterStart() {
-    m_pNavigationModule = pPluginManager->FindModule<INavigationModule>();
+    m_pNavigationModule = pm_->FindModule<INavigationModule>();
 
     int sceneId = 1;
     Vector3 start(0, 0, 0);

@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////////
 class NavigationPlugin : public IPlugin {
   public:
-    NavigationPlugin(IPluginManager *p) { pPluginManager = p; }
+    NavigationPlugin(IPluginManager *p) { pm_ = p; }
 
     virtual const int GetPluginVersion();
 

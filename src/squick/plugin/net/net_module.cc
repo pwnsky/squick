@@ -2,8 +2,8 @@
 #include "net_module.h"
 
 NetModule::NetModule(IPluginManager *p) {
-    m_bIsUpdate = true;
-    pPluginManager = p;
+    is_update_ = true;
+    pm_ = p;
 
     mnBufferSize = 0;
     nLastTime = GetPluginManager()->GetNowTime();
@@ -20,7 +20,7 @@ NetModule::~NetModule() {
 }
 
 bool NetModule::Start() {
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
 
     return true;
 }
@@ -28,13 +28,13 @@ bool NetModule::Start() {
 bool NetModule::AfterStart() { return true; }
 
 void NetModule::Startialization(const char *ip, const unsigned short nPort) {
-    m_pNet = SQUICK_NEW Net(this, &NetModule::OnReceiveNetPack, &NetModule::OnSocketNetEvent);
+    m_pNet = new Net(this, &NetModule::OnReceiveNetPack, &NetModule::OnSocketNetEvent);
     m_pNet->ExpandBufferSize(mnBufferSize);
     m_pNet->Startialization(ip, nPort);
 }
 
 int NetModule::Startialization(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount) {
-    m_pNet = SQUICK_NEW Net(this, &NetModule::OnReceiveNetPack, &NetModule::OnSocketNetEvent);
+    m_pNet = new Net(this, &NetModule::OnReceiveNetPack, &NetModule::OnSocketNetEvent);
     m_pNet->ExpandBufferSize(mnBufferSize);
     return m_pNet->Startialization(nMaxClient, nPort, nCpuCount);
 }
@@ -50,22 +50,22 @@ unsigned int NetModule::ExpandBufferSize(const unsigned int size) {
     return mnBufferSize;
 }
 
-void NetModule::RemoveReceiveCallBack(const int msgID) {
-    std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msgID);
+void NetModule::RemoveReceiveCallBack(const int msg_id) {
+    std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msg_id);
     if (mxReceiveCallBack.end() != it) {
         mxReceiveCallBack.erase(it);
     }
 }
 
-bool NetModule::AddReceiveCallBack(const int msgID, const NET_RECEIVE_FUNCTOR_PTR &cb) {
-    if (mxReceiveCallBack.find(msgID) == mxReceiveCallBack.end()) {
+bool NetModule::AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb) {
+    if (mxReceiveCallBack.find(msg_id) == mxReceiveCallBack.end()) {
         std::list<NET_RECEIVE_FUNCTOR_PTR> xList;
         xList.push_back(cb);
-        mxReceiveCallBack.insert(std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::value_type(msgID, xList));
+        mxReceiveCallBack.insert(std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::value_type(msg_id, xList));
         return true;
     }
 
-    std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msgID);
+    std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msg_id);
     it->second.push_back(cb);
 
     return true;
@@ -95,115 +95,115 @@ bool NetModule::Update() {
     return true;
 }
 
-bool NetModule::SendMsgWithOutHead(const int msgID, const std::string &msg, const SQUICK_SOCKET sockIndex) {
-    bool bRet = m_pNet->SendMsgWithOutHead(msgID, msg.c_str(), (uint32_t)msg.length(), sockIndex);
+bool NetModule::SendMsgWithOutHead(const int msg_id, const std::string &msg, const socket_t sock) {
+    bool bRet = m_pNet->SendMsgWithOutHead(msg_id, msg.c_str(), (uint32_t)msg.length(), sock);
     if (!bRet) {
         std::ostringstream stream;
-        stream << " SendMsgWithOutHead failed fd " << sockIndex;
-        stream << " msg id " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " SendMsgWithOutHead failed fd " << sock;
+        stream << " msg id " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
     }
 
     return bRet;
 }
 
-bool NetModule::SendMsgToAllClientWithOutHead(const int msgID, const std::string &msg) {
-    bool bRet = m_pNet->SendMsgToAllClientWithOutHead(msgID, msg.c_str(), (uint32_t)msg.length());
+bool NetModule::SendMsgToAllClientWithOutHead(const int msg_id, const std::string &msg) {
+    bool bRet = m_pNet->SendMsgToAllClientWithOutHead(msg_id, msg.c_str(), (uint32_t)msg.length());
     if (!bRet) {
         std::ostringstream stream;
         stream << " SendMsgToAllClientWithOutHead failed";
-        stream << " msg id " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " msg id " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
     }
 
     return bRet;
 }
 
-bool NetModule::SendMsgPB(const uint16_t msgID, const google::protobuf::Message &xData, const SQUICK_SOCKET sockIndex, const Guid id) {
-    SquickStruct::MsgBase xMsg;
+bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const Guid id) {
+    rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
-        stream << " SendMsgPB Message to  " << sockIndex;
-        stream << " Failed For Serialize of MsgData, MessageID " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " SendMsgPB Message to  " << sock;
+        stream << " Failed For Serialize of MsgData, MessageID " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
 
         return false;
     }
 
-    SquickStruct::Ident *pPlayerID = xMsg.mutable_player_id();
+    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
     *pPlayerID = StructToProtobuf(id);
 
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
         std::ostringstream stream;
-        stream << " SendMsgPB Message to  " << sockIndex;
-        stream << " Failed For Serialize of MsgBase, MessageID " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " SendMsgPB Message to  " << sock;
+        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
 
         return false;
     }
 
-    return SendMsgWithOutHead(msgID, msg, sockIndex);
+    return SendMsgWithOutHead(msg_id, msg, sock);
 }
 
-bool NetModule::SendMsg(const uint16_t msgID, const std::string &xData, const SQUICK_SOCKET sockIndex) { return SendMsgWithOutHead(msgID, xData, sockIndex); }
+bool NetModule::SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock) { return SendMsgWithOutHead(msg_id, xData, sock); }
 
-bool NetModule::SendMsg(const uint16_t msgID, const std::string &xData, const SQUICK_SOCKET sockIndex, const Guid id) {
-    SquickStruct::MsgBase xMsg;
+bool NetModule::SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const Guid id) {
+    rpc::MsgBase xMsg;
     xMsg.set_msg_data(xData.data(), xData.length());
 
-    SquickStruct::Ident *pPlayerID = xMsg.mutable_player_id();
+    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
     *pPlayerID = StructToProtobuf(id);
 
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
         std::ostringstream stream;
-        stream << " SendMsgPB Message to  " << sockIndex;
-        stream << " Failed For Serialize of MsgBase, MessageID " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " SendMsgPB Message to  " << sock;
+        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
 
         return false;
     }
 
-    return SendMsgWithOutHead(msgID, msg, sockIndex);
+    return SendMsgWithOutHead(msg_id, msg, sock);
 }
 
-bool NetModule::SendMsgPB(const uint16_t msgID, const google::protobuf::Message &xData, const SQUICK_SOCKET sockIndex) {
-    SquickStruct::MsgBase xMsg;
+bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) {
+    rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
-        stream << " SendMsgPB Message to  " << sockIndex;
-        stream << " Failed For Serialize of MsgData, MessageID " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " SendMsgPB Message to  " << sock;
+        stream << " Failed For Serialize of MsgData, MessageID " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
 
         return false;
     }
 
-    SquickStruct::Ident *pPlayerID = xMsg.mutable_player_id();
+    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
     *pPlayerID = StructToProtobuf(Guid());
 
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
         std::ostringstream stream;
-        stream << " SendMsgPB Message to  " << sockIndex;
-        stream << " Failed For Serialize of MsgBase, MessageID " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " SendMsgPB Message to  " << sock;
+        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
 
         return false;
     }
 
-    SendMsgWithOutHead(msgID, msg, sockIndex);
+    SendMsgWithOutHead(msg_id, msg, sock);
 
     return true;
 }
 
-bool NetModule::SendMsgPBToAllClient(const uint16_t msgID, const google::protobuf::Message &xData) {
-    SquickStruct::MsgBase xMsg;
+bool NetModule::SendMsgPBToAllClient(const uint16_t msg_id, const google::protobuf::Message &xData) {
+    rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
         stream << " SendMsgPBToAllClient";
-        stream << " Failed For Serialize of MsgData, MessageID " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " Failed For Serialize of MsgData, MessageID " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
 
         return false;
     }
@@ -212,42 +212,42 @@ bool NetModule::SendMsgPBToAllClient(const uint16_t msgID, const google::protobu
     if (!xMsg.SerializeToString(&msg)) {
         std::ostringstream stream;
         stream << " SendMsgPBToAllClient";
-        stream << " Failed For Serialize of MsgBase, MessageID " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
 
         return false;
     }
 
-    return SendMsgToAllClientWithOutHead(msgID, msg);
+    return SendMsgToAllClientWithOutHead(msg_id, msg);
 }
 
-bool NetModule::SendMsgPB(const uint16_t msgID, const google::protobuf::Message &xData, const SQUICK_SOCKET sockIndex, const std::vector<Guid> *pClientIDList) {
+bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const std::vector<Guid> *pClientIDList) {
     if (!m_pNet) {
         std::ostringstream stream;
-        stream << " m_pNet SendMsgPB faailed fd " << sockIndex;
-        stream << " Failed For Serialize of MsgBase, MessageID " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " m_pNet SendMsgPB faailed fd " << sock;
+        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
 
         return false;
     }
 
-    SquickStruct::MsgBase xMsg;
+    rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
-        stream << " SendMsgPB faailed fd " << sockIndex;
-        stream << " Failed For Serialize of MsgBase, MessageID " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " SendMsgPB faailed fd " << sock;
+        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
 
         return false;
     }
 
-    SquickStruct::Ident *pPlayerID = xMsg.mutable_player_id();
+    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
     *pPlayerID = StructToProtobuf(Guid());
     if (pClientIDList) {
         for (int i = 0; i < pClientIDList->size(); ++i) {
             const Guid &ClientID = (*pClientIDList)[i];
 
-            SquickStruct::Ident *pData = xMsg.add_player_client_list();
+            rpc::Ident *pData = xMsg.add_player_client_list();
             if (pData) {
                 *pData = StructToProtobuf(ClientID);
             }
@@ -257,36 +257,36 @@ bool NetModule::SendMsgPB(const uint16_t msgID, const google::protobuf::Message 
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
         std::ostringstream stream;
-        stream << " SendMsgPB faailed fd " << sockIndex;
-        stream << " Failed For Serialize of MsgBase, MessageID " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " SendMsgPB faailed fd " << sock;
+        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
 
         return false;
     }
 
-    return SendMsgWithOutHead(msgID, msg, sockIndex);
+    return SendMsgWithOutHead(msg_id, msg, sock);
 }
 
-bool NetModule::SendMsgPB(const uint16_t msgID, const std::string &strData, const SQUICK_SOCKET sockIndex, const std::vector<Guid> *pClientIDList) {
+bool NetModule::SendMsgPB(const uint16_t msg_id, const std::string &strData, const socket_t sock, const std::vector<Guid> *pClientIDList) {
     if (!m_pNet) {
         std::ostringstream stream;
-        stream << " SendMsgPB NULL Of Net faailed fd " << sockIndex;
-        stream << " Failed For Serialize of MsgBase, MessageID " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " SendMsgPB NULL Of Net faailed fd " << sock;
+        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
 
         return false;
     }
 
-    SquickStruct::MsgBase xMsg;
+    rpc::MsgBase xMsg;
     xMsg.set_msg_data(strData.data(), strData.length());
 
-    SquickStruct::Ident *pPlayerID = xMsg.mutable_player_id();
+    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
     *pPlayerID = StructToProtobuf(Guid());
     if (pClientIDList) {
         for (int i = 0; i < pClientIDList->size(); ++i) {
             const Guid &ClientID = (*pClientIDList)[i];
 
-            SquickStruct::Ident *pData = xMsg.add_player_client_list();
+            rpc::Ident *pData = xMsg.add_player_client_list();
             if (pData) {
                 *pData = StructToProtobuf(ClientID);
             }
@@ -296,47 +296,47 @@ bool NetModule::SendMsgPB(const uint16_t msgID, const std::string &strData, cons
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
         std::ostringstream stream;
-        stream << " SendMsgPB failed fd " << sockIndex;
-        stream << " Failed For Serialize of MsgBase, MessageID " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " SendMsgPB failed fd " << sock;
+        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
 
         return false;
     }
 
-    return SendMsgWithOutHead(msgID, msg, sockIndex);
+    return SendMsgWithOutHead(msg_id, msg, sock);
 }
 
 INet *NetModule::GetNet() { return m_pNet; }
 
-void NetModule::OnReceiveNetPack(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    // m_pLogModule->LogInfo(pPluginManager->GetAppName() + std::to_string(pPluginManager->GetAppID()) + " NetModule::OnReceiveNetPack " +
-    // std::to_string(msgID), __FILE__, __LINE__);
+void NetModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    // m_log_->LogInfo(pm_->GetAppName() + std::to_string(pm_->GetAppID()) + " NetModule::OnReceiveNetPack " +
+    // std::to_string(msg_id), __FILE__, __LINE__);
 
     Performance performance;
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
     SQUICK_CRASH_TRY
 #endif
 
-    std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msgID);
+    std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msg_id);
     if (mxReceiveCallBack.end() != it) {
         std::list<NET_RECEIVE_FUNCTOR_PTR> &xFunList = it->second;
         for (std::list<NET_RECEIVE_FUNCTOR_PTR>::iterator itList = xFunList.begin(); itList != xFunList.end(); ++itList) {
             NET_RECEIVE_FUNCTOR_PTR &pFunPtr = *itList;
             NET_RECEIVE_FUNCTOR *pFunc = pFunPtr.get();
 
-            pFunc->operator()(sockIndex, msgID, msg, len);
+            pFunc->operator()(sock, msg_id, msg, len);
         }
     } else {
         for (std::list<NET_RECEIVE_FUNCTOR_PTR>::iterator itList = mxCallBackList.begin(); itList != mxCallBackList.end(); ++itList) {
             NET_RECEIVE_FUNCTOR_PTR &pFunPtr = *itList;
             NET_RECEIVE_FUNCTOR *pFunc = pFunPtr.get();
 
-            pFunc->operator()(sockIndex, msgID, msg, len);
+            pFunc->operator()(sock, msg_id, msg, len);
         }
     }
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
     SQUICK_CRASH_END
 #endif
     /*
@@ -346,17 +346,17 @@ void NetModule::OnReceiveNetPack(const SQUICK_SOCKET sockIndex, const int msgID,
                     os << "---------------net module performance problem------------------- ";
                     os << performance.TimeScope();
                     os << "---------- MsgID: ";
-                    os << msgID;
-                    m_pLogModule->LogWarning(Guid(0, msgID), os, __FUNCTION__, __LINE__);
+                    os << msg_id;
+                    m_log_->LogWarning(Guid(0, msg_id), os, __FUNCTION__, __LINE__);
             }
      */
 }
 
-void NetModule::OnSocketNetEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet) {
+void NetModule::OnSocketNetEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
     for (std::list<NET_EVENT_FUNCTOR_PTR>::iterator it = mxEventCallBackList.begin(); it != mxEventCallBackList.end(); ++it) {
         NET_EVENT_FUNCTOR_PTR &pFunPtr = *it;
         NET_EVENT_FUNCTOR *pFunc = pFunPtr.get();
-        pFunc->operator()(sockIndex, eEvent, pNet);
+        pFunc->operator()(sock, eEvent, pNet);
     }
 }
 
@@ -375,8 +375,8 @@ void NetModule::KeepAlive() {
 
     nLastTime = GetPluginManager()->GetNowTime();
 
-    SquickStruct::ServerHeartBeat xMsg;
+    rpc::ServerHeartBeat xMsg;
     xMsg.set_count(0);
 
-    SendMsgPB(SquickStruct::ServerRPC::STS_HEART_BEAT, xMsg, 0);
+    SendMsgPB(rpc::ServerRPC::STS_HEART_BEAT, xMsg, 0);
 }

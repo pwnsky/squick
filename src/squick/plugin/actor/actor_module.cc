@@ -2,8 +2,8 @@
 #include "actor_module.h"
 
 ActorModule::ActorModule(IPluginManager *p) {
-    m_bIsUpdate = true;
-    pPluginManager = p;
+    is_update_ = true;
+    pm_ = p;
 
     srand((unsigned)time(NULL));
 }
@@ -11,8 +11,8 @@ ActorModule::ActorModule(IPluginManager *p) {
 ActorModule::~ActorModule() {}
 
 bool ActorModule::Start() {
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pThreadPoolModule = pPluginManager->FindModule<IThreadPoolModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
 
     return true;
 }
@@ -33,14 +33,14 @@ bool ActorModule::Update() {
     return true;
 }
 
-SQUICK_SHARE_PTR<IActor> ActorModule::RequireActor() {
-    SQUICK_SHARE_PTR<IActor> pActor = SQUICK_SHARE_PTR<IActor>(SQUICK_NEW Actor(m_pKernelModule->CreateGUID(), this));
-    mxActorMap.insert(std::map<Guid, SQUICK_SHARE_PTR<IActor>>::value_type(pActor->ID(), pActor));
+std::shared_ptr<IActor> ActorModule::RequireActor() {
+    std::shared_ptr<IActor> pActor = std::shared_ptr<IActor>(new Actor(m_kernel_->CreateGUID(), this));
+    mxActorMap.insert(std::map<Guid, std::shared_ptr<IActor>>::value_type(pActor->ID(), pActor));
 
     return pActor;
 }
 
-SQUICK_SHARE_PTR<IActor> ActorModule::GetActor(const Guid nActorIndex) {
+std::shared_ptr<IActor> ActorModule::GetActor(const Guid nActorIndex) {
     auto it = mxActorMap.find(nActorIndex);
     if (it != mxActorMap.end()) {
         return it->second;
@@ -61,12 +61,12 @@ bool ActorModule::UpdateEvent() {
     lastTime = nowTime;
 
     for (auto it : mxActorMap) {
-        SQUICK_SHARE_PTR<IActor> pActor = it.second;
+        std::shared_ptr<IActor> pActor = it.second;
         if (pActor) {
             if (test) {
                 pActor->Update();
             } else {
-                m_pThreadPoolModule->DoAsyncTask(pActor->ID(), "", [pActor](ThreadTask &threadTask) -> void { pActor->Update(); });
+                m_thread_pool_->DoAsyncTask(pActor->ID(), "", [pActor](ThreadTask &threadTask) -> void { pActor->Update(); });
             }
         }
     }
@@ -77,7 +77,7 @@ bool ActorModule::UpdateEvent() {
 bool ActorModule::UpdateResultEvent() {
     ActorMessage actorMessage;
     while (mxResultQueue.try_dequeue(actorMessage)) {
-        ACTOR_PROCESS_FUNCTOR_PTR functorPtr_end = mxEndFunctor.GetElement(actorMessage.msgID);
+        ACTOR_PROCESS_FUNCTOR_PTR functorPtr_end = mxEndFunctor.GetElement(actorMessage.msg_id);
         if (functorPtr_end) {
             functorPtr_end->operator()(actorMessage);
         }
@@ -88,14 +88,14 @@ bool ActorModule::UpdateResultEvent() {
 
 bool ActorModule::SendMsgToActor(const Guid actorIndex, const Guid who, const int eventID, const std::string &data, const std::string &arg) {
     static uint64_t index = 0;
-    SQUICK_SHARE_PTR<IActor> pActor = GetActor(actorIndex);
+    std::shared_ptr<IActor> pActor = GetActor(actorIndex);
     if (nullptr != pActor) {
         ActorMessage xMessage;
 
         xMessage.id = who;
         xMessage.index = index++;
         xMessage.data = data;
-        xMessage.msgID = eventID;
+        xMessage.msg_id = eventID;
         xMessage.arg = arg;
 
         return this->SendMsgToActor(actorIndex, xMessage);
@@ -120,7 +120,7 @@ bool ActorModule::AddEndFunc(const int subMessageID, ACTOR_PROCESS_FUNCTOR_PTR f
 bool ActorModule::SendMsgToActor(const Guid actorIndex, const ActorMessage &message) {
     auto it = mxActorMap.find(actorIndex);
     if (it != mxActorMap.end()) {
-        // std::cout << "send message " << message.msgID << " to " << actorIndex.ToString() << " and msg index is " << message.index << std::endl;
+        // std::cout << "send message " << message.msg_id << " to " << actorIndex.ToString() << " and msg index is " << message.index << std::endl;
         return it->second->SendMsg(message);
     }
 

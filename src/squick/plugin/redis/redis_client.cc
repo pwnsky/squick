@@ -50,7 +50,7 @@ bool RedisClient::Update() {
     return false;
 }
 
-SQUICK_SHARE_PTR<redisReply> RedisClient::BuildSendCmd(const RedisCommand &cmd) {
+std::shared_ptr<redisReply> RedisClient::BuildSendCmd(const RedisCommand &cmd) {
     while (mbBusy) {
         // std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
@@ -83,7 +83,7 @@ SQUICK_SHARE_PTR<redisReply> RedisClient::BuildSendCmd(const RedisCommand &cmd) 
     return ParseForReply();
 }
 
-SQUICK_SHARE_PTR<redisReply> RedisClient::ParseForReply() {
+std::shared_ptr<redisReply> RedisClient::ParseForReply() {
     struct redisReply *reply = nullptr;
     while (true) {
         // std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -118,7 +118,7 @@ SQUICK_SHARE_PTR<redisReply> RedisClient::ParseForReply() {
         return nullptr;
     }
 
-    return SQUICK_SHARE_PTR<redisReply>(reply, [](redisReply *r) {
+    return std::shared_ptr<redisReply>(reply, [](redisReply *r) {
         if (r)
             freeReplyObject(r);
     });
@@ -130,7 +130,7 @@ bool RedisClient::AUTH(const std::string &auth) {
 
     // if password error, redis will return REDIS_REPLY_ERROR
     // pReply will be null
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }

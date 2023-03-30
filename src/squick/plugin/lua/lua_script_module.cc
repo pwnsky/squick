@@ -38,15 +38,15 @@
     }
 
 bool LuaScriptModule::Awake() {
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pElementModule = pPluginManager->FindModule<IElementModule>();
-    m_pEventModule = pPluginManager->FindModule<IEventModule>();
-    m_pScheduleModule = pPluginManager->FindModule<IScheduleModule>();
-    m_pNetClientModule = pPluginManager->FindModule<INetClientModule>();
-    m_pNetModule = pPluginManager->FindModule<INetModule>();
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
-    m_pLuaPBModule = pPluginManager->FindModule<ILuaPBModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_element_ = pm_->FindModule<IElementModule>();
+    m_event_ = pm_->FindModule<IEventModule>();
+    m_schedule_ = pm_->FindModule<IScheduleModule>();
+    m_net_client_ = pm_->FindModule<INetClientModule>();
+    m_net_ = pm_->FindModule<INetModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
+    m_pLuaPBModule = pm_->FindModule<ILuaPBModule>();
 
     LuaPBModule *p = (LuaPBModule *)(m_pLuaPBModule);
     p->SetLuaState(mLuaContext.state());
@@ -55,7 +55,7 @@ bool LuaScriptModule::Awake() {
 #ifdef SQUICK_DEV
     scriptPath = "../src/lua";
 #else
-    scriptPath = pPluginManager->GetConfigPath() + "/lua";
+    scriptPath = pm_->GetConfigPath() + "/lua";
 #endif
 
     std::string strRootFile = scriptPath + "/system.lua";
@@ -107,69 +107,69 @@ void LuaScriptModule::RegisterModule(const std::string &tableName, const LuaIntf
 
 Guid LuaScriptModule::CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className, const std::string &objectIndex,
                                    const DataList &arg) {
-    SQUICK_SHARE_PTR<IObject> xObject = m_pKernelModule->CreateObject(self, sceneID, groupID, className, objectIndex, arg);
+    std::shared_ptr<IObject> xObject = m_kernel_->CreateObject(self, sceneID, groupID, className, objectIndex, arg);
     if (xObject) {
         return xObject->Self();
     }
     return Guid();
 }
 
-bool LuaScriptModule::ExistObject(const Guid &self) { return m_pKernelModule->ExistObject(self); }
+bool LuaScriptModule::ExistObject(const Guid &self) { return m_kernel_->ExistObject(self); }
 
-bool LuaScriptModule::DestroyObject(const Guid &self) { return m_pKernelModule->DestroyObject(self); }
+bool LuaScriptModule::DestroyObject(const Guid &self) { return m_kernel_->DestroyObject(self); }
 
 bool LuaScriptModule::EnterScene(const int sceneID, const int groupID) { return false; }
 
 bool LuaScriptModule::DoEvent(const Guid &self, const int eventID, const DataList &arg) {
-    m_pEventModule->DoEvent(self, (int)eventID, arg);
+    m_event_->DoEvent(self, (int)eventID, arg);
 
     return true;
 }
 
-bool LuaScriptModule::FindProperty(const Guid &self, const std::string &propertyName) { return m_pKernelModule->FindProperty(self, propertyName); }
+bool LuaScriptModule::FindProperty(const Guid &self, const std::string &propertyName) { return m_kernel_->FindProperty(self, propertyName); }
 
 bool LuaScriptModule::SetPropertyInt(const Guid &self, const std::string &propertyName, const INT64 propValue) {
-    return m_pKernelModule->SetPropertyInt(self, propertyName, propValue);
+    return m_kernel_->SetPropertyInt(self, propertyName, propValue);
 }
 
 bool LuaScriptModule::SetPropertyFloat(const Guid &self, const std::string &propertyName, const double propValue) {
-    return m_pKernelModule->SetPropertyFloat(self, propertyName, propValue);
+    return m_kernel_->SetPropertyFloat(self, propertyName, propValue);
 }
 
 bool LuaScriptModule::SetPropertyString(const Guid &self, const std::string &propertyName, const std::string &propValue) {
-    return m_pKernelModule->SetPropertyString(self, propertyName, propValue);
+    return m_kernel_->SetPropertyString(self, propertyName, propValue);
 }
 
 bool LuaScriptModule::SetPropertyObject(const Guid &self, const std::string &propertyName, const Guid &propValue) {
-    return m_pKernelModule->SetPropertyObject(self, propertyName, propValue);
+    return m_kernel_->SetPropertyObject(self, propertyName, propValue);
 }
 
 bool LuaScriptModule::SetPropertyVector2(const Guid &self, const std::string &propertyName, const Vector2 &propValue) {
-    return m_pKernelModule->SetPropertyVector2(self, propertyName, propValue);
+    return m_kernel_->SetPropertyVector2(self, propertyName, propValue);
 }
 
 bool LuaScriptModule::SetPropertyVector3(const Guid &self, const std::string &propertyName, const Vector3 &propValue) {
-    return m_pKernelModule->SetPropertyVector3(self, propertyName, propValue);
+    return m_kernel_->SetPropertyVector3(self, propertyName, propValue);
 }
 
-INT64 LuaScriptModule::GetPropertyInt(const Guid &self, const std::string &propertyName) { return m_pKernelModule->GetPropertyInt(self, propertyName); }
+INT64 LuaScriptModule::GetPropertyInt(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyInt(self, propertyName); }
 
-int LuaScriptModule::GetPropertyInt32(const Guid &self, const std::string &propertyName) { return m_pKernelModule->GetPropertyInt32(self, propertyName); }
+int LuaScriptModule::GetPropertyInt32(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyInt32(self, propertyName); }
 
-double LuaScriptModule::GetPropertyFloat(const Guid &self, const std::string &propertyName) { return m_pKernelModule->GetPropertyFloat(self, propertyName); }
+double LuaScriptModule::GetPropertyFloat(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyFloat(self, propertyName); }
 
 std::string LuaScriptModule::GetPropertyString(const Guid &self, const std::string &propertyName) {
-    return m_pKernelModule->GetPropertyString(self, propertyName);
+    return m_kernel_->GetPropertyString(self, propertyName);
 }
 
-Guid LuaScriptModule::GetPropertyObject(const Guid &self, const std::string &propertyName) { return m_pKernelModule->GetPropertyObject(self, propertyName); }
+Guid LuaScriptModule::GetPropertyObject(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyObject(self, propertyName); }
 
 Vector2 LuaScriptModule::GetPropertyVector2(const Guid &self, const std::string &propertyName) {
-    return m_pKernelModule->GetPropertyVector2(self, propertyName);
+    return m_kernel_->GetPropertyVector2(self, propertyName);
 }
 
 Vector3 LuaScriptModule::GetPropertyVector3(const Guid &self, const std::string &propertyName) {
-    return m_pKernelModule->GetPropertyVector3(self, propertyName);
+    return m_kernel_->GetPropertyVector3(self, propertyName);
 }
 
 bool LuaScriptModule::AddClassCallBack(std::string &className, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
@@ -177,7 +177,7 @@ bool LuaScriptModule::AddClassCallBack(std::string &className, const LuaIntf::Lu
     if (!callbackList) {
         callbackList = new List<LuaCallBack>();
         mxClassEventFuncMap.AddElement(className, callbackList);
-        m_pKernelModule->AddClassCallBack(className, this, &LuaScriptModule::OnClassEventCB);
+        m_kernel_->AddClassCallBack(className, this, &LuaScriptModule::OnClassEventCB);
     }
 
     std::string strfuncName = FindFuncName(luaTable, luaFunc);
@@ -230,7 +230,7 @@ bool LuaScriptModule::AddPropertyCallBack(const Guid &self, std::string &propert
     if (!luaFuncName.empty()) {
         LuaCallBack callback = {luaFuncName, luaTable};
         if (AddLuaFuncToMap(mxLuaPropertyCallBackFuncMap, self, propertyName, callback)) {
-            m_pKernelModule->AddPropertyCallBack(self, propertyName, this, &LuaScriptModule::OnLuaPropertyCB);
+            m_kernel_->AddPropertyCallBack(self, propertyName, this, &LuaScriptModule::OnLuaPropertyCB);
         }
 
         return true;
@@ -268,7 +268,7 @@ bool LuaScriptModule::AddRecordCallBack(const Guid &self, std::string &recordNam
     if (!luaFuncName.empty()) {
         LuaCallBack callback = {luaFuncName, luaTable};
         if (AddLuaFuncToMap(mxLuaRecordCallBackFuncMap, self, recordName, callback)) {
-            m_pKernelModule->AddRecordCallBack(self, recordName, this, &LuaScriptModule::OnLuaRecordCB);
+            m_kernel_->AddRecordCallBack(self, recordName, this, &LuaScriptModule::OnLuaRecordCB);
         }
         return true;
     }
@@ -305,7 +305,7 @@ bool LuaScriptModule::AddEventCallBack(const Guid &self, const int eventID, cons
     if (!luaFuncName.empty()) {
         LuaCallBack callback = {luaFuncName, luaTable};
         if (AddLuaFuncToMap(mxLuaEventCallBackFuncMap, self, (int)eventID, callback)) {
-            m_pEventModule->AddEventCallBack(self, eventID, this, &LuaScriptModule::OnLuaEventCB);
+            m_event_->AddEventCallBack(self, eventID, this, &LuaScriptModule::OnLuaEventCB);
         }
 
         return true;
@@ -345,7 +345,7 @@ bool LuaScriptModule::AddModuleSchedule(std::string &strHeartBeatName, const Lua
     if (!luaFuncName.empty()) {
         LuaCallBack callback = {luaFuncName, luaTable};
         if (AddLuaFuncToMap(mxLuaHeartBeatCallBackFuncMap, strHeartBeatName, callback)) {
-            return m_pScheduleModule->AddSchedule(Guid(), strHeartBeatName, this, &LuaScriptModule::OnLuaHeartBeatCB, time, count);
+            return m_schedule_->AddSchedule(Guid(), strHeartBeatName, this, &LuaScriptModule::OnLuaHeartBeatCB, time, count);
         }
     }
 
@@ -358,7 +358,7 @@ bool LuaScriptModule::AddSchedule(const Guid &self, std::string &strHeartBeatNam
     if (!luaFuncName.empty()) {
         LuaCallBack callback = {luaFuncName, luaTable};
         if (AddLuaFuncToMap(mxLuaHeartBeatCallBackFuncMap, self, strHeartBeatName, callback)) {
-            m_pScheduleModule->AddSchedule(self, strHeartBeatName, this, &LuaScriptModule::OnLuaHeartBeatCB, time, count);
+            m_schedule_->AddSchedule(self, strHeartBeatName, this, &LuaScriptModule::OnLuaHeartBeatCB, time, count);
         }
 
         return true;
@@ -397,7 +397,7 @@ int LuaScriptModule::OnLuaHeartBeatCB(const Guid &self, const std::string &strHe
 }
 
 int LuaScriptModule::AddRow(const Guid &self, std::string &recordName, const DataList &var) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = m_pKernelModule->FindRecord(self, recordName);
+    std::shared_ptr<IRecord> pRecord = m_kernel_->FindRecord(self, recordName);
     if (nullptr == pRecord) {
         return -1;
     }
@@ -406,7 +406,7 @@ int LuaScriptModule::AddRow(const Guid &self, std::string &recordName, const Dat
 }
 
 bool LuaScriptModule::RemRow(const Guid &self, std::string &recordName, const int row) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = m_pKernelModule->FindRecord(self, recordName);
+    std::shared_ptr<IRecord> pRecord = m_kernel_->FindRecord(self, recordName);
     if (nullptr == pRecord) {
         return false;
     }
@@ -415,69 +415,69 @@ bool LuaScriptModule::RemRow(const Guid &self, std::string &recordName, const in
 }
 
 bool LuaScriptModule::SetRecordInt(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const INT64 value) {
-    return m_pKernelModule->SetRecordInt(self, recordName, row, colTag, value);
+    return m_kernel_->SetRecordInt(self, recordName, row, colTag, value);
 }
 
 bool LuaScriptModule::SetRecordFloat(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const double value) {
-    return m_pKernelModule->SetRecordFloat(self, recordName, row, colTag, value);
+    return m_kernel_->SetRecordFloat(self, recordName, row, colTag, value);
 }
 
 bool LuaScriptModule::SetRecordString(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const std::string &value) {
-    return m_pKernelModule->SetRecordString(self, recordName, row, colTag, value);
+    return m_kernel_->SetRecordString(self, recordName, row, colTag, value);
 }
 
 bool LuaScriptModule::SetRecordObject(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Guid &value) {
-    return m_pKernelModule->SetRecordObject(self, recordName, row, colTag, value);
+    return m_kernel_->SetRecordObject(self, recordName, row, colTag, value);
 }
 
 bool LuaScriptModule::SetRecordVector2(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Vector2 &value) {
-    return m_pKernelModule->SetRecordVector2(self, recordName, row, colTag, value);
+    return m_kernel_->SetRecordVector2(self, recordName, row, colTag, value);
 }
 
 bool LuaScriptModule::SetRecordVector3(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Vector3 &value) {
-    return m_pKernelModule->SetRecordVector3(self, recordName, row, colTag, value);
+    return m_kernel_->SetRecordVector3(self, recordName, row, colTag, value);
 }
 
 INT64 LuaScriptModule::GetRecordInt(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    return m_pKernelModule->GetRecordInt(self, recordName, row, colTag);
+    return m_kernel_->GetRecordInt(self, recordName, row, colTag);
 }
 
 double LuaScriptModule::GetRecordFloat(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    return m_pKernelModule->GetRecordFloat(self, recordName, row, colTag);
+    return m_kernel_->GetRecordFloat(self, recordName, row, colTag);
 }
 
 std::string LuaScriptModule::GetRecordString(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    return m_pKernelModule->GetRecordString(self, recordName, row, colTag);
+    return m_kernel_->GetRecordString(self, recordName, row, colTag);
 }
 
 Guid LuaScriptModule::GetRecordObject(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    return m_pKernelModule->GetRecordObject(self, recordName, row, colTag);
+    return m_kernel_->GetRecordObject(self, recordName, row, colTag);
 }
 
 Vector2 LuaScriptModule::GetRecordVector2(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    return m_pKernelModule->GetRecordVector2(self, recordName, row, colTag);
+    return m_kernel_->GetRecordVector2(self, recordName, row, colTag);
 }
 
 Vector3 LuaScriptModule::GetRecordVector3(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    return m_pKernelModule->GetRecordVector3(self, recordName, row, colTag);
+    return m_kernel_->GetRecordVector3(self, recordName, row, colTag);
 }
 
-INT64 LuaScriptModule::GetNowTime() { return pPluginManager->GetNowTime(); }
+INT64 LuaScriptModule::GetNowTime() { return pm_->GetNowTime(); }
 
-Guid LuaScriptModule::CreateId() { return m_pKernelModule->CreateGUID(); }
+Guid LuaScriptModule::CreateId() { return m_kernel_->CreateGUID(); }
 
-INT64 LuaScriptModule::APPId() { return pPluginManager->GetAppID(); }
+INT64 LuaScriptModule::APPId() { return pm_->GetAppID(); }
 
 INT64 LuaScriptModule::APPType() {
-    SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
         for (int i = 0; i < strIdList.size(); ++i) {
             const std::string &strId = strIdList[i];
 
-            const int serverType = m_pElementModule->GetPropertyInt32(strId, excel::Server::Type());
-            const int serverID = m_pElementModule->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (pPluginManager->GetAppID() == serverID) {
+            const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
+            const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
+            if (pm_->GetAppID() == serverID) {
                 return serverType;
             }
         }
@@ -486,10 +486,10 @@ INT64 LuaScriptModule::APPType() {
     return 0;
 }
 
-bool LuaScriptModule::ExistElementObject(const std::string &configName) { return m_pElementModule->ExistElement(configName); }
+bool LuaScriptModule::ExistElementObject(const std::string &configName) { return m_element_->ExistElement(configName); }
 
 std::vector<std::string> LuaScriptModule::GetEleList(const std::string &className) {
-    SQUICK_SHARE_PTR<IClass> xLogicClass = m_pClassModule->GetElement(excel::Server::ThisName());
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         return xLogicClass->GetIDList();
     }
@@ -498,23 +498,23 @@ std::vector<std::string> LuaScriptModule::GetEleList(const std::string &classNam
 }
 
 INT64 LuaScriptModule::GetElePropertyInt(const std::string &configName, const std::string &propertyName) {
-    return m_pElementModule->GetPropertyInt(configName, propertyName);
+    return m_element_->GetPropertyInt(configName, propertyName);
 }
 
 double LuaScriptModule::GetElePropertyFloat(const std::string &configName, const std::string &propertyName) {
-    return m_pElementModule->GetPropertyFloat(configName, propertyName);
+    return m_element_->GetPropertyFloat(configName, propertyName);
 }
 
 std::string LuaScriptModule::GetElePropertyString(const std::string &configName, const std::string &propertyName) {
-    return m_pElementModule->GetPropertyString(configName, propertyName);
+    return m_element_->GetPropertyString(configName, propertyName);
 }
 
 Vector2 LuaScriptModule::GetElePropertyVector2(const std::string &configName, const std::string &propertyName) {
-    return m_pElementModule->GetPropertyVector2(configName, propertyName);
+    return m_element_->GetPropertyVector2(configName, propertyName);
 }
 
 Vector3 LuaScriptModule::GetElePropertyVector3(const std::string &configName, const std::string &propertyName) {
-    return m_pElementModule->GetPropertyVector3(configName, propertyName);
+    return m_element_->GetPropertyVector3(configName, propertyName);
 }
 
 template <typename T>
@@ -568,15 +568,15 @@ template <typename T> bool LuaScriptModule::AddLuaFuncToMap(Map<T, Map<Guid, Lis
     return false;
 }
 
-void LuaScriptModule::RemoveCallBackAsServer(const int msgID) { m_pNetModule->RemoveReceiveCallBack(msgID); }
+void LuaScriptModule::RemoveCallBackAsServer(const int msg_id) { m_net_->RemoveReceiveCallBack(msg_id); }
 
-void LuaScriptModule::AddMsgCallBackAsServer(const int msgID, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
-    auto callbackList = mxNetMsgCallBackFuncMapAsServer.GetElement(msgID);
+void LuaScriptModule::AddMsgCallBackAsServer(const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
+    auto callbackList = mxNetMsgCallBackFuncMapAsServer.GetElement(msg_id);
     if (!callbackList) {
         callbackList = new List<LuaCallBack>();
-        mxNetMsgCallBackFuncMapAsServer.AddElement(msgID, callbackList);
+        mxNetMsgCallBackFuncMapAsServer.AddElement(msg_id, callbackList);
 
-        m_pNetModule->AddReceiveCallBack(msgID, this, &LuaScriptModule::OnNetMsgCallBackAsServer);
+        m_net_->AddReceiveCallBack(msg_id, this, &LuaScriptModule::OnNetMsgCallBackAsServer);
     }
 
     std::string funcName = FindFuncName(luaTable, luaFunc);
@@ -591,12 +591,12 @@ void LuaScriptModule::AddMsgCallBackAsServer(const int msgID, const LuaIntf::Lua
     }
 }
 
-void LuaScriptModule::RemoveMsgCallBackAsClient(const SQUICK_SERVER_TYPES serverType, const int msgID) {
-    m_pNetClientModule->RemoveReceiveCallBack(serverType, msgID);
+void LuaScriptModule::RemoveMsgCallBackAsClient(const ServerType serverType, const int msg_id) {
+    m_net_client_->RemoveReceiveCallBack(serverType, msg_id);
 }
 
 // 做为服务器做为客户端连接的网络 回调
-void LuaScriptModule::AddMsgCallBackAsClient(const SQUICK_SERVER_TYPES serverType, const int msgID, const LuaIntf::LuaRef &luaTable,
+void LuaScriptModule::AddMsgCallBackAsClient(const ServerType serverType, const int msg_id, const LuaIntf::LuaRef &luaTable,
                                              const LuaIntf::LuaRef &luaFunc) {
     auto serverMap = mxNetMsgCallBackFuncMapAsClient.GetElement(serverType);
     if (!serverMap) {
@@ -604,20 +604,20 @@ void LuaScriptModule::AddMsgCallBackAsClient(const SQUICK_SERVER_TYPES serverTyp
         mxNetMsgCallBackFuncMapAsClient.AddElement(serverType, serverMap);
     }
 
-    auto callbackList = serverMap->GetElement(msgID);
+    auto callbackList = serverMap->GetElement(msg_id);
     if (!callbackList) {
         callbackList = new List<LuaCallBack>();
-        serverMap->AddElement(msgID, callbackList);
+        serverMap->AddElement(msg_id, callbackList);
 
         switch (serverType) {
-        case SQUICK_SERVER_TYPES::SQUICK_ST_MASTER:
-            m_pNetClientModule->AddReceiveCallBack(serverType, msgID, this, &LuaScriptModule::OnNetMsgCallBackAsClientForMasterServer);
+        case ServerType::ST_MASTER:
+            m_net_client_->AddReceiveCallBack(serverType, msg_id, this, &LuaScriptModule::OnNetMsgCallBackAsClientForMasterServer);
             break;
-        case SQUICK_SERVER_TYPES::SQUICK_ST_WORLD:
-            m_pNetClientModule->AddReceiveCallBack(serverType, msgID, this, &LuaScriptModule::OnNetMsgCallBackAsClientForWorldServer);
+        case ServerType::ST_WORLD:
+            m_net_client_->AddReceiveCallBack(serverType, msg_id, this, &LuaScriptModule::OnNetMsgCallBackAsClientForWorldServer);
             break;
-        case SQUICK_SERVER_TYPES::SQUICK_ST_GAME:
-            m_pNetClientModule->AddReceiveCallBack(serverType, msgID, this, &LuaScriptModule::OnNetMsgCallBackAsClientForGameServer);
+        case ServerType::ST_GAME:
+            m_net_client_->AddReceiveCallBack(serverType, msg_id, this, &LuaScriptModule::OnNetMsgCallBackAsClientForGameServer);
             break;
         default:
             break;
@@ -664,69 +664,69 @@ void LuaScriptModule::SetScriptPath(const std::string &path) { scriptPath = path
 
 const std::string LuaScriptModule::GetScriptPath() { return scriptPath; }
 
-void LuaScriptModule::SendToServerByServerID(const int serverID, const uint16_t msgID, const std::string &data) {
-    if (pPluginManager->GetAppID() == serverID) {
-        m_pLogModule->LogError("you can send message to yourself");
+void LuaScriptModule::SendToServerByServerID(const int serverID, const uint16_t msg_id, const std::string &data) {
+    if (pm_->GetAppID() == serverID) {
+        m_log_->LogError("you can send message to yourself");
         return;
     }
 
-    m_pNetClientModule->SendByServerID(serverID, msgID, data);
+    m_net_client_->SendByServerID(serverID, msg_id, data);
 }
 
-void LuaScriptModule::SendToServerBySuit(const SQUICK_SERVER_TYPES eType, const uint16_t msgID, const std::string &data, const std::string &hash) {
-    m_pNetClientModule->SendBySuitWithOutHead(eType, hash, msgID, data);
+void LuaScriptModule::SendToServerBySuit(const ServerType eType, const uint16_t msg_id, const std::string &data, const std::string &hash) {
+    m_net_client_->SendBySuitWithOutHead(eType, hash, msg_id, data);
 }
 
-void LuaScriptModule::SendToAllServerByServerType(const SQUICK_SERVER_TYPES eType, const uint16_t msgID, const std::string &data) {
-    m_pNetClientModule->SendToAllServer(eType, msgID, data);
+void LuaScriptModule::SendToAllServerByServerType(const ServerType eType, const uint16_t msg_id, const std::string &data) {
+    m_net_client_->SendToAllServer(eType, msg_id, data);
 }
 
-void LuaScriptModule::SendMsgToClientByFD(const SQUICK_SOCKET fd, const uint16_t msgID, const std::string &data) {
+void LuaScriptModule::SendMsgToClientByFD(const socket_t fd, const uint16_t msg_id, const std::string &data) {
     // for all servers
-    m_pNetModule->SendMsgWithOutHead(msgID, data, fd);
+    m_net_->SendMsgWithOutHead(msg_id, data, fd);
 }
 
-void LuaScriptModule::SendMsgToPlayer(const Guid &player, const uint16_t msgID, const std::string &data) {
+void LuaScriptModule::SendMsgToPlayer(const Guid &player, const uint16_t msg_id, const std::string &data) {
     // the app must be the game server
-    if (pPluginManager->GetAppType() == SQUICK_SERVER_TYPES::SQUICK_ST_GAME) {
+    if (pm_->GetAppType() == ServerType::ST_GAME) {
 
-    } else if (pPluginManager->GetAppType() == SQUICK_SERVER_TYPES::SQUICK_ST_WORLD) {
+    } else if (pm_->GetAppType() == ServerType::ST_WORLD) {
 
-    } else if (pPluginManager->GetAppType() == SQUICK_SERVER_TYPES::SQUICK_ST_PROXY) {
+    } else if (pm_->GetAppType() == ServerType::ST_PROXY) {
     } else {
-        m_pLogModule->LogError("you are not: SQUICK_ST_GAME || SQUICK_ST_WORLD");
+        m_log_->LogError("you are not: ST_GAME || ST_WORLD");
     }
 }
 
-void LuaScriptModule::SendToGroupPlayer(const uint16_t msgID, const std::string &data) {
+void LuaScriptModule::SendToGroupPlayer(const uint16_t msg_id, const std::string &data) {
     // the app must be the game server
-    if (pPluginManager->GetAppType() == SQUICK_SERVER_TYPES::SQUICK_ST_GAME) {
+    if (pm_->GetAppType() == ServerType::ST_GAME) {
 
     } else {
-        m_pLogModule->LogError("you are not an game server");
+        m_log_->LogError("you are not an game server");
     }
 }
 
-void LuaScriptModule::SendToAllPlayer(const uint16_t msgID, const std::string &data) {
+void LuaScriptModule::SendToAllPlayer(const uint16_t msg_id, const std::string &data) {
     // if game server
     // if world server
     // if proxy server
-    if (pPluginManager->GetAppType() == SQUICK_SERVER_TYPES::SQUICK_ST_GAME) {
-    } else if (pPluginManager->GetAppType() == SQUICK_SERVER_TYPES::SQUICK_ST_WORLD) {
-    } else if (pPluginManager->GetAppType() == SQUICK_SERVER_TYPES::SQUICK_ST_PROXY) {
-        m_pNetModule->SendMsgToAllClientWithOutHead(msgID, data);
+    if (pm_->GetAppType() == ServerType::ST_GAME) {
+    } else if (pm_->GetAppType() == ServerType::ST_WORLD) {
+    } else if (pm_->GetAppType() == ServerType::ST_PROXY) {
+        m_net_->SendMsgToAllClientWithOutHead(msg_id, data);
     } else {
-        m_pLogModule->LogError("you are not an game server or world server");
+        m_log_->LogError("you are not an game server or world server");
     }
 }
 
-void LuaScriptModule::LogInfo(const std::string &logData) { m_pLogModule->LogInfo(logData); }
+void LuaScriptModule::LogInfo(const std::string &logData) { m_log_->LogInfo(logData); }
 
-void LuaScriptModule::LogError(const std::string &logData) { m_pLogModule->LogError(logData); }
+void LuaScriptModule::LogError(const std::string &logData) { m_log_->LogError(logData); }
 
-void LuaScriptModule::LogWarning(const std::string &logData) { m_pLogModule->LogWarning(logData); }
+void LuaScriptModule::LogWarning(const std::string &logData) { m_log_->LogWarning(logData); }
 
-void LuaScriptModule::LogDebug(const std::string &logData) { m_pLogModule->LogDebug(logData); }
+void LuaScriptModule::LogDebug(const std::string &logData) { m_log_->LogDebug(logData); }
 
 void LuaScriptModule::SetVersionCode(const std::string &logData) { strVersionCode = logData; }
 
@@ -921,8 +921,8 @@ std::string LuaScriptModule::FindFuncName(const LuaIntf::LuaRef &luaTable, const
     return NULL_STR;
 }
 
-void LuaScriptModule::OnNetMsgCallBackAsServer(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    auto msgCallBack = mxNetMsgCallBackFuncMapAsServer.GetElement(msgID);
+void LuaScriptModule::OnNetMsgCallBackAsServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    auto msgCallBack = mxNetMsgCallBackFuncMapAsServer.GetElement(msg_id);
     if (msgCallBack) {
         std::string msgData(msg, len);
         LuaCallBack callback;
@@ -931,7 +931,7 @@ void LuaScriptModule::OnNetMsgCallBackAsServer(const SQUICK_SOCKET sockIndex, co
             try {
                 LuaIntf::LuaRef func(mLuaContext, callback.funcName.c_str());
                 // 调用Lua
-                func.call<LuaIntf::LuaRef>(callback.self, sockIndex, msgID, msgData);
+                func.call<LuaIntf::LuaRef>(callback.self, sock, msg_id, msgData);
             } catch (LuaIntf::LuaException &e) {
                 cout << e.what() << endl;
             } catch (...) {
@@ -942,10 +942,10 @@ void LuaScriptModule::OnNetMsgCallBackAsServer(const SQUICK_SOCKET sockIndex, co
     }
 }
 
-void LuaScriptModule::OnNetMsgCallBackAsClientForMasterServer(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    auto serverData = mxNetMsgCallBackFuncMapAsClient.GetElement(SQUICK_SERVER_TYPES::SQUICK_ST_MASTER);
+void LuaScriptModule::OnNetMsgCallBackAsClientForMasterServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    auto serverData = mxNetMsgCallBackFuncMapAsClient.GetElement(ServerType::ST_MASTER);
     if (serverData) {
-        auto msgCallBack = serverData->GetElement(msgID);
+        auto msgCallBack = serverData->GetElement(msg_id);
         if (msgCallBack) {
             std::string msgData(msg, len);
 
@@ -954,7 +954,7 @@ void LuaScriptModule::OnNetMsgCallBackAsClientForMasterServer(const SQUICK_SOCKE
             while (Ret) {
                 try {
                     LuaIntf::LuaRef func(mLuaContext, callback.funcName.c_str());
-                    func.call<LuaIntf::LuaRef>(callback.self, sockIndex, msgID, msgData);
+                    func.call<LuaIntf::LuaRef>(callback.self, sock, msg_id, msgData);
                 } catch (LuaIntf::LuaException &e) {
                     cout << e.what() << endl;
                 } catch (...) {
@@ -967,10 +967,10 @@ void LuaScriptModule::OnNetMsgCallBackAsClientForMasterServer(const SQUICK_SOCKE
 }
 
 // 作为World服务器的消息回调
-void LuaScriptModule::OnNetMsgCallBackAsClientForWorldServer(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    auto serverData = mxNetMsgCallBackFuncMapAsClient.GetElement(SQUICK_SERVER_TYPES::SQUICK_ST_WORLD);
+void LuaScriptModule::OnNetMsgCallBackAsClientForWorldServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    auto serverData = mxNetMsgCallBackFuncMapAsClient.GetElement(ServerType::ST_WORLD);
     if (serverData) {
-        auto msgCallBack = serverData->GetElement(msgID);
+        auto msgCallBack = serverData->GetElement(msg_id);
         if (msgCallBack) {
             std::string msgData(msg, len);
 
@@ -979,7 +979,7 @@ void LuaScriptModule::OnNetMsgCallBackAsClientForWorldServer(const SQUICK_SOCKET
             while (Ret) {
                 try {
                     LuaIntf::LuaRef func(mLuaContext, callback.funcName.c_str());
-                    func.call<LuaIntf::LuaRef>(callback.self, sockIndex, msgID, msgData);
+                    func.call<LuaIntf::LuaRef>(callback.self, sock, msg_id, msgData);
                 } catch (LuaIntf::LuaException &e) {
                     cout << e.what() << endl;
                 } catch (...) {
@@ -991,10 +991,10 @@ void LuaScriptModule::OnNetMsgCallBackAsClientForWorldServer(const SQUICK_SOCKET
     }
 }
 // 作为World服务器的消息回调
-void LuaScriptModule::OnNetMsgCallBackAsClientForGameServer(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    auto serverData = mxNetMsgCallBackFuncMapAsClient.GetElement(SQUICK_SERVER_TYPES::SQUICK_ST_GAME);
+void LuaScriptModule::OnNetMsgCallBackAsClientForGameServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    auto serverData = mxNetMsgCallBackFuncMapAsClient.GetElement(ServerType::ST_GAME);
     if (serverData) {
-        auto msgCallBack = serverData->GetElement(msgID);
+        auto msgCallBack = serverData->GetElement(msg_id);
         if (msgCallBack) {
             std::string msgData(msg, len);
 
@@ -1003,7 +1003,7 @@ void LuaScriptModule::OnNetMsgCallBackAsClientForGameServer(const SQUICK_SOCKET 
             while (Ret) {
                 try {
                     LuaIntf::LuaRef func(mLuaContext, callback.funcName.c_str());
-                    func.call<LuaIntf::LuaRef>(callback.self, sockIndex, msgID, msgData);
+                    func.call<LuaIntf::LuaRef>(callback.self, sock, msg_id, msgData);
                 } catch (LuaIntf::LuaException &e) {
                     cout << e.what() << endl;
                 } catch (...) {

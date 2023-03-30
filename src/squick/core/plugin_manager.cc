@@ -189,7 +189,7 @@ bool PluginManager::ReLoadPlugin(const std::string &pluginDLLName) {
 
         pFunc(this);
     } else {
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_LINUX
+#if PLATFORM == PLATFORM_LINUX
         char *error = dlerror();
         if (error) {
             std::cout << stderr << " Reload shared lib[" << pLib->GetName() << "] failed, ErrorNo. = [" << error << "]" << std::endl;
@@ -197,7 +197,7 @@ bool PluginManager::ReLoadPlugin(const std::string &pluginDLLName) {
             assert(0);
             return false;
         }
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#elif PLATFORM == PLATFORM_WIN
         std::cout << stderr << " Reload DLL[" << pLib->GetName() << "] failed, ErrorNo. = [" << GetLastError() << "]" << std::endl;
         std::cout << "Reload [" << pLib->GetName() << "] failed" << std::endl;
         assert(0);
@@ -318,7 +318,7 @@ void PluginManager::AddModule(const std::string &moduleName, IModule *pModule) {
     if (!FindModule(moduleName)) {
         mModuleInstanceMap.insert(ModuleInstanceMap::value_type(moduleName, pModule));
 
-        if (pModule->m_bIsUpdate) {
+        if (pModule->is_update_) {
             mNeedUpdateModuleVec.push_back(std::make_pair(moduleName, pModule));
         }
     }
@@ -492,7 +492,7 @@ bool PluginManager::LoadPluginLibrary(const std::string &pluginDLLName) {
             return true;
         } else {
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_LINUX || SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE
+#if PLATFORM == PLATFORM_LINUX || PLATFORM == PLATFORM_APPLE
             char *error = dlerror();
             if (error) {
                 std::cout << stderr << " Load shared lib[" << pLib->GetName() << "] failed, ErrorNo. = [" << error << "]" << std::endl;
@@ -500,12 +500,12 @@ bool PluginManager::LoadPluginLibrary(const std::string &pluginDLLName) {
                 assert(0);
                 return false;
             }
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#elif PLATFORM == PLATFORM_WIN
             std::cout << stderr << " Load DLL[" << pLib->GetName() << "] failed, ErrorNo. = [" << GetLastError() << "]" << std::endl;
             std::cout << "Load [" << pLib->GetName() << "] failed" << std::endl;
             assert(0);
             return false;
-#endif // SQUICK_PLATFORM
+#endif // PLATFORM
         }
     }
 

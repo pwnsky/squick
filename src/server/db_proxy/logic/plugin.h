@@ -5,7 +5,7 @@
 
 class DBLogicPlugin : public IPlugin {
   public:
-    DBLogicPlugin(IPluginManager *p) { pPluginManager = p; }
+    DBLogicPlugin(IPluginManager *p) { pm_ = p; }
 
     virtual const int GetPluginVersion();
 

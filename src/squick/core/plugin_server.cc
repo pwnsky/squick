@@ -7,12 +7,12 @@ PluginServer::PluginServer(const std::string &strArgv) {
     std::cout << "Start Server: " << strArgv << std::endl;
     this->strArgvList = strArgv;
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
     SQUICK_CRASH_TRY_ROOT
 #endif
 }
 
-void PluginServer::Update() { pPluginManager->Update(); }
+void PluginServer::Update() { pm_->Update(); }
 
 void PluginServer::SetBasicWareLoader(std::function<void(IPluginManager *p)> fun) { externalBasicWarePluginLoader = fun; }
 
@@ -20,37 +20,37 @@ void PluginServer::SetMidWareLoader(std::function<void(IPluginManager *p)> fun) 
 
 void PluginServer::Start() {
 
-    pPluginManager = SQUICK_SHARE_PTR<IPluginManager>(SQUICK_NEW PluginManager());
+    pm_ = std::shared_ptr<IPluginManager>(new PluginManager());
 
     ProcessParameter();
 
-    pPluginManager->SetGetFileContentFunctor(GetFileContent);
-    pPluginManager->SetConfigPath("../");
+    pm_->SetGetFileContentFunctor(GetFileContent);
+    pm_->SetConfigPath("../");
 
     if (externalBasicWarePluginLoader) {
-        externalBasicWarePluginLoader(pPluginManager.get());
+        externalBasicWarePluginLoader(pm_.get());
     }
 
     if (externalMidWarePluginLoader) {
-        externalMidWarePluginLoader(pPluginManager.get());
+        externalMidWarePluginLoader(pm_.get());
     }
 
-    pPluginManager->LoadPluginConfig();
-    pPluginManager->LoadPlugin();
+    pm_->LoadPluginConfig();
+    pm_->LoadPlugin();
 
-    pPluginManager->Awake();
-    pPluginManager->Start();
-    pPluginManager->AfterStart();
-    pPluginManager->CheckConfig();
-    pPluginManager->ReadyUpdate();
+    pm_->Awake();
+    pm_->Start();
+    pm_->AfterStart();
+    pm_->CheckConfig();
+    pm_->ReadyUpdate();
 }
 
 void PluginServer::Final() {
-    pPluginManager->BeforeDestory();
-    pPluginManager->Destory();
-    pPluginManager->Finalize();
+    pm_->BeforeDestory();
+    pm_->Destory();
+    pm_->Finalize();
 
-    pPluginManager = nullptr;
+    pm_ = nullptr;
 }
 
 void PluginServer::ProcessParameter() {
@@ -59,7 +59,7 @@ void PluginServer::ProcessParameter() {
         StartDaemon();
     }
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
     // run it as a daemon process
     if (strArgvList.find("-d") != string::npos) {
         StartDaemon();
@@ -75,19 +75,19 @@ void PluginServer::ProcessParameter() {
         argList.push_back(token);
     }
 
-    pPluginManager->SetConfigName(FindParameterValue(argList, "plugin="));
-    pPluginManager->SetAppName(FindParameterValue(argList, "server="));
+    pm_->SetConfigName(FindParameterValue(argList, "plugin="));
+    pm_->SetAppName(FindParameterValue(argList, "server="));
 
     std::string strAppID = FindParameterValue(argList, "id=");
     int appID = 0;
     if (SQUICK_StrTo(strAppID, appID)) {
-        pPluginManager->SetAppID(appID);
+        pm_->SetAppID(appID);
     }
 
     std::string strDockerFlag = FindParameterValue(argList, "docker=");
     int nDockerFlag = 0;
     if (SQUICK_StrTo(strDockerFlag, nDockerFlag)) {
-        pPluginManager->SetRunningDocker(nDockerFlag);
+        pm_->SetRunningDocker(nDockerFlag);
     }
 
     // NoSqlServer.xml:IP=\"127.0.0.1\"==IP=\"192.168.1.1\"
@@ -101,12 +101,12 @@ void PluginServer::ProcessParameter() {
                 std::string content = strPipeline.substr(posFile + 5, posContent - (posFile + 5));
                 std::string replaceContent = strPipeline.substr(posContent + 2, strPipeline.length() - (posContent + 2));
 
-                pPluginManager->AddFileReplaceContent(fileName, content, replaceContent);
+                pm_->AddFileReplaceContent(fileName, content, replaceContent);
             }
         }
     }
 
-    std::string strTitleName = pPluginManager->GetAppName() + std::to_string(pPluginManager->GetAppID()); // +" PID" + NFGetPID();
+    std::string strTitleName = pm_->GetAppName() + std::to_string(pm_->GetAppID()); // +" PID" + NFGetPID();
     if (!strTitleName.empty()) {
         size_t pos = strTitleName.find("Server");
         if (pos != string::npos) {
@@ -117,9 +117,9 @@ void PluginServer::ProcessParameter() {
         strTitleName = "SqcuikIDE";
     }
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
     SetConsoleTitle(strTitleName.c_str());
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_LINUX
+#elif PLATFORM == PLATFORM_LINUX
     prctl(PR_SET_NAME, strTitleName.c_str());
     // setproctitle(strTitleName.c_str());
 #endif
@@ -127,7 +127,7 @@ void PluginServer::ProcessParameter() {
 
 void PluginServer::StartDaemon() {
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
     daemon(1, 0);
     // ignore signals
     signal(SIGINT, SIG_IGN);

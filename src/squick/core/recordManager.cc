@@ -3,12 +3,12 @@
 
 RecordManager::~RecordManager() { ClearAll(); }
 
-SQUICK_SHARE_PTR<IRecord> RecordManager::AddRecord(const Guid &self, const std::string &recordName, const SQUICK_SHARE_PTR<DataList> &ValueList,
-                                                   const SQUICK_SHARE_PTR<DataList> &tagList, const int nRows) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+std::shared_ptr<IRecord> RecordManager::AddRecord(const Guid &self, const std::string &recordName, const std::shared_ptr<DataList> &ValueList,
+                                                   const std::shared_ptr<DataList> &tagList, const int nRows) {
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (!pRecord) {
-        // SQUICK_SHARE_PTR<IRecord>
-        pRecord = SQUICK_SHARE_PTR<IRecord>(SQUICK_NEW Record(self, recordName, ValueList, tagList, nRows));
+        // std::shared_ptr<IRecord>
+        pRecord = std::shared_ptr<IRecord>(new Record(self, recordName, ValueList, tagList, nRows));
         this->AddElement(recordName, pRecord);
     }
 
@@ -19,7 +19,7 @@ const Guid &RecordManager::Self() { return mSelf; }
 
 std::string RecordManager::ToString() {
     std::stringstream stream;
-    SQUICK_SHARE_PTR<IRecord> pRecord = First();
+    std::shared_ptr<IRecord> pRecord = First();
     while (pRecord) {
         stream << pRecord->ToString() << std::endl;
         pRecord = Next();
@@ -29,7 +29,7 @@ std::string RecordManager::ToString() {
 }
 
 bool RecordManager::SetRecordInt(const std::string &recordName, const int row, const int col, const INT64 nValue) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->SetInt(row, col, nValue);
     }
@@ -38,7 +38,7 @@ bool RecordManager::SetRecordInt(const std::string &recordName, const int row, c
 }
 
 bool RecordManager::SetRecordInt(const std::string &recordName, const int row, const std::string &colTag, const INT64 value) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->SetInt(row, colTag, value);
     }
@@ -47,7 +47,7 @@ bool RecordManager::SetRecordInt(const std::string &recordName, const int row, c
 }
 
 bool RecordManager::SetRecordFloat(const std::string &recordName, const int row, const int col, const double dwValue) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->SetFloat(row, col, dwValue);
     }
@@ -56,7 +56,7 @@ bool RecordManager::SetRecordFloat(const std::string &recordName, const int row,
 }
 
 bool RecordManager::SetRecordFloat(const std::string &recordName, const int row, const std::string &colTag, const double value) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->SetFloat(row, colTag, value);
     }
@@ -65,7 +65,7 @@ bool RecordManager::SetRecordFloat(const std::string &recordName, const int row,
 }
 
 bool RecordManager::SetRecordString(const std::string &recordName, const int row, const int col, const std::string &value) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->SetString(row, col, value);
     }
@@ -74,7 +74,7 @@ bool RecordManager::SetRecordString(const std::string &recordName, const int row
 }
 
 bool RecordManager::SetRecordString(const std::string &recordName, const int row, const std::string &colTag, const std::string &value) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->SetString(row, colTag, value);
     }
@@ -83,7 +83,7 @@ bool RecordManager::SetRecordString(const std::string &recordName, const int row
 }
 
 bool RecordManager::SetRecordObject(const std::string &recordName, const int row, const int col, const Guid &obj) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->SetObject(row, col, obj);
     }
@@ -92,7 +92,7 @@ bool RecordManager::SetRecordObject(const std::string &recordName, const int row
 }
 
 bool RecordManager::SetRecordObject(const std::string &recordName, const int row, const std::string &colTag, const Guid &value) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->SetObject(row, colTag, value);
     }
@@ -101,7 +101,7 @@ bool RecordManager::SetRecordObject(const std::string &recordName, const int row
 }
 
 bool RecordManager::SetRecordVector2(const std::string &recordName, const int row, const int col, const Vector2 &obj) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->SetVector2(row, col, obj);
     }
@@ -110,7 +110,7 @@ bool RecordManager::SetRecordVector2(const std::string &recordName, const int ro
 }
 
 bool RecordManager::SetRecordVector2(const std::string &recordName, const int row, const std::string &colTag, const Vector2 &value) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->SetVector2(row, colTag, value);
     }
@@ -119,7 +119,7 @@ bool RecordManager::SetRecordVector2(const std::string &recordName, const int ro
 }
 
 bool RecordManager::SetRecordVector3(const std::string &recordName, const int row, const int col, const Vector3 &obj) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->SetVector3(row, col, obj);
     }
@@ -128,7 +128,7 @@ bool RecordManager::SetRecordVector3(const std::string &recordName, const int ro
 }
 
 bool RecordManager::SetRecordVector3(const std::string &recordName, const int row, const std::string &colTag, const Vector3 &value) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->SetVector3(row, colTag, value);
     }
@@ -137,7 +137,7 @@ bool RecordManager::SetRecordVector3(const std::string &recordName, const int ro
 }
 
 INT64 RecordManager::GetRecordInt(const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->GetInt(row, col);
     }
@@ -146,7 +146,7 @@ INT64 RecordManager::GetRecordInt(const std::string &recordName, const int row, 
 }
 
 INT64 RecordManager::GetRecordInt(const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->GetInt(row, colTag);
     }
@@ -155,7 +155,7 @@ INT64 RecordManager::GetRecordInt(const std::string &recordName, const int row, 
 }
 
 double RecordManager::GetRecordFloat(const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->GetFloat(row, col);
     }
@@ -164,7 +164,7 @@ double RecordManager::GetRecordFloat(const std::string &recordName, const int ro
 }
 
 double RecordManager::GetRecordFloat(const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->GetFloat(row, colTag);
     }
@@ -173,7 +173,7 @@ double RecordManager::GetRecordFloat(const std::string &recordName, const int ro
 }
 
 const std::string &RecordManager::GetRecordString(const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->GetString(row, col);
     }
@@ -182,7 +182,7 @@ const std::string &RecordManager::GetRecordString(const std::string &recordName,
 }
 
 const std::string &RecordManager::GetRecordString(const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->GetString(row, colTag);
     }
@@ -191,7 +191,7 @@ const std::string &RecordManager::GetRecordString(const std::string &recordName,
 }
 
 const Guid &RecordManager::GetRecordObject(const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->GetObject(row, col);
     }
@@ -200,7 +200,7 @@ const Guid &RecordManager::GetRecordObject(const std::string &recordName, const 
 }
 
 const Guid &RecordManager::GetRecordObject(const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->GetObject(row, colTag);
     }
@@ -209,7 +209,7 @@ const Guid &RecordManager::GetRecordObject(const std::string &recordName, const 
 }
 
 const Vector2 &RecordManager::GetRecordVector2(const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->GetVector2(row, col);
     }
@@ -218,7 +218,7 @@ const Vector2 &RecordManager::GetRecordVector2(const std::string &recordName, co
 }
 
 const Vector2 &RecordManager::GetRecordVector2(const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->GetVector2(row, colTag);
     }
@@ -227,7 +227,7 @@ const Vector2 &RecordManager::GetRecordVector2(const std::string &recordName, co
 }
 
 const Vector3 &RecordManager::GetRecordVector3(const std::string &recordName, const int row, const int col) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->GetVector3(row, col);
     }
@@ -236,7 +236,7 @@ const Vector3 &RecordManager::GetRecordVector3(const std::string &recordName, co
 }
 
 const Vector3 &RecordManager::GetRecordVector3(const std::string &recordName, const int row, const std::string &colTag) {
-    SQUICK_SHARE_PTR<IRecord> pRecord = GetElement(recordName);
+    std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (pRecord) {
         return pRecord->GetVector3(row, colTag);
     }

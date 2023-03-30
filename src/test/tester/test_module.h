@@ -9,8 +9,8 @@ class ITestModule : public IModule {};
 class TestModule : public ITestModule {
   public:
     TestModule(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
+        is_update_ = true;
+        pm_ = p;
     }
 
     virtual ~TestModule(){};

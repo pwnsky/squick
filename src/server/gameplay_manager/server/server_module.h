@@ -18,8 +18,8 @@ namespace gameplay_manager::server {
 class ServerModule : public IServerModule {
   public:
     ServerModule(IPluginManager *p) {
-        pPluginManager = p;
-        m_bIsUpdate = true;
+        pm_ = p;
+        is_update_ = true;
     }
 
     virtual bool Start();
@@ -28,29 +28,29 @@ class ServerModule : public IServerModule {
     virtual bool AfterStart();
     virtual bool Update();
 
-    virtual bool Transport(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    virtual bool Transport(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   protected:
     // PVP服务器连接处理
-    void OnReqConnectGameServer(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
-    void OnOtherMessage(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void OnReqConnectGameServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnOtherMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
     // PVP服务器断开连接
-    void OnClientDisconnect(const SQUICK_SOCKET nAddress);
+    void OnClientDisconnect(const socket_t sock);
     // 转发消息给PVP服务器
 
     // PVP服务器连接表
-    MapEx<Guid, SQUICK_SOCKET> mxClientIdent;
+    MapEx<Guid, socket_t> mxClientIdent;
 
   protected:
-    INetClientModule *m_pNetClientModule;
-    IKernelModule *m_pKernelModule;
-    ILogModule *m_pLogModule;
-    IElementModule *m_pElementModule;
-    IClassModule *m_pClassModule;
-    INetModule *m_pNetModule;
+    INetClientModule *m_net_client_;
+    IKernelModule *m_kernel_;
+    ILogModule *m_log_;
+    IElementModule *m_element_;
+    IClassModule *m_class_;
+    INetModule *m_net_;
     IWSModule *m_pWsModule;
-    ISecurityModule *m_pSecurityModule;
+    ISecurityModule *m_security_;
 };
 
 } // namespace gameplay_manager::server

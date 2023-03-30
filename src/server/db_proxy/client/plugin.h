@@ -5,7 +5,7 @@
 //////////////////////////////////////////////////////////////////////////
 class Net_ClientPlugin : public IPlugin {
   public:
-    Net_ClientPlugin(IPluginManager *p) { pPluginManager = p; }
+    Net_ClientPlugin(IPluginManager *p) { pm_ = p; }
     virtual const int GetPluginVersion();
 
     virtual const std::string GetPluginName();

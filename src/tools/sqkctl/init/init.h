@@ -46,7 +46,7 @@ class Init {
 
         cout << " Squick install path: " << squick_install_path << std::endl;
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
         system("mkdir squick");
         string copy_cmd = "xcopy /s /e /y /h " + std::string(squick_install_path) + " squick";
 #else

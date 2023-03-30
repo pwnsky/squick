@@ -13,8 +13,8 @@ class IManagerModule : public IModule {};
 class ManagerModule : public IManagerModule {
   public:
     ManagerModule(IPluginManager *p) {
-        pPluginManager = p;
-        m_bIsUpdate = true;
+        pm_ = p;
+        is_update_ = true;
     }
 
     virtual bool Start();
@@ -30,10 +30,10 @@ class ManagerModule : public IManagerModule {
     void InstanceDestroy(const string &instanceId);
 
   private:
-    IKernelModule *m_pKernelModule;
-    IClassModule *m_pClassModule;
-    IElementModule *m_pElementModule;
-    ILogModule *m_pLogModule;
+    IKernelModule *m_kernel_;
+    IClassModule *m_class_;
+    IElementModule *m_element_;
+    ILogModule *m_log_;
 };
 
 } // namespace gameplay_manager::logic

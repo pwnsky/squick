@@ -14,6 +14,6 @@ const int MasterServerPlugin::GetPluginVersion() { return 0; }
 
 const std::string MasterServerPlugin::GetPluginName() { return GET_CLASS_NAME(MasterServerPlugin); }
 
-void MasterServerPlugin::Install() { REGISTER_MODULE(pPluginManager, IMasterModule, MasterModule) }
+void MasterServerPlugin::Install() { REGISTER_MODULE(pm_, IMasterModule, MasterModule) }
 
-void MasterServerPlugin::Uninstall() { UNREGISTER_MODULE(pPluginManager, IMasterModule, MasterModule) }
+void MasterServerPlugin::Uninstall() { UNREGISTER_MODULE(pm_, IMasterModule, MasterModule) }

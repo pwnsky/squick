@@ -11,7 +11,7 @@
 class _SquickExport Record : public IRecord {
   public:
     Record();
-    Record(const Guid &self, const std::string &recordName, const SQUICK_SHARE_PTR<DataList> &valueList, const SQUICK_SHARE_PTR<DataList> &tagList,
+    Record(const Guid &self, const std::string &recordName, const std::shared_ptr<DataList> &valueList, const std::shared_ptr<DataList> &tagList,
            const int nMaxRow);
 
     virtual ~Record();
@@ -141,8 +141,8 @@ class _SquickExport Record : public IRecord {
 
     virtual void SetName(const std::string &name);
 
-    virtual SQUICK_SHARE_PTR<DataList> GetStartData() const;
-    virtual const SQUICK_SHARE_PTR<DataList> GetTag() const;
+    virtual std::shared_ptr<DataList> GetStartData() const;
+    virtual const std::shared_ptr<DataList> GetTag() const;
 
     virtual const TRECORDVEC &GetRecordVec() const;
 
@@ -158,8 +158,8 @@ class _SquickExport Record : public IRecord {
     void OnEventHandler(const Guid &self, const RECORD_EVENT_DATA &eventData, const SquickData &oldVar, const SquickData &newVar);
 
   protected:
-    SQUICK_SHARE_PTR<DataList> mVarRecordType;
-    SQUICK_SHARE_PTR<DataList> mVarRecordTag;
+    std::shared_ptr<DataList> mVarRecordType;
+    std::shared_ptr<DataList> mVarRecordTag;
 
     std::map<std::string, int> mmTag;
 

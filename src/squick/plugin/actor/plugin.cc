@@ -14,6 +14,6 @@ const int ActorPlugin::GetPluginVersion() { return 0; }
 
 const std::string ActorPlugin::GetPluginName() { return GET_CLASS_NAME(ActorPlugin); }
 
-void ActorPlugin::Install() { REGISTER_MODULE(pPluginManager, IActorModule, ActorModule) }
+void ActorPlugin::Install() { REGISTER_MODULE(pm_, IActorModule, ActorModule) }
 
-void ActorPlugin::Uninstall() { UNREGISTER_MODULE(pPluginManager, IActorModule, ActorModule) }
+void ActorPlugin::Uninstall() { UNREGISTER_MODULE(pm_, IActorModule, ActorModule) }

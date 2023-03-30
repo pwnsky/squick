@@ -4,7 +4,7 @@
 
 class T1_HelloPlugin : public IPlugin {
   public:
-    T1_HelloPlugin(IPluginManager *p) { pPluginManager = p; }
+    T1_HelloPlugin(IPluginManager *p) { pm_ = p; }
 
     virtual const int GetPluginVersion();
 

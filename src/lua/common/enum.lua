@@ -41,18 +41,18 @@ RecordOpType =
 
 RecordOpType = CreatEnumTable(RecordOpType, -1)
 
-SQUICK_SERVER_TYPES =
+ServerType =
 {
-    "SQUICK_ST_NONE",
+    "ST_NONE",
     "SQUICK_ST_REDIS",
     "SQUICK_ST_MYSQL",
-    "SQUICK_ST_MASTER",
-    "SQUICK_ST_LOGIN",
-    "SQUICK_ST_PROXY",
-    "SQUICK_ST_GAME",
-	"SQUICK_ST_WORLD",
+    "ST_MASTER",
+    "ST_LOGIN",
+    "ST_PROXY",
+    "ST_GAME",
+	"ST_WORLD",
 	"SQUICK_ST_DB",
-	"SQUICK_ST_MAX",
+	"ST_MAX",
     "SQUICK_ST_GATEWAY",
 };
-SQUICK_SERVER_TYPES = CreatEnumTable(SQUICK_SERVER_TYPES, -1)
+ServerType = CreatEnumTable(ServerType, -1)

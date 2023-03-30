@@ -36,13 +36,13 @@ struct RECORD_EVENT_DATA {
 };
 
 typedef std::function<int(const Guid &, const RECORD_EVENT_DATA &, const SquickData &, const SquickData &)> RECORD_EVENT_FUNCTOR;
-typedef SQUICK_SHARE_PTR<RECORD_EVENT_FUNCTOR> RECORD_EVENT_FUNCTOR_PTR;
+typedef std::shared_ptr<RECORD_EVENT_FUNCTOR> RECORD_EVENT_FUNCTOR_PTR;
 
 class _SquickExport IRecord : public MemoryCounter {
   public:
     IRecord() : MemoryCounter(GET_CLASS_NAME(IRecord), 1) {}
 
-    typedef std::vector<SQUICK_SHARE_PTR<SquickData>> TRECORDVEC;
+    typedef std::vector<std::shared_ptr<SquickData>> TRECORDVEC;
     typedef TRECORDVEC::const_iterator TRECORDVECCONSTITER;
 
     virtual ~IRecord() {}
@@ -154,8 +154,8 @@ class _SquickExport IRecord : public MemoryCounter {
     virtual const bool GetUpload() = 0;
     virtual const std::string &GetName() const = 0;
 
-    virtual SQUICK_SHARE_PTR<DataList> GetStartData() const = 0;
-    virtual const SQUICK_SHARE_PTR<DataList> GetTag() const = 0;
+    virtual std::shared_ptr<DataList> GetStartData() const = 0;
+    virtual const std::shared_ptr<DataList> GetTag() const = 0;
 
     virtual void SetSave(const bool bSave) = 0;
     virtual void SetCache(const bool bCache) = 0;

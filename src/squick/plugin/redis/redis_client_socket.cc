@@ -3,9 +3,9 @@
 #include "redis_client_socket.h"
 #include "redis_client.h"
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 
-#elif SQUICK_PLATFORM == SQUICK_PLATFORM_APPLE
+#elif PLATFORM == PLATFORM_APPLE
 #include <arpa/inet.h>
 #endif
 

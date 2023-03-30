@@ -29,8 +29,8 @@ class ActorModule : public IActorModule {
 
     virtual bool Update();
 
-    virtual SQUICK_SHARE_PTR<IActor> RequireActor();
-    virtual SQUICK_SHARE_PTR<IActor> GetActor(const Guid nActorIndex);
+    virtual std::shared_ptr<IActor> RequireActor();
+    virtual std::shared_ptr<IActor> GetActor(const Guid nActorIndex);
     virtual bool ReleaseActor(const Guid nActorIndex);
 
     virtual bool SendMsgToActor(const Guid actorIndex, const Guid who, const int eventID, const std::string &data, const std::string &arg = "");
@@ -48,10 +48,10 @@ class ActorModule : public IActorModule {
   private:
     bool test = false;
 
-    IKernelModule *m_pKernelModule;
-    IThreadPoolModule *m_pThreadPoolModule;
+    IKernelModule *m_kernel_;
+    IThreadPoolModule *m_thread_pool_;
 
-    std::map<Guid, SQUICK_SHARE_PTR<IActor>> mxActorMap;
+    std::map<Guid, std::shared_ptr<IActor>> mxActorMap;
 
     Queue<ActorMessage> mxResultQueue;
     MapEx<int, ACTOR_PROCESS_FUNCTOR> mxEndFunctor;

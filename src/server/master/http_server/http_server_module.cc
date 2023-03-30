@@ -3,11 +3,11 @@
 #include "http_server_module.h"
 
 bool MasterNet_HttpServerModule::Start() {
-    m_pHttpNetModule = pPluginManager->FindModule<IHttpServerModule>();
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pMasterServerModule = pPluginManager->FindModule<IMasterNet_ServerModule>();
-    m_pLogicClassModule = pPluginManager->FindModule<IClassModule>();
-    m_pElementModule = pPluginManager->FindModule<IElementModule>();
+    m_http_server_ = pm_->FindModule<IHttpServerModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_pMasterServerModule = pm_->FindModule<IMasterNet_ServerModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
+    m_element_ = pm_->FindModule<IElementModule>();
 
     return true;
 }
@@ -15,22 +15,22 @@ bool MasterNet_HttpServerModule::Destory() { return true; }
 
 bool MasterNet_HttpServerModule::AfterStart() {
     // http://127.0.0.1/json
-    m_pHttpNetModule->AddRequestHandler("/status", HttpType::SQUICK_HTTP_REQ_GET, this, &MasterNet_HttpServerModule::OnCommandQuery);
+    m_http_server_->AddRequestHandler("/status", HttpType::SQUICK_HTTP_REQ_GET, this, &MasterNet_HttpServerModule::OnCommandQuery);
 
-    m_pHttpNetModule->AddNetFilter("/status", this, &MasterNet_HttpServerModule::OnFilter);
+    m_http_server_->AddNetFilter("/status", this, &MasterNet_HttpServerModule::OnFilter);
 
-    SQUICK_SHARE_PTR<IClass> xLogicClass = m_pLogicClassModule->GetElement(excel::Server::ThisName());
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
         for (int i = 0; i < strIdList.size(); ++i) {
             const std::string &strId = strIdList[i];
 
-            int nJsonPort = m_pElementModule->GetPropertyInt32(strId, excel::Server::WebPort());
-            int nWebServerAppID = m_pElementModule->GetPropertyInt32(strId, excel::Server::ServerID());
+            int nJsonPort = m_element_->GetPropertyInt32(strId, excel::Server::WebPort());
+            int nWebServerAppID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
 
             // webserver only run one instance in each server
-            if (pPluginManager->GetAppID() == nWebServerAppID) {
-                m_pHttpNetModule->StartServer(nJsonPort);
+            if (pm_->GetAppID() == nWebServerAppID) {
+                m_http_server_->StartServer(nJsonPort);
 
                 break;
             }
@@ -42,11 +42,11 @@ bool MasterNet_HttpServerModule::AfterStart() {
 
 bool MasterNet_HttpServerModule::Update() {
     // std::cout << "ookkkkk" << std::endl;
-    m_pHttpNetModule->Update();
+    m_http_server_->Update();
     return true;
 }
 
-bool MasterNet_HttpServerModule::OnCommandQuery(SQUICK_SHARE_PTR<HttpRequest> req) {
+bool MasterNet_HttpServerModule::OnCommandQuery(std::shared_ptr<HttpRequest> req) {
 
     std::cout << "url: " << req->url << std::endl;
     std::cout << "path: " << req->path << std::endl;
@@ -68,10 +68,10 @@ bool MasterNet_HttpServerModule::OnCommandQuery(SQUICK_SHARE_PTR<HttpRequest> re
     }*/
 
     std::string str = m_pMasterServerModule->GetServersStatus();
-    return m_pHttpNetModule->ResponseMsg(req, str, WebStatus::WEB_OK);
+    return m_http_server_->ResponseMsg(req, str, WebStatus::WEB_OK);
 }
 
-WebStatus MasterNet_HttpServerModule::OnFilter(SQUICK_SHARE_PTR<HttpRequest> req) {
+WebStatus MasterNet_HttpServerModule::OnFilter(std::shared_ptr<HttpRequest> req) {
     /*
     std::cout << "OnFilter: " << std::endl;
 

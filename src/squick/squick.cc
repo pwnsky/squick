@@ -7,11 +7,11 @@ int main(int argc, char *argv[]) {
     // std::cout << "__cplusplus:" << __cplusplus << std::endl;
 
     // 强制加载squick_struct依赖
-    void *libLoad = (void *)&SquickStruct::_Ident_default_instance_;
+    void *libLoad = (void *)&rpc::_Ident_default_instance_;
 
     // std::cout << libLoad << std::endl;
 
-    std::vector<SQUICK_SHARE_PTR<PluginServer>> serverList; // 服务器列表
+    std::vector<std::shared_ptr<PluginServer>> serverList; // 服务器列表
 
     std::string strArgvList;
     for (int i = 0; i < argc; i++) {
@@ -32,20 +32,20 @@ int main(int argc, char *argv[]) {
                 "Examples: ./squick plugin=test.xml server=defualt id=1\n";
         "\n";*/
 
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=master id=1 plugin=master.xml")));
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=login id=2 plugin=login.xml")));
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=world id=100 plugin=world.xml")));
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=db_proxy id=300 plugin=db_proxy.xml")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=master id=1 plugin=master.xml")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=login id=2 plugin=login.xml")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=world id=100 plugin=world.xml")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=db_proxy id=300 plugin=db_proxy.xml")));
 
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=game id=1000 plugin=game.xml")));
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=game id=1001 plugin=game.xml")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=game id=1000 plugin=game.xml")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=game id=1001 plugin=game.xml")));
         serverList.push_back(
-            SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=gameplay_manager id=2000 plugin=gameplay_manager.xml")));
+            std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=gameplay_manager id=2000 plugin=gameplay_manager.xml")));
 
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=proxy id=500 plugin=proxy.xml")));
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList + " server=proxy id=501 plugin=proxy.xml")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=proxy id=500 plugin=proxy.xml")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=proxy id=501 plugin=proxy.xml")));
     } else {
-        serverList.push_back(SQUICK_SHARE_PTR<PluginServer>(SQUICK_NEW PluginServer(strArgvList)));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList)));
     }
 
     for (auto item : serverList) {

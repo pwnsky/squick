@@ -21,19 +21,19 @@ const int NetPlugin::GetPluginVersion() { return 0; }
 const std::string NetPlugin::GetPluginName() { return GET_CLASS_NAME(NetPlugin); }
 
 void NetPlugin::Install() {
-    REGISTER_MODULE(pPluginManager, INetModule, NetModule)
-    REGISTER_MODULE(pPluginManager, IWSModule, WSModule)
-    REGISTER_MODULE(pPluginManager, IHttpServerModule, HttpServerModule)
-    REGISTER_MODULE(pPluginManager, INetClientModule, NetClientModule)
-    REGISTER_MODULE(pPluginManager, IHttpClientModule, HttpClientModule)
-    // REGISTER_MODULE(pPluginManager, IUDPModule, UDPModule)
+    REGISTER_MODULE(pm_, INetModule, NetModule)
+    REGISTER_MODULE(pm_, IWSModule, WSModule)
+    REGISTER_MODULE(pm_, IHttpServerModule, HttpServerModule)
+    REGISTER_MODULE(pm_, INetClientModule, NetClientModule)
+    REGISTER_MODULE(pm_, IHttpClientModule, HttpClientModule)
+    // REGISTER_MODULE(pm_, IUDPModule, UDPModule)
 }
 
 void NetPlugin::Uninstall() {
-    // UNREGISTER_MODULE(pPluginManager, IUDPModule, UDPModule)
-    UNREGISTER_MODULE(pPluginManager, IHttpClientModule, HttpClientModule)
-    UNREGISTER_MODULE(pPluginManager, INetClientModule, NetClientModule)
-    UNREGISTER_MODULE(pPluginManager, IHttpServerModule, HttpServerModule)
-    UNREGISTER_MODULE(pPluginManager, IWSModule, WSModule)
-    UNREGISTER_MODULE(pPluginManager, INetModule, NetModule)
+    // UNREGISTER_MODULE(pm_, IUDPModule, UDPModule)
+    UNREGISTER_MODULE(pm_, IHttpClientModule, HttpClientModule)
+    UNREGISTER_MODULE(pm_, INetClientModule, NetClientModule)
+    UNREGISTER_MODULE(pm_, IHttpServerModule, HttpServerModule)
+    UNREGISTER_MODULE(pm_, IWSModule, WSModule)
+    UNREGISTER_MODULE(pm_, INetModule, NetModule)
 }

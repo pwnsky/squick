@@ -8,7 +8,7 @@ int RedisClient::ZADD(const std::string &key, const std::string &member, const d
     cmd << score;
     cmd << member;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -25,7 +25,7 @@ bool RedisClient::ZCARD(const std::string &key, int &count) {
     RedisCommand cmd(GET_NAME(ZCARD));
     cmd << key;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -43,7 +43,7 @@ bool RedisClient::ZCOUNT(const std::string &key, const double start, const doubl
     cmd << start;
     cmd << end;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -61,7 +61,7 @@ bool RedisClient::ZINCRBY(const std::string &key, const std::string &member, con
     cmd << score;
     cmd << member;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -81,7 +81,7 @@ bool RedisClient::ZRANGE(const std::string &key, const int start, const int end,
     cmd << end;
     cmd << "WITHSCORES";
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -112,7 +112,7 @@ bool RedisClient::ZRANGEBYSCORE(const std::string &key, const double start, cons
     cmd << end;
     cmd << "WITHSCORES";
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -140,7 +140,7 @@ bool RedisClient::ZRANK(const std::string &key, const std::string &member, int &
     cmd << key;
     cmd << member;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -157,7 +157,7 @@ bool RedisClient::ZREM(const std::string &key, const std::string &member) {
     cmd << key;
     cmd << member;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -175,7 +175,7 @@ bool RedisClient::ZREMRANGEBYRANK(const std::string &key, const int start, const
     cmd << start;
     cmd << end;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -193,7 +193,7 @@ bool RedisClient::ZREMRANGEBYSCORE(const std::string &key, const double start, c
     cmd << start;
     cmd << end;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -212,7 +212,7 @@ bool RedisClient::ZREVRANGE(const std::string &key, const int start, const int e
     cmd << end;
     cmd << "WITHSCORES";
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -242,7 +242,7 @@ bool RedisClient::ZREVRANGEBYSCORE(const std::string &key, const double start, c
     cmd << end;
     cmd << "WITHSCORES";
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -270,7 +270,7 @@ bool RedisClient::ZREVRANK(const std::string &key, const std::string &member, in
     cmd << key;
     cmd << member;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -287,7 +287,7 @@ bool RedisClient::ZSCORE(const std::string &key, const std::string &member, doub
     cmd << key;
     cmd << member;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }

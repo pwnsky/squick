@@ -4,7 +4,7 @@
 
 bool MasterModule::Start() {
 
-    m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
+    m_kernel_ = pm_->FindModule<IKernelModule>();
 
     return true;
 }

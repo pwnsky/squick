@@ -414,7 +414,7 @@ class DataList : public MemoryCounter {
         mnUseSize = 0;
         mvList.reserve(STACK_SIZE);
         for (int i = 0; i < STACK_SIZE; ++i) {
-            mvList.push_back(SQUICK_SHARE_PTR<SquickData>(SQUICK_NEW SquickData()));
+            mvList.push_back(std::shared_ptr<SquickData>(new SquickData()));
         }
     }
 
@@ -422,7 +422,7 @@ class DataList : public MemoryCounter {
         mnUseSize = 0;
         mvList.reserve(STACK_SIZE);
         for (int i = 0; i < STACK_SIZE; ++i) {
-            mvList.push_back(SQUICK_SHARE_PTR<SquickData>(SQUICK_NEW SquickData()));
+            mvList.push_back(std::shared_ptr<SquickData>(new SquickData()));
         }
 
         this->Split(data, strSplit);
@@ -505,12 +505,12 @@ class DataList : public MemoryCounter {
     }
 
   public:
-    virtual const SQUICK_SHARE_PTR<SquickData> GetStack(const int index) const {
+    virtual const std::shared_ptr<SquickData> GetStack(const int index) const {
         if (index < (int)mvList.size()) {
             return mvList[index];
         }
 
-        return SQUICK_SHARE_PTR<SquickData>();
+        return std::shared_ptr<SquickData>();
     }
 
     virtual bool Concat(const DataList &src) {
@@ -590,7 +590,7 @@ class DataList : public MemoryCounter {
         if (index < STACK_SIZE) {
             return mvList[index]->GetType();
         } else {
-            const SQUICK_SHARE_PTR<SquickData> pData = GetStack(index);
+            const std::shared_ptr<SquickData> pData = GetStack(index);
             if (pData) {
                 return pData->GetType();
             }
@@ -661,7 +661,7 @@ class DataList : public MemoryCounter {
             AddStatck();
         }
 
-        SQUICK_SHARE_PTR<SquickData> var = GetStack(GetCount());
+        std::shared_ptr<SquickData> var = GetStack(GetCount());
         if (var) {
             var->SetInt(value);
             mnUseSize++;
@@ -677,7 +677,7 @@ class DataList : public MemoryCounter {
             AddStatck();
         }
 
-        SQUICK_SHARE_PTR<SquickData> var = GetStack(GetCount());
+        std::shared_ptr<SquickData> var = GetStack(GetCount());
         if (var) {
             var->SetFloat(value);
             mnUseSize++;
@@ -693,7 +693,7 @@ class DataList : public MemoryCounter {
             AddStatck();
         }
 
-        SQUICK_SHARE_PTR<SquickData> var = GetStack(GetCount());
+        std::shared_ptr<SquickData> var = GetStack(GetCount());
         if (var) {
             var->SetString(value);
             mnUseSize++;
@@ -709,7 +709,7 @@ class DataList : public MemoryCounter {
             AddStatck();
         }
 
-        SQUICK_SHARE_PTR<SquickData> var = GetStack(GetCount());
+        std::shared_ptr<SquickData> var = GetStack(GetCount());
         if (var) {
             var->SetObject(value);
             mnUseSize++;
@@ -725,7 +725,7 @@ class DataList : public MemoryCounter {
             AddStatck();
         }
 
-        SQUICK_SHARE_PTR<SquickData> var = GetStack(GetCount());
+        std::shared_ptr<SquickData> var = GetStack(GetCount());
         if (var) {
             var->SetVector2(value);
             mnUseSize++;
@@ -741,7 +741,7 @@ class DataList : public MemoryCounter {
             AddStatck();
         }
 
-        SQUICK_SHARE_PTR<SquickData> var = GetStack(GetCount());
+        std::shared_ptr<SquickData> var = GetStack(GetCount());
         if (var) {
             var->SetVector3(value);
             mnUseSize++;
@@ -754,7 +754,7 @@ class DataList : public MemoryCounter {
 
     virtual bool Set(const int index, const INT64 value) {
         if (ValidIndex(index) && Type(index) == TDATA_INT) {
-            SQUICK_SHARE_PTR<SquickData> var = GetStack(index);
+            std::shared_ptr<SquickData> var = GetStack(index);
             if (var) {
                 var->SetInt(value);
 
@@ -767,7 +767,7 @@ class DataList : public MemoryCounter {
 
     virtual bool Set(const int index, const double value) {
         if (ValidIndex(index) && Type(index) == TDATA_FLOAT) {
-            SQUICK_SHARE_PTR<SquickData> var = GetStack(index);
+            std::shared_ptr<SquickData> var = GetStack(index);
             if (var) {
                 var->SetFloat(value);
 
@@ -780,7 +780,7 @@ class DataList : public MemoryCounter {
 
     virtual bool Set(const int index, const std::string &value) {
         if (ValidIndex(index) && Type(index) == TDATA_STRING) {
-            SQUICK_SHARE_PTR<SquickData> var = GetStack(index);
+            std::shared_ptr<SquickData> var = GetStack(index);
             if (var) {
                 var->SetString(value);
 
@@ -793,7 +793,7 @@ class DataList : public MemoryCounter {
 
     virtual bool Set(const int index, const Guid &value) {
         if (ValidIndex(index) && Type(index) == TDATA_OBJECT) {
-            SQUICK_SHARE_PTR<SquickData> var = GetStack(index);
+            std::shared_ptr<SquickData> var = GetStack(index);
             if (var) {
                 var->SetObject(value);
 
@@ -806,7 +806,7 @@ class DataList : public MemoryCounter {
 
     virtual bool Set(const int index, const Vector2 &value) {
         if (ValidIndex(index) && Type(index) == TDATA_VECTOR2) {
-            SQUICK_SHARE_PTR<SquickData> var = GetStack(index);
+            std::shared_ptr<SquickData> var = GetStack(index);
             if (var) {
                 var->SetVector2(value);
 
@@ -819,7 +819,7 @@ class DataList : public MemoryCounter {
 
     virtual bool Set(const int index, const Vector3 &value) {
         if (ValidIndex(index) && Type(index) == TDATA_VECTOR3) {
-            SQUICK_SHARE_PTR<SquickData> var = GetStack(index);
+            std::shared_ptr<SquickData> var = GetStack(index);
             if (var) {
                 var->SetVector3(value);
 
@@ -833,7 +833,7 @@ class DataList : public MemoryCounter {
     virtual INT64 Int(const int index) const {
         if (ValidIndex(index)) {
             if (Type(index) == TDATA_INT) {
-                const SQUICK_SHARE_PTR<SquickData> var = GetStack(index);
+                const std::shared_ptr<SquickData> var = GetStack(index);
                 return var->GetInt();
             }
         }
@@ -845,7 +845,7 @@ class DataList : public MemoryCounter {
 
     virtual double Float(const int index) const {
         if (ValidIndex(index)) {
-            const SQUICK_SHARE_PTR<SquickData> var = mvList[index];
+            const std::shared_ptr<SquickData> var = mvList[index];
             if (var && TDATA_FLOAT == var->GetType()) {
                 return var->GetFloat();
             }
@@ -856,7 +856,7 @@ class DataList : public MemoryCounter {
 
     virtual const std::string &String(const int index) const {
         if (ValidIndex(index)) {
-            const SQUICK_SHARE_PTR<SquickData> var = mvList[index];
+            const std::shared_ptr<SquickData> var = mvList[index];
             if (var && TDATA_STRING == var->GetType()) {
                 return var->GetString();
             }
@@ -869,7 +869,7 @@ class DataList : public MemoryCounter {
         if (ValidIndex(index)) {
             DATA_TYPE type = Type(index);
             if (TDATA_OBJECT == type) {
-                SQUICK_SHARE_PTR<SquickData> var = GetStack(index);
+                std::shared_ptr<SquickData> var = GetStack(index);
                 if (var) {
                     return var->GetObject();
                 }
@@ -883,7 +883,7 @@ class DataList : public MemoryCounter {
         if (ValidIndex(index)) {
             DATA_TYPE type = Type(index);
             if (TDATA_VECTOR2 == type) {
-                SQUICK_SHARE_PTR<SquickData> var = GetStack(index);
+                std::shared_ptr<SquickData> var = GetStack(index);
                 if (var) {
                     return var->GetVector2();
                 }
@@ -897,7 +897,7 @@ class DataList : public MemoryCounter {
         if (ValidIndex(index)) {
             DATA_TYPE type = Type(index);
             if (TDATA_VECTOR3 == type) {
-                SQUICK_SHARE_PTR<SquickData> var = GetStack(index);
+                std::shared_ptr<SquickData> var = GetStack(index);
                 if (var) {
                     return var->GetVector3();
                 }
@@ -1017,7 +1017,7 @@ class DataList : public MemoryCounter {
 
     void AddStatck() {
         for (int i = 0; i < STACK_SIZE; ++i) {
-            SQUICK_SHARE_PTR<SquickData> pData(SQUICK_NEW SquickData());
+            std::shared_ptr<SquickData> pData(new SquickData());
             mvList.push_back(pData);
         }
     }
@@ -1052,8 +1052,8 @@ class DataList : public MemoryCounter {
 
   protected:
     int mnUseSize;
-    std::vector<SQUICK_SHARE_PTR<SquickData>> mvList;
-    std::map<std::string, SQUICK_SHARE_PTR<SquickData>> mxMap;
+    std::vector<std::shared_ptr<SquickData>> mvList;
+    std::map<std::string, std::shared_ptr<SquickData>> mxMap;
 };
 
 const static SquickData NULL_TDATA = SquickData();

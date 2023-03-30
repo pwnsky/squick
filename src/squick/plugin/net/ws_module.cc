@@ -49,8 +49,8 @@ static constexpr size_t PAYLOAD_MAX_LEN = 127;
 static constexpr size_t FIN_FRAME_FLAG = 0x80; // 1 0 0 0 0 0 0 0
 
 WSModule::WSModule(IPluginManager *p) {
-    m_bIsUpdate = true;
-    pPluginManager = p;
+    is_update_ = true;
+    pm_ = p;
 
     mnBufferSize = 0;
     mLastTime = GetPluginManager()->GetNowTime();
@@ -67,7 +67,7 @@ WSModule::~WSModule() {
 }
 
 bool WSModule::Start() {
-    m_pLogModule = pPluginManager->FindModule<ILogModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
 
     return true;
 }
@@ -75,13 +75,13 @@ bool WSModule::Start() {
 bool WSModule::AfterStart() { return true; }
 
 void WSModule::Startialization(const char *ip, const unsigned short nPort) {
-    m_pNet = SQUICK_NEW Net(this, &WSModule::OnReceiveNetPack, &WSModule::OnSocketNetEvent, true);
+    m_pNet = new Net(this, &WSModule::OnReceiveNetPack, &WSModule::OnSocketNetEvent, true);
     m_pNet->ExpandBufferSize(mnBufferSize);
     m_pNet->Startialization(ip, nPort);
 }
 
 int WSModule::Startialization(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount) {
-    m_pNet = SQUICK_NEW Net(this, &WSModule::OnReceiveNetPack, &WSModule::OnSocketNetEvent, true);
+    m_pNet = new Net(this, &WSModule::OnReceiveNetPack, &WSModule::OnSocketNetEvent, true);
     m_pNet->ExpandBufferSize(mnBufferSize);
     return m_pNet->Startialization(nMaxClient, nPort, nCpuCount);
 }
@@ -97,22 +97,22 @@ unsigned int WSModule::ExpandBufferSize(const unsigned int size) {
     return mnBufferSize;
 }
 
-void WSModule::RemoveReceiveCallBack(const int msgID) {
-    std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msgID);
+void WSModule::RemoveReceiveCallBack(const int msg_id) {
+    std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msg_id);
     if (mxReceiveCallBack.end() != it) {
         mxReceiveCallBack.erase(it);
     }
 }
 
-bool WSModule::AddReceiveCallBack(const int msgID, const NET_RECEIVE_FUNCTOR_PTR &cb) {
-    if (mxReceiveCallBack.find(msgID) == mxReceiveCallBack.end()) {
+bool WSModule::AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb) {
+    if (mxReceiveCallBack.find(msg_id) == mxReceiveCallBack.end()) {
         std::list<NET_RECEIVE_FUNCTOR_PTR> xList;
         xList.push_back(cb);
-        mxReceiveCallBack.insert(std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::value_type(msgID, xList));
+        mxReceiveCallBack.insert(std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::value_type(msg_id, xList));
         return true;
     }
 
-    std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msgID);
+    std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msg_id);
     it->second.push_back(cb);
 
     return true;
@@ -140,48 +140,48 @@ bool WSModule::Update() {
     return m_pNet->Update();
 }
 
-bool WSModule::SendMsgPB(const uint16_t msgID, const google::protobuf::Message &xData, const SQUICK_SOCKET sockIndex) {
-    SquickStruct::MsgBase xMsg;
+bool WSModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) {
+    rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
-        stream << " SendMsgPB Message to  " << sockIndex;
-        stream << " Failed For Serialize of MsgData, MessageID " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " SendMsgPB Message to  " << sock;
+        stream << " Failed For Serialize of MsgData, MessageID " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
 
         return false;
     }
 
-    SquickStruct::Ident *pPlayerID = xMsg.mutable_player_id();
+    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
     *pPlayerID = INetModule::StructToProtobuf(Guid());
 
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
         std::ostringstream stream;
-        stream << " SendMsgPB Message to  " << sockIndex;
-        stream << " Failed For Serialize of MsgBase, MessageID " << msgID;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " SendMsgPB Message to  " << sock;
+        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
 
         return false;
     }
-    SendMsgWithOutHead(msgID, msg.c_str(), msg.length(), sockIndex);
+    SendMsgWithOutHead(msg_id, msg.c_str(), msg.length(), sock);
 
     return true;
 }
 
-bool WSModule::SendMsgWithOutHead(const int16_t msgID, const char *msg, const size_t len, const SQUICK_SOCKET sockIndex /*= 0*/) {
+bool WSModule::SendMsgWithOutHead(const int16_t msg_id, const char *msg, const size_t len, const socket_t sock /*= 0*/) {
     std::string strOutData;
-    int nAllLen = EnCode(msgID, msg, len, strOutData);
+    int nAllLen = EnCode(msg_id, msg, len, strOutData);
     if (nAllLen == len + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
         auto frame = EncodeFrame(strOutData.data(), strOutData.size(), false);
-        return SendRawMsg(frame, sockIndex);
+        return SendRawMsg(frame, sock);
     }
 
     return false;
 }
 
-int WSModule::EnCode(const uint16_t umsgID, const char *strData, const uint32_t unDataLen, std::string &strOutData) {
-    SquickStructHead xHead;
-    xHead.SetMsgID(umsgID);
+int WSModule::EnCode(const uint16_t umsg_id, const char *strData, const uint32_t unDataLen, std::string &strOutData) {
+    rpcHead xHead;
+    xHead.SetMsgID(umsg_id);
     xHead.SetBodyLength(unDataLen);
 
     char szHead[IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH] = {0};
@@ -194,9 +194,9 @@ int WSModule::EnCode(const uint16_t umsgID, const char *strData, const uint32_t 
     return xHead.GetBodyLength() + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH;
 }
 
-bool WSModule::SendMsg(const std::string &msg, const SQUICK_SOCKET sockIndex, const bool text) {
+bool WSModule::SendMsg(const std::string &msg, const socket_t sock, const bool text) {
     auto frame = EncodeFrame(msg.data(), msg.size(), text);
-    return SendRawMsg(frame, sockIndex);
+    return SendRawMsg(frame, sock);
 }
 
 bool WSModule::SendMsgToAllClient(const std::string &msg, const bool text) {
@@ -205,7 +205,7 @@ bool WSModule::SendMsgToAllClient(const std::string &msg, const bool text) {
     if (!bRet) {
         std::ostringstream stream;
         stream << " SendMsgToAllClient failed";
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
     }
 
     return bRet;
@@ -213,20 +213,20 @@ bool WSModule::SendMsgToAllClient(const std::string &msg, const bool text) {
 
 INet *WSModule::GetNet() { return m_pNet; }
 
-void WSModule::OnError(const SQUICK_SOCKET sockIndex, const std::error_code &e) {
+void WSModule::OnError(const socket_t sock, const std::error_code &e) {
     // may write/print error log
     // then close socket
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
     SQUICK_CRASH_TRY
 #endif
     for (auto &cb : mxEventCallBackList) {
         NET_EVENT_FUNCTOR_PTR &pFunPtr = cb;
         NET_EVENT_FUNCTOR *pFunc = pFunPtr.get();
 
-        pFunc->operator()(sockIndex, SQUICK_NET_EVENT::SQUICK_NET_EVENT_ERROR, m_pNet);
+        pFunc->operator()(sock, SQUICK_NET_EVENT::SQUICK_NET_EVENT_ERROR, m_pNet);
     }
 
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
     SQUICK_CRASH_END
 #endif
 
@@ -235,56 +235,56 @@ void WSModule::OnError(const SQUICK_SOCKET sockIndex, const std::error_code &e) 
     stream << e.value();
     stream << " ";
     stream << e.message();
-    m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
-    m_pNet->CloseNetObject(sockIndex);
+    m_log_->LogError(stream, __FUNCTION__, __LINE__);
+    m_pNet->CloseNetObject(sock);
 }
 
-bool WSModule::SendRawMsg(const std::string &msg, const SQUICK_SOCKET sockIndex) {
-    bool bRet = m_pNet->SendMsg(msg.c_str(), (uint32_t)msg.length(), sockIndex);
+bool WSModule::SendRawMsg(const std::string &msg, const socket_t sock) {
+    bool bRet = m_pNet->SendMsg(msg.c_str(), (uint32_t)msg.length(), sock);
     if (!bRet) {
         std::ostringstream stream;
-        stream << " SendMsg failed fd " << sockIndex;
-        m_pLogModule->LogError(stream, __FUNCTION__, __LINE__);
+        stream << " SendMsg failed fd " << sock;
+        m_log_->LogError(stream, __FUNCTION__, __LINE__);
     }
 
     return bRet;
 }
 
-void WSModule::OnReceiveNetPack(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
-    if (msgID < 0) {
-        NetObject *pNetObject = m_pNet->GetNetObject(sockIndex);
+void WSModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    if (msg_id < 0) {
+        NetObject *pNetObject = m_pNet->GetNetObject(sock);
         if (nullptr != pNetObject) {
             switch (pNetObject->GetConnectKeyState()) {
             case ws_init: {
                 std::string_view data(pNetObject->GetBuff(), pNetObject->GetBuffLen());
                 auto pos = data.find("\r\n\r\n");
                 if (pos != std::string_view::npos) {
-                    auto ec = HandShake(sockIndex, data.data(), pos);
+                    auto ec = HandShake(sock, data.data(), pos);
                     if (ec) {
                         // mark need send then close here:
-                        SendRawMsg("HTTP/1.1 400 Bad Request\r\n\r\n", sockIndex);
+                        SendRawMsg("HTTP/1.1 400 Bad Request\r\n\r\n", sock);
                         // log ec.message()
-                        // OnError(sockIndex, ec);
+                        // OnError(sock, ec);
                         return;
                     }
                     pNetObject->RemoveBuff(0, pos + 4);
                     pNetObject->SetConnectKeyState(ws_handshaked);
                     // may have more data, check it
-                    ec = DecodeFrame(sockIndex, pNetObject);
+                    ec = DecodeFrame(sock, pNetObject);
                     if (ec) {
-                        OnError(sockIndex, ec);
+                        OnError(sock, ec);
                         return;
                     }
                 } else if (data.size() > HANDSHAKE_MAX_SIZE) {
-                    OnError(sockIndex, websocket::make_error_code(websocket::error::buffer_overflow));
+                    OnError(sock, websocket::make_error_code(websocket::error::buffer_overflow));
                     return;
                 }
                 break;
             }
             case ws_handshaked: {
-                auto ec = DecodeFrame(sockIndex, pNetObject);
+                auto ec = DecodeFrame(sock, pNetObject);
                 if (ec) {
-                    OnError(sockIndex, ec);
+                    OnError(sock, ec);
                     return;
                 }
                 break;
@@ -294,38 +294,38 @@ void WSModule::OnReceiveNetPack(const SQUICK_SOCKET sockIndex, const int msgID, 
             }
         }
     } else {
-        m_pLogModule->LogInfo("OnReceiveNetPack " + std::to_string(msgID), __FUNCTION__, __LINE__);
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+        m_log_->LogInfo("OnReceiveNetPack " + std::to_string(msg_id), __FUNCTION__, __LINE__);
+#if PLATFORM != PLATFORM_WIN
         SQUICK_CRASH_TRY
 #endif
-        auto it = mxReceiveCallBack.find(msgID);
+        auto it = mxReceiveCallBack.find(msg_id);
         if (mxReceiveCallBack.end() != it) {
             auto &xFunList = it->second;
             for (auto itList = xFunList.begin(); itList != xFunList.end(); ++itList) {
                 auto &pFunPtr = *itList;
                 auto pFunc = pFunPtr.get();
 
-                pFunc->operator()(sockIndex, msgID, msg, len);
+                pFunc->operator()(sock, msg_id, msg, len);
             }
         } else {
             for (auto itList = mxCallBackList.begin(); itList != mxCallBackList.end(); ++itList) {
                 auto &pFunPtr = *itList;
                 auto pFunc = pFunPtr.get();
 
-                pFunc->operator()(sockIndex, msgID, msg, len);
+                pFunc->operator()(sock, msg_id, msg, len);
             }
         }
-#if SQUICK_PLATFORM != SQUICK_PLATFORM_WIN
+#if PLATFORM != PLATFORM_WIN
         SQUICK_CRASH_END
 #endif
     }
 }
 
-void WSModule::OnSocketNetEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet) {
+void WSModule::OnSocketNetEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
     for (auto it = mxEventCallBackList.begin(); it != mxEventCallBackList.end(); ++it) {
         auto &pFunPtr = *it;
         auto pFunc = pFunPtr.get();
-        pFunc->operator()(sockIndex, eEvent, pNet);
+        pFunc->operator()(sock, eEvent, pNet);
     }
 }
 
@@ -345,7 +345,7 @@ void WSModule::KeepAlive() {
     mLastTime = GetPluginManager()->GetNowTime();
 }
 
-std::error_code WSModule::HandShake(const SQUICK_SOCKET sockIndex, const char *msg, const uint32_t len) {
+std::error_code WSModule::HandShake(const socket_t sock, const char *msg, const uint32_t len) {
     std::string_view data{msg, len};
     std::string_view method;
     std::string_view ignore;
@@ -407,12 +407,12 @@ std::error_code WSModule::HandShake(const SQUICK_SOCKET sockIndex, const char *m
         response.append("\r\n", 2);
     }
     response.append("\r\n", 2);
-    SendRawMsg(response, sockIndex);
+    SendRawMsg(response, sock);
 
     return std::error_code();
 }
 
-std::error_code WSModule::DecodeFrame(const SQUICK_SOCKET sockIndex, NetObject *pNetObject) {
+std::error_code WSModule::DecodeFrame(const socket_t sock, NetObject *pNetObject) {
     const char *data = pNetObject->GetBuff();
     size_t size = pNetObject->GetBuffLen();
     const uint8_t *tmp = (const uint8_t *)(data);
@@ -542,24 +542,24 @@ std::error_code WSModule::DecodeFrame(const SQUICK_SOCKET sockIndex, NetObject *
 
     if (fh.op == opcode::binary) {
         const char *pbData = data + need;
-        SquickStructHead xHead;
+        rpcHead xHead;
         int nMsgBodyLength = DeCode(pbData, reallen, xHead);
         if (nMsgBodyLength > 0 && xHead.GetMsgID() > 0) {
-            OnReceiveNetPack(sockIndex, xHead.GetMsgID(), pbData + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH, nMsgBodyLength);
+            OnReceiveNetPack(sock, xHead.GetMsgID(), pbData + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH, nMsgBodyLength);
         }
     } else if (fh.op == opcode::text) {
         const char *pbData = data + need;
-        OnReceiveNetPack(sockIndex, 0, pbData, reallen);
+        OnReceiveNetPack(sock, 0, pbData, reallen);
     }
 
     // remove control frame
     size_t offset = need + reallen;
     pNetObject->RemoveBuff(0, offset);
 
-    return DecodeFrame(sockIndex, pNetObject);
+    return DecodeFrame(sock, pNetObject);
 }
 
-int WSModule::DeCode(const char *strData, const uint32_t unAllLen, SquickStructHead &xHead) {
+int WSModule::DeCode(const char *strData, const uint32_t unAllLen, rpcHead &xHead) {
     if (unAllLen < IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
         return -1;
     }

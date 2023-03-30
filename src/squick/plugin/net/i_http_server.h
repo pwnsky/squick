@@ -17,7 +17,7 @@
 #include "i_net.h"
 #include <squick/core/platform.h>
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
 #include <fcntl.h>
 #include <io.h>
 #include <winsock2.h>
@@ -79,10 +79,10 @@ class HttpRequest {
 };
 
 // it should be
-typedef std::function<bool(SQUICK_SHARE_PTR<HttpRequest> req)> HTTP_RECEIVE_FUNCTOR;
+typedef std::function<bool(std::shared_ptr<HttpRequest> req)> HTTP_RECEIVE_FUNCTOR;
 typedef std::shared_ptr<HTTP_RECEIVE_FUNCTOR> HTTP_RECEIVE_FUNCTOR_PTR;
 
-typedef std::function<WebStatus(SQUICK_SHARE_PTR<HttpRequest> req)> HTTP_FILTER_FUNCTOR;
+typedef std::function<WebStatus(std::shared_ptr<HttpRequest> req)> HTTP_FILTER_FUNCTOR;
 typedef std::shared_ptr<HTTP_FILTER_FUNCTOR> HTTP_FILTER_FUNCTOR_PTR;
 
 class IHttpServer {
@@ -93,7 +93,7 @@ class IHttpServer {
 
     virtual int StartServer(const unsigned short nPort) = 0;
 
-    virtual bool ResponseMsg(SQUICK_SHARE_PTR<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason = "OK") = 0;
+    virtual bool ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason = "OK") = 0;
 
-    virtual SQUICK_SHARE_PTR<HttpRequest> GetHttpRequest(const int64_t index) = 0;
+    virtual std::shared_ptr<HttpRequest> GetHttpRequest(const int64_t index) = 0;
 };

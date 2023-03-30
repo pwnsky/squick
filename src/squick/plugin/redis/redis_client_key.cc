@@ -6,7 +6,7 @@ bool RedisClient::DEL(const std::string &key) {
     RedisCommand cmd(GET_NAME(DEL));
     cmd << key;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -23,7 +23,7 @@ bool RedisClient::EXISTS(const std::string &key) {
     RedisCommand cmd(GET_NAME(EXISTS));
     cmd << key;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -41,7 +41,7 @@ bool RedisClient::EXPIRE(const std::string &key, const unsigned int secs) {
     cmd << key;
     cmd << secs;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -59,7 +59,7 @@ bool RedisClient::EXPIREAT(const std::string &key, const int64_t unixTime) {
     cmd << key;
     cmd << unixTime;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -76,7 +76,7 @@ bool RedisClient::PERSIST(const std::string &key) {
     RedisCommand cmd(GET_NAME(PERSIST));
     cmd << key;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -93,7 +93,7 @@ int RedisClient::TTL(const std::string &key) {
     RedisCommand cmd(GET_NAME(TTL));
     cmd << key;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -110,7 +110,7 @@ std::string RedisClient::TYPE(const std::string &key) {
     RedisCommand cmd(GET_NAME(TYPE));
     cmd << key;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return "";
     }

@@ -6,8 +6,8 @@ class IHelloPlugin : public IModule {};
 class HelloWorld1 : public IHelloPlugin {
   public:
     HelloWorld1(IPluginManager *p) {
-        m_bIsUpdate = true;
-        pPluginManager = p;
+        is_update_ = true;
+        pm_ = p;
     }
 
     virtual bool Start();

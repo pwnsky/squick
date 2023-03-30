@@ -6,7 +6,7 @@ namespace login::logic {
 
 class ILogicModule : public IModule {
   public:
-    virtual void OnLoginProcess(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) = 0;
+    virtual void OnLoginProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) = 0;
 
     /*
     virtual bool LoginWithAccountPasswrod() = 0;

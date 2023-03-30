@@ -21,7 +21,7 @@ struct evhttp *httpserv = evhttp_start(addr,port);
     struct evhttp *http;
     struct evhttp_bound_socket *handle;
 
-#if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
     WSADATA WSAData;
     WSAStartup(0x101, &WSAData);
 #else
@@ -102,7 +102,7 @@ void HttpServer::listener_cb(struct evhttp_request *req, void *arg) {
         return;
     }
 
-    SQUICK_SHARE_PTR<HttpRequest> pRequest = pNet->AllocHttpRequest();
+    std::shared_ptr<HttpRequest> pRequest = pNet->AllocHttpRequest();
     if (pRequest == nullptr) {
         std::cout << "pRequest ==NULL"
                   << " " << __FUNCTION__ << " " << __LINE__;
@@ -234,23 +234,23 @@ void HttpServer::listener_cb(struct evhttp_request *req, void *arg) {
     }
 }
 
-SQUICK_SHARE_PTR<HttpRequest> HttpServer::AllocHttpRequest() {
+std::shared_ptr<HttpRequest> HttpServer::AllocHttpRequest() {
     if (mxHttpRequestPool.size() <= 0) {
         for (int i = 0; i < 100; ++i) {
-            SQUICK_SHARE_PTR<HttpRequest> request = SQUICK_SHARE_PTR<HttpRequest>(SQUICK_NEW HttpRequest(++mIndex));
+            std::shared_ptr<HttpRequest> request = std::shared_ptr<HttpRequest>(new HttpRequest(++mIndex));
             mxHttpRequestPool.push_back(request);
             mxHttpRequestMap.AddElement(request->id, request);
         }
     }
 
-    SQUICK_SHARE_PTR<HttpRequest> pRequest = mxHttpRequestPool.front();
+    std::shared_ptr<HttpRequest> pRequest = mxHttpRequestPool.front();
     mxHttpRequestPool.pop_front();
     pRequest->Reset();
 
     return pRequest;
 }
 
-bool HttpServer::ResponseMsg(SQUICK_SHARE_PTR<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason) {
+bool HttpServer::ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason) {
     if (req == nullptr) {
         return false;
     }
@@ -274,4 +274,4 @@ bool HttpServer::ResponseMsg(SQUICK_SHARE_PTR<HttpRequest> req, const std::strin
     return true;
 }
 
-SQUICK_SHARE_PTR<HttpRequest> HttpServer::GetHttpRequest(const int64_t index) { return mxHttpRequestMap.GetElement(index); }
+std::shared_ptr<HttpRequest> HttpServer::GetHttpRequest(const int64_t index) { return mxHttpRequestMap.GetElement(index); }

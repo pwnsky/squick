@@ -14,13 +14,13 @@ const int Plugin::GetPluginVersion() { return 0; }
 const std::string Plugin::GetPluginName() { return GET_CLASS_NAME(Plugin); }
 
 void Plugin::Install() {
-    REGISTER_MODULE(pPluginManager, IServerModule, ServerModule)
-    REGISTER_MODULE(pPluginManager, IWS_Module, ProxyServerNet_WSModule)
+    REGISTER_MODULE(pm_, IServerModule, ServerModule)
+    REGISTER_MODULE(pm_, IWS_Module, ProxyServerNet_WSModule)
 }
 
 void Plugin::Uninstall() {
-    UNREGISTER_MODULE(pPluginManager, IWS_Module, ProxyServerNet_WSModule)
-    UNREGISTER_MODULE(pPluginManager, IServerModule, ServerModule)
+    UNREGISTER_MODULE(pm_, IWS_Module, ProxyServerNet_WSModule)
+    UNREGISTER_MODULE(pm_, IServerModule, ServerModule)
 }
 
 } // namespace proxy::server

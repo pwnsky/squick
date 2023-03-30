@@ -5,7 +5,7 @@
 
 class GameServerNet_ClientPlugin : public IPlugin {
   public:
-    GameServerNet_ClientPlugin(IPluginManager *p) { pPluginManager = p; }
+    GameServerNet_ClientPlugin(IPluginManager *p) { pm_ = p; }
 
     virtual const int GetPluginVersion();
 

@@ -6,8 +6,8 @@ namespace game::player {
 struct Room {};
 class IRoomModule : public IModule {
   public:
-    virtual SquickStruct::RoomDetails *GetRoomByID(int room_id) = 0;
-    virtual void BroadcastToPlyaers(const uint16_t msgID, google::protobuf::Message &xMsg, int roomdID) = 0;
+    virtual rpc::RoomDetails *GetRoomByID(int room_id) = 0;
+    virtual void BroadcastToPlyaers(const uint16_t msg_id, google::protobuf::Message &xMsg, int roomdID) = 0;
     virtual void GamePlayPrepared(int room_id, const string &name, const string &ip, int port) = 0;
     virtual bool RoomQuit(const Guid &clientID) = 0;
 

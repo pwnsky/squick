@@ -12,8 +12,8 @@
 class ThreadCell : MemoryCounter {
   public:
     ThreadCell(IThreadPoolModule *p) : MemoryCounter(GET_CLASS_NAME(ThreadCell), 1) {
-        m_pThreadPoolModule = p;
-        mThread = SQUICK_SHARE_PTR<std::thread>(SQUICK_NEW std::thread(&ThreadCell::Update, this));
+        m_thread_pool_ = p;
+        mThread = std::shared_ptr<std::thread>(new std::thread(&ThreadCell::Update, this));
     }
 
     void AddTask(const ThreadTask &task) { mTaskList.Push(task); }
@@ -35,7 +35,7 @@ class ThreadCell : MemoryCounter {
                     // repush the result to the main thread
                     // and, do we must to tell the result to the main thread?
                     if (task.xEndFunc) {
-                        m_pThreadPoolModule->TaskResult(task);
+                        m_thread_pool_->TaskResult(task);
                     }
 
                     task.Reset();
@@ -46,8 +46,8 @@ class ThreadCell : MemoryCounter {
 
   private:
     Queue<ThreadTask> mTaskList;
-    SQUICK_SHARE_PTR<std::thread> mThread;
-    IThreadPoolModule *m_pThreadPoolModule;
+    std::shared_ptr<std::thread> mThread;
+    IThreadPoolModule *m_thread_pool_;
 };
 
 class ThreadPoolModule : public IThreadPoolModule {
@@ -76,7 +76,7 @@ class ThreadPoolModule : public IThreadPoolModule {
 
   private:
     Queue<ThreadTask> mTaskResult;
-    std::vector<SQUICK_SHARE_PTR<ThreadCell>> mThreadPool;
+    std::vector<std::shared_ptr<ThreadCell>> mThreadPool;
 };
 
 #endif

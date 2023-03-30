@@ -20,7 +20,7 @@ class IGameModule : public IModule {
 
 class GameModule : public IGameModule {
   public:
-    GameModule(IPluginManager *p) { pPluginManager = p; }
+    GameModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Start();
     virtual bool Destory();
@@ -29,21 +29,21 @@ class GameModule : public IGameModule {
     virtual bool AfterStart();
 
   protected:
-    void OnSocketGSEvent(const SQUICK_SOCKET sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
+    void OnSocketGSEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 
     void Register(INet *pNet);
 
     void LogServerInfo(const std::string &strServerInfo);
 
-    void Transport(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len);
+    void Transport(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   private:
-    ILogModule *m_pLogModule;
-    IKernelModule *m_pKernelModule;
+    ILogModule *m_log_;
+    IKernelModule *m_kernel_;
     server::IServerModule *m_ServerModule;
-    IElementModule *m_pElementModule;
-    IClassModule *m_pClassModule;
-    INetClientModule *m_pNetClientModule;
+    IElementModule *m_element_;
+    IClassModule *m_class_;
+    INetClientModule *m_net_client_;
 };
 
 } // namespace gameplay_manager::client

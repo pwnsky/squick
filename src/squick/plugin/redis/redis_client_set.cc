@@ -6,7 +6,7 @@ int RedisClient::SADD(const std::string &key, const std::string &member) {
     cmd << key;
     cmd << member;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -23,7 +23,7 @@ bool RedisClient::SCARD(const std::string &key, int &count) {
     RedisCommand cmd(GET_NAME(SCARD));
     cmd << key;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -40,7 +40,7 @@ bool RedisClient::SDIFF(const std::string &key_1, const std::string &key_2, stri
     cmd << key_1;
     cmd << key_2;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -62,7 +62,7 @@ int RedisClient::SDIFFSTORE(const std::string &store_key, const std::string &dif
     cmd << diff_key1;
     cmd << diff_key2;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -80,7 +80,7 @@ bool RedisClient::SINTER(const std::string &key_1, const std::string &key_2, str
     cmd << key_1;
     cmd << key_2;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -102,7 +102,7 @@ int RedisClient::SINTERSTORE(const std::string &inter_store_key, const std::stri
     cmd << inter_key1;
     cmd << inter_key2;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -120,7 +120,7 @@ bool RedisClient::SISMEMBER(const std::string &key, const std::string &member) {
     cmd << key;
     cmd << member;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -136,7 +136,7 @@ bool RedisClient::SMEMBERS(const std::string &key, string_vector &output) {
     RedisCommand cmd(GET_NAME(SMEMBERS));
     cmd << key;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -158,7 +158,7 @@ bool RedisClient::SMOVE(const std::string &source_key, const std::string &dest_k
     cmd << dest_key;
     cmd << member;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -174,7 +174,7 @@ bool RedisClient::SPOP(const std::string &key, std::string &output) {
     RedisCommand cmd(GET_NAME(SPOP));
     cmd << key;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -192,7 +192,7 @@ bool RedisClient::SRANDMEMBER(const std::string &key, int count, string_vector &
     cmd << key;
     cmd << count;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -215,7 +215,7 @@ int RedisClient::SREM(const std::string &key, const string_vector &members) {
         cmd << member;
     }
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -233,7 +233,7 @@ bool RedisClient::SUNION(const std::string &union_key1, const std::string &union
     cmd << union_key1;
     cmd << union_key2;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
@@ -255,7 +255,7 @@ int RedisClient::SUNIONSTORE(const std::string &dest_store_key, const std::strin
     cmd << union_key1;
     cmd << union_key2;
 
-    SQUICK_SHARE_PTR<redisReply> pReply = BuildSendCmd(cmd);
+    std::shared_ptr<redisReply> pReply = BuildSendCmd(cmd);
     if (pReply == nullptr) {
         return false;
     }
