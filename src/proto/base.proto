@@ -1,7 +1,7 @@
 // 基础定义
 
 syntax = "proto3";
-package SquickStruct;
+package rpc;
 
 message Ident {
     int64 svrid = 1;

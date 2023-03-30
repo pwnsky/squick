@@ -22,7 +22,7 @@ bool ServerModule::Destory() { return true; }
 
 bool ServerModule::AfterStart() {
     // PVP校验连接Key,校验成功后，之后的数据直接转发到Game服务器上
-    m_net_->AddReceiveCallBack(SquickStruct::REQ_GAMEPLAY_CONNECT_GAME_SERVER, this, &ServerModule::OnReqConnectGameServer);
+    m_net_->AddReceiveCallBack(rpc::REQ_GAMEPLAY_CONNECT_GAME_SERVER, this, &ServerModule::OnReqConnectGameServer);
     m_net_->AddReceiveCallBack(this, &ServerModule::OnOtherMessage);
 
     // 创建PVP管理服务器, 用于接收PVP服务器的数据
@@ -59,7 +59,7 @@ bool ServerModule::AfterStart() {
 void ServerModule::OnReqConnectGameServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     dout << "--- Gameplay服务器与Game服务器建立连接 " << std::endl;
     Guid nPlayerID;
-    SquickStruct::ReqGameplayConnectGameServer xMsg;
+    rpc::ReqGameplayConnectGameServer xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
@@ -87,9 +87,9 @@ void ServerModule::OnReqConnectGameServer(const socket_t sock, const int msg_id,
     // this net-object bind a account
     //pNetObject->SetAccount(xMsg.id());
 
-    SquickStruct::AckGameplayConnectGameServer xSendMsg;
+    rpc::AckGameplayConnectGameServer xSendMsg;
     xSendMsg.set_code(0);
-    m_net_->SendMsgPB(SquickStruct::ACK_GAMEPLAY_CONNECT_GAME_SERVER, xSendMsg, sock);
+    m_net_->SendMsgPB(rpc::ACK_GAMEPLAY_CONNECT_GAME_SERVER, xSendMsg, sock);
 
     std::shared_ptr<ConnectData> pServerData = m_net_client_->GetServerNetInfo(xMsg.game_id());
     if (pServerData && ConnectDataState::NORMAL == pServerData->eState) {
@@ -121,7 +121,7 @@ void ServerModule::OnOtherMessage(const socket_t sock, const int msg_id, const c
         return;
     }
 
-    SquickStruct::MsgBase xMsg;
+    rpc::MsgBase xMsg;
     if (!xMsg.ParseFromString(strMsgData)) {
         char szData[MAX_PATH] = {0};
         sprintf(szData, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
@@ -163,8 +163,8 @@ void ServerModule::OnClientDisconnect(const socket_t sock) {
         if (nGameID > 0) {
             // when a net-object bind a account then tell that game-server
             if (!pNetObject->GetUserID().IsNull()) {
-                SquickStruct::AckGameplayDestroyed xData;
-                SquickStruct::MsgBase xMsg;
+                rpc::AckGameplayDestroyed xData;
+                rpc::MsgBase xMsg;
 
                 // real user id
                 *xMsg.mutable_player_id() = INetModule::StructToProtobuf(pNetObject->GetUserID());
@@ -179,7 +179,7 @@ void ServerModule::OnClientDisconnect(const socket_t sock) {
                 }
 
                 // 也告知一下Game服务器
-                m_net_client_->SendByServerIDWithOutHead(nGameID, SquickStruct::GameplayManagerRPC::REQ_GAMEPLAY_DESTROY, msg);
+                m_net_client_->SendByServerIDWithOutHead(nGameID, rpc::GameplayManagerRPC::REQ_GAMEPLAY_DESTROY, msg);
             }
         }
 
@@ -189,7 +189,7 @@ void ServerModule::OnClientDisconnect(const socket_t sock) {
 
 // 转发给PVP服务器
 bool ServerModule::Transport(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    SquickStruct::MsgBase xMsg;
+    rpc::MsgBase xMsg;
     if (!xMsg.ParseFromArray(msg, len)) {
         char szData[MAX_PATH] = {0};
         sprintf(szData, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);

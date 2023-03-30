@@ -9,7 +9,7 @@
 #include <squick/core/base.h>
 
 namespace game::play {
-using namespace SquickStruct;
+using namespace rpc;
 class IGameplay {
   public:
     enum Status {
@@ -103,19 +103,19 @@ class IGameplay {
 
         manager->m_player_manager_->SetPlayerGameplayID(player, id);
 
-        SquickStruct::AckGameJoin ack;
+        rpc::AckGameJoin ack;
         ack.set_code(0);
-        SendToPlayer(SquickStruct::GameBaseRPC::ACK_GAME_JOIN, ack, player);
+        SendToPlayer(rpc::GameBaseRPC::ACK_GAME_JOIN, ack, player);
 
         // 发送玩家列表
-        SquickStruct::AckPlayerEnterList xPlayerEntryInfoList;
+        rpc::AckPlayerEnterList xPlayerEntryInfoList;
         for (auto &iter : base_players) {
             auto &player = iter.second;
             const Guid &identOld = player.guid;
             if (identOld.IsNull()) {
                 continue;
             }
-            SquickStruct::PlayerBaseInfo *pEntryInfo = xPlayerEntryInfoList.add_list();
+            rpc::PlayerBaseInfo *pEntryInfo = xPlayerEntryInfoList.add_list();
             *(pEntryInfo->mutable_guid()) = INetModule::StructToProtobuf(identOld);
             pEntryInfo->set_index(player.index);
         }

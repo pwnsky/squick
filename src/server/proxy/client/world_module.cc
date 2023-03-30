@@ -30,13 +30,13 @@ bool WorldModule::Update() {
 
 void WorldModule::OnServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!INetModule::ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
 
         // type
         ConnectData xServerData;
@@ -92,8 +92,8 @@ void WorldModule::Register(INet *pNet) {
                 const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
                 const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
-                SquickStruct::ServerInfoReportList xMsg;
-                SquickStruct::ServerInfoReport *pData = xMsg.add_server_list();
+                rpc::ServerInfoReportList xMsg;
+                rpc::ServerInfoReport *pData = xMsg.add_server_list();
                 
                 pData->set_server_id(serverID);
                 pData->set_server_name(strId);
@@ -101,13 +101,13 @@ void WorldModule::Register(INet *pNet) {
                 pData->set_server_ip(ip);
                 pData->set_server_port(nPort);
                 pData->set_server_max_online(maxConnect);
-                pData->set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
+                pData->set_server_state(rpc::ServerState::SERVER_NORMAL);
                 pData->set_server_type(serverType);
 
                 std::shared_ptr<ConnectData> pServerData = GetClusterModule()->GetServerNetInfo(pNet);
                 if (pServerData) {
                     int nTargetID = pServerData->nGameID;
-                    GetClusterModule()->SendToServerByPB(nTargetID, SquickStruct::ServerRPC::PROXY_TO_WORLD_REGISTERED, xMsg);
+                    GetClusterModule()->SendToServerByPB(nTargetID, rpc::ServerRPC::PROXY_TO_WORLD_REGISTERED, xMsg);
 
                     m_log_->LogInfo(Guid(0, pData->server_id()), pData->server_name(), "Register");
                 }
@@ -135,7 +135,7 @@ void WorldModule::ServerReport() {
                 const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
                 const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
-                SquickStruct::ServerInfoReport reqMsg;
+                rpc::ServerInfoReport reqMsg;
 
                 reqMsg.set_server_id(serverID);
                 reqMsg.set_server_name(strId);
@@ -144,19 +144,19 @@ void WorldModule::ServerReport() {
                 reqMsg.set_server_ip(ip);
                 reqMsg.set_server_port(nPort);
                 reqMsg.set_server_max_online(maxConnect);
-                reqMsg.set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
+                reqMsg.set_server_state(rpc::ServerState::SERVER_NORMAL);
                 reqMsg.set_server_type(serverType);
 
-                m_net_client_->SendToAllServerByPB(ServerType::ST_WORLD, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
+                m_net_client_->SendToAllServerByPB(ServerType::ST_WORLD, rpc::STS_SERVER_REPORT, reqMsg, Guid());
             }
         }
     }
 }
 
 bool WorldModule::AfterStart() {
-    // m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_CONNECT_WORLD, this,
+    // m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_CONNECT_WORLD, this,
     // &ProxyServerToWorldModule::OnSelectServerResultProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::STS_NET_INFO, this, &WorldModule::OnServerInfoProcess);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::STS_NET_INFO, this, &WorldModule::OnServerInfoProcess);
     m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, this, &WorldModule::OnOtherMessage);
     m_net_client_->AddEventCallBack(ServerType::ST_WORLD, this, &WorldModule::OnSocketWSEvent);
     m_net_client_->ExpandBufferSize();
@@ -212,7 +212,7 @@ bool WorldModule::AfterStart() {
 void WorldModule::OnSelectServerResultProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     /*
     Guid nPlayerID;
-    SquickStruct::AckConnectWorldResult xMsg;
+    rpc::AckConnectWorldResult xMsg;
     if (!INetModule::ReceivePB( msg_id, msg, len, xMsg, nPlayerID))
     {
         return;

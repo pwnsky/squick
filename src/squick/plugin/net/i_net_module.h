@@ -49,7 +49,7 @@
 //////////////////////////////////////////////////////////////////////////
 struct ServerData {
     ServerData() {
-        pData = std::shared_ptr<SquickStruct::ServerInfoReport>(new SquickStruct::ServerInfoReport());
+        pData = std::shared_ptr<rpc::ServerInfoReport>(new rpc::ServerInfoReport());
         nFD = 0;
     }
     ~ServerData() {
@@ -58,12 +58,12 @@ struct ServerData {
     }
 
     socket_t nFD;
-    std::shared_ptr<SquickStruct::ServerInfoReport> pData;
+    std::shared_ptr<rpc::ServerInfoReport> pData;
 };
 
 class INetModule : public IModule {
   public:
-    static Guid ProtobufToStruct(SquickStruct::Ident xID) {
+    static Guid ProtobufToStruct(rpc::Ident xID) {
         Guid xIdent;
         xIdent.nHead64 = xID.svrid();
         xIdent.nData64 = xID.index();
@@ -71,14 +71,14 @@ class INetModule : public IModule {
         return xIdent;
     }
 
-    static Vector2 ProtobufToStruct(SquickStruct::Vector2 value) {
+    static Vector2 ProtobufToStruct(rpc::Vector2 value) {
         Vector2 vector;
         vector.SetX(value.x());
         vector.SetY(value.y());
         return vector;
     }
 
-    static Vector3 ProtobufToStruct(SquickStruct::Vector3 value) {
+    static Vector3 ProtobufToStruct(rpc::Vector3 value) {
         Vector3 vector;
         vector.SetX(value.x());
         vector.SetY(value.y());
@@ -86,7 +86,7 @@ class INetModule : public IModule {
         return vector;
     }
 
-    static Vector4 ProtobufToStruct(SquickStruct::Vector4 value) {
+    static Vector4 ProtobufToStruct(rpc::Vector4 value) {
         Vector4 vector;
         vector.SetX(value.x());
         vector.SetY(value.y());
@@ -95,31 +95,31 @@ class INetModule : public IModule {
         return vector;
     }
 
-    static SquickStruct::Ident StructToProtobuf(Guid xID) {
-        SquickStruct::Ident xIdent;
+    static rpc::Ident StructToProtobuf(Guid xID) {
+        rpc::Ident xIdent;
         xIdent.set_svrid(xID.nHead64);
         xIdent.set_index(xID.nData64);
 
         return xIdent;
     }
 
-    static SquickStruct::Vector2 StructToProtobuf(Vector2 value) {
-        SquickStruct::Vector2 vector;
+    static rpc::Vector2 StructToProtobuf(Vector2 value) {
+        rpc::Vector2 vector;
         vector.set_x(value.X());
         vector.set_y(value.Y());
         return vector;
     }
 
-    static SquickStruct::Vector3 StructToProtobuf(Vector3 value) {
-        SquickStruct::Vector3 vector;
+    static rpc::Vector3 StructToProtobuf(Vector3 value) {
+        rpc::Vector3 vector;
         vector.set_x(value.X());
         vector.set_y(value.Y());
         vector.set_z(value.Z());
         return vector;
     }
 
-    static SquickStruct::Vector4 StructToProtobuf(Vector4 value) {
-        SquickStruct::Vector4 vector;
+    static rpc::Vector4 StructToProtobuf(Vector4 value) {
+        rpc::Vector4 vector;
         vector.set_x(value.X());
         vector.set_y(value.Y());
         vector.set_z(value.Z());
@@ -153,7 +153,7 @@ class INetModule : public IModule {
     }
 
     static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, Guid &nPlayer) {
-        SquickStruct::MsgBase xMsg;
+        rpc::MsgBase xMsg;
         if (!xMsg.ParseFromArray(msg, len)) {
             char szData[MAX_PATH] = {0};
             NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
@@ -170,7 +170,7 @@ class INetModule : public IModule {
     }
 
     static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, std::string &msgData, Guid &nPlayer) {
-        SquickStruct::MsgBase xMsg;
+        rpc::MsgBase xMsg;
         if (!xMsg.ParseFromArray(msg, len)) {
             char szData[MAX_PATH] = {0};
             NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
@@ -193,7 +193,7 @@ class INetModule : public IModule {
     }
 
     static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, google::protobuf::Message &xData, Guid &nPlayer) {
-        SquickStruct::MsgBase xMsg;
+        rpc::MsgBase xMsg;
         if (!xMsg.ParseFromArray(msg, len)) {
             char szData[MAX_PATH] = {0};
             NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);

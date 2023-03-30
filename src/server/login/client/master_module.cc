@@ -18,9 +18,9 @@ bool MasterModule::Start() {
 bool MasterModule::Destory() { return true; }
 
 bool MasterModule::AfterStart() {
-    // m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, SquickStruct::ACK_CONNECT_WORLD, this,
+    // m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, rpc::ACK_CONNECT_WORLD, this,
     // &LoginToMasterModule::OnSelectServerResultProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, SquickStruct::STS_NET_INFO, this, &MasterModule::OnWorldInfoProcess);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, rpc::STS_NET_INFO, this, &MasterModule::OnWorldInfoProcess);
 
     m_net_client_->AddEventCallBack(ServerType::ST_MASTER, this, &MasterModule::OnSocketMSEvent);
 
@@ -80,8 +80,8 @@ void MasterModule::Register(INet *pNet) {
                 const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
                 const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
-                SquickStruct::ServerInfoReportList xMsg;
-                SquickStruct::ServerInfoReport *pData = xMsg.add_server_list();
+                rpc::ServerInfoReportList xMsg;
+                rpc::ServerInfoReport *pData = xMsg.add_server_list();
 
                 pData->set_server_id(serverID);
                 pData->set_server_name(strId);
@@ -89,13 +89,13 @@ void MasterModule::Register(INet *pNet) {
                 pData->set_server_ip(ip);
                 pData->set_server_port(nPort);
                 pData->set_server_max_online(maxConnect);
-                pData->set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
+                pData->set_server_state(rpc::ServerState::SERVER_NORMAL);
                 pData->set_server_type(serverType);
 
                 std::shared_ptr<ConnectData> pServerData = m_net_client_->GetServerNetInfo(pNet);
                 if (pServerData) {
                     int nTargetID = pServerData->nGameID;
-                    m_net_client_->SendToServerByPB(nTargetID, SquickStruct::ServerRPC::LOGIN_TO_MASTER_REGISTERED, xMsg);
+                    m_net_client_->SendToServerByPB(nTargetID, rpc::ServerRPC::LOGIN_TO_MASTER_REGISTERED, xMsg);
                     m_log_->LogInfo(Guid(0, pData->server_id()), pData->server_name(), "Register");
                 }
             }
@@ -122,7 +122,7 @@ void MasterModule::ServerReport() {
                 const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
                 const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
-                SquickStruct::ServerInfoReport reqMsg;
+                rpc::ServerInfoReport reqMsg;
 
                 reqMsg.set_server_id(serverID);
                 reqMsg.set_server_name(strId);
@@ -130,10 +130,10 @@ void MasterModule::ServerReport() {
                 reqMsg.set_server_ip(ip);
                 reqMsg.set_server_port(nPort);
                 reqMsg.set_server_max_online(maxConnect);
-                reqMsg.set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
+                reqMsg.set_server_state(rpc::ServerState::SERVER_NORMAL);
                 reqMsg.set_server_type(serverType);
 
-                m_net_client_->SendToAllServerByPB(ServerType::ST_MASTER, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
+                m_net_client_->SendToAllServerByPB(ServerType::ST_MASTER, rpc::STS_SERVER_REPORT, reqMsg, Guid());
             }
         }
     }
@@ -156,13 +156,13 @@ void MasterModule::OnSocketMSEvent(const socket_t sock, const SQUICK_NET_EVENT e
 
 void MasterModule::OnWorldInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList req;
+    rpc::ServerInfoReportList req;
     if (!INetModule::ReceivePB(msg_id, msg, len, req, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < req.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &si = req.server_list(i);
+        const rpc::ServerInfoReport &si = req.server_list(i);
 
             dout << "登录服务器收到服务列表: " << si.server_id() << "   " << si.server_type() << std::endl;
             if (si.server_type() == ServerType::ST_WORLD) {
@@ -176,8 +176,8 @@ void MasterModule::OnWorldInfoProcess(const socket_t sock, const int msg_id, con
 
 INetClientModule *MasterModule::GetClusterModule() { return m_net_client_; }
 
-map<int, SquickStruct::ServerInfoReport> &MasterModule::GetWorldServers() { return world_servers_; }
+map<int, rpc::ServerInfoReport> &MasterModule::GetWorldServers() { return world_servers_; }
 
-map<int, SquickStruct::ServerInfoReport>& MasterModule::GetProxyServers() { return proxy_servers_; }
+map<int, rpc::ServerInfoReport>& MasterModule::GetProxyServers() { return proxy_servers_; }
 
 } // namespace login::client

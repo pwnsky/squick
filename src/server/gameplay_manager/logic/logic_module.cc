@@ -33,17 +33,17 @@ bool LogicModule::AfterStart() {
 
 
     // 来自客户端
-    m_net_->AddReceiveCallBack(SquickStruct::STS_HEART_BEAT, this, &LogicModule::OnLagTestProcess);
+    m_net_->AddReceiveCallBack(rpc::STS_HEART_BEAT, this, &LogicModule::OnLagTestProcess);
 
     // 来自Game 服务器
-    m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, SquickStruct::REQ_GAMEPLAY_CREATE, this, &LogicModule::OnReqPvpInstanceCreate);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, rpc::REQ_GAMEPLAY_CREATE, this, &LogicModule::OnReqPvpInstanceCreate);
 
     return true;
 }
 
 void LogicModule::OnLagTestProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     std::string msgDatag(msg, len);
-    m_net_->SendMsgWithOutHead(SquickStruct::ServerRPC::STS_HEART_BEAT, msgDatag, sock);
+    m_net_->SendMsgWithOutHead(rpc::ServerRPC::STS_HEART_BEAT, msgDatag, sock);
 
     // TODO improve performance
     NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
@@ -64,7 +64,7 @@ int LogicModule::GetUnbindPort() {
 void LogicModule::OnReqPvpInstanceCreate(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
 
     Guid tmpID; // 服务端之间推送，ID值无效
-    SquickStruct::ReqGameplayCreate xMsg;
+    rpc::ReqGameplayCreate xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, tmpID)) {
         return;
     }

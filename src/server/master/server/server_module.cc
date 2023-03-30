@@ -20,13 +20,13 @@ bool MasterNet_ServerModule::Destory() { return true; }
 
 void MasterNet_ServerModule::OnWorldRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
         std::shared_ptr<ServerData> pServerData = mWorldMap.GetElement(xData.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ServerData>(new ServerData());
@@ -43,13 +43,13 @@ void MasterNet_ServerModule::OnWorldRegisteredProcess(const socket_t sock, const
 
 void MasterNet_ServerModule::OnWorldUnRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
         mWorldMap.RemoveElement(xData.server_id());
 
         m_log_->LogInfo(Guid(0, xData.server_id()), xData.server_name(), "WorldUnRegistered");
@@ -60,13 +60,13 @@ void MasterNet_ServerModule::OnWorldUnRegisteredProcess(const socket_t sock, con
 
 void MasterNet_ServerModule::OnRefreshWorldInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
         std::shared_ptr<ServerData> pServerData = mWorldMap.GetElement(xData.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ServerData>(new ServerData());
@@ -84,13 +84,13 @@ void MasterNet_ServerModule::OnRefreshWorldInfoProcess(const socket_t sock, cons
 
 void MasterNet_ServerModule::OnLoginRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
         std::shared_ptr<ServerData> pServerData = mLoginMap.GetElement(xData.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ServerData>(new ServerData());
@@ -107,13 +107,13 @@ void MasterNet_ServerModule::OnLoginRegisteredProcess(const socket_t sock, const
 
 void MasterNet_ServerModule::OnLoginUnRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
 
         mLoginMap.RemoveElement(xData.server_id());
 
@@ -123,13 +123,13 @@ void MasterNet_ServerModule::OnLoginUnRegisteredProcess(const socket_t sock, con
 
 void MasterNet_ServerModule::OnRefreshLoginInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
         std::shared_ptr<ServerData> pServerData = mLoginMap.GetElement(xData.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ServerData>(new ServerData());
@@ -155,14 +155,14 @@ bool MasterNet_ServerModule::Update() {
 }
 
 bool MasterNet_ServerModule::AfterStart() {
-    m_net_->AddReceiveCallBack(SquickStruct::ServerRPC::STS_HEART_BEAT, this, &MasterNet_ServerModule::OnHeartBeat);
-    m_net_->AddReceiveCallBack(SquickStruct::ServerRPC::WORLD_TO_MASTER_REGISTERED, this, &MasterNet_ServerModule::OnWorldRegisteredProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::ServerRPC::WORLD_TO_MASTER_UNREGISTERED, this, &MasterNet_ServerModule::OnWorldUnRegisteredProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::ServerRPC::WORLD_TO_MASTER_REFRESH, this, &MasterNet_ServerModule::OnRefreshWorldInfoProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::ServerRPC::LOGIN_TO_MASTER_REGISTERED, this, &MasterNet_ServerModule::OnLoginRegisteredProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::ServerRPC::LOGIN_TO_MASTER_UNREGISTERED, this, &MasterNet_ServerModule::OnLoginUnRegisteredProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::ServerRPC::LOGIN_TO_MASTER_REFRESH, this, &MasterNet_ServerModule::OnRefreshLoginInfoProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::ServerRPC::STS_SERVER_REPORT, this, &MasterNet_ServerModule::OnServerReport);
+    m_net_->AddReceiveCallBack(rpc::ServerRPC::STS_HEART_BEAT, this, &MasterNet_ServerModule::OnHeartBeat);
+    m_net_->AddReceiveCallBack(rpc::ServerRPC::WORLD_TO_MASTER_REGISTERED, this, &MasterNet_ServerModule::OnWorldRegisteredProcess);
+    m_net_->AddReceiveCallBack(rpc::ServerRPC::WORLD_TO_MASTER_UNREGISTERED, this, &MasterNet_ServerModule::OnWorldUnRegisteredProcess);
+    m_net_->AddReceiveCallBack(rpc::ServerRPC::WORLD_TO_MASTER_REFRESH, this, &MasterNet_ServerModule::OnRefreshWorldInfoProcess);
+    m_net_->AddReceiveCallBack(rpc::ServerRPC::LOGIN_TO_MASTER_REGISTERED, this, &MasterNet_ServerModule::OnLoginRegisteredProcess);
+    m_net_->AddReceiveCallBack(rpc::ServerRPC::LOGIN_TO_MASTER_UNREGISTERED, this, &MasterNet_ServerModule::OnLoginUnRegisteredProcess);
+    m_net_->AddReceiveCallBack(rpc::ServerRPC::LOGIN_TO_MASTER_REFRESH, this, &MasterNet_ServerModule::OnRefreshLoginInfoProcess);
+    m_net_->AddReceiveCallBack(rpc::ServerRPC::STS_SERVER_REPORT, this, &MasterNet_ServerModule::OnServerReport);
 
     m_net_->AddReceiveCallBack(this, &MasterNet_ServerModule::InvalidMessage);
 
@@ -192,7 +192,7 @@ bool MasterNet_ServerModule::AfterStart() {
                     SQUICK_ASSERT(nRet, "Cannot init server net", __FILE__, __FUNCTION__);
                     exit(0);
                 }
-                SquickStruct::ServerInfoReport reqMsg;
+                rpc::ServerInfoReport reqMsg;
 
                 reqMsg.set_server_id(serverID);
                 reqMsg.set_server_name(strId);
@@ -200,7 +200,7 @@ bool MasterNet_ServerModule::AfterStart() {
                 reqMsg.set_server_ip(ip);
                 reqMsg.set_server_port(nPort);
                 reqMsg.set_server_max_online(maxConnect);
-                reqMsg.set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
+                reqMsg.set_server_state(rpc::ServerState::SERVER_NORMAL);
                 reqMsg.set_server_type(serverType);
 
                 auto pServerData = std::shared_ptr<ServerData>(new ServerData());
@@ -236,7 +236,7 @@ void MasterNet_ServerModule::OnClientDisconnect(const socket_t sock) {
     std::shared_ptr<ServerData> pServerData = mWorldMap.First();
     while (pServerData) {
         if (sock == pServerData->nFD) {
-            pServerData->pData->set_server_state(SquickStruct::ServerState::SERVER_CRASH);
+            pServerData->pData->set_server_state(rpc::ServerState::SERVER_CRASH);
             pServerData->nFD = 0;
 
             SyncWorldToLoginAndWorld();
@@ -265,11 +265,11 @@ void MasterNet_ServerModule::OnClientDisconnect(const socket_t sock) {
 void MasterNet_ServerModule::OnClientConnected(const socket_t sock) {}
 
 void MasterNet_ServerModule::SyncWorldToLoginAndWorld() {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
 
     std::shared_ptr<ServerData> pServerData = mWorldMap.First();
     while (pServerData) {
-        SquickStruct::ServerInfoReport *pData = xData.add_server_list();
+        rpc::ServerInfoReport *pData = xData.add_server_list();
         *pData = *(pServerData->pData);
         pServerData = mWorldMap.Next();
     }
@@ -277,35 +277,35 @@ void MasterNet_ServerModule::SyncWorldToLoginAndWorld() {
     // loginserver
     pServerData = mLoginMap.First();
     while (pServerData) {
-        m_net_->SendMsgPB(SquickStruct::ServerRPC::STS_NET_INFO, xData, pServerData->nFD);
+        m_net_->SendMsgPB(rpc::ServerRPC::STS_NET_INFO, xData, pServerData->nFD);
         pServerData = mLoginMap.Next();
     }
 
     // world server
     pServerData = mWorldMap.First();
     while (pServerData) {
-        SquickStruct::ServerInfoReportList xWorldData;
+        rpc::ServerInfoReportList xWorldData;
         const int nCurArea = m_element_->GetPropertyInt(pServerData->pData->server_name(), excel::Server::Area());
 
         for (int i = 0; i < xData.server_list_size(); ++i) {
-            const SquickStruct::ServerInfoReport &xServerInfo = xData.server_list(i);
+            const rpc::ServerInfoReport &xServerInfo = xData.server_list(i);
             // it must be the same area
             const int nAreaID = m_element_->GetPropertyInt(xServerInfo.server_name(), excel::Server::Area());
             if (nAreaID == nCurArea) {
-                SquickStruct::ServerInfoReport *pData = xWorldData.add_server_list();
+                rpc::ServerInfoReport *pData = xWorldData.add_server_list();
                 *pData = *(pServerData->pData);
             }
         }
-        m_net_->SendMsgPB(SquickStruct::ServerRPC::STS_NET_INFO, xWorldData, pServerData->nFD);
+        m_net_->SendMsgPB(rpc::ServerRPC::STS_NET_INFO, xWorldData, pServerData->nFD);
         pServerData = mWorldMap.Next();
     }
 }
 
 void MasterNet_ServerModule::SyncProxyToLogin() {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
     std::shared_ptr<ServerData> pServerData = mProxyMap.First();
     while (pServerData) {
-        SquickStruct::ServerInfoReport* pData = xData.add_server_list();
+        rpc::ServerInfoReport* pData = xData.add_server_list();
         *pData = *(pServerData->pData);
         pServerData = mProxyMap.Next();
     }
@@ -313,7 +313,7 @@ void MasterNet_ServerModule::SyncProxyToLogin() {
     // loginserver
     pServerData = mLoginMap.First();
     while (pServerData) {
-        m_net_->SendMsgPB(SquickStruct::ServerRPC::STS_NET_INFO, xData, pServerData->nFD);
+        m_net_->SendMsgPB(rpc::ServerRPC::STS_NET_INFO, xData, pServerData->nFD);
         pServerData = mLoginMap.Next();
     }
 }
@@ -333,7 +333,7 @@ void MasterNet_ServerModule::LogGameServer() {
     while (pGameData) {
         std::ostringstream stream;
         stream << "Type: " << pGameData->pData->server_type() << " ID: " << pGameData->pData->server_id()
-               << " State: " << SquickStruct::ServerState_Name(pGameData->pData->server_state()) << " IP: " << pGameData->pData->server_ip()
+               << " State: " << rpc::ServerState_Name(pGameData->pData->server_state()) << " IP: " << pGameData->pData->server_ip()
                << " FD: " << pGameData->nFD;
         m_log_->LogInfo(Guid(), stream);
 
@@ -349,7 +349,7 @@ void MasterNet_ServerModule::LogGameServer() {
     while (pGameData) {
         std::ostringstream stream;
         stream << "Type: " << pGameData->pData->server_type() << " ID: " << pGameData->pData->server_id()
-               << " State: " << SquickStruct::ServerState_Name(pGameData->pData->server_state()) << " IP: " << pGameData->pData->server_ip()
+               << " State: " << rpc::ServerState_Name(pGameData->pData->server_state()) << " IP: " << pGameData->pData->server_ip()
                << " FD: " << pGameData->nFD;
         m_log_->LogInfo(Guid(), stream);
 
@@ -367,7 +367,7 @@ void MasterNet_ServerModule::InvalidMessage(const socket_t sock, const int msg_i
 
 void MasterNet_ServerModule::OnServerReport(const socket_t nFd, const int msg_id, const char *buffer, const uint32_t len) {
     Guid xGUID;
-    SquickStruct::ServerInfoReport msg;
+    rpc::ServerInfoReport msg;
     if (!m_net_->ReceivePB(msg_id, buffer, len, msg, xGUID)) {
         return;
     }

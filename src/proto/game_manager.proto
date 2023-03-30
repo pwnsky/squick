@@ -1,6 +1,6 @@
 // 游戏管理RPC
 syntax = "proto3";
-package SquickStruct;
+package rpc;
 import "base.proto";
 
 // 45000 ~ 46000

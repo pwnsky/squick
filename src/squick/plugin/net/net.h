@@ -107,7 +107,7 @@ class Net : public INet {
     static void event_fatal_cb(int err);
 
   protected:
-    int DeCode(const char *strData, const uint32_t ulen, SquickStructHead &xHead);
+    int DeCode(const char *strData, const uint32_t ulen, rpcHead &xHead);
     int EnCode(const uint16_t umsg_id, const char *strData, const uint32_t unDataLen, std::string &strOutData);
 
   private:

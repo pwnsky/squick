@@ -24,13 +24,13 @@ bool GameServerNet_ServerModule::Start() {
 
 bool GameServerNet_ServerModule::AfterStart() {
 
-    m_net_->AddReceiveCallBack(SquickStruct::PROXY_TO_GAME_REFRESH, this, &GameServerNet_ServerModule::OnRefreshProxyServerInfoProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::PROXY_TO_GAME_REGISTERED, this, &GameServerNet_ServerModule::OnProxyServerRegisteredProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::PROXY_TO_GAME_UNREGISTERED, this, &GameServerNet_ServerModule::OnProxyServerUnRegisteredProcess);
+    m_net_->AddReceiveCallBack(rpc::PROXY_TO_GAME_REFRESH, this, &GameServerNet_ServerModule::OnRefreshProxyServerInfoProcess);
+    m_net_->AddReceiveCallBack(rpc::PROXY_TO_GAME_REGISTERED, this, &GameServerNet_ServerModule::OnProxyServerRegisteredProcess);
+    m_net_->AddReceiveCallBack(rpc::PROXY_TO_GAME_UNREGISTERED, this, &GameServerNet_ServerModule::OnProxyServerUnRegisteredProcess);
 
-    m_net_->AddReceiveCallBack(SquickStruct::GAMEPLAY_MANAGER_TO_GAME_REFRESH, this, &GameServerNet_ServerModule::OnRefreshPvpManagerServerInfoProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::GAMEPLAY_MANAGER_TO_GAME_REGISTERED, this, &GameServerNet_ServerModule::OnPvpManagerServerRegisteredProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::GAMEPLAY_MANAGER_TO_GAME_UNREGISTERED, this,
+    m_net_->AddReceiveCallBack(rpc::GAMEPLAY_MANAGER_TO_GAME_REFRESH, this, &GameServerNet_ServerModule::OnRefreshPvpManagerServerInfoProcess);
+    m_net_->AddReceiveCallBack(rpc::GAMEPLAY_MANAGER_TO_GAME_REGISTERED, this, &GameServerNet_ServerModule::OnPvpManagerServerRegisteredProcess);
+    m_net_->AddReceiveCallBack(rpc::GAMEPLAY_MANAGER_TO_GAME_UNREGISTERED, this,
                                      &GameServerNet_ServerModule::OnPvpManagerServerUnRegisteredProcess);
 
     m_net_->AddEventCallBack(this, &GameServerNet_ServerModule::OnSocketPSEvent);
@@ -104,13 +104,13 @@ void GameServerNet_ServerModule::OnClientConnected(const socket_t sock) {}
 
 void GameServerNet_ServerModule::OnProxyServerRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!INetModule::ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
         std::shared_ptr<ProxyServerInfo> pServerData = mProxyMap.GetElement(xData.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ProxyServerInfo>(new ProxyServerInfo());
@@ -128,13 +128,13 @@ void GameServerNet_ServerModule::OnProxyServerRegisteredProcess(const socket_t s
 
 void GameServerNet_ServerModule::OnProxyServerUnRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
         mProxyMap.RemoveElement(xData.server_id());
 
         m_log_->LogInfo(Guid(0, xData.server_id()), xData.server_name(), "Proxy UnRegistered");
@@ -145,13 +145,13 @@ void GameServerNet_ServerModule::OnProxyServerUnRegisteredProcess(const socket_t
 
 void GameServerNet_ServerModule::OnRefreshProxyServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
         std::shared_ptr<ProxyServerInfo> pServerData = mProxyMap.GetElement(xData.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ProxyServerInfo>(new ProxyServerInfo());
@@ -169,13 +169,13 @@ void GameServerNet_ServerModule::OnRefreshProxyServerInfoProcess(const socket_t 
 
 void GameServerNet_ServerModule::OnPvpManagerServerRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!INetModule::ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
         std::shared_ptr<ProxyServerInfo> pServerData = mGameplayManagerMap.GetElement(xData.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ProxyServerInfo>(new ProxyServerInfo());
@@ -193,13 +193,13 @@ void GameServerNet_ServerModule::OnPvpManagerServerRegisteredProcess(const socke
 
 void GameServerNet_ServerModule::OnPvpManagerServerUnRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
         mGameplayManagerMap.RemoveElement(xData.server_id());
 
         m_log_->LogInfo(Guid(0, xData.server_id()), xData.server_name(), "Gameplay Manager Registered");
@@ -210,13 +210,13 @@ void GameServerNet_ServerModule::OnPvpManagerServerUnRegisteredProcess(const soc
 
 void GameServerNet_ServerModule::OnRefreshPvpManagerServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
         std::shared_ptr<ProxyServerInfo> pServerData = mGameplayManagerMap.GetElement(xData.server_id());
         if (!pServerData) {
             pServerData = std::shared_ptr<ProxyServerInfo>(new ProxyServerInfo());

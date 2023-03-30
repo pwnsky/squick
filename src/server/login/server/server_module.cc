@@ -93,13 +93,13 @@ void ServerModule::OnSocketClientEvent(const socket_t sock, const SQUICK_NET_EVE
 }
 
 void ServerModule::SynWorldToClient(const socket_t nFD) {
-    SquickStruct::AckServerList xData;
+    rpc::AckServerList xData;
 
     auto servers = m_pLoginToMasterModule->GetWorldServers();
 
     for (auto& iter : servers) {
         auto& server = iter.second;
-        SquickStruct::ServerInfo* si = xData.add_info();
+        rpc::ServerInfo* si = xData.add_info();
         si->set_name(server.server_name());
         si->set_status(server.server_state());
         si->set_server_id(server.server_id());

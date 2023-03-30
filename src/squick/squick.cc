@@ -7,7 +7,7 @@ int main(int argc, char *argv[]) {
     // std::cout << "__cplusplus:" << __cplusplus << std::endl;
 
     // 强制加载squick_struct依赖
-    void *libLoad = (void *)&SquickStruct::_Ident_default_instance_;
+    void *libLoad = (void *)&rpc::_Ident_default_instance_;
 
     // std::cout << libLoad << std::endl;
 

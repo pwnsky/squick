@@ -131,9 +131,9 @@ struct IMsgHead {
 };
 
 // 协议头部
-class SquickStructHead : public IMsgHead {
+class rpcHead : public IMsgHead {
   public:
-    SquickStructHead() {
+    rpcHead() {
         munSize = 0;
         mumsg_id = 0;
     }

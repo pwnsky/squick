@@ -18,25 +18,25 @@ bool WorldNet_ServerModule::Start() {
 }
 
 bool WorldNet_ServerModule::AfterStart() {
-    m_net_->AddReceiveCallBack(SquickStruct::PROXY_TO_WORLD_REGISTERED, this, &WorldNet_ServerModule::OnProxyServerRegisteredProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::PROXY_TO_WORLD_UNREGISTERED, this, &WorldNet_ServerModule::OnProxyServerUnRegisteredProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::PROXY_TO_WORLD_REFRESH, this, &WorldNet_ServerModule::OnRefreshProxyServerInfoProcess);
+    m_net_->AddReceiveCallBack(rpc::PROXY_TO_WORLD_REGISTERED, this, &WorldNet_ServerModule::OnProxyServerRegisteredProcess);
+    m_net_->AddReceiveCallBack(rpc::PROXY_TO_WORLD_UNREGISTERED, this, &WorldNet_ServerModule::OnProxyServerUnRegisteredProcess);
+    m_net_->AddReceiveCallBack(rpc::PROXY_TO_WORLD_REFRESH, this, &WorldNet_ServerModule::OnRefreshProxyServerInfoProcess);
 
-    m_net_->AddReceiveCallBack(SquickStruct::GAME_TO_WORLD_REGISTERED, this, &WorldNet_ServerModule::OnGameServerRegisteredProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::GAME_TO_WORLD_UNREGISTERED, this, &WorldNet_ServerModule::OnGameServerUnRegisteredProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::GAME_TO_WORLD_REFRESH, this, &WorldNet_ServerModule::OnRefreshGameServerInfoProcess);
+    m_net_->AddReceiveCallBack(rpc::GAME_TO_WORLD_REGISTERED, this, &WorldNet_ServerModule::OnGameServerRegisteredProcess);
+    m_net_->AddReceiveCallBack(rpc::GAME_TO_WORLD_UNREGISTERED, this, &WorldNet_ServerModule::OnGameServerUnRegisteredProcess);
+    m_net_->AddReceiveCallBack(rpc::GAME_TO_WORLD_REFRESH, this, &WorldNet_ServerModule::OnRefreshGameServerInfoProcess);
 
-    m_net_->AddReceiveCallBack(SquickStruct::DB_TO_WORLD_REGISTERED, this, &WorldNet_ServerModule::OnDBServerRegisteredProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::DB_TO_WORLD_UNREGISTERED, this, &WorldNet_ServerModule::OnDBServerUnRegisteredProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::DB_TO_WORLD_REFRESH, this, &WorldNet_ServerModule::OnRefreshDBServerInfoProcess);
+    m_net_->AddReceiveCallBack(rpc::DB_TO_WORLD_REGISTERED, this, &WorldNet_ServerModule::OnDBServerRegisteredProcess);
+    m_net_->AddReceiveCallBack(rpc::DB_TO_WORLD_UNREGISTERED, this, &WorldNet_ServerModule::OnDBServerUnRegisteredProcess);
+    m_net_->AddReceiveCallBack(rpc::DB_TO_WORLD_REFRESH, this, &WorldNet_ServerModule::OnRefreshDBServerInfoProcess);
 
-    m_net_->AddReceiveCallBack(SquickStruct::GAMEPLAY_MANAGER_TO_WORLD_REGISTERED, this,
+    m_net_->AddReceiveCallBack(rpc::GAMEPLAY_MANAGER_TO_WORLD_REGISTERED, this,
                                      &WorldNet_ServerModule::OnGameplayManagerServerRegisteredProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::GAMEPLAY_MANAGER_TO_WORLD_UNREGISTERED, this,
+    m_net_->AddReceiveCallBack(rpc::GAMEPLAY_MANAGER_TO_WORLD_UNREGISTERED, this,
                                      &WorldNet_ServerModule::OnGameplayManagerServerUnRegisteredProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::GAMEPLAY_MANAGER_TO_WORLD_REFRESH, this, &WorldNet_ServerModule::OnRefreshGameplayManagerServerInfoProcess);
+    m_net_->AddReceiveCallBack(rpc::GAMEPLAY_MANAGER_TO_WORLD_REFRESH, this, &WorldNet_ServerModule::OnRefreshGameplayManagerServerInfoProcess);
 
-    m_net_->AddReceiveCallBack(SquickStruct::STS_SERVER_REPORT, this, &WorldNet_ServerModule::OnTransmitServerReport);
+    m_net_->AddReceiveCallBack(rpc::STS_SERVER_REPORT, this, &WorldNet_ServerModule::OnTransmitServerReport);
 
     m_net_->AddEventCallBack(this, &WorldNet_ServerModule::OnSocketEvent);
     m_net_->ExpandBufferSize();
@@ -94,7 +94,7 @@ void WorldNet_ServerModule::OnServerInfoProcess(const socket_t sock, const int m
         const int nCurArea = m_element_->GetPropertyInt32(*itr, excel::Server::Area());
 
         Guid nPlayerID;
-        SquickStruct::ServerInfoReportList xMsg;
+        rpc::ServerInfoReportList xMsg;
         if (!INetModule::ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
             return;
         }
@@ -102,7 +102,7 @@ void WorldNet_ServerModule::OnServerInfoProcess(const socket_t sock, const int m
         mWorldMap.ClearAll();
 
         for (int i = 0; i < xMsg.server_list_size(); ++i) {
-            const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+            const rpc::ServerInfoReport &xData = xMsg.server_list(i);
             const int nAreaID = m_element_->GetPropertyInt(xData.server_name(), excel::Server::Area());
             if (xData.server_type() == ServerType::ST_WORLD && nCurArea == nAreaID) {
                 std::shared_ptr<ServerData> pServerData = mWorldMap.GetElement(xData.server_id());
@@ -173,13 +173,13 @@ void WorldNet_ServerModule::OnGameServerRegisteredProcess(const socket_t sock, c
         const int nCurArea = m_element_->GetPropertyInt32(*itr, excel::Server::Area());
 
         Guid nPlayerID;
-        SquickStruct::ServerInfoReportList xMsg;
+        rpc::ServerInfoReportList xMsg;
         if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
             return;
         }
 
         for (int i = 0; i < xMsg.server_list_size(); ++i) {
-            const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+            const rpc::ServerInfoReport &xData = xMsg.server_list(i);
             const int nAreaID = m_element_->GetPropertyInt(xData.server_name(), excel::Server::Area());
             if (nAreaID == nCurArea) {
                 std::shared_ptr<ServerData> pServerData = mGameMap.GetElement(xData.server_id());
@@ -204,13 +204,13 @@ void WorldNet_ServerModule::OnGameServerRegisteredProcess(const socket_t sock, c
 
 void WorldNet_ServerModule::OnGameServerUnRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
         mGameMap.RemoveElement(xData.server_id());
 
         m_log_->LogInfo(Guid(0, xData.server_id()), xData.server_name(), "GameServerRegistered");
@@ -219,13 +219,13 @@ void WorldNet_ServerModule::OnGameServerUnRegisteredProcess(const socket_t sock,
 
 void WorldNet_ServerModule::OnRefreshGameServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
 
         std::shared_ptr<ServerData> pServerData = mGameMap.GetElement(xData.server_id());
         if (!pServerData) {
@@ -264,13 +264,13 @@ void WorldNet_ServerModule::OnProxyServerRegisteredProcess(const socket_t sock, 
         const int nCurArea = m_element_->GetPropertyInt32(*itr, excel::Server::Area());
 
         Guid nPlayerID;
-        SquickStruct::ServerInfoReportList xMsg;
+        rpc::ServerInfoReportList xMsg;
         if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
             return;
         }
 
         for (int i = 0; i < xMsg.server_list_size(); ++i) {
-            const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+            const rpc::ServerInfoReport &xData = xMsg.server_list(i);
             const int nAreaID = m_element_->GetPropertyInt(xData.server_name(), excel::Server::Area());
             if (nAreaID == nCurArea) // 同一区服的就同步转发表
             {
@@ -296,13 +296,13 @@ void WorldNet_ServerModule::OnProxyServerRegisteredProcess(const socket_t sock, 
 
 void WorldNet_ServerModule::OnProxyServerUnRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
 
         mGameMap.RemoveElement(xData.server_id());
 
@@ -312,13 +312,13 @@ void WorldNet_ServerModule::OnProxyServerUnRegisteredProcess(const socket_t sock
 
 void WorldNet_ServerModule::OnRefreshProxyServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
 
         std::shared_ptr<ServerData> pServerData = mProxyMap.GetElement(xData.server_id());
         if (!pServerData) {
@@ -356,13 +356,13 @@ void WorldNet_ServerModule::OnDBServerRegisteredProcess(const socket_t sock, con
         const int nCurArea = m_element_->GetPropertyInt32(*itr, excel::Server::Area());
 
         Guid nPlayerID;
-        SquickStruct::ServerInfoReportList xMsg;
+        rpc::ServerInfoReportList xMsg;
         if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
             return;
         }
 
         for (int i = 0; i < xMsg.server_list_size(); ++i) {
-            const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+            const rpc::ServerInfoReport &xData = xMsg.server_list(i);
             const int nAreaID = m_element_->GetPropertyInt(xData.server_name(), excel::Server::Area());
             if (nAreaID == nCurArea) {
 
@@ -387,13 +387,13 @@ void WorldNet_ServerModule::OnDBServerRegisteredProcess(const socket_t sock, con
 
 void WorldNet_ServerModule::OnDBServerUnRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
 
         mDBMap.RemoveElement(xData.server_id());
 
@@ -403,13 +403,13 @@ void WorldNet_ServerModule::OnDBServerUnRegisteredProcess(const socket_t sock, c
 
 void WorldNet_ServerModule::OnRefreshDBServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
 
         std::shared_ptr<ServerData> pServerData = mDBMap.GetElement(xData.server_id());
         if (!pServerData) {
@@ -450,13 +450,13 @@ void WorldNet_ServerModule::OnGameplayManagerServerRegisteredProcess(const socke
         const int nCurArea = m_element_->GetPropertyInt32(*itr, excel::Server::Area());
 
         Guid nPlayerID;
-        SquickStruct::ServerInfoReportList xMsg;
+        rpc::ServerInfoReportList xMsg;
         if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
             return;
         }
 
         for (int i = 0; i < xMsg.server_list_size(); ++i) {
-            const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+            const rpc::ServerInfoReport &xData = xMsg.server_list(i);
             const int nAreaID = m_element_->GetPropertyInt(xData.server_name(), excel::Server::Area());
             if (nAreaID == nCurArea) // 同一区服的就同步转发表
             {
@@ -481,13 +481,13 @@ void WorldNet_ServerModule::OnGameplayManagerServerRegisteredProcess(const socke
 
 void WorldNet_ServerModule::OnGameplayManagerServerUnRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
 
         mGameMap.RemoveElement(xData.server_id());
 
@@ -497,13 +497,13 @@ void WorldNet_ServerModule::OnGameplayManagerServerUnRegisteredProcess(const soc
 
 void WorldNet_ServerModule::OnRefreshGameplayManagerServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
 
         std::shared_ptr<ServerData> pServerData = mGameplayManagerMap.GetElement(xData.server_id());
         if (!pServerData) {
@@ -539,7 +539,7 @@ void WorldNet_ServerModule::OnSocketEvent(const socket_t sock, const SQUICK_NET_
 
 // 同步转发表
 void WorldNet_ServerModule::SynGameToProxy() {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
 
     std::shared_ptr<ServerData> pServerData = mProxyMap.First();
     while (pServerData) {
@@ -549,20 +549,20 @@ void WorldNet_ServerModule::SynGameToProxy() {
 }
 
 void WorldNet_ServerModule::SynGameToProxy(const socket_t nFD) {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
 
     std::shared_ptr<ServerData> pServerData = mGameMap.First();
     while (pServerData) {
-        SquickStruct::ServerInfoReport *pData = xData.add_server_list();
+        rpc::ServerInfoReport *pData = xData.add_server_list();
         *pData = *(pServerData->pData);
         pServerData = mGameMap.Next();
     }
 
-    m_net_->SendMsgPB(SquickStruct::ServerRPC::STS_NET_INFO, xData, nFD);
+    m_net_->SendMsgPB(rpc::ServerRPC::STS_NET_INFO, xData, nFD);
 }
 
 void WorldNet_ServerModule::SynWorldToProxy() {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
 
     std::shared_ptr<ServerData> pServerData = mProxyMap.First();
     while (pServerData) {
@@ -573,22 +573,22 @@ void WorldNet_ServerModule::SynWorldToProxy() {
 }
 
 void WorldNet_ServerModule::SynWorldToProxy(const socket_t nFD) {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
 
     std::shared_ptr<ServerData> pServerData = mWorldMap.First();
     while (pServerData) {
-        SquickStruct::ServerInfoReport *pData = xData.add_server_list();
+        rpc::ServerInfoReport *pData = xData.add_server_list();
         *pData = *(pServerData->pData);
         pServerData = mWorldMap.Next();
     }
 
-    m_net_->SendMsgPB(SquickStruct::ServerRPC::STS_NET_INFO, xData, nFD);
+    m_net_->SendMsgPB(rpc::ServerRPC::STS_NET_INFO, xData, nFD);
 }
 
 // Start: PVP Manager <-> Game < - > World 服务器之间的转发表同步
 
 void WorldNet_ServerModule::SynGameToGameplayManager() {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
     // 依次同步到 Pvp Manager 服务器上
     std::shared_ptr<ServerData> pServerData = mGameplayManagerMap.First();
     while (pServerData) {
@@ -598,20 +598,20 @@ void WorldNet_ServerModule::SynGameToGameplayManager() {
 }
 
 void WorldNet_ServerModule::SynGameToGameplayManager(const socket_t nFD) {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
 
     std::shared_ptr<ServerData> pServerData = mGameMap.First();
     while (pServerData) {
-        SquickStruct::ServerInfoReport *pData = xData.add_server_list();
+        rpc::ServerInfoReport *pData = xData.add_server_list();
         *pData = *(pServerData->pData);
         pServerData = mGameMap.Next();
     }
 
-    m_net_->SendMsgPB(SquickStruct::ServerRPC::STS_NET_INFO, xData, nFD);
+    m_net_->SendMsgPB(rpc::ServerRPC::STS_NET_INFO, xData, nFD);
 }
 
 void WorldNet_ServerModule::SynWorldToGameplayManager() {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
 
     std::shared_ptr<ServerData> pServerData = mGameplayManagerMap.First();
     while (pServerData) {
@@ -622,28 +622,28 @@ void WorldNet_ServerModule::SynWorldToGameplayManager() {
 }
 
 void WorldNet_ServerModule::SynWorldToGameplayManager(const socket_t nFD) {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
 
     std::shared_ptr<ServerData> pServerData = mWorldMap.First();
     while (pServerData) {
-        SquickStruct::ServerInfoReport *pData = xData.add_server_list();
+        rpc::ServerInfoReport *pData = xData.add_server_list();
         *pData = *(pServerData->pData);
 
         pServerData = mWorldMap.Next();
     }
 
-    m_net_->SendMsgPB(SquickStruct::ServerRPC::STS_NET_INFO, xData, nFD);
+    m_net_->SendMsgPB(rpc::ServerRPC::STS_NET_INFO, xData, nFD);
 }
 
 // End: PVP Manager <-> Game < - > World
 
 void WorldNet_ServerModule::SynWorldToGame() {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
 
     std::shared_ptr<ServerData> pServerData = mGameMap.First();
     while (pServerData) {
-        if (pServerData->pData->server_state() != SquickStruct::ServerState::SERVER_MAINTEN &&
-            pServerData->pData->server_state() != SquickStruct::ServerState::SERVER_CRASH) {
+        if (pServerData->pData->server_state() != rpc::ServerState::SERVER_MAINTEN &&
+            pServerData->pData->server_state() != rpc::ServerState::SERVER_CRASH) {
             SynWorldToGame(pServerData->nFD);
         }
         pServerData = mGameMap.Next();
@@ -651,26 +651,26 @@ void WorldNet_ServerModule::SynWorldToGame() {
 }
 
 void WorldNet_ServerModule::SynWorldToGame(const socket_t nFD) {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
 
     std::shared_ptr<ServerData> pServerData = mWorldMap.First();
     while (pServerData) {
-        SquickStruct::ServerInfoReport *pData = xData.add_server_list();
+        rpc::ServerInfoReport *pData = xData.add_server_list();
         *pData = *(pServerData->pData);
 
         pServerData = mWorldMap.Next();
     }
 
-    m_net_->SendMsgPB(SquickStruct::ServerRPC::STS_NET_INFO, xData, nFD);
+    m_net_->SendMsgPB(rpc::ServerRPC::STS_NET_INFO, xData, nFD);
 }
 
 void WorldNet_ServerModule::SynWorldToDB() {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
 
     std::shared_ptr<ServerData> pServerData = mDBMap.First();
     while (pServerData) {
-        if (pServerData->pData->server_state() != SquickStruct::ServerState::SERVER_MAINTEN &&
-            pServerData->pData->server_state() != SquickStruct::ServerState::SERVER_CRASH) {
+        if (pServerData->pData->server_state() != rpc::ServerState::SERVER_MAINTEN &&
+            pServerData->pData->server_state() != rpc::ServerState::SERVER_CRASH) {
             SynWorldToDB(pServerData->nFD);
         }
 
@@ -679,27 +679,27 @@ void WorldNet_ServerModule::SynWorldToDB() {
 }
 
 void WorldNet_ServerModule::SynWorldToDB(const socket_t nFD) {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
 
     std::shared_ptr<ServerData> pServerData = mWorldMap.First();
     while (pServerData) {
 
-        SquickStruct::ServerInfoReport *pData = xData.add_server_list();
+        rpc::ServerInfoReport *pData = xData.add_server_list();
         *pData = *(pServerData->pData);
 
         pServerData = mWorldMap.Next();
     }
 
-    m_net_->SendMsgPB(SquickStruct::ServerRPC::STS_NET_INFO, xData, nFD);
+    m_net_->SendMsgPB(rpc::ServerRPC::STS_NET_INFO, xData, nFD);
 }
 
 void WorldNet_ServerModule::SynDBToGame() {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
 
     std::shared_ptr<ServerData> pServerData = mGameMap.First();
     while (pServerData) {
-        if (pServerData->pData->server_state() != SquickStruct::ServerState::SERVER_MAINTEN &&
-            pServerData->pData->server_state() != SquickStruct::ServerState::SERVER_CRASH) {
+        if (pServerData->pData->server_state() != rpc::ServerState::SERVER_MAINTEN &&
+            pServerData->pData->server_state() != rpc::ServerState::SERVER_CRASH) {
             SynDBToGame(pServerData->nFD);
         }
 
@@ -708,26 +708,26 @@ void WorldNet_ServerModule::SynDBToGame() {
 }
 
 void WorldNet_ServerModule::SynDBToGame(const socket_t nFD) {
-    SquickStruct::ServerInfoReportList xData;
+    rpc::ServerInfoReportList xData;
 
     std::shared_ptr<ServerData> pServerData = mDBMap.First();
     while (pServerData) {
-        SquickStruct::ServerInfoReport *pData = xData.add_server_list();
+        rpc::ServerInfoReport *pData = xData.add_server_list();
         *pData = *(pServerData->pData);
         pServerData = mDBMap.Next();
     }
 
-    m_net_->SendMsgPB(SquickStruct::ServerRPC::STS_NET_INFO, xData, nFD);
+    m_net_->SendMsgPB(rpc::ServerRPC::STS_NET_INFO, xData, nFD);
 }
 
 void WorldNet_ServerModule::OnClientDisconnect(const socket_t sock) {
     std::shared_ptr<ServerData> pServerData = mGameMap.First();
     while (pServerData) {
         if (sock == pServerData->nFD) {
-            pServerData->pData->set_server_state(SquickStruct::ServerState::SERVER_CRASH);
+            pServerData->pData->set_server_state(rpc::ServerState::SERVER_CRASH);
             pServerData->nFD = 0;
 
-            ServerReport(pServerData->pData->server_id(), SquickStruct::ServerState::SERVER_CRASH);
+            ServerReport(pServerData->pData->server_id(), rpc::ServerState::SERVER_CRASH);
             SynGameToProxy();
             break;
         }
@@ -740,13 +740,13 @@ void WorldNet_ServerModule::OnClientDisconnect(const socket_t sock) {
     pServerData = mProxyMap.First();
     while (pServerData) {
         if (sock == pServerData->nFD) {
-            pServerData->pData->set_server_state(SquickStruct::ServerState::SERVER_CRASH);
+            pServerData->pData->set_server_state(rpc::ServerState::SERVER_CRASH);
             pServerData->nFD = 0;
 
             int serverID = pServerData->pData->server_id();
             mProxyMap.RemoveElement(serverID);
 
-            ServerReport(pServerData->pData->server_id(), SquickStruct::ServerState::SERVER_CRASH);
+            ServerReport(pServerData->pData->server_id(), rpc::ServerState::SERVER_CRASH);
             SynGameToProxy();
             break;
         }
@@ -759,13 +759,13 @@ void WorldNet_ServerModule::OnClientDisconnect(const socket_t sock) {
     pServerData = mDBMap.First();
     while (pServerData) {
         if (sock == pServerData->nFD) {
-            pServerData->pData->set_server_state(SquickStruct::ServerState::SERVER_CRASH);
+            pServerData->pData->set_server_state(rpc::ServerState::SERVER_CRASH);
             pServerData->nFD = 0;
 
             int serverID = pServerData->pData->server_id();
             mDBMap.RemoveElement(serverID);
 
-            ServerReport(pServerData->pData->server_id(), SquickStruct::ServerState::SERVER_CRASH);
+            ServerReport(pServerData->pData->server_id(), rpc::ServerState::SERVER_CRASH);
             SynDBToGame();
             break;
         }
@@ -785,7 +785,7 @@ void WorldNet_ServerModule::LogGameServer() {
     while (pGameData) {
         std::ostringstream stream;
         stream << "Type: " << pGameData->pData->server_type() << " ID: " << pGameData->pData->server_id()
-               << " State: " << SquickStruct::ServerState_Name(pGameData->pData->server_state()) << " IP: " << pGameData->pData->server_ip()
+               << " State: " << rpc::ServerState_Name(pGameData->pData->server_state()) << " IP: " << pGameData->pData->server_ip()
                << " FD: " << pGameData->nFD;
 
         m_log_->LogInfo(Guid(), stream);
@@ -801,7 +801,7 @@ void WorldNet_ServerModule::LogGameServer() {
     while (pGameData) {
         std::ostringstream stream;
         stream << "Type: " << pGameData->pData->server_type() << " ID: " << pGameData->pData->server_id()
-               << " State: " << SquickStruct::ServerState_Name(pGameData->pData->server_state()) << " IP: " << pGameData->pData->server_ip()
+               << " State: " << rpc::ServerState_Name(pGameData->pData->server_state()) << " IP: " << pGameData->pData->server_ip()
                << " FD: " << pGameData->nFD;
 
         m_log_->LogInfo(Guid(), stream);
@@ -817,7 +817,7 @@ void WorldNet_ServerModule::LogGameServer() {
     while (pGameData) {
         std::ostringstream stream;
         stream << "Type: " << pGameData->pData->server_type() << " ID: " << pGameData->pData->server_id()
-               << " State: " << SquickStruct::ServerState_Name(pGameData->pData->server_state()) << " IP: " << pGameData->pData->server_ip()
+               << " State: " << rpc::ServerState_Name(pGameData->pData->server_state()) << " IP: " << pGameData->pData->server_ip()
                << " FD: " << pGameData->nFD;
 
         m_log_->LogInfo(Guid(), stream);
@@ -831,7 +831,7 @@ void WorldNet_ServerModule::LogGameServer() {
 void WorldNet_ServerModule::OnOnlineProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     /*
     std::cout << "ONline::::::\n";
-  CLIENT_MSG_PROCESS_NO_OBJECT(msg_id, msg, len, SquickStruct::RoleOnlineNotify);
+  CLIENT_MSG_PROCESS_NO_OBJECT(msg_id, msg, len, rpc::RoleOnlineNotify);
 
   Guid selfId = INetModule::ProtobufToStruct(xMsg.self());
 
@@ -864,7 +864,7 @@ void WorldNet_ServerModule::OnOnlineProcess(const socket_t sock, const int msg_i
 void WorldNet_ServerModule::OnOfflineProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     /*
     std::cout << "Offline::::::\n";
-  CLIENT_MSG_PROCESS_NO_OBJECT(msg_id, msg, len, SquickStruct::RoleOfflineNotify);
+  CLIENT_MSG_PROCESS_NO_OBJECT(msg_id, msg, len, rpc::RoleOfflineNotify);
   Guid self = INetModule::ProtobufToStruct(xMsg.self());
 
 
@@ -884,12 +884,12 @@ void WorldNet_ServerModule::OnOfflineProcess(const socket_t sock, const int msg_
 
 void WorldNet_ServerModule::OnTransmitServerReport(const socket_t nFd, const int msg_id, const char *buffer, const uint32_t len) {
     Guid xGUID;
-    SquickStruct::ServerInfoReport msg;
+    rpc::ServerInfoReport msg;
     if (!m_net_->ReceivePB(msg_id, buffer, len, msg, xGUID)) {
         return;
     }
 
-    m_net_client_->SendToAllServerByPB(ServerType::ST_MASTER, SquickStruct::STS_SERVER_REPORT, msg, Guid());
+    m_net_client_->SendToAllServerByPB(ServerType::ST_MASTER, rpc::STS_SERVER_REPORT, msg, Guid());
 }
 
 bool WorldNet_ServerModule::SendMsgToGame(const int gameID, const int msg_id, const std::string &xData) {
@@ -1003,7 +1003,7 @@ std::shared_ptr<IWorldNet_ServerModule::PlayerData> WorldNet_ServerModule::GetPl
     return mPlayersData.GetElement(id);
 }
 
-void WorldNet_ServerModule::ServerReport(int reportServerId, SquickStruct::ServerState serverStatus) {
+void WorldNet_ServerModule::ServerReport(int reportServerId, rpc::ServerState serverStatus) {
     std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
@@ -1018,7 +1018,7 @@ void WorldNet_ServerModule::ServerReport(int reportServerId, SquickStruct::Serve
                 const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
                 const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
-                SquickStruct::ServerInfoReport reqMsg;
+                rpc::ServerInfoReport reqMsg;
 
                 reqMsg.set_server_id(serverID);
                 reqMsg.set_server_name(strId);
@@ -1029,7 +1029,7 @@ void WorldNet_ServerModule::ServerReport(int reportServerId, SquickStruct::Serve
                 reqMsg.set_server_state(serverStatus);
                 reqMsg.set_server_type(serverType);
 
-                m_net_client_->SendToAllServerByPB(ServerType::ST_MASTER, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
+                m_net_client_->SendToAllServerByPB(ServerType::ST_MASTER, rpc::STS_SERVER_REPORT, reqMsg, Guid());
             }
         }
     }

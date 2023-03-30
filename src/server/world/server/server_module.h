@@ -60,7 +60,7 @@ class WorldNet_ServerModule : public IWorldNet_ServerModule {
     void OnOfflineProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
     void OnTransmitServerReport(const socket_t nFd, const int msg_id, const char *buffer, const uint32_t len);
-    void ServerReport(int reportServerId, SquickStruct::ServerState serverStatus);
+    void ServerReport(int reportServerId, rpc::ServerState serverStatus);
 
   protected:
     void OnGameServerRegisteredProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);

@@ -30,8 +30,8 @@ class MasterModule : public IMasterModule {
     virtual void LogSend(const char *str) {}
 
     virtual INetClientModule *GetClusterModule();
-    virtual map<int, SquickStruct::ServerInfoReport> & GetWorldServers();
-    virtual map<int, SquickStruct::ServerInfoReport>& GetProxyServers();
+    virtual map<int, rpc::ServerInfoReport> & GetWorldServers();
+    virtual map<int, rpc::ServerInfoReport>& GetProxyServers();
 
   protected:
     void OnSocketMSEvent(const socket_t sock, const SQUICK_NET_EVENT event, INet *net);
@@ -47,8 +47,8 @@ class MasterModule : public IMasterModule {
 
   private:
     INT64 mLastReportTime;
-    map<int, SquickStruct::ServerInfoReport> world_servers_;
-    map<int, SquickStruct::ServerInfoReport> proxy_servers_;
+    map<int, rpc::ServerInfoReport> world_servers_;
+    map<int, rpc::ServerInfoReport> proxy_servers_;
 
     server::IServerModule *m_pLoginNet_ServerModule;
     IElementModule *m_element_;

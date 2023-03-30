@@ -42,8 +42,8 @@ void GameServerToWorldModule::Register(INet *pNet) {
                 const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
                 const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
-                SquickStruct::ServerInfoReportList xMsg;
-                SquickStruct::ServerInfoReport *pData = xMsg.add_server_list();
+                rpc::ServerInfoReportList xMsg;
+                rpc::ServerInfoReport *pData = xMsg.add_server_list();
 
                 pData->set_server_id(serverID);
                 pData->set_server_name(strId);
@@ -51,13 +51,13 @@ void GameServerToWorldModule::Register(INet *pNet) {
                 pData->set_server_ip(ip);
                 pData->set_server_port(nPort);
                 pData->set_server_max_online(maxConnect);
-                pData->set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
+                pData->set_server_state(rpc::ServerState::SERVER_NORMAL);
                 pData->set_server_type(serverType);
 
                 std::shared_ptr<ConnectData> pServerData = m_net_client_->GetServerNetInfo(pNet);
                 if (pServerData) {
                     int nTargetID = pServerData->nGameID;
-                    m_net_client_->SendToServerByPB(nTargetID, SquickStruct::ServerRPC::GAME_TO_WORLD_REGISTERED, xMsg);
+                    m_net_client_->SendToServerByPB(nTargetID, rpc::ServerRPC::GAME_TO_WORLD_REGISTERED, xMsg);
 
                     m_log_->LogInfo(Guid(0, pData->server_id()), pData->server_name(), "Register");
                 }
@@ -86,7 +86,7 @@ void GameServerToWorldModule::ServerReport() {
                 const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
                 const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
-                SquickStruct::ServerInfoReport reqMsg;
+                rpc::ServerInfoReport reqMsg;
 
                 reqMsg.set_server_id(serverID);
                 reqMsg.set_server_name(strId);
@@ -94,51 +94,51 @@ void GameServerToWorldModule::ServerReport() {
                 reqMsg.set_server_ip(ip);
                 reqMsg.set_server_port(nPort);
                 reqMsg.set_server_max_online(maxConnect);
-                reqMsg.set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
+                reqMsg.set_server_state(rpc::ServerState::SERVER_NORMAL);
                 reqMsg.set_server_type(serverType);
 
-                m_net_client_->SendToAllServerByPB(ServerType::ST_WORLD, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
+                m_net_client_->SendToAllServerByPB(ServerType::ST_WORLD, rpc::STS_SERVER_REPORT, reqMsg, Guid());
             }
         }
     }
 }
 
 bool GameServerToWorldModule::AfterStart() {
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_PROPERTY_INT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_PROPERTY_INT, this,
                                            &GameServerToWorldModule::OnWorldPropertyIntProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_PROPERTY_FLOAT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_PROPERTY_FLOAT, this,
                                            &GameServerToWorldModule::OnWorldPropertyFloatProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_PROPERTY_STRING, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_PROPERTY_STRING, this,
                                            &GameServerToWorldModule::OnWorldPropertyStringProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_PROPERTY_OBJECT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_PROPERTY_OBJECT, this,
                                            &GameServerToWorldModule::OnWorldPropertyObjectProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_PROPERTY_VECTOR2, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_PROPERTY_VECTOR2, this,
                                            &GameServerToWorldModule::OnWorldPropertyVector2Process);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_PROPERTY_VECTOR3, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_PROPERTY_VECTOR3, this,
                                            &GameServerToWorldModule::OnWorldPropertyVector3Process);
 
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_OBJECT_RECORD_ENTRY, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_OBJECT_RECORD_ENTRY, this,
                                            &GameServerToWorldModule::OnWorldRecordEnterProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_ADD_ROW, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_ADD_ROW, this,
                                            &GameServerToWorldModule::OnWorldAddRowProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_REMOVE_ROW, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_REMOVE_ROW, this,
                                            &GameServerToWorldModule::OnWorldRemoveRowProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_SWAP_ROW, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_SWAP_ROW, this,
                                            &GameServerToWorldModule::OnWorldSwapRowProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_RECORD_INT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_RECORD_INT, this,
                                            &GameServerToWorldModule::OnWorldRecordIntProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_RECORD_FLOAT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_RECORD_FLOAT, this,
                                            &GameServerToWorldModule::OnWorldRecordFloatProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_RECORD_STRING, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_RECORD_STRING, this,
                                            &GameServerToWorldModule::OnWorldRecordStringProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_RECORD_OBJECT, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_RECORD_OBJECT, this,
                                            &GameServerToWorldModule::OnWorldRecordObjectProcess);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_RECORD_VECTOR2, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_RECORD_VECTOR2, this,
                                            &GameServerToWorldModule::OnWorldRecordVector2Process);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::ACK_RECORD_VECTOR3, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::ACK_RECORD_VECTOR3, this,
                                            &GameServerToWorldModule::OnWorldRecordVector3Process);
 
-    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, SquickStruct::STS_NET_INFO, this,
+    m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, rpc::STS_NET_INFO, this,
                                            &GameServerToWorldModule::OnServerInfoProcess);
 
     m_net_client_->AddReceiveCallBack(ServerType::ST_WORLD, this, &GameServerToWorldModule::TransPBToProxy);
@@ -199,13 +199,13 @@ bool GameServerToWorldModule::AfterStart() {
 
 void GameServerToWorldModule::OnServerInfoProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ServerInfoReportList xMsg;
+    rpc::ServerInfoReportList xMsg;
     if (!INetModule::ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }
 
     for (int i = 0; i < xMsg.server_list_size(); ++i) {
-        const SquickStruct::ServerInfoReport &xData = xMsg.server_list(i);
+        const rpc::ServerInfoReport &xData = xMsg.server_list(i);
 
         // type
         ConnectData xServerData;
@@ -251,7 +251,7 @@ void GameServerToWorldModule::SendOnline(const Guid &self) {
     /*
     if (m_kernel_->ExistObject(self))
     {
-            SquickStruct::RoleOnlineNotify xMsg;
+            rpc::RoleOnlineNotify xMsg;
             const int& gateID = m_kernel_->GetPropertyInt(self, SquickProtocol::Player::GateID());
             const std::string& playerName = m_kernel_->GetPropertyString(self, SquickProtocol::Player::Name());
             const int bp = m_kernel_->GetPropertyInt(self, SquickProtocol::Player::BattlePoint());
@@ -262,13 +262,13 @@ void GameServerToWorldModule::SendOnline(const Guid &self) {
             xMsg.set_name(playerName);
             xMsg.set_bp(bp);
 
-            m_net_client_->SendToAllServerByPB(ServerType::ST_WORLD, SquickStruct::ACK_ONLINE_NOTIFY, xMsg, self);
+            m_net_client_->SendToAllServerByPB(ServerType::ST_WORLD, rpc::ACK_ONLINE_NOTIFY, xMsg, self);
     }*/
 }
 
 void GameServerToWorldModule::SendOffline(const Guid &self) {
     if (m_kernel_->ExistObject(self)) {
-        SquickStruct::AckPlayerOffline xMsg;
+        rpc::AckPlayerOffline xMsg;
 
         // const Guid& xClan = m_kernel_->GetPropertyObject(self, SquickProtocol::Player::Clan_ID());
 
@@ -277,7 +277,7 @@ void GameServerToWorldModule::SendOffline(const Guid &self) {
         xMsg.set_game(pm_->GetAppID());
         xMsg.set_proxy(0);
 
-        m_net_client_->SendToAllServerByPB(ServerType::ST_WORLD, SquickStruct::ServerRPC::ACK_PLAYER_OFFLINE, xMsg, self);
+        m_net_client_->SendToAllServerByPB(ServerType::ST_WORLD, rpc::ServerRPC::ACK_PLAYER_OFFLINE, xMsg, self);
     }
 }
 
@@ -298,66 +298,66 @@ void GameServerToWorldModule::TransmitToWorld(const int nHashKey, const int msg_
 }
 
 void GameServerToWorldModule::OnWorldPropertyIntProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectPropertyInt)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::ObjectPropertyInt)
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
-        const SquickStruct::PropertyInt &xProperty = xMsg.property_list().Get(i);
+        const rpc::PropertyInt &xProperty = xMsg.property_list().Get(i);
         m_kernel_->SetPropertyInt(nPlayerID, xProperty.property_name(), xProperty.data());
     }
 }
 
 void GameServerToWorldModule::OnWorldPropertyFloatProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectPropertyFloat)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::ObjectPropertyFloat)
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
-        const SquickStruct::PropertyFloat &xProperty = xMsg.property_list().Get(i);
+        const rpc::PropertyFloat &xProperty = xMsg.property_list().Get(i);
         m_kernel_->SetPropertyFloat(nPlayerID, xProperty.property_name(), xProperty.data());
     }
 }
 
 void GameServerToWorldModule::OnWorldPropertyStringProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectPropertyString)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::ObjectPropertyString)
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
-        const SquickStruct::PropertyString &xProperty = xMsg.property_list().Get(i);
+        const rpc::PropertyString &xProperty = xMsg.property_list().Get(i);
         m_kernel_->SetPropertyString(nPlayerID, xProperty.property_name(), xProperty.data());
     }
 }
 
 void GameServerToWorldModule::OnWorldPropertyObjectProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectPropertyObject)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::ObjectPropertyObject)
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
-        const SquickStruct::PropertyObject &xProperty = xMsg.property_list().Get(i);
+        const rpc::PropertyObject &xProperty = xMsg.property_list().Get(i);
         m_kernel_->SetPropertyObject(nPlayerID, xProperty.property_name(), INetModule::ProtobufToStruct(xProperty.data()));
     }
 }
 
 void GameServerToWorldModule::OnWorldPropertyVector2Process(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectPropertyVector2)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::ObjectPropertyVector2)
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
-        const SquickStruct::PropertyVector2 &xProperty = xMsg.property_list().Get(i);
+        const rpc::PropertyVector2 &xProperty = xMsg.property_list().Get(i);
         m_kernel_->SetPropertyVector2(nPlayerID, xProperty.property_name(), INetModule::ProtobufToStruct(xProperty.data()));
     }
 }
 
 void GameServerToWorldModule::OnWorldPropertyVector3Process(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectPropertyVector3)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::ObjectPropertyVector3)
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
-        const SquickStruct::PropertyVector3 &xProperty = xMsg.property_list().Get(i);
+        const rpc::PropertyVector3 &xProperty = xMsg.property_list().Get(i);
         m_kernel_->SetPropertyVector3(nPlayerID, xProperty.property_name(), INetModule::ProtobufToStruct(xProperty.data()));
     }
 }
 
 void GameServerToWorldModule::OnWorldRecordEnterProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::MultiObjectRecordList)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::MultiObjectRecordList)
 
     for (int playerIndex = 0; playerIndex < xMsg.multi_player_record_size(); playerIndex++) {
-        const SquickStruct::ObjectRecordList &objectRecordList = xMsg.multi_player_record(playerIndex);
+        const rpc::ObjectRecordList &objectRecordList = xMsg.multi_player_record(playerIndex);
         for (int j = 0; j < objectRecordList.record_list_size(); ++j) {
-            const SquickStruct::ObjectRecordBase &recordBase = objectRecordList.record_list(j);
+            const rpc::ObjectRecordBase &recordBase = objectRecordList.record_list(j);
             auto record = m_kernel_->FindRecord(nPlayerID, recordBase.record_name());
             if (record) {
                 CommonRedisModule::ConvertPBToRecord(recordBase, record);
@@ -367,50 +367,50 @@ void GameServerToWorldModule::OnWorldRecordEnterProcess(const socket_t sock, con
 }
 
 void GameServerToWorldModule::OnWorldAddRowProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordAddRow)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::ObjectRecordAddRow)
 
     auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (pRecord) {
         for (int i = 0; i < xMsg.row_data_size(); i++) {
-            const SquickStruct::RecordAddRowStruct &xAddRowStruct = xMsg.row_data().Get(i);
+            const rpc::RecordAddRowStruct &xAddRowStruct = xMsg.row_data().Get(i);
             int row = xAddRowStruct.row();
 
             std::map<int, SquickData> colDataMap;
             for (int j = 0; j < xAddRowStruct.record_int_list_size(); j++) {
-                const SquickStruct::RecordInt &xRecordInt = xAddRowStruct.record_int_list().Get(j);
+                const rpc::RecordInt &xRecordInt = xAddRowStruct.record_int_list().Get(j);
                 SquickData data;
                 data.SetInt(xRecordInt.data());
                 colDataMap[xRecordInt.col()] = data;
             }
 
             for (int j = 0; j < xAddRowStruct.record_float_list_size(); j++) {
-                const SquickStruct::RecordFloat &xRecordFloat = xAddRowStruct.record_float_list().Get(j);
+                const rpc::RecordFloat &xRecordFloat = xAddRowStruct.record_float_list().Get(j);
                 SquickData data;
                 data.SetFloat(xRecordFloat.data());
                 colDataMap[xRecordFloat.col()] = data;
             }
             for (int j = 0; j < xAddRowStruct.record_string_list_size(); j++) {
-                const SquickStruct::RecordString &xRecordString = xAddRowStruct.record_string_list().Get(j);
+                const rpc::RecordString &xRecordString = xAddRowStruct.record_string_list().Get(j);
                 SquickData data;
                 data.SetString(xRecordString.data());
                 colDataMap[xRecordString.col()] = data;
             }
             for (int j = 0; j < xAddRowStruct.record_object_list_size(); j++) {
-                const SquickStruct::RecordObject &xRecordObject = xAddRowStruct.record_object_list().Get(j);
+                const rpc::RecordObject &xRecordObject = xAddRowStruct.record_object_list().Get(j);
                 SquickData data;
                 data.SetObject(INetModule::ProtobufToStruct(xRecordObject.data()));
                 colDataMap[xRecordObject.col()] = data;
             }
 
             for (int j = 0; j < xAddRowStruct.record_vector2_list_size(); j++) {
-                const SquickStruct::RecordVector2 &xRecordObject = xAddRowStruct.record_vector2_list().Get(j);
+                const rpc::RecordVector2 &xRecordObject = xAddRowStruct.record_vector2_list().Get(j);
                 SquickData data;
                 data.SetVector2(INetModule::ProtobufToStruct(xRecordObject.data()));
                 colDataMap[xRecordObject.col()] = data;
             }
 
             for (int j = 0; j < xAddRowStruct.record_vector3_list_size(); j++) {
-                const SquickStruct::RecordVector3 &xRecordObject = xAddRowStruct.record_vector3_list().Get(j);
+                const rpc::RecordVector3 &xRecordObject = xAddRowStruct.record_vector3_list().Get(j);
                 SquickData data;
                 data.SetVector3(INetModule::ProtobufToStruct(xRecordObject.data()));
                 colDataMap[xRecordObject.col()] = data;
@@ -436,7 +436,7 @@ void GameServerToWorldModule::OnWorldAddRowProcess(const socket_t sock, const in
 }
 
 void GameServerToWorldModule::OnWorldRemoveRowProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordRemove)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::ObjectRecordRemove)
 
     auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (pRecord) {
@@ -453,7 +453,7 @@ void GameServerToWorldModule::OnWorldRemoveRowProcess(const socket_t sock, const
 void GameServerToWorldModule::OnWorldSwapRowProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
 
 void GameServerToWorldModule::OnWorldRecordIntProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordInt)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::ObjectRecordInt)
 
     auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (!pRecord) {
@@ -462,14 +462,14 @@ void GameServerToWorldModule::OnWorldRecordIntProcess(const socket_t sock, const
     }
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
-        const SquickStruct::RecordInt &xRecordInt = xMsg.property_list().Get(i);
+        const rpc::RecordInt &xRecordInt = xMsg.property_list().Get(i);
         pRecord->SetInt(xRecordInt.row(), xRecordInt.col(), xRecordInt.data());
         m_log_->LogInfo(nPlayerID, "Upload From Client int set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
     }
 }
 
 void GameServerToWorldModule::OnWorldRecordFloatProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordFloat)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::ObjectRecordFloat)
 
     auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (!pRecord) {
@@ -478,14 +478,14 @@ void GameServerToWorldModule::OnWorldRecordFloatProcess(const socket_t sock, con
     }
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
-        const SquickStruct::RecordFloat &xRecordFloat = xMsg.property_list().Get(i);
+        const rpc::RecordFloat &xRecordFloat = xMsg.property_list().Get(i);
         pRecord->SetFloat(xRecordFloat.row(), xRecordFloat.col(), xRecordFloat.data());
         m_log_->LogInfo(nPlayerID, "Upload From Client float set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
     }
 }
 
 void GameServerToWorldModule::OnWorldRecordStringProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordString)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::ObjectRecordString)
 
     auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (!pRecord) {
@@ -494,14 +494,14 @@ void GameServerToWorldModule::OnWorldRecordStringProcess(const socket_t sock, co
     }
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
-        const SquickStruct::RecordString &xRecordString = xMsg.property_list().Get(i);
+        const rpc::RecordString &xRecordString = xMsg.property_list().Get(i);
         pRecord->SetString(xRecordString.row(), xRecordString.col(), xRecordString.data());
         m_log_->LogInfo(nPlayerID, "String set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
     }
 }
 
 void GameServerToWorldModule::OnWorldRecordObjectProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordObject)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::ObjectRecordObject)
 
     auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (!pRecord) {
@@ -510,14 +510,14 @@ void GameServerToWorldModule::OnWorldRecordObjectProcess(const socket_t sock, co
     }
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
-        const SquickStruct::RecordObject &xRecordObject = xMsg.property_list().Get(i);
+        const rpc::RecordObject &xRecordObject = xMsg.property_list().Get(i);
         pRecord->SetObject(xRecordObject.row(), xRecordObject.col(), INetModule::ProtobufToStruct(xRecordObject.data()));
         m_log_->LogInfo(nPlayerID, "Upload From Client Object set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
     }
 }
 
 void GameServerToWorldModule::OnWorldRecordVector2Process(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordVector2)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::ObjectRecordVector2)
 
     auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (!pRecord) {
@@ -526,14 +526,14 @@ void GameServerToWorldModule::OnWorldRecordVector2Process(const socket_t sock, c
     }
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
-        const SquickStruct::RecordVector2 &xRecordVector2 = xMsg.property_list().Get(i);
+        const rpc::RecordVector2 &xRecordVector2 = xMsg.property_list().Get(i);
         pRecord->SetVector2(xRecordVector2.row(), xRecordVector2.col(), INetModule::ProtobufToStruct(xRecordVector2.data()));
         m_log_->LogInfo(nPlayerID, "Upload From Client vector2 set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
     }
 }
 
 void GameServerToWorldModule::OnWorldRecordVector3Process(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    CLIENT_MSG_PROCESS(msg_id, msg, len, SquickStruct::ObjectRecordVector3)
+    CLIENT_MSG_PROCESS(msg_id, msg, len, rpc::ObjectRecordVector3)
 
     auto pRecord = m_kernel_->FindRecord(nPlayerID, xMsg.record_name());
     if (!pRecord) {
@@ -542,7 +542,7 @@ void GameServerToWorldModule::OnWorldRecordVector3Process(const socket_t sock, c
     }
 
     for (int i = 0; i < xMsg.property_list_size(); i++) {
-        const SquickStruct::RecordVector3 &xRecordVector3 = xMsg.property_list().Get(i);
+        const rpc::RecordVector3 &xRecordVector3 = xMsg.property_list().Get(i);
         pRecord->SetVector3(xRecordVector3.row(), xRecordVector3.col(), INetModule::ProtobufToStruct(xRecordVector3.data()));
         m_log_->LogInfo(nPlayerID, "Upload From Client vector3 set record " + xMsg.record_name(), __FUNCTION__, __LINE__);
     }

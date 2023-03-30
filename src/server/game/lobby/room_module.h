@@ -34,7 +34,7 @@ class RoomModule : public IRoomModule {
     virtual bool Update();
 
     virtual bool RoomQuit(const Guid &clientID) override;
-    virtual SquickStruct::RoomDetails *GetRoomByID(int room_id) override;
+    virtual rpc::RoomDetails *GetRoomByID(int room_id) override;
     virtual void BroadcastToPlyaers(const uint16_t msg_id, google::protobuf::Message &xMsg, int roomdID) override;
     virtual void GamePlayPrepared(int room_id, const string &name, const string &ip, int port) override;
 
@@ -57,7 +57,7 @@ class RoomModule : public IRoomModule {
 
     void CreateDevRoom();
 
-    std::unordered_map<int, SquickStruct::RoomDetails *> m_rooms;
+    std::unordered_map<int, rpc::RoomDetails *> m_rooms;
 
   private:
     INetModule *m_net_;

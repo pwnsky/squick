@@ -30,9 +30,9 @@ bool PlayerManagerModule::AfterStart() {
 }
 
 bool PlayerManagerModule::ReadyUpdate() {
-    m_net_->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ENTER, this, &PlayerManagerModule::OnReqPlayerEnter);
-    m_net_->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_LEAVE, this, &PlayerManagerModule::OnReqPlayerLeave);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_DB_PROXY, SquickStruct::DbProxyRPC::ACK_PLAYER_DATA_LOAD, this,
+    m_net_->AddReceiveCallBack(rpc::GameLobbyRPC::REQ_ENTER, this, &PlayerManagerModule::OnReqPlayerEnter);
+    m_net_->AddReceiveCallBack(rpc::GameLobbyRPC::REQ_LEAVE, this, &PlayerManagerModule::OnReqPlayerLeave);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_DB_PROXY, rpc::DbProxyRPC::ACK_PLAYER_DATA_LOAD, this,
                                            &PlayerManagerModule::OnAckPlayerDataLoad);
 
     return true;
@@ -40,7 +40,7 @@ bool PlayerManagerModule::ReadyUpdate() {
 
 void PlayerManagerModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid clientID;
-    SquickStruct::ReqEnter xMsg;
+    rpc::ReqEnter xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID)) {
         return;
     }
@@ -65,7 +65,7 @@ void PlayerManagerModule::OnReqPlayerEnter(const socket_t sock, const int msg_id
         return;
     }
 
-    m_net_client_->SendBySuitWithOutHead(ServerType::ST_DB_PROXY, sock, SquickStruct::DbProxyRPC::REQ_PLAYER_DATA_LOAD,
+    m_net_client_->SendBySuitWithOutHead(ServerType::ST_DB_PROXY, sock, rpc::DbProxyRPC::REQ_PLAYER_DATA_LOAD,
                                               std::string(msg, len));
 }
 
@@ -73,7 +73,7 @@ void PlayerManagerModule::OnReqPlayerEnter(const socket_t sock, const int msg_id
 void PlayerManagerModule::OnAckPlayerDataLoad(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     //dout << "返回角色数据\n";
     Guid clientID;
-    SquickStruct::PlayerData xMsg;
+    rpc::PlayerData xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID)) {
         return;
     }
@@ -125,12 +125,12 @@ void PlayerManagerModule::OnAckPlayerDataLoad(const socket_t sock, const int msg
     std::shared_ptr<IObject> pObject = m_kernel_->CreateObject(objectID, 1, 0, SquickProtocol::Player::ThisName(), "", var);
     */
 
-    SquickStruct::AckEnter ack;
+    rpc::AckEnter ack;
     ack.set_code(0);
     *ack.mutable_client() = INetModule::StructToProtobuf(clientID);
     *ack.mutable_object() = INetModule::StructToProtobuf(objectID);
 
-    m_pGameServerNet_ServerModule->SendMsgPBToProxy(SquickStruct::ACK_ENTER, ack, clientID);
+    m_pGameServerNet_ServerModule->SendMsgPBToProxy(rpc::ACK_ENTER, ack, clientID);
 }
 
 // 玩家对象事件
@@ -204,7 +204,7 @@ void PlayerManagerModule::SaveDataToDb(const Guid &self) {
     if (xObject) {
         std::shared_ptr<IPropertyManager> xPropManager = xObject->GetPropertyManager();
         std::shared_ptr<IRecordManager> xRecordManager = xObject->GetRecordManager();
-        SquickStruct::PlayerData xDataPack;
+        rpc::PlayerData xDataPack;
 
         *xDataPack.mutable_object() = INetModule::StructToProtobuf(self);
 
@@ -218,7 +218,7 @@ void PlayerManagerModule::SaveDataToDb(const Guid &self) {
         if (xRecordManager) {
             CommonRedisModule::ConvertRecordManagerToPB(xRecordManager, xDataPack.mutable_record(), false, true);
         }
-        m_net_client_->SendSuitByPB(ServerType::ST_DB_PROXY, self.GetData(), SquickStruct::DbProxyRPC::REQ_PLAYER_DATA_SAVE, xDataPack);
+        m_net_client_->SendSuitByPB(ServerType::ST_DB_PROXY, self.GetData(), rpc::DbProxyRPC::REQ_PLAYER_DATA_SAVE, xDataPack);
     }
 }
 
@@ -276,7 +276,7 @@ void PlayerManagerModule::SetPlayerGameplayID(const Guid &clientID, int groupID)
 
 void PlayerManagerModule::OnReqPlayerLeave(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ReqLeave xMsg;
+    rpc::ReqLeave xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }

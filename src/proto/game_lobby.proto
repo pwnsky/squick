@@ -1,6 +1,6 @@
 // 大厅RPC
 syntax = "proto3";
-package SquickStruct;
+package rpc;
 import "base.proto";
 
 // GameLobbyRPC RPC 10000 ~ 12000

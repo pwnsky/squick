@@ -114,7 +114,7 @@ bool GameplayManagerModule::GameplayPlayerQuit(const Guid &player) {
 
 bool GameplayManagerModule::SingleGameplayCreate(int id, const string& key) {
     dout << "启动 独立的Gameplay服务器 id: " << id << " key: " << key << std::endl;
-    SquickStruct::ReqGameplayCreate xMsg;
+    rpc::ReqGameplayCreate xMsg;
     xMsg.set_id(id);
     xMsg.set_key(key);
     xMsg.set_game_id(pm_->GetAppID()); // 获取当前Game ID
@@ -127,7 +127,7 @@ bool GameplayManagerModule::SingleGameplayDestroy(int id) {
 }
 
 void GameplayManagerModule::OnRecv(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    SquickStruct::MsgBase xMsg;
+    rpc::MsgBase xMsg;
     if (!xMsg.ParseFromArray(msg, len)) {
         char szData[MAX_PATH] = {0};
         NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);

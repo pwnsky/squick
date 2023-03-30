@@ -52,7 +52,7 @@ class PlayerManagerModule : public IPlayerManagerModule {
 
   private:
     // 待优化为 unordered_map , 查找时间复杂度为 O(1)
-    std::map<Guid, SquickStruct::PlayerData> mxObjectDataCache;
+    std::map<Guid, rpc::PlayerData> mxObjectDataCache;
     std::map<Guid, Player *> m_players;             // 所有玩家
     std::map<Guid, Player *> m_offlineCachePlayers; // 离线缓存玩家
   private:

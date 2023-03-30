@@ -53,12 +53,12 @@ bool DBNet_ServerModule::AfterStart() {
         }
     }
 
-    m_net_->AddReceiveCallBack(SquickStruct::DbProxyRPC::REQ_PLAYER_LIST, this, &DBNet_ServerModule::OnRequireRoleListProcess);
+    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_PLAYER_LIST, this, &DBNet_ServerModule::OnRequireRoleListProcess);
 
-    m_net_->AddReceiveCallBack(SquickStruct::DbProxyRPC::REQ_PLAYER_CREATE, this, &DBNet_ServerModule::OnCreateRoleGameProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::DbProxyRPC::REQ_PLAYER_DELETE, this, &DBNet_ServerModule::OnDeleteRoleGameProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::DbProxyRPC::REQ_PLAYER_DATA_LOAD, this, &DBNet_ServerModule::OnLoadRoleDataProcess);
-    m_net_->AddReceiveCallBack(SquickStruct::DbProxyRPC::REQ_PLAYER_DATA_SAVE, this, &DBNet_ServerModule::OnSaveRoleDataProcess);
+    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_PLAYER_CREATE, this, &DBNet_ServerModule::OnCreateRoleGameProcess);
+    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_PLAYER_DELETE, this, &DBNet_ServerModule::OnDeleteRoleGameProcess);
+    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_PLAYER_DATA_LOAD, this, &DBNet_ServerModule::OnLoadRoleDataProcess);
+    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_PLAYER_DATA_SAVE, this, &DBNet_ServerModule::OnSaveRoleDataProcess);
 
     return true;
 }
@@ -92,7 +92,7 @@ void DBNet_ServerModule::OnClientConnected(const socket_t sock) {}
 void DBNet_ServerModule::OnRequireRoleListProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     /*
     Guid clientID;
-    SquickStruct::ReqRoleList xMsg;
+    rpc::ReqRoleList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID))
     {
             return;
@@ -102,30 +102,30 @@ void DBNet_ServerModule::OnRequireRoleListProcess(const socket_t sock, const int
     std::string strRoleName;
     if (!m_pPlayerRedisModule->GetRoleInfo(xMsg.account(), strRoleName, xPlayerID))
     {
-            SquickStruct::AckRoleLiteInfoList xAckRoleLiteInfoList;
+            rpc::AckRoleLiteInfoList xAckRoleLiteInfoList;
             xAckRoleLiteInfoList.set_account(xMsg.account());
-            m_net_->SendMsgPB(SquickStruct::ACK_ROLE_LIST, xAckRoleLiteInfoList, sock, clientID);
+            m_net_->SendMsgPB(rpc::ACK_ROLE_LIST, xAckRoleLiteInfoList, sock, clientID);
             return;
     }
 
-    SquickStruct::AckRoleLiteInfoList xAckRoleLiteInfoList;
+    rpc::AckRoleLiteInfoList xAckRoleLiteInfoList;
     xAckRoleLiteInfoList.set_account(xMsg.account());
 
-    SquickStruct::RoleLiteInfo* pData = xAckRoleLiteInfoList.add_char_data();
+    rpc::RoleLiteInfo* pData = xAckRoleLiteInfoList.add_char_data();
     pData->mutable_id()->CopyFrom(INetModule::StructToProtobuf(xPlayerID));
     pData->set_game_id(pm_->GetAppID());
     pData->set_last_offline_time(0);
     pData->set_last_offline_ip(0);
     pData->set_view_record("");
 
-    m_net_->SendMsgPB(SquickStruct::ACK_ROLE_LIST, xAckRoleLiteInfoList, sock, clientID);
+    m_net_->SendMsgPB(rpc::ACK_ROLE_LIST, xAckRoleLiteInfoList, sock, clientID);
     */
 }
 
 void DBNet_ServerModule::OnCreateRoleGameProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     /*
     Guid clientID;
-    SquickStruct::ReqCreateRole xMsg;
+    rpc::ReqCreateRole xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID))
     {
             return;
@@ -141,10 +141,10 @@ void DBNet_ServerModule::OnCreateRoleGameProcess(const socket_t sock, const int 
 
     if (m_pPlayerRedisModule->CreateRole(account, name, xID, nHomeSceneID))
     {
-            SquickStruct::AckRoleLiteInfoList xAckRoleLiteInfoList;
+            rpc::AckRoleLiteInfoList xAckRoleLiteInfoList;
             xAckRoleLiteInfoList.set_account(account);
 
-            SquickStruct::RoleLiteInfo* pData = xAckRoleLiteInfoList.add_char_data();
+            rpc::RoleLiteInfo* pData = xAckRoleLiteInfoList.add_char_data();
             pData->mutable_id()->CopyFrom(INetModule::StructToProtobuf(xID));
             pData->set_game_id(pm_->GetAppID());
             pData->set_last_offline_time(0);
@@ -153,10 +153,10 @@ void DBNet_ServerModule::OnCreateRoleGameProcess(const socket_t sock, const int 
 
   #ifdef SQUICK_DEV
             std::cout << "创建角色成功 " << std::endl;
-            std::cout << "响应给客户端 SquickStruct::ACK_ROLE_LIST : clienId" << std::endl;
+            std::cout << "响应给客户端 rpc::ACK_ROLE_LIST : clienId" << std::endl;
   #endif
             // 响应创建角色
-            m_net_->SendMsgPB(SquickStruct::ACK_ROLE_LIST, xAckRoleLiteInfoList, sock, clientID);
+            m_net_->SendMsgPB(rpc::ACK_ROLE_LIST, xAckRoleLiteInfoList, sock, clientID);
     }
     */
 }
@@ -164,23 +164,23 @@ void DBNet_ServerModule::OnCreateRoleGameProcess(const socket_t sock, const int 
 void DBNet_ServerModule::OnDeleteRoleGameProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     /*
     Guid clientID;
-    SquickStruct::ReqDeleteRole xMsg;
+    rpc::ReqDeleteRole xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID))
     {
             return;
     }
 
-    SquickStruct::AckRoleLiteInfoList xAckRoleLiteInfoList;
+    rpc::AckRoleLiteInfoList xAckRoleLiteInfoList;
     xAckRoleLiteInfoList.set_account(xMsg.account());
 
-    m_net_->SendMsgPB(SquickStruct::ACK_ROLE_LIST, xAckRoleLiteInfoList, sock, clientID);
+    m_net_->SendMsgPB(rpc::ACK_ROLE_LIST, xAckRoleLiteInfoList, sock, clientID);
 
     */
 }
 
 void DBNet_ServerModule::OnLoadRoleDataProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid clientID;
-    SquickStruct::ReqEnter xMsg;
+    rpc::ReqEnter xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID)) {
         return;
     }
@@ -189,19 +189,19 @@ void DBNet_ServerModule::OnLoadRoleDataProcess(const socket_t sock, const int ms
 
     // Guid roleID = INetModule::ProtobufToStruct(xMsg.object());
     Guid xID = m_kernel_->CreateGUID();
-    SquickStruct::PlayerData xPlayerData;
+    rpc::PlayerData xPlayerData;
     xPlayerData.mutable_object()->CopyFrom(INetModule::StructToProtobuf(xID));
 
     // PlayerRedisModule* pPlayerRedisModule = (PlayerRedisModule*)m_pPlayerRedisModule;
     // pPlayerRedisModule->LoadPlayerData(roleID, xPlayerData);
 
-    m_net_->SendMsgPB(SquickStruct::DbProxyRPC::ACK_PLAYER_DATA_LOAD, xPlayerData, sock, clientID);
+    m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_PLAYER_DATA_LOAD, xPlayerData, sock, clientID);
 }
 
 void DBNet_ServerModule::OnSaveRoleDataProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     /*
     Guid clientID;
-    SquickStruct::RoleDataPack xMsg;
+    rpc::RoleDataPack xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID))
     {
             return;

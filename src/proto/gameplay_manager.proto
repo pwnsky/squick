@@ -1,5 +1,5 @@
 syntax = "proto3";
-package SquickStruct;
+package rpc;
 import "base.proto";
 
 // GameplayManagerRPC RPC 500 ~ 600

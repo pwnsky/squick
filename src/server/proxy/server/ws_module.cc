@@ -88,10 +88,10 @@ void ProxyServerNet_WSModule::OnClientDisconnect(const socket_t sock) {
             // when a net-object bind a account then tell that game-server
             if (!pNetObject->GetUserID().IsNull()) {
                 /*
-                SquickStruct::ReqLeaveGameServer xData;
+                rpc::ReqLeaveGameServer xData;
                 xData.set_arg(nGameID);
 
-                SquickStruct::MsgBase xMsg;
+                rpc::MsgBase xMsg;
 
                 //real user id
                 *xMsg.mutable_player_id() = INetModule::StructToProtobuf(pNetObject->GetUserID());
@@ -107,7 +107,7 @@ void ProxyServerNet_WSModule::OnClientDisconnect(const socket_t sock) {
                     return;
                 }
 
-                m_net_client_->SendByServerIDWithOutHead(nGameID, SquickStruct::EGameMsgID::REQ_LEAVE_GAME, msg);
+                m_net_client_->SendByServerIDWithOutHead(nGameID, rpc::EGameMsgID::REQ_LEAVE_GAME, msg);
                  */
             }
         }

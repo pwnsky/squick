@@ -141,7 +141,7 @@ bool WSModule::Update() {
 }
 
 bool WSModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) {
-    SquickStruct::MsgBase xMsg;
+    rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
         stream << " SendMsgPB Message to  " << sock;
@@ -151,7 +151,7 @@ bool WSModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message 
         return false;
     }
 
-    SquickStruct::Ident *pPlayerID = xMsg.mutable_player_id();
+    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
     *pPlayerID = INetModule::StructToProtobuf(Guid());
 
     std::string msg;
@@ -180,7 +180,7 @@ bool WSModule::SendMsgWithOutHead(const int16_t msg_id, const char *msg, const s
 }
 
 int WSModule::EnCode(const uint16_t umsg_id, const char *strData, const uint32_t unDataLen, std::string &strOutData) {
-    SquickStructHead xHead;
+    rpcHead xHead;
     xHead.SetMsgID(umsg_id);
     xHead.SetBodyLength(unDataLen);
 
@@ -542,7 +542,7 @@ std::error_code WSModule::DecodeFrame(const socket_t sock, NetObject *pNetObject
 
     if (fh.op == opcode::binary) {
         const char *pbData = data + need;
-        SquickStructHead xHead;
+        rpcHead xHead;
         int nMsgBodyLength = DeCode(pbData, reallen, xHead);
         if (nMsgBodyLength > 0 && xHead.GetMsgID() > 0) {
             OnReceiveNetPack(sock, xHead.GetMsgID(), pbData + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH, nMsgBodyLength);
@@ -559,7 +559,7 @@ std::error_code WSModule::DecodeFrame(const socket_t sock, NetObject *pNetObject
     return DecodeFrame(sock, pNetObject);
 }
 
-int WSModule::DeCode(const char *strData, const uint32_t unAllLen, SquickStructHead &xHead) {
+int WSModule::DeCode(const char *strData, const uint32_t unAllLen, rpcHead &xHead) {
     if (unAllLen < IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
         return -1;
     }

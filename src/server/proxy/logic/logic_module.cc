@@ -22,9 +22,9 @@ bool LogicModule::AfterStart() {
     m_log_ = pm_->FindModule<ILogModule>();
 
     m_net_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
-    m_net_->AddReceiveCallBack(SquickStruct::ProxyRPC::REQ_HEARTBEAT, this, &LogicModule::OnHeartbeat);
-    m_net_->AddReceiveCallBack(SquickStruct::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnect);
-    m_net_->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ENTER, this, &LogicModule::OnReqEnterGameServer);
+    m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_HEARTBEAT, this, &LogicModule::OnHeartbeat);
+    m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnect);
+    m_net_->AddReceiveCallBack(rpc::GameLobbyRPC::REQ_ENTER, this, &LogicModule::OnReqEnterGameServer);
     
     return true;
 }
@@ -38,8 +38,8 @@ void LogicModule::OnClientDisconnect(const socket_t sock) {
         if (nGameID > 0) {
             // when a net-object bind a account then tell that game-server
             if (!pNetObject->GetUserID().IsNull()) {
-                SquickStruct::ReqLeave xData;
-                SquickStruct::MsgBase xMsg;
+                rpc::ReqLeave xData;
+                rpc::MsgBase xMsg;
 
                 // real user id
                 *xMsg.mutable_player_id() = INetModule::StructToProtobuf(pNetObject->GetUserID());
@@ -53,7 +53,7 @@ void LogicModule::OnClientDisconnect(const socket_t sock) {
                     return;
                 }
 
-                m_net_client_->SendByServerIDWithOutHead(nGameID, SquickStruct::GameLobbyRPC::REQ_LEAVE, msg);
+                m_net_client_->SendByServerIDWithOutHead(nGameID, rpc::GameLobbyRPC::REQ_LEAVE, msg);
             }
         }
         mxClientIdent.RemoveElement(pNetObject->GetClientID());
@@ -63,7 +63,7 @@ void LogicModule::OnClientDisconnect(const socket_t sock) {
 
 
 int LogicModule::Transport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    SquickStruct::MsgBase xMsg;
+    rpc::MsgBase xMsg;
     if (!xMsg.ParseFromArray(msg, len)) {
         char szData[MAX_PATH] = { 0 };
         sprintf(szData, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
@@ -133,7 +133,7 @@ void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const ch
         return;
     }
 
-    SquickStruct::MsgBase xMsg;
+    rpc::MsgBase xMsg;
     if (!xMsg.ParseFromString(std::string(msg, len))) {
         char szData[MAX_PATH] = { 0 };
         sprintf(szData, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
@@ -174,7 +174,7 @@ void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const ch
 
 void LogicModule::OnHeartbeat(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     std::string msgData(msg, len);
-    m_net_->SendMsgWithOutHead(SquickStruct::ProxyRPC::ACK_HEARTBEAT, msgData, sock);
+    m_net_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_HEARTBEAT, msgData, sock);
 }
 
 
@@ -222,7 +222,7 @@ void LogicModule::OnReqEnterGameServer(const socket_t sock, const int msg_id, co
     }
 
     Guid nPlayerID; // no value
-    SquickStruct::ReqEnter xData;
+    rpc::ReqEnter xData;
     if (!m_net_->ReceivePB(msg_id, msg, len, xData, nPlayerID)) {
         return;
     }
@@ -230,7 +230,7 @@ void LogicModule::OnReqEnterGameServer(const socket_t sock, const int msg_id, co
     std::shared_ptr<ConnectData> pServerData = m_net_client_->GetServerNetInfo(pNetObject->GetGameID());
     if (pServerData && ConnectDataState::NORMAL == pServerData->eState) {
         if (pNetObject->GetConnectKeyState() > 0) {
-            SquickStruct::MsgBase xMsg;
+            rpc::MsgBase xMsg;
             if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
                 return;
             }
@@ -242,7 +242,7 @@ void LogicModule::OnReqEnterGameServer(const socket_t sock, const int msg_id, co
                 return;
             }
 
-            m_net_client_->SendByServerIDWithOutHead(pNetObject->GetGameID(), SquickStruct::GameLobbyRPC::REQ_ENTER, msg);
+            m_net_client_->SendByServerIDWithOutHead(pNetObject->GetGameID(), rpc::GameLobbyRPC::REQ_ENTER, msg);
         }
     }
 }
@@ -250,7 +250,7 @@ void LogicModule::OnReqEnterGameServer(const socket_t sock, const int msg_id, co
 
 void LogicModule::OnReqConnect(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ReqConnectProxy req;
+    rpc::ReqConnectProxy req;
     if (!m_net_->ReceivePB(msg_id, msg, len, req, nPlayerID))
     {
         return;
@@ -275,10 +275,10 @@ void LogicModule::OnReqConnect(const socket_t sock, const int msg_id, const char
         //this net-object bind a user's account
         pNetObject->SetAccount(guid.ToString());
         pNetObject->SetUserID(guid);
-        SquickStruct::AckConnectProxy ack;
+        rpc::AckConnectProxy ack;
         //dout << guid.ToString() << " 连接成功!\n";
         ack.set_code(0);
-        m_net_->SendMsgPB(SquickStruct::ProxyRPC::ACK_CONNECT_PROXY, ack, sock);
+        m_net_->SendMsgPB(rpc::ProxyRPC::ACK_CONNECT_PROXY, ack, sock);
 
         mxClientIdent.AddElement(xClientIdent, std::shared_ptr<socket_t>(new socket_t(sock)));
     } else {

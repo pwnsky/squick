@@ -288,7 +288,7 @@ bool Net::Dismantle(NetObject *pObject) {
 
     int len = pObject->GetBuffLen();
     if (len > IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
-        SquickStructHead xHead;
+        rpcHead xHead;
         int nMsgBodyLength = DeCode(pObject->GetBuff(), len, xHead); // 解析头部
         if (nMsgBodyLength > 0 && xHead.GetMsgID() > 0) {
             if (mRecvCB) {
@@ -541,7 +541,7 @@ bool Net::SendMsgToAllClientWithOutHead(const int16_t msg_id, const char *msg, c
 }
 
 int Net::EnCode(const uint16_t umsg_id, const char *strData, const uint32_t unDataLen, std::string &strOutData) {
-    SquickStructHead xHead;
+    rpcHead xHead;
     xHead.SetMsgID(umsg_id);
     xHead.SetBodyLength(unDataLen);
 
@@ -555,7 +555,7 @@ int Net::EnCode(const uint16_t umsg_id, const char *strData, const uint32_t unDa
     return xHead.GetBodyLength() + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH;
 }
 
-int Net::DeCode(const char *strData, const uint32_t unAllLen, SquickStructHead &xHead) {
+int Net::DeCode(const char *strData, const uint32_t unAllLen, rpcHead &xHead) {
 
     if (unAllLen < IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
 

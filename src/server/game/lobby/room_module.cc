@@ -17,17 +17,17 @@ bool RoomModule::Start() {
 bool RoomModule::Destory() { return true; }
 
 bool RoomModule::AfterStart() {
-    m_net_->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ROOM_CREATE, this, &RoomModule::OnReqRoomCreate);
-    m_net_->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ROOM_LIST, this, &RoomModule::OnReqRoomList);
-    m_net_->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ROOM_DETAILS, this, &RoomModule::OnReqRoomDetails);
-    m_net_->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ROOM_JOIN, this, &RoomModule::OnReqRoomJoin);
-    m_net_->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ROOM_QUIT, this, &RoomModule::OnReqRoomQuit);
-    m_net_->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ROOM_PLAYER_EVENT, this, &RoomModule::OnReqRoomPlayerEvent);
+    m_net_->AddReceiveCallBack(rpc::GameLobbyRPC::REQ_ROOM_CREATE, this, &RoomModule::OnReqRoomCreate);
+    m_net_->AddReceiveCallBack(rpc::GameLobbyRPC::REQ_ROOM_LIST, this, &RoomModule::OnReqRoomList);
+    m_net_->AddReceiveCallBack(rpc::GameLobbyRPC::REQ_ROOM_DETAILS, this, &RoomModule::OnReqRoomDetails);
+    m_net_->AddReceiveCallBack(rpc::GameLobbyRPC::REQ_ROOM_JOIN, this, &RoomModule::OnReqRoomJoin);
+    m_net_->AddReceiveCallBack(rpc::GameLobbyRPC::REQ_ROOM_QUIT, this, &RoomModule::OnReqRoomQuit);
+    m_net_->AddReceiveCallBack(rpc::GameLobbyRPC::REQ_ROOM_PLAYER_EVENT, this, &RoomModule::OnReqRoomPlayerEvent);
 
-    m_net_->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ROOM_GAME_PLAY_START, this, &RoomModule::OnReqRoomGamePlayStart);
+    m_net_->AddReceiveCallBack(rpc::GameLobbyRPC::REQ_ROOM_GAME_PLAY_START, this, &RoomModule::OnReqRoomGamePlayStart);
 
-    m_net_->AddReceiveCallBack(SquickStruct::GameplayManagerRPC::REQ_GAMEPLAY_DATA, this, &RoomModule::OnReqGameplayData);
-    m_net_->AddReceiveCallBack(SquickStruct::GameplayManagerRPC::REQ_GAMEPLAY_PREPARED, this, &RoomModule::OnReqGameplayPrepared);
+    m_net_->AddReceiveCallBack(rpc::GameplayManagerRPC::REQ_GAMEPLAY_DATA, this, &RoomModule::OnReqGameplayData);
+    m_net_->AddReceiveCallBack(rpc::GameplayManagerRPC::REQ_GAMEPLAY_PREPARED, this, &RoomModule::OnReqGameplayPrepared);
 
 
 #ifdef SQUICK_DEV
@@ -41,17 +41,17 @@ bool RoomModule::AfterStart() {
 bool RoomModule::Update() { return true; }
 void RoomModule::CreateDevRoom() {
     int room_id = 0;
-    auto roomDetails = new SquickStruct::RoomDetails();
+    auto roomDetails = new rpc::RoomDetails();
     roomDetails->set_id(room_id);
     roomDetails->set_name("开发测试房间");
     roomDetails->set_max_players(20);                                     // 默认20人
     roomDetails->set_nplayers(0);                                         // 当前房间人数
-    roomDetails->set_status(SquickStruct::RoomStatus::ROOM_GAME_PLAYING); // 已开始游戏
-    roomDetails->set_allocated_owner(new SquickStruct::Ident(m_net_->StructToProtobuf(Guid())));
+    roomDetails->set_status(rpc::RoomStatus::ROOM_GAME_PLAYING); // 已开始游戏
+    roomDetails->set_allocated_owner(new rpc::Ident(m_net_->StructToProtobuf(Guid())));
 
     // roomDetails->set_map_id(1); // 默认地图
 
-    SquickStruct::RoomGamePlay *gamePlay = new SquickStruct::RoomGamePlay();
+    rpc::RoomGamePlay *gamePlay = new rpc::RoomGamePlay();
     gamePlay->set_ip("192.168.0.142");
     gamePlay->set_port(7777);
     gamePlay->set_id(1);
@@ -65,7 +65,7 @@ void RoomModule::OnReqRoomCreate(const socket_t sock, const int msg_id, const ch
     int sceneId = 3; // 游戏 场景
     dout << " OnReqRoomCreate: \n";
     Guid clientID;
-    SquickStruct::ReqRoomCreate xMsg;
+    rpc::ReqRoomCreate xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID)) {
         return;
     }
@@ -81,21 +81,21 @@ void RoomModule::OnReqRoomCreate(const socket_t sock, const int msg_id, const ch
     dout << "Room 申请新的 room id: " << roomID << " \n";
     m_player_manager_->SetPlayerRoomID(clientID, roomID);
 
-    auto roomDetails = new SquickStruct::RoomDetails();
+    auto roomDetails = new rpc::RoomDetails();
     // .......
     roomDetails->set_id(roomID);
     roomDetails->set_name(xMsg.name());
     roomDetails->set_max_players(10);                                 // 默认10人
     roomDetails->set_nplayers(1);                                     // 当前房间人数
-    roomDetails->set_status(SquickStruct::RoomStatus::ROOM_PREPARED); // 默认房间已准备好,方便测试
+    roomDetails->set_status(rpc::RoomStatus::ROOM_PREPARED); // 默认房间已准备好,方便测试
 
-    roomDetails->set_allocated_owner(new SquickStruct::Ident(m_net_->StructToProtobuf(clientID)));
-    SquickStruct::RoomPlayer *player = roomDetails->add_players();
-    player->set_allocated_guid(new SquickStruct::Ident(m_net_->StructToProtobuf(clientID)));
+    roomDetails->set_allocated_owner(new rpc::Ident(m_net_->StructToProtobuf(clientID)));
+    rpc::RoomPlayer *player = roomDetails->add_players();
+    player->set_allocated_guid(new rpc::Ident(m_net_->StructToProtobuf(clientID)));
     player->set_name("player_name");
-    player->set_status(SquickStruct::RoomPlayerStatus::ROOM_PLAYER_STATUS_NOT_PREPARE);
+    player->set_status(rpc::RoomPlayerStatus::ROOM_PLAYER_STATUS_NOT_PREPARE);
 
-    SquickStruct::RoomGamePlay *gamePlay = new SquickStruct::RoomGamePlay();
+    rpc::RoomGamePlay *gamePlay = new rpc::RoomGamePlay();
     gamePlay->set_scene(sceneId);
     gamePlay->set_mode(0);
     roomDetails->set_allocated_game_play(gamePlay);
@@ -103,17 +103,17 @@ void RoomModule::OnReqRoomCreate(const socket_t sock, const int msg_id, const ch
     m_rooms[roomID] = roomDetails;
 
     // 通知玩家创建房间成功
-    SquickStruct::AckRoomCreate ack;
+    rpc::AckRoomCreate ack;
     ack.set_room_id(roomID);
     ack.set_code(0);
-    SendToPlayer(SquickStruct::ACK_ROOM_CREATE, ack, clientID);
+    SendToPlayer(rpc::ACK_ROOM_CREATE, ack, clientID);
 }
 
 // 请求加入房间
 void RoomModule::OnReqRoomJoin(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     dout << "OnReqRoomJoin\n";
     Guid clientID;
-    SquickStruct::ReqRoomJoin xMsg;
+    rpc::ReqRoomJoin xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID)) {
         return;
     }
@@ -144,14 +144,14 @@ void RoomModule::OnReqRoomJoin(const socket_t sock, const int msg_id, const char
 
     int nplayers = room->nplayers() + 1;
     room->set_nplayers(nplayers);
-    SquickStruct::RoomPlayer *player = room->add_players();
+    rpc::RoomPlayer *player = room->add_players();
     player->set_name("join player");
-    player->set_status(SquickStruct::ROOM_PLAYER_STATUS_NOT_PREPARE);
-    player->set_allocated_guid(new SquickStruct::Ident(m_net_->StructToProtobuf(clientID)));
+    player->set_status(rpc::ROOM_PLAYER_STATUS_NOT_PREPARE);
+    player->set_allocated_guid(new rpc::Ident(m_net_->StructToProtobuf(clientID)));
 
-    SquickStruct::AckRoomJoin ack;
+    rpc::AckRoomJoin ack;
     ack.set_code(0);
-    m_pGameServerNet_ServerModule->SendMsgPBToProxy(SquickStruct::ACK_ROOM_JOIN, ack, clientID);
+    m_pGameServerNet_ServerModule->SendMsgPBToProxy(rpc::ACK_ROOM_JOIN, ack, clientID);
 }
 
 // 获取房间列表
@@ -159,7 +159,7 @@ void RoomModule::OnReqRoomList(const socket_t sock, const int msg_id, const char
     dout << "OnReqRoomList\n";
 
     Guid clientID;
-    SquickStruct::ReqRoomList xMsg;
+    rpc::ReqRoomList xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID)) {
         return;
     }
@@ -172,8 +172,8 @@ void RoomModule::OnReqRoomList(const socket_t sock, const int msg_id, const char
         return;
     }
 
-    SquickStruct::AckRoomList ack;
-    SquickStruct::RoomSimple *room;
+    rpc::AckRoomList ack;
+    rpc::RoomSimple *room;
 
     int i = 0;
     for (auto iter = m_rooms.begin(); iter != m_rooms.end(); ++iter) {
@@ -196,13 +196,13 @@ void RoomModule::OnReqRoomList(const socket_t sock, const int msg_id, const char
         // dout << "遍历: " << iter->second->name() << std::endl;
     }
 
-    m_pGameServerNet_ServerModule->SendMsgPBToProxy(SquickStruct::ACK_ROOM_LIST, ack, clientID);
+    m_pGameServerNet_ServerModule->SendMsgPBToProxy(rpc::ACK_ROOM_LIST, ack, clientID);
 }
 
 void RoomModule::OnReqRoomDetails(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     dout << "OnReqRoomDetails\n";
     Guid clientID;
-    SquickStruct::ReqRoomDetails xMsg;
+    rpc::ReqRoomDetails xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID)) {
         return;
     }
@@ -216,15 +216,15 @@ void RoomModule::OnReqRoomDetails(const socket_t sock, const int msg_id, const c
         return;
     }
 
-    SquickStruct::AckRoomDetails ack;
+    rpc::AckRoomDetails ack;
     *ack.mutable_room() = *room;
-    SendToPlayer(SquickStruct::GameLobbyRPC::ACK_ROOM_DETAILS, ack, clientID);
+    SendToPlayer(rpc::GameLobbyRPC::ACK_ROOM_DETAILS, ack, clientID);
 }
 
 void RoomModule::OnReqRoomQuit(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     dout << "OnReqRoomQuit\n";
     Guid clientID;
-    SquickStruct::ReqRoomQuit xMsg;
+    rpc::ReqRoomQuit xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID)) {
         return;
     }
@@ -232,13 +232,13 @@ void RoomModule::OnReqRoomQuit(const socket_t sock, const int msg_id, const char
     // 检查房间状态
     int room_id = xMsg.room_id();
 
-    SquickStruct::AckRoomQuit ack;
+    rpc::AckRoomQuit ack;
     if (RoomQuit(clientID) == true) {
         ack.set_code(0);
     } else {
         ack.set_code(1);
     }
-    m_pGameServerNet_ServerModule->SendMsgPBToProxy(SquickStruct::ACK_ROOM_QUIT, ack, clientID);
+    m_pGameServerNet_ServerModule->SendMsgPBToProxy(rpc::ACK_ROOM_QUIT, ack, clientID);
 }
 
 bool RoomModule::RoomQuit(const Guid &clientID) {
@@ -292,7 +292,7 @@ void RoomModule::OnReqRoomPlayerEvent(const socket_t sock, const int msg_id, con
 void RoomModule::OnReqRoomGamePlayStart(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     dout << "OnReqStartGame\n";
     Guid clientID;
-    SquickStruct::ReqRoomGamePlayStart xMsg;
+    rpc::ReqRoomGamePlayStart xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID)) {
         return;
     }
@@ -309,11 +309,11 @@ void RoomModule::OnReqRoomGamePlayStart(const socket_t sock, const int msg_id, c
     Guid owner = m_net_->ProtobufToStruct(room->owner());
 
     switch (room->status()) {
-    case SquickStruct::ROOM_PREPARING: {
+    case rpc::ROOM_PREPARING: {
         dout << "房间未准备中!";
     } break;
 
-    case SquickStruct::ROOM_PREPARED: {
+    case rpc::ROOM_PREPARED: {
         if (owner == clientID) {
             //if(room->game_play().id() != -1) 
             dout << "开始游戏!";
@@ -340,19 +340,19 @@ void RoomModule::OnReqRoomGamePlayStart(const socket_t sock, const int msg_id, c
         }
     } break;
 
-    case SquickStruct::ROOM_GAME_PLAYING: {
+    case rpc::ROOM_GAME_PLAYING: {
         dout << "玩家加入游戏!\n";
         // 加入游戏
-        SquickStruct::AckRoomGamePlayStart ack;
+        rpc::AckRoomGamePlayStart ack;
         ack.set_code(0);
-        SquickStruct::RoomGamePlay play = room->game_play();
-        SquickStruct::RoomGamePlay *gamePlay = new SquickStruct::RoomGamePlay();
+        rpc::RoomGamePlay play = room->game_play();
+        rpc::RoomGamePlay *gamePlay = new rpc::RoomGamePlay();
         gamePlay->set_ip(play.ip());
         gamePlay->set_port(play.port());
         gamePlay->set_key(play.key());
         gamePlay->set_name(play.name());
         ack.set_allocated_game_play(gamePlay);
-        m_pGameServerNet_ServerModule->SendMsgPBToProxy(SquickStruct::GameLobbyRPC::ACK_ROOM_GAME_PLAY_START, ack, clientID);
+        m_pGameServerNet_ServerModule->SendMsgPBToProxy(rpc::GameLobbyRPC::ACK_ROOM_GAME_PLAY_START, ack, clientID);
     } break;
     }
 }
@@ -361,7 +361,7 @@ void RoomModule::OnReqRoomGamePlayStart(const socket_t sock, const int msg_id, c
 void RoomModule::OnReqGameplayData(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     dout << "OnReqGameplayInit\n";
     Guid clientID;
-    SquickStruct::ReqGameplayData xMsg;
+    rpc::ReqGameplayData xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID)) {
         return;
     }
@@ -383,14 +383,14 @@ void RoomModule::OnReqGameplayData(const socket_t sock, const int msg_id, const 
 #endif // !SQUICK_DEV
 
     // 发送房间内详细数据给Gameplay服务器
-    m_pGameServerNet_ServerModule->SendMsgPBToGameplay(SquickStruct::ACK_GAMEPLAY_DATA, *room, clientID);
+    m_pGameServerNet_ServerModule->SendMsgPBToGameplay(rpc::ACK_GAMEPLAY_DATA, *room, clientID);
 }
 
 // PVP Server初始化游戏数据完成
 void RoomModule::OnReqGameplayPrepared(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     dout << "OnReqGamePlayPrepared\n";
     Guid clientID;
-    SquickStruct::ReqGameplayPrepared xMsg;
+    rpc::ReqGameplayPrepared xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID)) {
         return;
     }
@@ -422,16 +422,16 @@ void RoomModule::GamePlayPrepared(int room_id, const string &name, const string 
         return;
     }
 
-    SquickStruct::AckRoomGamePlayStart ack;
+    rpc::AckRoomGamePlayStart ack;
     ack.set_code(0);
 
     // 保存PVP服务器信息
-    room->set_status(SquickStruct::ROOM_GAME_PLAYING);
+    room->set_status(rpc::ROOM_GAME_PLAYING);
     room->mutable_game_play()->set_ip(ip);
     room->mutable_game_play()->set_port(port);
     room->mutable_game_play()->set_name(name);
 
-    SquickStruct::RoomGamePlay *server = new SquickStruct::RoomGamePlay();
+    rpc::RoomGamePlay *server = new rpc::RoomGamePlay();
     server->set_ip(ip);
     server->set_port(port);
     server->set_name(name);
@@ -439,7 +439,7 @@ void RoomModule::GamePlayPrepared(int room_id, const string &name, const string 
     ack.set_allocated_game_play(server);
 
     // 广播通知房间内的所有玩家加入 Game Play 服务器
-    BroadcastToPlyaers(SquickStruct::ACK_ROOM_GAME_PLAY_START, ack, roomID);
+    BroadcastToPlyaers(rpc::ACK_ROOM_GAME_PLAY_START, ack, roomID);
 }
 
 void RoomModule::SendToPlayer(const uint16_t msg_id, google::protobuf::Message &xMsg, const Guid &player) {
@@ -464,6 +464,6 @@ void RoomModule::BroadcastToPlyaers(const uint16_t msg_id, google::protobuf::Mes
     }
 }
 
-SquickStruct::RoomDetails *RoomModule::GetRoomByID(int room_id) { return m_rooms[room_id]; }
+rpc::RoomDetails *RoomModule::GetRoomByID(int room_id) { return m_rooms[room_id]; }
 
 } // namespace game::player

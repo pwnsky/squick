@@ -60,8 +60,8 @@ void GameModule::Register(INet *pNet) {
                 const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
                 const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
-                SquickStruct::ServerInfoReportList xMsg;
-                SquickStruct::ServerInfoReport *pData = xMsg.add_server_list();
+                rpc::ServerInfoReportList xMsg;
+                rpc::ServerInfoReport *pData = xMsg.add_server_list();
 
                 pData->set_server_id(serverID);
                 pData->set_server_name(strId);
@@ -69,13 +69,13 @@ void GameModule::Register(INet *pNet) {
                 pData->set_server_ip(ip);
                 pData->set_server_port(nPort);
                 pData->set_server_max_online(maxConnect);
-                pData->set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
+                pData->set_server_state(rpc::ServerState::SERVER_NORMAL);
                 pData->set_server_type(serverType);
 
                 std::shared_ptr<ConnectData> pServerData = m_net_client_->GetServerNetInfo(pNet);
                 if (pServerData) {
                     int nTargetID = pServerData->nGameID;
-                    m_net_client_->SendToServerByPB(nTargetID, SquickStruct::ServerRPC::GAMEPLAY_MANAGER_TO_GAME_REGISTERED, xMsg);
+                    m_net_client_->SendToServerByPB(nTargetID, rpc::ServerRPC::GAMEPLAY_MANAGER_TO_GAME_REGISTERED, xMsg);
 
                     m_log_->LogInfo(Guid(0, pData->server_id()), pData->server_name(), "Register");
                 }

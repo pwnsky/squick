@@ -54,7 +54,7 @@ class WSModule : public IWSModule {
     std::error_code HandShake(const socket_t sock, const char *msg, const uint32_t len);
 
     std::error_code DecodeFrame(const socket_t sock, NetObject *pNetObject);
-    int DeCode(const char *strData, const uint32_t unAllLen, SquickStructHead &xHead);
+    int DeCode(const char *strData, const uint32_t unAllLen, rpcHead &xHead);
 
     std::string EncodeFrame(const char *data, size_t size, bool text);
 

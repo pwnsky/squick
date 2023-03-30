@@ -22,7 +22,7 @@ bool GameModule::Destory() {
 bool GameModule::Update() { return true; }
 
 bool GameModule::AfterStart() {
-    m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, SquickStruct::GameLobbyRPC::ACK_ENTER, this, &GameModule::OnAckEnterGame);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, rpc::GameLobbyRPC::ACK_ENTER, this, &GameModule::OnAckEnterGame);
     m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, this, &GameModule::Transport);
 
     m_net_client_->AddEventCallBack(ServerType::ST_GAME, this, &GameModule::OnSocketGSEvent);
@@ -57,8 +57,8 @@ void GameModule::Register(INet *pNet) {
                 const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
                 const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
-                SquickStruct::ServerInfoReportList xMsg;
-                SquickStruct::ServerInfoReport *pData = xMsg.add_server_list();
+                rpc::ServerInfoReportList xMsg;
+                rpc::ServerInfoReport *pData = xMsg.add_server_list();
 
                 pData->set_server_id(serverID);
                 pData->set_server_name(strId);
@@ -66,13 +66,13 @@ void GameModule::Register(INet *pNet) {
                 pData->set_server_ip(ip);
                 pData->set_server_port(nPort);
                 pData->set_server_max_online(maxConnect);
-                pData->set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
+                pData->set_server_state(rpc::ServerState::SERVER_NORMAL);
                 pData->set_server_type(serverType);
 
                 std::shared_ptr<ConnectData> pServerData = m_net_client_->GetServerNetInfo(pNet);
                 if (pServerData) {
                     int nTargetID = pServerData->nGameID;
-                    m_net_client_->SendToServerByPB(nTargetID, SquickStruct::ServerRPC::PROXY_TO_GAME_REGISTERED, xMsg);
+                    m_net_client_->SendToServerByPB(nTargetID, rpc::ServerRPC::PROXY_TO_GAME_REGISTERED, xMsg);
 
                     m_log_->LogInfo(Guid(0, pData->server_id()), pData->server_name(), "Register");
                 }
@@ -86,7 +86,7 @@ void GameModule::Register(INet *pNet) {
 void GameModule::OnAckEnterGame(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     dout << "进入游戏成功!\n";
     Guid nPlayerID;
-    SquickStruct::AckEnter xData;
+    rpc::AckEnter xData;
     if (!INetModule::ReceivePB(msg_id, msg, len, xData, nPlayerID)) {
         return;
     }

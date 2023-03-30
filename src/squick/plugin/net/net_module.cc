@@ -120,7 +120,7 @@ bool NetModule::SendMsgToAllClientWithOutHead(const int msg_id, const std::strin
 }
 
 bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const Guid id) {
-    SquickStruct::MsgBase xMsg;
+    rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
         stream << " SendMsgPB Message to  " << sock;
@@ -130,7 +130,7 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
         return false;
     }
 
-    SquickStruct::Ident *pPlayerID = xMsg.mutable_player_id();
+    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
     *pPlayerID = StructToProtobuf(id);
 
     std::string msg;
@@ -149,10 +149,10 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
 bool NetModule::SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock) { return SendMsgWithOutHead(msg_id, xData, sock); }
 
 bool NetModule::SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const Guid id) {
-    SquickStruct::MsgBase xMsg;
+    rpc::MsgBase xMsg;
     xMsg.set_msg_data(xData.data(), xData.length());
 
-    SquickStruct::Ident *pPlayerID = xMsg.mutable_player_id();
+    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
     *pPlayerID = StructToProtobuf(id);
 
     std::string msg;
@@ -169,7 +169,7 @@ bool NetModule::SendMsg(const uint16_t msg_id, const std::string &xData, const s
 }
 
 bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) {
-    SquickStruct::MsgBase xMsg;
+    rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
         stream << " SendMsgPB Message to  " << sock;
@@ -179,7 +179,7 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
         return false;
     }
 
-    SquickStruct::Ident *pPlayerID = xMsg.mutable_player_id();
+    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
     *pPlayerID = StructToProtobuf(Guid());
 
     std::string msg;
@@ -198,7 +198,7 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
 }
 
 bool NetModule::SendMsgPBToAllClient(const uint16_t msg_id, const google::protobuf::Message &xData) {
-    SquickStruct::MsgBase xMsg;
+    rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
         stream << " SendMsgPBToAllClient";
@@ -231,7 +231,7 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
         return false;
     }
 
-    SquickStruct::MsgBase xMsg;
+    rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
         stream << " SendMsgPB faailed fd " << sock;
@@ -241,13 +241,13 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
         return false;
     }
 
-    SquickStruct::Ident *pPlayerID = xMsg.mutable_player_id();
+    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
     *pPlayerID = StructToProtobuf(Guid());
     if (pClientIDList) {
         for (int i = 0; i < pClientIDList->size(); ++i) {
             const Guid &ClientID = (*pClientIDList)[i];
 
-            SquickStruct::Ident *pData = xMsg.add_player_client_list();
+            rpc::Ident *pData = xMsg.add_player_client_list();
             if (pData) {
                 *pData = StructToProtobuf(ClientID);
             }
@@ -277,16 +277,16 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const std::string &strData, con
         return false;
     }
 
-    SquickStruct::MsgBase xMsg;
+    rpc::MsgBase xMsg;
     xMsg.set_msg_data(strData.data(), strData.length());
 
-    SquickStruct::Ident *pPlayerID = xMsg.mutable_player_id();
+    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
     *pPlayerID = StructToProtobuf(Guid());
     if (pClientIDList) {
         for (int i = 0; i < pClientIDList->size(); ++i) {
             const Guid &ClientID = (*pClientIDList)[i];
 
-            SquickStruct::Ident *pData = xMsg.add_player_client_list();
+            rpc::Ident *pData = xMsg.add_player_client_list();
             if (pData) {
                 *pData = StructToProtobuf(ClientID);
             }
@@ -375,8 +375,8 @@ void NetModule::KeepAlive() {
 
     nLastTime = GetPluginManager()->GetNowTime();
 
-    SquickStruct::ServerHeartBeat xMsg;
+    rpc::ServerHeartBeat xMsg;
     xMsg.set_count(0);
 
-    SendMsgPB(SquickStruct::ServerRPC::STS_HEART_BEAT, xMsg, 0);
+    SendMsgPB(rpc::ServerRPC::STS_HEART_BEAT, xMsg, 0);
 }

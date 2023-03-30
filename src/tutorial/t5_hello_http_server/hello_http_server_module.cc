@@ -34,7 +34,7 @@ bool HelloWorld5::AfterStart() {
 
     m_net_->Startialization(9999, 5001);
     m_net_->AddEventCallBack(this, &HelloWorld5::OnTCPEvent);
-    m_net_->AddReceiveCallBack(SquickStruct::REQ_LOGIN, this, &HelloWorld5::OnLoginProcess);
+    m_net_->AddReceiveCallBack(rpc::REQ_LOGIN, this, &HelloWorld5::OnLoginProcess);
 
     return true;
 }
@@ -126,7 +126,7 @@ void HelloWorld5::OnTCPEvent(const socket_t fd, const SQUICK_NET_EVENT event, IN
 
 void HelloWorld5::OnLoginProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid nPlayerID;
-    SquickStruct::ReqAccountLogin xMsg;
+    rpc::ReqAccountLogin xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
         return;
     }

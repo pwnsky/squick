@@ -1,6 +1,6 @@
 // 各服务器之间的通信RPC
 syntax = "proto3";
-package SquickStruct;
+package rpc;
 import "base.proto";
 
 // Servers RPC 0 ~ 500

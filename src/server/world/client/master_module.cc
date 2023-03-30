@@ -21,12 +21,12 @@ bool WorldToMasterModule::Start() {
 bool WorldToMasterModule::Destory() { return true; }
 
 bool WorldToMasterModule::AfterStart() {
-    // m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, SquickStruct::REQ_CONNECT_WORLD, this,
+    // m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, rpc::REQ_CONNECT_WORLD, this,
     // &WorldToMasterModule::OnSelectServerProcess); m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER,
-    // SquickStruct::REQ_KICKED_FROM_WORLD, this, &WorldToMasterModule::OnKickClientProcess);
+    // rpc::REQ_KICKED_FROM_WORLD, this, &WorldToMasterModule::OnKickClientProcess);
     m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, this, &WorldToMasterModule::InvalidMessage);
 
-    m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, SquickStruct::STS_NET_INFO, this, &WorldToMasterModule::OnServerInfoProcess);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, rpc::STS_NET_INFO, this, &WorldToMasterModule::OnServerInfoProcess);
 
     m_net_client_->AddEventCallBack(ServerType::ST_MASTER, this, &WorldToMasterModule::OnSocketMSEvent);
     m_net_client_->ExpandBufferSize();
@@ -84,8 +84,8 @@ void WorldToMasterModule::Register(INet *pNet) {
                 const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
                 const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
-                SquickStruct::ServerInfoReportList xMsg;
-                SquickStruct::ServerInfoReport *pData = xMsg.add_server_list();
+                rpc::ServerInfoReportList xMsg;
+                rpc::ServerInfoReport *pData = xMsg.add_server_list();
 
                 pData->set_server_id(serverID);
                 pData->set_server_name(strId);
@@ -93,13 +93,13 @@ void WorldToMasterModule::Register(INet *pNet) {
                 pData->set_server_ip(ip);
                 pData->set_server_port(nPort);
                 pData->set_server_max_online(maxConnect);
-                pData->set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
+                pData->set_server_state(rpc::ServerState::SERVER_NORMAL);
                 pData->set_server_type(serverType);
 
                 std::shared_ptr<ConnectData> pServerData = m_net_client_->GetServerNetInfo(pNet);
                 if (pServerData) {
                     int nTargetID = pServerData->nGameID;
-                    m_net_client_->SendToServerByPB(nTargetID, SquickStruct::ServerRPC::WORLD_TO_MASTER_REGISTERED, xMsg);
+                    m_net_client_->SendToServerByPB(nTargetID, rpc::ServerRPC::WORLD_TO_MASTER_REGISTERED, xMsg);
 
                     m_log_->LogInfo(Guid(0, pData->server_id()), pData->server_name(), "Register");
                 }
@@ -127,7 +127,7 @@ void WorldToMasterModule::ServerReport() {
                 const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
                 const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
-                SquickStruct::ServerInfoReport reqMsg;
+                rpc::ServerInfoReport reqMsg;
 
                 reqMsg.set_server_id(serverID);
                 reqMsg.set_server_name(strId);
@@ -135,10 +135,10 @@ void WorldToMasterModule::ServerReport() {
                 reqMsg.set_server_ip(ip);
                 reqMsg.set_server_port(nPort);
                 reqMsg.set_server_max_online(maxConnect);
-                reqMsg.set_server_state(SquickStruct::ServerState::SERVER_NORMAL);
+                reqMsg.set_server_state(rpc::ServerState::SERVER_NORMAL);
                 reqMsg.set_server_type(serverType);
                 dout << "World Server report: " << serverType << std::endl;
-                m_net_client_->SendToAllServerByPB(ServerType::ST_MASTER, SquickStruct::STS_SERVER_REPORT, reqMsg, Guid());
+                m_net_client_->SendToAllServerByPB(ServerType::ST_MASTER, rpc::STS_SERVER_REPORT, reqMsg, Guid());
             }
         }
     }
@@ -149,7 +149,7 @@ void WorldToMasterModule::RefreshWorldInfo() {}
 void WorldToMasterModule::OnSelectServerProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     /*
     Guid nPlayerID;
-    SquickStruct::ReqConnectWorld xMsg;
+    rpc::ReqConnectWorld xMsg;
     if (!INetModule::ReceivePB( msg_id, msg, len, xMsg, nPlayerID))
     {
             return;
@@ -160,7 +160,7 @@ void WorldToMasterModule::OnSelectServerProcess(const socket_t sock, const int m
     {
             const std::string& strSecurityKey = m_security_->GetSecurityKey(xMsg.account());
 
-            SquickStruct::AckConnectWorldResult xData;
+            rpc::AckConnectWorldResult xData;
 
             xData.set_world_id(xMsg.world_id());
             xData.mutable_sender()->CopyFrom(xMsg.sender());
@@ -171,8 +171,8 @@ void WorldToMasterModule::OnSelectServerProcess(const socket_t sock, const int m
             xData.set_world_port(xServerData->pData->server_port());
             xData.set_world_key(strSecurityKey);
 
-            m_net_->SendMsgPB(SquickStruct::ACK_CONNECT_WORLD, xData, xServerData->nFD);
-            m_net_client_->SendSuitByPB(ServerType::ST_MASTER, xMsg.account(), SquickStruct::ACK_CONNECT_WORLD, xData);
+            m_net_->SendMsgPB(rpc::ACK_CONNECT_WORLD, xData, xServerData->nFD);
+            m_net_client_->SendSuitByPB(ServerType::ST_MASTER, xMsg.account(), rpc::ACK_CONNECT_WORLD, xData);
     }*/
 }
 
