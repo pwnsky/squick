@@ -16,6 +16,10 @@
 #include "proxy.pb.h"
 #include "server.pb.h"
 #include "login.pb.h"
+#include "world.pb.h"
+#include "micro.pb.h"
+#include "gameplay_manager.pb.h"
+
 // -------------------------------------------------------------------------
 #pragma pack(push, 1)
 

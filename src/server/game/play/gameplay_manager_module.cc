@@ -112,6 +112,20 @@ bool GameplayManagerModule::GameplayPlayerQuit(const Guid &player) {
     return true;
 }
 
+bool GameplayManagerModule::SingleGameplayCreate(int id, const string& key) {
+    dout << "启动 独立的Gameplay服务器 id: " << id << " key: " << key << std::endl;
+    SquickStruct::ReqGameplayCreate xMsg;
+    xMsg.set_id(id);
+    xMsg.set_key(key);
+    xMsg.set_game_id(pPluginManager->GetAppID()); // 获取当前Game ID
+    m_pGameServerNet_ServerModule->SendMsgPBToGameplayManager(GameplayManagerRPC::REQ_GAMEPLAY_CREATE, xMsg);
+    return true;
+}
+
+bool GameplayManagerModule::SingleGameplayDestroy(int id) {
+    return true;
+}
+
 void GameplayManagerModule::OnRecv(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) {
     SquickStruct::MsgBase xMsg;
     if (!xMsg.ParseFromArray(msg, len)) {

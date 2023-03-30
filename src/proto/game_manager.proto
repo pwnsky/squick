@@ -3,7 +3,10 @@ syntax = "proto3";
 package SquickStruct;
 import "base.proto";
 
-// 35000 ~ 40000
+// 45000 ~ 46000
 enum GameManagerRPC {
     GAME_MANAGER_RPC_NONE = 0;
+
 }
+
+

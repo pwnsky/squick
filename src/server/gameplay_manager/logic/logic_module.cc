@@ -10,9 +10,27 @@ bool LogicModule::Update() { return true; }
 
 bool LogicModule::AfterStart() {
     m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
-    m_pClassModule = pPluginManager->FindModule<IClassModule>();
+    m_class_ = pPluginManager->FindModule<IClassModule>();
+    m_element_ = pPluginManager->FindModule<IElementModule>();
     m_pNetModule = pPluginManager->FindModule<INetModule>();
     m_pNetClientModule = pPluginManager->FindModule<INetClientModule>();
+    
+
+    SQUICK_SHARE_PTR<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
+    if (xLogicClass) {
+        const std::vector<std::string>& strIdList = xLogicClass->GetIDList();
+        for (int i = 0; i < strIdList.size(); ++i) {
+            const std::string& strId = strIdList[i];
+            int nWebServerAppID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
+            // webserver only run one instance in each server
+            if (pPluginManager->GetAppID() == nWebServerAppID) {
+                public_port_ = m_element_->GetPropertyInt32(strId, excel::Server::Port());
+                public_ip_ = m_element_->GetPropertyString(strId, excel::Server::PublicIP());
+                break;
+            }
+        }
+    }
+
 
     // 来自客户端
     m_pNetModule->AddReceiveCallBack(SquickStruct::STS_HEART_BEAT, this, &LogicModule::OnLagTestProcess);
@@ -51,21 +69,20 @@ void LogicModule::OnReqPvpInstanceCreate(const SQUICK_SOCKET sockIndex, const in
         return;
     }
 
-    dout << "Game Server 请求创建PVP实例 from " << xMsg.game_id() << std::endl;
+    dout << "Game Server 请求创建PVP实例 from " << xMsg.game_id() << " id: " << xMsg.id() << " key: " << xMsg.key() << std::endl;
     string cmd;
-    // 为了测试方便，先暂时采用system来启动PVP服务器，后期采用docker进行管理 PVP 服务器
+    // 为了测试方便，先暂时采用system来启动Gameplay服务器，后期采用docker进行管理 Gameplay 服务器
 #if SQUICK_PLATFORM == SQUICK_PLATFORM_WIN
-    cmd = "start game/Action.exe";
+    cmd = "start gameplay/server.exe";
 #else
-    cmd = "bash game/ActionServer.sh";
+    cmd = "bash gameplay/server.sh";
 #endif
-    cmd += " -instance_id=" + xMsg.id();
-    cmd += " -instance_key=" + xMsg.key();
+    cmd += " -instance_id=" + to_string(xMsg.id());
+    cmd += " -instance_key=" + string(xMsg.key());
     cmd += " -game_id=" + std::to_string(xMsg.game_id());
-    cmd += " -room_id=" + std::to_string(xMsg.room_id());
-    cmd += " -mip=" + string("\"127.0.0.1\"");          // PVP Manager IP
-    cmd += " -mport=" + string("20001");                // PVP Manager 端口
-    cmd += " -ip=" + string("\"127.0.0.1\"");           // PVP IP地址
+    cmd += " -mip=" + public_ip_;          // Gameplay Manager IP
+    cmd += " -mport=" + std::to_string(public_port_); // Gameplay Manager 端口
+    cmd += " -ip=" + public_ip_;           // Gameplay IP地址
     cmd += " -log";                                     // 打印日志
     cmd += " -port=" + std::to_string(GetUnbindPort()); // 端口
 #if SQUICK_PLATFORM == SQUICK_PLATFORM_LINUX

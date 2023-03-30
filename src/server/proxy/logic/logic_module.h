@@ -7,6 +7,7 @@
 #include <squick/plugin/net/export.h>
 
 #include "i_logic_module.h"
+#include <vector>
 
 namespace proxy::logic {
 class LogicModule : public ILogicModule {
@@ -34,6 +35,8 @@ class LogicModule : public ILogicModule {
     int Transport(const SQUICK_SOCKET sockIndex, const int msgID, const char* msg, const uint32_t len);
 
     MapEx<Guid, SQUICK_SOCKET> mxClientIdent;
+    std::vector<Guid> expired_;
+
   protected:
     ILogModule* m_pLogModule;
     IClassModule *m_pClassModule;

@@ -1,11 +1,10 @@
 #pragma once
 
 #include <squick/core/map.h>
-#include <squick/plugin/config/i_class_module.h>
-#include <squick/plugin/kernel/i_kernel_module.h>
-#include <squick/plugin/log/i_log_module.h>
-#include <squick/plugin/net/i_net_client_module.h>
-#include <squick/plugin/net/i_net_module.h>
+#include <squick/plugin/config/export.h>
+#include <squick/plugin/kernel/export.h>
+#include <squick/plugin/log/export.h>
+#include <squick/plugin/net/export.h>
 
 #include "i_logic_module.h"
 
@@ -26,12 +25,15 @@ class LogicModule : public ILogicModule {
     int GetUnbindPort();
 
   protected:
-    IClassModule *m_pClassModule;
+    IClassModule * m_class_;
+    IElementModule* m_element_;
     IKernelModule *m_pKernelModule;
     INetModule *m_pNetModule;
     INetClientModule *m_pNetClientModule;
 
   private:
+      std::string public_ip_ = "";
+      int public_port_ = 0;
 };
 
 } // namespace gameplay_manager::logic

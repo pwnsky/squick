@@ -196,15 +196,26 @@ namespace login::http {
 	}
 
 	std::string HttpModule::GetUserID(SQUICK_SHARE_PTR<HttpRequest> req) {
-		auto it = req->headers.find("user");
+		auto it = req->headers.find("User");
 		if (it != req->headers.end()) {
 			return it->second;
 		}
+
+		it = req->headers.find("user");
+		if (it != req->headers.end()) {
+			return it->second;
+		}
+
 		return "";
 	}
 
 	std::string HttpModule::GetUserJWT(SQUICK_SHARE_PTR<HttpRequest> req) {
-		auto it = req->headers.find("jwt");
+		auto it = req->headers.find("Jwt");
+		if (it != req->headers.end()) {
+			return it->second;
+		}
+
+		it = req->headers.find("jwt");
 		if (it != req->headers.end()) {
 			return it->second;
 		}

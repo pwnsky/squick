@@ -26,9 +26,9 @@ bool RoomModule::AfterStart() {
 
     m_pNetModule->AddReceiveCallBack(SquickStruct::GameLobbyRPC::REQ_ROOM_GAME_PLAY_START, this, &RoomModule::OnReqRoomGamePlayStart);
 
-    m_pNetModule->AddReceiveCallBack(SquickStruct::ServerRPC::REQ_GAMEPLAY_DATA, this, &RoomModule::OnReqGameplayData);
-    m_pNetModule->AddReceiveCallBack(SquickStruct::ServerRPC::REQ_GAMEPLAY_PREPARED, this, &RoomModule::OnReqGameplayPrepared);
-    m_pNetModule->AddReceiveCallBack(SquickStruct::ServerRPC::REQ_GAMEPLAY_PREPARED, this, &RoomModule::OnReqGameplayPrepared);
+    m_pNetModule->AddReceiveCallBack(SquickStruct::GameplayManagerRPC::REQ_GAMEPLAY_DATA, this, &RoomModule::OnReqGameplayData);
+    m_pNetModule->AddReceiveCallBack(SquickStruct::GameplayManagerRPC::REQ_GAMEPLAY_PREPARED, this, &RoomModule::OnReqGameplayPrepared);
+
 
 #ifdef SQUICK_DEV
     // 默认创建一个开发测试房间
@@ -319,7 +319,7 @@ void RoomModule::OnReqRoomGamePlayStart(const SQUICK_SOCKET sockIndex, const int
             dout << "开始游戏!";
             // 创建游戏
             // 生成instance_id和instance_key
-            int instance_id = time(nullptr);
+            int instance_id = room->id();
             string instance_key = std::to_string(SquickProtocol::CRC32(std::to_string(time(nullptr) + 0x418894113)));
 
             // 将信息保存在房间里
@@ -328,10 +328,11 @@ void RoomModule::OnReqRoomGamePlayStart(const SQUICK_SOCKET sockIndex, const int
 
 #ifdef SINGLE_GAMEPLAY
             // 启动 独立的Gameplay服务器
-            m_pPvpManagerModule->PvpInstanceCreate(room_id, instance_id, instance_key);
+            
+            m_pGameplayManagerModule->SingleGameplayCreate(instance_id, instance_key);
 #else
             // 启动 融合在game服务器上的gameplay
-            m_pGameplayManagerModule->GameplayCreate(room_id, instance_key);
+            m_pGameplayManagerModule->GameplayCreate(instance_id, instance_key);
 #endif // SINGLE_GAMEPLAY
 
         } else {
@@ -365,7 +366,7 @@ void RoomModule::OnReqGameplayData(const SQUICK_SOCKET sockIndex, const int msgI
         return;
     }
 
-    int roomID = xMsg.room_id();
+    int roomID = xMsg.id();
     auto room = m_rooms[roomID];
     if (room == nullptr) {
         // 房间不存在
@@ -382,7 +383,7 @@ void RoomModule::OnReqGameplayData(const SQUICK_SOCKET sockIndex, const int msgI
 #endif // !SQUICK_DEV
 
     // 发送房间内详细数据给Gameplay服务器
-    m_pGameServerNet_ServerModule->SendMsgPBToGameplay(SquickStruct::REQ_GAMEPLAY_DATA, *room, clientID);
+    m_pGameServerNet_ServerModule->SendMsgPBToGameplay(SquickStruct::ACK_GAMEPLAY_DATA, *room, clientID);
 }
 
 // PVP Server初始化游戏数据完成
@@ -393,7 +394,7 @@ void RoomModule::OnReqGameplayPrepared(const SQUICK_SOCKET sockIndex, const int 
     if (!m_pNetModule->ReceivePB(msgID, msg, len, xMsg, clientID)) {
         return;
     }
-    int roomID = xMsg.room_id();
+    int roomID = xMsg.id();
     auto room = m_rooms[roomID];
     if (room == nullptr) {
         // 房间不存在

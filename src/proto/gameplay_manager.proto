@@ -1,0 +1,80 @@
+syntax = "proto3";
+package SquickStruct;
+import "base.proto";
+
+// GameplayManagerRPC RPC 500 ~ 600
+enum GameplayManagerRPC {
+    GAMEPLAY_MANAGER_RPC_NONE = 0;
+    
+    // GAME_PLAY Manager API
+    // GAME_PLAY 管理服 接口
+    REQ_GAMEPLAY_CREATE = 500; // 创建 GAME_PLAY 对战服实例
+    ACK_GAMEPLAY_CREATE = 501;
+    REQ_GAMEPLAY_DESTROY = 502;
+    ACK_GAMEPLAY_DESTROY = 503;
+    REQ_GAMEPLAY_LIST = 504; //
+    ACK_GAMEPLAY_LIST = 505;
+
+    // Game Play Manager API
+    // Game Play 接口, 由Game Play -> Game Play Manager -> Game
+    // 在Game Play游戏中，以Game服务器为主，Game
+    // Play服务器只负责当前对局网络同步和数据结算，不做其他逻辑功能
+    REQ_GAMEPLAY_STATUS = 506;
+    ACK_GAMEPLAY_STATUS = 507;
+    REQ_GAMEPLAY_DATA = 508; // 创建完毕Game Play服务器后， Game
+                            // Play服务器向Game服务器初始化对战服数据和各玩家数据
+    ACK_GAMEPLAY_DATA = 509;
+    REQ_GAMEPLAY_PREPARED = 510; // Game Play服务器初始化数据完成
+    ACK_GAMEPLAY_PREPARED = 511;
+    REQ_GAMEPLAY_OVER = 512;
+    ACK_GAMEPLAY_OVER = 513;
+
+    REQ_GAMEPLAY_CONNECT_GAME_SERVER = 514; // Game Play Server 请求连接 Game Server
+    ACK_GAMEPLAY_CONNECT_GAME_SERVER = 515;
+}
+
+
+// ---------------------------------------------------------
+// GamePlay服务器在GamePlay Manager服务器上 请求连接 Game Server
+// ACK_CONNECT_GAME_SERVER                = 61;
+message ReqGameplayConnectGameServer {
+    int32 id = 1;
+    bytes key = 2;
+    bytes name = 3;
+    int32 game_id = 6;
+}
+
+//
+message AckGameplayConnectGameServer { int32 code = 1; }
+
+// 在Game服务器上请求 GamePlay Manager 服务器创建GamePlay服务器实例
+message ReqGameplayCreate {
+    int32 id = 1;
+    bytes key = 2;
+    int32 game_id = 3;
+}
+
+// 不用 GamePlay Manager 不用响应也行
+message AckGameplayCreate { int32 code = 1; }
+
+message AckGameplayDestroyed {}
+
+message ReqGameplayData {
+    int32 id = 1; // instance id
+    bytes key = 2;
+}
+
+// 发送每个玩家的数据
+message AckGameplayData {}
+
+// 初始化数据完成，广播所有玩家加入游戏
+message ReqGameplayPrepared {
+    int32 code = 1; // Game Play服务器状态, 0 正常, 1 不正常
+    int32 id = 2;   // instance id
+    bytes key = 3;
+    bytes ip = 5;   // Game Play 服务器IP
+    int32 port = 6; // Game Play 服务器端口
+    bytes name = 7; // Game Play 服务器名称
+}
+
+message AckGameplayPrepared { int32 code = 1; }

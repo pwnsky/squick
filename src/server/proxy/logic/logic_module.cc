@@ -8,7 +8,11 @@ bool LogicModule::Start() { return true; }
 
 bool LogicModule::Destory() { return true; }
 
-bool LogicModule::Update() { return true; }
+bool LogicModule::Update() {
+    // 检查过期
+
+    return true;
+}
 
 bool LogicModule::AfterStart() {
     m_pKernelModule = pPluginManager->FindModule<IKernelModule>();
@@ -26,6 +30,8 @@ bool LogicModule::AfterStart() {
 }
 
 void LogicModule::OnClientDisconnect(const SQUICK_SOCKET nAddress) {
+    // 加入过期队列
+
     NetObject* pNetObject = m_pNetModule->GetNet()->GetNetObject(nAddress);
     if (pNetObject) {
         int nGameID = pNetObject->GetGameID();
@@ -244,7 +250,6 @@ void LogicModule::OnReqEnterGameServer(const SQUICK_SOCKET sock, const int msg_i
 
 void LogicModule::OnReqConnect(const SQUICK_SOCKET sock, const int msg_id, const char* msg, const uint32_t len) {
     Guid nPlayerID;
-    
     SquickStruct::ReqConnectProxy req;
     if (!m_pNetModule->ReceivePB(msg_id, msg, len, req, nPlayerID))
     {

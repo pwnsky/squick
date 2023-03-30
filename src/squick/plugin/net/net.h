@@ -14,6 +14,7 @@
 #include <event2/util.h>
 #include <set>
 #include <thread>
+#include <unordered_map>
 
 #pragma pack(push, 1)
 
@@ -115,7 +116,7 @@ class Net : public INet {
     // std::multiset<NetObject*> mLiveBeatMap;
 
     // Use share pointer replace C-style pointer
-    std::map<SQUICK_SOCKET, NetObject *> mmObject;
+    std::unordered_map<SQUICK_SOCKET, NetObject *> mmObject;
     std::vector<SQUICK_SOCKET> mvRemoveObject;
 
     int mnMaxConnect;

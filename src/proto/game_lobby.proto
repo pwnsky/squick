@@ -3,7 +3,7 @@ syntax = "proto3";
 package SquickStruct;
 import "base.proto";
 
-// GameLobbyRPC RPC 10000 ~ 20000
+// GameLobbyRPC RPC 10000 ~ 12000
 enum GameLobbyRPC {
     // 进入游戏前的RPC  ////////////////////////////
     LOBBY_RPC_NONE = 0;

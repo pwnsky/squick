@@ -2,7 +2,7 @@ syntax = "proto3";
 package SquickStruct;
 import "base.proto";
 
-
+// GameLobbyRPC RPC 12000 ~ 14000
 enum MicroRPC {
     MICRO_RPC_NONE = 0;
 }

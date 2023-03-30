@@ -6,6 +6,7 @@
 
 #include "i_gameplay_manager_module.h"
 #include <queue>
+#include <squick/struct/struct.h>
 
 namespace game::play {
 
@@ -26,6 +27,9 @@ class GameplayManagerModule : public IGameplayManagerModule {
     virtual bool GameplayCreate(int id, const string &key) override;
     virtual bool GameplayDestroy(int id) override;
     virtual bool GameplayPlayerQuit(const Guid &player) override;
+    virtual bool SingleGameplayCreate(int id, const string& key) override;
+    virtual bool SingleGameplayDestroy(int id) override;
+
     virtual void OnRecv(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) override;
 
   private:

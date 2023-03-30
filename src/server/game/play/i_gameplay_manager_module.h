@@ -20,11 +20,12 @@ typedef std::shared_ptr<GAME_PLAY_RECEIVE_FUNCTOR> GAME_PLAY_RECEIVE_FUNCTOR_PTR
 class IGameplayManagerModule : public IModule {
   public:
     virtual bool GameplayCreate(int id, const string &key) = 0;
-    virtual bool GameplayDestroy(int group_id) = 0;
+    virtual bool GameplayDestroy(int id) = 0;
     virtual bool GameplayPlayerQuit(const Guid &player) = 0;
-
+    virtual bool SingleGameplayCreate(int id, const string& key) = 0;
+    virtual bool SingleGameplayDestroy(int id) = 0;
     template <typename BaseType>
-    bool AddReceiveCallBack(const int msgID, const int group_id, BaseType *pBase,
+    bool AddReceiveCallBack(const int msgID, const int id, BaseType *pBase,
                             void (BaseType::*handleReceiver)(const Guid &clientID, const int msgID, const std::string &data)) {
         GAME_PLAY_RECEIVE_FUNCTOR functor = std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
         GAME_PLAY_RECEIVE_FUNCTOR_PTR functorPtr(new GAME_PLAY_RECEIVE_FUNCTOR(functor));
@@ -35,21 +36,21 @@ class IGameplayManagerModule : public IModule {
             m_pNetModule->AddReceiveCallBack(msgID, this, &IGameplayManagerModule::OnRecv);
 
             std::map<int, GAME_PLAY_RECEIVE_FUNCTOR_PTR> msgIdMap;
-            msgIdMap[group_id] = functorPtr;
+            msgIdMap[id] = functorPtr;
             mxReceiveCallBack.insert(std::map<int, std::map<int, GAME_PLAY_RECEIVE_FUNCTOR_PTR>>::value_type(msgID, msgIdMap));
             return true;
         }
 
-        std::map<int, std::map<int, GAME_PLAY_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msgID);
-        it->second[group_id] = functorPtr;
+        auto it = mxReceiveCallBack.find(msgID);
+        it->second[id] = functorPtr;
         return true;
     }
 
     virtual void OnRecv(const SQUICK_SOCKET sockIndex, const int msgID, const char *msg, const uint32_t len) = 0;
 
-    GAME_PLAY_RECEIVE_FUNCTOR_PTR &GetCallback(int msgID, int group_id) {
+    GAME_PLAY_RECEIVE_FUNCTOR_PTR &GetCallback(int msgID, int id) {
         auto &group = mxReceiveCallBack[msgID];
-        return group[group_id];
+        return group[id];
     }
 
     INetModule *m_pNetModule;
@@ -68,6 +69,6 @@ class IGameplayManagerModule : public IModule {
     player::IRoomModule *m_pRoomModule;
 
   private:
-    std::map<int, std::map<int, GAME_PLAY_RECEIVE_FUNCTOR_PTR>> mxReceiveCallBack;
+    std::unordered_map<int, std::map<int, GAME_PLAY_RECEIVE_FUNCTOR_PTR>> mxReceiveCallBack;
 };
 } // namespace game::play

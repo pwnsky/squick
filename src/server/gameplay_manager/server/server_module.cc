@@ -65,8 +65,9 @@ void ServerModule::OnReqConnectGameServer(const SQUICK_SOCKET sockIndex, const i
     }
 
     // 验证Token
-    bool bRet = m_pSecurityModule->VerifySecurityKey(xMsg.id(), xMsg.security_code());
+    //bool bRet = m_pSecurityModule->VerifySecurityKey(xMsg.id(), xMsg.security_code());
     // bool bRet = m_pProxyToWorldModule->VerifyConnectData(xMsg.account(), xMsg.security_code());
+    auto bRet = true;
     if (!bRet) {
         // if verify failed then close this connect
         m_pNetModule->GetNet()->CloseNetObject(sockIndex);
@@ -81,10 +82,10 @@ void ServerModule::OnReqConnectGameServer(const SQUICK_SOCKET sockIndex, const i
     // this net-object verify successful and set state as true
     pNetObject->SetConnectKeyState(1);
 
-    pNetObject->SetSecurityKey(xMsg.security_code());
+    //pNetObject->SetSecurityKey(xMsg.security_code());
 
     // this net-object bind a account
-    pNetObject->SetAccount(xMsg.id());
+    //pNetObject->SetAccount(xMsg.id());
 
     SquickStruct::AckGameplayConnectGameServer xSendMsg;
     xSendMsg.set_code(0);
@@ -178,7 +179,7 @@ void ServerModule::OnClientDisconnect(const SQUICK_SOCKET nAddress) {
                 }
 
                 // 也告知一下Game服务器
-                m_pNetClientModule->SendByServerIDWithOutHead(nGameID, SquickStruct::ServerRPC::REQ_GAMEPLAY_DESTROY, msg);
+                m_pNetClientModule->SendByServerIDWithOutHead(nGameID, SquickStruct::GameplayManagerRPC::REQ_GAMEPLAY_DESTROY, msg);
             }
         }
 
