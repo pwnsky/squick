@@ -18,11 +18,10 @@ class LogicModule : public ILogicModule {
     virtual bool ReadyUpdate();
     virtual bool Update();
     virtual bool AfterStart();
-    virtual void OnLoginProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    virtual void OnConnectProxyVerify(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   protected:
     INetModule *m_net_;
-    ILogModule *m_log_;
   private:
 };
 

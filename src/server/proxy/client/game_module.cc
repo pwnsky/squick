@@ -32,6 +32,7 @@ bool GameModule::AfterStart() {
 }
 
 void GameModule::OnSocketGSEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
+    
     if (eEvent & SQUICK_NET_EVENT_EOF) {
     } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
     } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
@@ -95,13 +96,13 @@ void GameModule::OnAckEnterGame(const socket_t sock, const int msg_id, const cha
     const Guid &xPlayer = INetModule::ProtobufToStruct(xData.object());
 
     //m_logic_->EnterGameSuccessEvent(xClient, xPlayer);
-    m_logic_->Transport(sock, msg_id, msg, len);
+    m_logic_->ForwardToClient(sock, msg_id, msg, len);
 }
 
 void GameModule::LogServerInfo(const std::string &strServerInfo) { m_log_->LogInfo(Guid(), strServerInfo, ""); }
 
 void GameModule::Transport(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    m_logic_->Transport(sock, msg_id, msg, len);
+    m_logic_->ForwardToClient(sock, msg_id, msg, len);
 }
 
 } // namespace proxy::client

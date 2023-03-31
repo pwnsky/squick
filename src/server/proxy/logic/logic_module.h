@@ -26,16 +26,20 @@ class LogicModule : public ILogicModule {
     void OnReqConnect(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
     void OnReqEnterGameServer(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
     bool SelectGameServer(int sock);
-
     int EnterGameSuccessEvent(const Guid xClientID, const Guid xPlayerID);
 
     virtual void OnClientConnected(const socket_t sock) override;
     virtual void OnClientDisconnect(const socket_t sock) override;
     
-    int Transport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    int ForwardToClient(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    bool RemovePlayer(const Guid &xPlayerID);
 
-    MapEx<Guid, socket_t> mxClientIdent;
-    std::vector<Guid> expired_;
+    MapEx<Guid, socket_t> mxClientIdent; // player ident
+    
+    struct KeepAlive {
+        socket_t sock = -1;
+        time_t last_ping = 0; // ms time
+    };
 
   protected:
     ILogModule* m_log_;

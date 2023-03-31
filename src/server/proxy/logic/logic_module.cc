@@ -30,8 +30,7 @@ bool LogicModule::AfterStart() {
 }
 
 void LogicModule::OnClientDisconnect(const socket_t sock) {
-    // 加入过期队列
-
+    dout << "client disconnected\n";
     NetObject* pNetObject = m_net_->GetNet()->GetNetObject(sock);
     if (pNetObject) {
         int nGameID = pNetObject->GetGameID();
@@ -58,11 +57,11 @@ void LogicModule::OnClientDisconnect(const socket_t sock) {
         }
         mxClientIdent.RemoveElement(pNetObject->GetClientID());
     }
+
 }
 
-
-
-int LogicModule::Transport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+// forward to client
+int LogicModule::ForwardToClient(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     rpc::MsgBase xMsg;
     if (!xMsg.ParseFromArray(msg, len)) {
         char szData[MAX_PATH] = { 0 };

@@ -61,6 +61,7 @@ bool ServerModule::Update() { return true; }
 
 
 void ServerModule::OnSocketClientEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
+    dout << "socket 事件\n";
     if (eEvent & SQUICK_NET_EVENT_EOF) {
         m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
         m_logic_->OnClientDisconnect(sock);

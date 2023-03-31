@@ -5,7 +5,6 @@
 		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />
 		<Plugin Name="core/actor" />
-		<Plugin Name="core/lua" />
 		<Plugin Name="core/redis" />
 
 		<Plugin Name="server/login/server" />

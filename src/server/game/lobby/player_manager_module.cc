@@ -2,301 +2,361 @@
 #include <server/db_proxy/logic/common_redis_module.h>
 
 namespace game::player {
-bool PlayerManagerModule::Start() {
-    m_element_ = pm_->FindModule<IElementModule>();
-    m_class_ = pm_->FindModule<IClassModule>();
-    m_net_ = pm_->FindModule<INetModule>();
-    m_kernel_ = pm_->FindModule<IKernelModule>();
-    m_pGameToDBModule = pm_->FindModule<IGameServerToDBModule>();
-    m_log_ = pm_->FindModule<ILogModule>();
+	bool PlayerManagerModule::Start() {
+		m_element_ = pm_->FindModule<IElementModule>();
+		m_class_ = pm_->FindModule<IClassModule>();
+		m_net_ = pm_->FindModule<INetModule>();
+		m_kernel_ = pm_->FindModule<IKernelModule>();
+		m_pGameToDBModule = pm_->FindModule<IGameServerToDBModule>();
+		m_log_ = pm_->FindModule<ILogModule>();
 
-    m_pGameServerNet_ServerModule = pm_->FindModule<IGameServerNet_ServerModule>();
-    m_net_client_ = pm_->FindModule<INetClientModule>();
-    m_schedule_ = pm_->FindModule<IScheduleModule>();
-    m_data_tail_ = pm_->FindModule<IDataTailModule>();
-    m_scene_ = pm_->FindModule<ISceneModule>();
+		m_pGameServerNet_ServerModule = pm_->FindModule<IGameServerNet_ServerModule>();
+		m_net_client_ = pm_->FindModule<INetClientModule>();
+		m_schedule_ = pm_->FindModule<IScheduleModule>();
+		m_data_tail_ = pm_->FindModule<IDataTailModule>();
+		m_scene_ = pm_->FindModule<ISceneModule>();
 
-    m_event_ = pm_->FindModule<IEventModule>();
-    m_room_ = pm_->FindModule<IRoomModule>();
+		m_event_ = pm_->FindModule<IEventModule>();
+		m_room_ = pm_->FindModule<IRoomModule>();
 
-    m_gameplay_manager_ = pm_->FindModule<play::IGameplayManagerModule>();
+		m_gameplay_manager_ = pm_->FindModule<play::IGameplayManagerModule>();
 
-    return true;
-}
+		return true;
+	}
 
-bool PlayerManagerModule::AfterStart() {
-    m_kernel_->AddClassCallBack(excel::Player::ThisName(), this, &PlayerManagerModule::OnPlayerObjectEvent);
-    return true;
-}
+	bool PlayerManagerModule::AfterStart() {
+		m_kernel_->AddClassCallBack(excel::Player::ThisName(), this, &PlayerManagerModule::OnPlayerObjectEvent);
+		return true;
+	}
 
-bool PlayerManagerModule::ReadyUpdate() {
-    m_net_->AddReceiveCallBack(rpc::GameLobbyRPC::REQ_ENTER, this, &PlayerManagerModule::OnReqPlayerEnter);
-    m_net_->AddReceiveCallBack(rpc::GameLobbyRPC::REQ_LEAVE, this, &PlayerManagerModule::OnReqPlayerLeave);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_DB_PROXY, rpc::DbProxyRPC::ACK_PLAYER_DATA_LOAD, this,
-                                           &PlayerManagerModule::OnAckPlayerDataLoad);
+	bool PlayerManagerModule::ReadyUpdate() {
+		m_net_->AddReceiveCallBack(rpc::GameLobbyRPC::REQ_ENTER, this, &PlayerManagerModule::OnReqPlayerEnter);
+		m_net_->AddReceiveCallBack(rpc::GameLobbyRPC::REQ_LEAVE, this, &PlayerManagerModule::OnReqPlayerLeave);
+		m_net_client_->AddReceiveCallBack(ServerType::ST_DB_PROXY, rpc::DbProxyRPC::ACK_PLAYER_DATA_LOAD, this,
+			&PlayerManagerModule::OnAckPlayerDataLoad);
 
-    return true;
-}
+		return true;
+	}
 
-void PlayerManagerModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    Guid clientID;
-    rpc::ReqEnter xMsg;
-    if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID)) {
-        return;
-    }
-    dout << "请求进入大厅 " << clientID.ToString() << std::endl;
+	void PlayerManagerModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+		Guid guid;
+		rpc::ReqEnter xMsg;
+		if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, guid)) {
+			return;
+		}
+		dout << "请求进入大厅 " << guid.ToString() << std::endl;
 
-    std::shared_ptr<IGameServerNet_ServerModule::ProxyServerInfo> pGateServerinfo = m_pGameServerNet_ServerModule->GetProxyServerInfoBySockIndex(sock);
-    if (nullptr == pGateServerinfo) {
-        return;
-    }
+		std::shared_ptr<IGameServerNet_ServerModule::ProxyServerInfo> pGateServerinfo = m_pGameServerNet_ServerModule->GetProxyServerInfoBySockIndex(sock);
+		if (nullptr == pGateServerinfo) {
+			return;
+		}
 
-    int gateID = -1;
-    if (pGateServerinfo->xServerData.pData) {
-        gateID = pGateServerinfo->xServerData.pData->server_id();
-    }
+		int gateID = -1;
+		if (pGateServerinfo->xServerData.pData) {
+			gateID = pGateServerinfo->xServerData.pData->server_id();
+		}
 
-    if (gateID < 0) {
-        return;
-    }
+		if (gateID < 0) {
+			return;
+		}
 
-    // 暂时用
-    if (!m_pGameServerNet_ServerModule->AddPlayerProxyInfo(clientID, clientID, gateID)) {
-        return;
-    }
+		// 检查是否是重连的
+		auto iter = offline_players_.find(guid);
+		if (iter != offline_players_.end()) {
+			dout << "玩家: " << guid.ToString() << " 断线重连成功\n";
+			offline_players_.erase(iter);
 
-    m_net_client_->SendBySuitWithOutHead(ServerType::ST_DB_PROXY, sock, rpc::DbProxyRPC::REQ_PLAYER_DATA_LOAD,
-                                              std::string(msg, len));
-}
+			rpc::AckEnter ack;
+			ack.set_code(0);
+			*ack.mutable_client() = INetModule::StructToProtobuf(guid);
+			*ack.mutable_object() = INetModule::StructToProtobuf(guid);
+			m_pGameServerNet_ServerModule->SendMsgPBToProxy(rpc::ACK_ENTER, ack, guid);
+			return;
+		}
+		
+		// 绑定玩家数据与账号GUID
+		if (!m_pGameServerNet_ServerModule->AddPlayerProxyInfo(guid, guid, gateID)) {
+			return;
+		}
 
-// 返回角色数据
-void PlayerManagerModule::OnAckPlayerDataLoad(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    //dout << "返回角色数据\n";
-    Guid clientID;
-    rpc::PlayerData xMsg;
-    if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID)) {
-        return;
-    }
+		m_net_client_->SendBySuitWithOutHead(ServerType::ST_DB_PROXY, sock, rpc::DbProxyRPC::REQ_PLAYER_DATA_LOAD,
+			std::string(msg, len));
+	}
 
-    dout << "返回角色数据 clientID: " << clientID.ToString() << std::endl;
-    // 告诉客户端进入游戏成功
-    // 暂时用，之后将绑定为ObjectID
-    // Guid objectID = INetModule::ProtobufToStruct(xMsg.object());
-    Guid objectID = clientID;
+	// 返回角色数据
+	void PlayerManagerModule::OnAckPlayerDataLoad(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+		//dout << "返回角色数据\n";
+		Guid clientID;
+		rpc::PlayerData xMsg;
+		if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, clientID)) {
+			return;
+		}
 
-    mxObjectDataCache[objectID] = xMsg; // 缓存玩家数据
+		dout << "返回角色数据 clientID: " << clientID.ToString() << std::endl;
+		// 告诉客户端进入游戏成功
+		// 暂时用，之后将绑定为ObjectID
+		// Guid objectID = INetModule::ProtobufToStruct(xMsg.object());
+		Guid objectID = clientID;
 
-    Player *player = nullptr;
-    // 查找缓存中不存在玩家重新生成玩家数据
-    if (m_players.find(objectID) == m_players.end()) {
-        player = new Player();
-        m_players[objectID] = player;
-    }
+		mxObjectDataCache[objectID] = xMsg; // 缓存玩家数据
 
-    player = m_players[objectID];
-    // 获取到数据后，再创建玩家对象
-    player->OnEnterGame();
-    player->loginTime = time(nullptr);
+		Player* player = nullptr;
+		// 查找缓存中不存在玩家重新生成玩家数据
+		if (m_players.find(objectID) == m_players.end()) {
+			player = new Player();
+			m_players[objectID] = player;
+		}
+
+		player = m_players[objectID];
+		// 获取到数据后，再创建玩家对象
+		player->OnEnterGame();
+		player->loginTime = time(nullptr);
 
 
-    /*
-    if (m_kernel_->GetObject(objectID)) { // 存在玩家，销毁对象
-        // it should be rebind with proxy's netobject
-        m_kernel_->DestroyObject(objectID);
-    }
+		/*
+		if (m_kernel_->GetObject(objectID)) { // 存在玩家，销毁对象
+			// it should be rebind with proxy's netobject
+			m_kernel_->DestroyObject(objectID);
+		}
 
-    DataList var;
-    std::shared_ptr<IGameServerNet_ServerModule::GateBaseInfo>  pGateInfo = m_pGameServerNet_ServerModule->GetPlayerGateInfo(clientID);
-    if (nullptr == pGateInfo)
-    {
-            dout << "Error to load GateBaseInfo: ClientID: " << clientID.ToString() << std::endl;
-            return;
-    }
+		DataList var;
+		std::shared_ptr<IGameServerNet_ServerModule::GateBaseInfo>  pGateInfo = m_pGameServerNet_ServerModule->GetPlayerGateInfo(clientID);
+		if (nullptr == pGateInfo)
+		{
+				dout << "Error to load GateBaseInfo: ClientID: " << clientID.ToString() << std::endl;
+				return;
+		}
 
-    var.AddString(SquickProtocol::Player::GateID());
-    var.AddInt(pGateInfo->gateID);
+		var.AddString(SquickProtocol::Player::GateID());
+		var.AddInt(pGateInfo->gateID);
 
-    var.AddString(SquickProtocol::Player::GameID());
-    var.AddInt(pm_->GetAppID());
+		var.AddString(SquickProtocol::Player::GameID());
+		var.AddInt(pm_->GetAppID());
 
-    var.AddString(SquickProtocol::Player::Connection());
-    var.AddInt(1);
+		var.AddString(SquickProtocol::Player::Connection());
+		var.AddInt(1);
 
-    std::shared_ptr<IObject> pObject = m_kernel_->CreateObject(objectID, 1, 0, SquickProtocol::Player::ThisName(), "", var);
-    */
+		std::shared_ptr<IObject> pObject = m_kernel_->CreateObject(objectID, 1, 0, SquickProtocol::Player::ThisName(), "", var);
+		*/
 
-    rpc::AckEnter ack;
-    ack.set_code(0);
-    *ack.mutable_client() = INetModule::StructToProtobuf(clientID);
-    *ack.mutable_object() = INetModule::StructToProtobuf(objectID);
+		rpc::AckEnter ack;
+		ack.set_code(0);
+		*ack.mutable_client() = INetModule::StructToProtobuf(clientID);
+		*ack.mutable_object() = INetModule::StructToProtobuf(objectID);
+		m_pGameServerNet_ServerModule->SendMsgPBToProxy(rpc::ACK_ENTER, ack, clientID);
+	}
 
-    m_pGameServerNet_ServerModule->SendMsgPBToProxy(rpc::ACK_ENTER, ack, clientID);
-}
+	// 玩家对象事件
+	int PlayerManagerModule::OnPlayerObjectEvent(const Guid& self, const std::string& className, const CLASS_OBJECT_EVENT classEvent, const DataList& var) {
+		// 离线
+		if (CLASS_OBJECT_EVENT::COE_DESTROY == classEvent) {
+			// m_data_tail_->LogObjectData(self);
+			//  玩家离线
+			dout << "玩家数据对象销毁: " << self.ToString() << " \n";
+			m_kernel_->SetPropertyInt(self, excel::Player::LastOfflineTime(), SquickGetTimeS());
+			SaveDataToDb(self); // 保存数据到数据库
 
-// 玩家对象事件
-int PlayerManagerModule::OnPlayerObjectEvent(const Guid &self, const std::string &className, const CLASS_OBJECT_EVENT classEvent, const DataList &var) {
-    // 离线
-    if (CLASS_OBJECT_EVENT::COE_DESTROY == classEvent) {
-        // m_data_tail_->LogObjectData(self);
-        //  玩家离线
-        dout << "玩家数据对象销毁: " << self.ToString() << " \n";
-        m_kernel_->SetPropertyInt(self, excel::Player::LastOfflineTime(), SquickGetTimeS());
-        SaveDataToDb(self); // 保存数据到数据库
+			Player* player = m_players[self];
+			if (player == nullptr) {
+				dout << "Player offline not found!\n";
+				return -1;
+			}
 
-        Player *player = m_players[self];
-        if (player == nullptr) {
-            dout << "Player offline not found!\n";
-            return -1;
-        }
+			player->OnOffline();
+			player->offlineTime = time(nullptr); // 记录离线时间，由Player Manager定时清理已离线的玩家数据
+		}
+		else if (CLASS_OBJECT_EVENT::COE_CREATE_LOADDATA == classEvent) {
+			dout << "玩家数据对象加载\n";
+			// m_data_tail_->StartTrail(self);
+			// m_data_tail_->LogObjectData(self);
 
-        player->OnOffline();
-        player->offlineTime = time(nullptr); // 记录离线时间，由Player Manager定时清理已离线的玩家数据
-        m_offlineCachePlayers[self] = player;
-    } else if (CLASS_OBJECT_EVENT::COE_CREATE_LOADDATA == classEvent) {
-        dout << "玩家数据对象加载\n";
-        // m_data_tail_->StartTrail(self);
-        // m_data_tail_->LogObjectData(self);
+			LoadDataFromDb(self);
+			m_kernel_->SetPropertyInt(self, excel::Player::OnlineTime(), SquickGetTimeS());
+		}
+		else if (CLASS_OBJECT_EVENT::COE_CREATE_FINISH == classEvent) {
+			dout << "玩家加载数据完成\n";
+			auto it = mxObjectDataCache.find(self);
+			if (it != mxObjectDataCache.end()) {
+				mxObjectDataCache.erase(it);
+			}
 
-        LoadDataFromDb(self);
-        m_kernel_->SetPropertyInt(self, excel::Player::OnlineTime(), SquickGetTimeS());
-    } else if (CLASS_OBJECT_EVENT::COE_CREATE_FINISH == classEvent) {
-        dout << "玩家加载数据完成\n";
-        auto it = mxObjectDataCache.find(self);
-        if (it != mxObjectDataCache.end()) {
-            mxObjectDataCache.erase(it);
-        }
+			// 每3分钟 保存一次玩家数据到数据库
+			// m_schedule_->AddSchedule(self, "SaveDataOnTime", this, &PlayerManagerModule::SaveDataOnTime, 180.0f, -1);
+		}
+		return 0;
+	}
 
-        // 每3分钟 保存一次玩家数据到数据库
-        // m_schedule_->AddSchedule(self, "SaveDataOnTime", this, &PlayerManagerModule::SaveDataOnTime, 180.0f, -1);
-    }
-    return 0;
-}
+	// 从数据库读取玩家数据
+	void PlayerManagerModule::LoadDataFromDb(const Guid& self) {
+		auto it = mxObjectDataCache.find(self);
+		if (it != mxObjectDataCache.end()) {
+			std::shared_ptr<IObject> xObject = m_kernel_->GetObject(self);
+			if (xObject) {
+				std::shared_ptr<IPropertyManager> xPropManager = xObject->GetPropertyManager();
+				std::shared_ptr<IRecordManager> xRecordManager = xObject->GetRecordManager();
 
-// 从数据库读取玩家数据
-void PlayerManagerModule::LoadDataFromDb(const Guid &self) {
-    auto it = mxObjectDataCache.find(self);
-    if (it != mxObjectDataCache.end()) {
-        std::shared_ptr<IObject> xObject = m_kernel_->GetObject(self);
-        if (xObject) {
-            std::shared_ptr<IPropertyManager> xPropManager = xObject->GetPropertyManager();
-            std::shared_ptr<IRecordManager> xRecordManager = xObject->GetRecordManager();
+				if (xPropManager) {
+					CommonRedisModule::ConvertPBToPropertyManager(it->second.property(), xPropManager);
+				}
 
-            if (xPropManager) {
-                CommonRedisModule::ConvertPBToPropertyManager(it->second.property(), xPropManager);
-            }
+				if (xRecordManager) {
+					CommonRedisModule::ConvertPBToRecordManager(it->second.record(), xRecordManager);
+				}
+				mxObjectDataCache.erase(it);
+				xObject->SetPropertyInt(excel::Player::GateID(), pm_->GetAppID());
+				auto playerGateInfo = m_pGameServerNet_ServerModule->GetPlayerProxyInfo(self);
+				if (playerGateInfo) {
+					xObject->SetPropertyInt(excel::Player::GateID(), playerGateInfo->proxy_id_);
+				}
+			}
+		}
+	}
 
-            if (xRecordManager) {
-                CommonRedisModule::ConvertPBToRecordManager(it->second.record(), xRecordManager);
-            }
-            mxObjectDataCache.erase(it);
-            xObject->SetPropertyInt(excel::Player::GateID(), pm_->GetAppID());
-            auto playerGateInfo = m_pGameServerNet_ServerModule->GetPlayerProxyInfo(self);
-            if (playerGateInfo) {
-                xObject->SetPropertyInt(excel::Player::GateID(), playerGateInfo->proxy_id_);
-            }
-        }
-    }
-}
+	// 保存玩家数据到数据库
+	void PlayerManagerModule::SaveDataToDb(const Guid& self) {
+		std::shared_ptr<IObject> xObject = m_kernel_->GetObject(self);
+		if (xObject) {
+			std::shared_ptr<IPropertyManager> xPropManager = xObject->GetPropertyManager();
+			std::shared_ptr<IRecordManager> xRecordManager = xObject->GetRecordManager();
+			rpc::PlayerData xDataPack;
 
-// 保存玩家数据到数据库
-void PlayerManagerModule::SaveDataToDb(const Guid &self) {
-    std::shared_ptr<IObject> xObject = m_kernel_->GetObject(self);
-    if (xObject) {
-        std::shared_ptr<IPropertyManager> xPropManager = xObject->GetPropertyManager();
-        std::shared_ptr<IRecordManager> xRecordManager = xObject->GetRecordManager();
-        rpc::PlayerData xDataPack;
+			*xDataPack.mutable_object() = INetModule::StructToProtobuf(self);
 
-        *xDataPack.mutable_object() = INetModule::StructToProtobuf(self);
+			*(xDataPack.mutable_property()->mutable_player_id()) = INetModule::StructToProtobuf(self);
+			*(xDataPack.mutable_record()->mutable_player_id()) = INetModule::StructToProtobuf(self);
 
-        *(xDataPack.mutable_property()->mutable_player_id()) = INetModule::StructToProtobuf(self);
-        *(xDataPack.mutable_record()->mutable_player_id()) = INetModule::StructToProtobuf(self);
+			if (xPropManager) {
+				CommonRedisModule::ConvertPropertyManagerToPB(xPropManager, xDataPack.mutable_property(), false, true);
+			}
 
-        if (xPropManager) {
-            CommonRedisModule::ConvertPropertyManagerToPB(xPropManager, xDataPack.mutable_property(), false, true);
-        }
+			if (xRecordManager) {
+				CommonRedisModule::ConvertRecordManagerToPB(xRecordManager, xDataPack.mutable_record(), false, true);
+			}
+			m_net_client_->SendSuitByPB(ServerType::ST_DB_PROXY, self.GetData(), rpc::DbProxyRPC::REQ_PLAYER_DATA_SAVE, xDataPack);
+		}
+	}
 
-        if (xRecordManager) {
-            CommonRedisModule::ConvertRecordManagerToPB(xRecordManager, xDataPack.mutable_record(), false, true);
-        }
-        m_net_client_->SendSuitByPB(ServerType::ST_DB_PROXY, self.GetData(), rpc::DbProxyRPC::REQ_PLAYER_DATA_SAVE, xDataPack);
-    }
-}
+	// 定时保存玩家数据
+	int PlayerManagerModule::SaveDataOnTime(const Guid& self, const std::string& name, const float fIntervalTime, const int count) {
+		SaveDataToDb(self);
+		return 0;
+	}
 
-// 定时保存玩家数据
-int PlayerManagerModule::SaveDataOnTime(const Guid &self, const std::string &name, const float fIntervalTime, const int count) {
-    SaveDataToDb(self);
-    return 0;
-}
+	bool PlayerManagerModule::Destory() { return true; }
 
-bool PlayerManagerModule::Destory() { return true; }
+	bool PlayerManagerModule::Update() {
 
-bool PlayerManagerModule::Update() {
-    dout << "Update...\n";
-    return true;
-}
+		static time_t lut = 0;
+		time_t now_time = SquickGetTimeS();
+		if (now_time - lut > 5) { // 每五秒检测一次
+			lut = now_time;
+			UpdateRemoveOfflinePlayers(now_time);
+		}
 
-// 发送数据给客户端，用于给player.cc使用
-void PlayerManagerModule::OnSendToClient(const uint16_t msg_id, google::protobuf::Message &xMsg, const Guid &client_id) {
-    m_pGameServerNet_ServerModule->SendMsgPBToProxy(msg_id, xMsg, client_id);
-}
+		return true;
+	}
 
-// virtual  ();
-// 发送数据给客户端，用于给player.cc使用
-Player *PlayerManagerModule::GetPlayer(const Guid &clientID) { return m_players[clientID]; }
+	// 发送数据给客户端，用于给player.cc使用
+	void PlayerManagerModule::OnSendToClient(const uint16_t msg_id, google::protobuf::Message& xMsg, const Guid& client_id) {
+		m_pGameServerNet_ServerModule->SendMsgPBToProxy(msg_id, xMsg, client_id);
+	}
 
-int PlayerManagerModule::GetPlayerRoomID(const Guid &clientID) {
-    auto player = m_players[clientID];
-    if (player != nullptr) {
-        return player->GetRoomID();
-    }
-    return -1;
-}
+	// virtual  ();
+	// 发送数据给客户端，用于给player.cc使用
+	Player* PlayerManagerModule::GetPlayer(const Guid& clientID) { return m_players[clientID]; }
 
-void PlayerManagerModule::SetPlayerRoomID(const Guid &clientID, int groupID) {
-    auto player = m_players[clientID];
-    if (player != nullptr) {
-        player->SetRoomID(groupID);
-    }
-}
+	int PlayerManagerModule::GetPlayerRoomID(const Guid& clientID) {
+		auto player = m_players[clientID];
+		if (player != nullptr) {
+			return player->GetRoomID();
+		}
+		return -1;
+	}
 
-int PlayerManagerModule::GetPlayerGameplayID(const Guid &clientID) {
-    auto player = m_players[clientID];
-    if (player != nullptr) {
-        return player->GetGameplayID();
-    }
-    return -1;
-}
+	void PlayerManagerModule::SetPlayerRoomID(const Guid& clientID, int groupID) {
+		auto player = m_players[clientID];
+		if (player != nullptr) {
+			player->SetRoomID(groupID);
+		}
+	}
 
-void PlayerManagerModule::SetPlayerGameplayID(const Guid &clientID, int groupID) {
-    auto player = m_players[clientID];
-    if (player != nullptr) {
-        player->SetGameplayID(groupID);
-    }
-}
+	int PlayerManagerModule::GetPlayerGameplayID(const Guid& clientID) {
+		auto player = m_players[clientID];
+		if (player != nullptr) {
+			return player->GetGameplayID();
+		}
+		return -1;
+	}
 
-void PlayerManagerModule::OnReqPlayerLeave(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    Guid nPlayerID;
-    rpc::ReqLeave xMsg;
-    if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
-        return;
-    }
-    dout << "玩家离线: " << nPlayerID.ToString() << std::endl;
+	void PlayerManagerModule::SetPlayerGameplayID(const Guid& clientID, int groupID) {
+		auto player = m_players[clientID];
+		if (player != nullptr) {
+			player->SetGameplayID(groupID);
+		}
+	}
 
-    if (nPlayerID.IsNull()) {
-        return;
-    }
+	void PlayerManagerModule::OnReqPlayerLeave(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+		Guid guid;
+		rpc::ReqLeave xMsg;
+		if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, guid)) {
+			return;
+		}
+		dout << "玩家离线: " << guid.ToString() << std::endl;
 
-    // 先退出gameplay
-    m_gameplay_manager_->GameplayPlayerQuit(nPlayerID);
+		if (guid.IsNull()) {
+			return;
+		}
 
-    // 退出room
-    m_room_->RoomQuit(nPlayerID);
+		Offline p;
+		int gameplay_id = GetPlayerGameplayID(guid);
+		if (gameplay_id != -1) { // 当前玩家处于游玩之中，等待10秒进行重连
+			Offline p;
+			p.type = Offline::PlayingOffline;
+		}
+		else {
+			p.type = Offline::LobbyOffline;
+		}
+		p.time = SquickGetTimeS();
+		offline_players_[guid] = p;
+	}
 
-    // 离线退出 Gameplay
+	void PlayerManagerModule::UpdateRemoveOfflinePlayers(time_t now_time) {
+		std::vector<std::map<Guid, Offline>::iterator> expired;
+		if (offline_players_.size() > 0) {
 
-    // m_kernel_->SetPropertyInt(nPlayerID, SquickProtocol::IObject::Connection(), 0);
-    // m_kernel_->DestroyObject(nPlayerID);
-    // m_pGameServerNet_ServerModule->RemovePlayerGateInfo(nPlayerID);
-}
+			for (auto iter = offline_players_.begin(); iter != offline_players_.end(); ++iter) {
+				auto& guid = iter->first;
+				auto& data = iter->second;
+				
+				// 过期
+				if (data.type == Offline::LobbyOffline) {
+					if (now_time - data.time > 14) { //如果是处于大厅，给予15秒进行重连
+						// 退出room
+						m_room_->RoomQuit(guid);
+						expired.push_back(iter);
+					}
+				} else if (data.type == Offline::PlayingOffline) {
+					if (now_time - data.time > 29) { // 如果是处于游玩中，给予30秒进行重连, 避免影响其他玩家游玩体验,后续想加入游戏
+						// 立即退出gameplay
+						m_gameplay_manager_->GameplayPlayerQuit(guid);
+						// 退出room
+						m_room_->RoomQuit(guid);
+						expired.push_back(iter);
+					}
+				}
+			}
+		}
+
+		// 销毁玩家
+		if (expired.size() > 0) {
+			for (auto& iter : expired) {
+				auto& guid = iter->first;
+				auto& data = iter->second;
+				dout << "该玩家已销毁: " << guid.ToString() << "所处状态: " << data.type << std::endl;
+				m_pGameServerNet_ServerModule->RemovePlayerProxyInfo(guid);
+				offline_players_.erase(iter);
+			}
+		}
+	}
 
 } // namespace game::player

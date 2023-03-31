@@ -19,7 +19,10 @@
 namespace game::player {
 class PlayerManagerModule : public IPlayerManagerModule {
   public:
-    PlayerManagerModule(IPluginManager *p) { pm_ = p; }
+    PlayerManagerModule(IPluginManager *p) { 
+        pm_ = p;
+        is_update_ = true;
+    }
 
     virtual ~PlayerManagerModule(){};
 
@@ -49,12 +52,24 @@ class PlayerManagerModule : public IPlayerManagerModule {
     void SaveDataToDb(const Guid &self);
 
     int SaveDataOnTime(const Guid &self, const std::string &name, const float fIntervalTime, const int count);
-
+    inline void UpdateRemoveOfflinePlayers(time_t now_time);
   private:
     // 待优化为 unordered_map , 查找时间复杂度为 O(1)
     std::map<Guid, rpc::PlayerData> mxObjectDataCache;
     std::map<Guid, Player *> m_players;             // 所有玩家
-    std::map<Guid, Player *> m_offlineCachePlayers; // 离线缓存玩家
+
+    struct Offline {
+        enum Type {
+            None,
+            LobbyOffline,
+            PlayingOffline,
+        };
+        Type type = None;
+        time_t time = 0;
+    };
+
+    std::map<Guid, Offline> offline_players_;
+
   private:
     INetModule *m_net_;
     IClassModule *m_class_;

@@ -9,10 +9,14 @@ enum GameLobbyRPC {
     LOBBY_RPC_NONE = 0;
 
     REQ_BASIC_GAME_DATA = 10000; // 进入服务器之前获取基本游戏信息
-    ACK_BASIC_GAME_DATA = 10001;
+    ACK_BASIC_GAME_DATA = 10001; 
 
     REQ_ENTER = 10100; // 进入游戏大厅或断线重连
     ACK_ENTER = 10101; // 
+
+
+    REQ_GAME_DATA = 10000; // 进入服务器之前获取基本游戏信息
+    ACK_GAME_DATA = 10001; 
 
     // 进入游戏后的 RPC ////////////////////////////
     REQ_LEAVE = 10102; // 退出

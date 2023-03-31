@@ -67,8 +67,9 @@ class WorldModule : public IWorldModule {
     logic::ILogicModule * m_logic_;
     IKernelModule *m_kernel_;
     server::IServerModule *server_module_;
+    IClassModule* m_class_;
     IElementModule *m_element_;
-    IClassModule *m_class_;
+    
     INetClientModule *m_net_client_;
     ISecurityModule *m_security_;
 };

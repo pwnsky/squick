@@ -9,9 +9,10 @@ bool WorldModule::Start() {
     m_logic_ = pm_->FindModule<logic::ILogicModule>();
     m_kernel_ = pm_->FindModule<IKernelModule>();
     server_module_ = pm_->FindModule<server::IServerModule>();
+    m_class_ = pm_->FindModule<IClassModule>();
     m_element_ = pm_->FindModule<IElementModule>();
     m_log_ = pm_->FindModule<ILogModule>();
-    m_class_ = pm_->FindModule<IClassModule>();
+    
     m_net_client_ = pm_->FindModule<INetClientModule>();
 
     return true;
@@ -186,10 +187,8 @@ bool WorldModule::AfterStart() {
             const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
             const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
             const int nServerArea = m_element_->GetPropertyInt32(strId, excel::Server::Area());
-            if (serverType == ServerType::ST_WORLD && nCurArea == nServerArea) {
+            if (serverType == ServerType::ST_WORLD && nCurArea == nServerArea) { // 同一区服注册
                 const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
-                // const int maxConnect = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::MaxOnline());
-                // const int nCpus = m_element_->GetPropertyInt32(strId, SquickProtocol::Server::CpuCount());
                 const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
                 const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
 
@@ -200,7 +199,7 @@ bool WorldModule::AfterStart() {
                 xServerData.ip = ip;
                 xServerData.nPort = nPort;
                 xServerData.name = strId;
-
+                
                 m_net_client_->AddServer(xServerData);
             }
         }
@@ -249,7 +248,7 @@ bool WorldModule::VerifyConnectData(const std::string &account, const std::strin
 void WorldModule::LogServerInfo(const std::string &strServerInfo) { m_log_->LogInfo(Guid(), strServerInfo, ""); }
 
 void WorldModule::OnOtherMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    m_logic_->Transport(sock, msg_id, msg, len);
+    m_logic_->ForwardToClient(sock, msg_id, msg, len);
 }
 
 } // namespace proxy::client
