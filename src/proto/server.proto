@@ -7,11 +7,11 @@ import "base.proto";
 enum ServerRPC {
     SERVER_RPC_NONE = 0;
 
-    REQ_REGISTER_SERVER = 1;
-    ACK_REGISTER_SERVER = 2;
+    REQ_REGISTER = 1;
+    ACK_REGISTER = 2;
 
-    REQ_UNREGISTER_SERVER = 3;
-    ACK_UNREGISTER_SERVER = 4;
+    REQ_UNREGISTER = 3;
+    ACK_UNREGISTER = 4;
 
     REQ_REPORT = 5; // 服务端报告服务状态
     ACK_REPORT = 6;
@@ -25,6 +25,13 @@ enum ServerRPC {
     SERVER_HEARTBEAT = 103; // 服务端之间心跳包
 
     SERVER_MSG_TRANSMISSION = 200; // 无连接的服务端之间的消息转发, 由代理来进行转发消息
+}
+
+enum ServerState {
+    ServerCrash = 0;
+    ServerNormal = 1;
+    ServerBusy = 2;
+    ServerFrie = 3;
 }
 
 message Server {

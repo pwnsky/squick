@@ -2,7 +2,7 @@
 
 #include <squick/core/base.h>
 
-namespace login::server {
+namespace login::node {
 class Plugin : public IPlugin {
   public:
     Plugin(IPluginManager *p) { pm_ = p; }

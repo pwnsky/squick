@@ -1,7 +1,7 @@
 
 
 #include "plugin.h"
-#include "server_module.h"
+#include "node_module.h"
 
 namespace robot::server {
 SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){CREATE_PLUGIN(pm, Plugin)};

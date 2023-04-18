@@ -26,4 +26,4 @@ else()
 endif()
 
 LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "server" ${SQUICK_BUILD_EXE_PATH} "squick")
+SquickOut(${ProjectName} "node" ${SQUICK_BUILD_EXE_PATH} "squick")

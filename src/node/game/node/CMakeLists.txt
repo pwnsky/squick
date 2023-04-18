@@ -1,4 +1,4 @@
-set(ProjectName "game_server")
+set(ProjectName "game_node")
 file(GLOB soruces *.cc)
 file(GLOB headers *.h)
 add_library(${ProjectName} SHARED ${soruces} ${headers})

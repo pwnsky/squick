@@ -6,10 +6,9 @@
 #include <squick/plugin/kernel/export.h>
 #include <squick/plugin/net/export.h>
 
-#include "../client/i_db_module.h"
-// #include "../play/i_gameplay_manager_module.h"
-#include "../server/i_server_module.h"
-// #include "i_room_module.h"
+#include <node/lobby/node/i_node_module.h>
+
+
 #include <map>
 #include <unordered_map>
 
@@ -59,8 +58,7 @@ class IPlayerManagerModule : public IModule {
     IClassModule *m_class_;
     IElementModule *m_element_;
     IKernelModule *m_kernel_;
-    server::IServerModule *m_server_;
-    client::IDBModule *m_db_module;
+    node::INodeModule *m_node_;
     INetClientModule *m_net_client_;
     IScheduleModule *m_schedule_;
     IDataTailModule *m_data_tail_;

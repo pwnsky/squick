@@ -7,23 +7,19 @@
 #pragma once
 
 #include <squick/core/map.h>
-#include <squick/plugin/config/export.h>
-#include <squick/plugin/kernel/export.h>
-#include <squick/plugin/log/export.h>
-#include <squick/plugin/net/export.h>
 
-#include "i_server_module.h"
-namespace gameplay::server {
-class ServerModule : public IServerModule {
+#include "i_node_module.h"
+namespace game::node {
+class NodeModule : public INodeModule {
   public:
-    ServerModule(IPluginManager *p) { pm_ = p; }
+      NodeModule(IPluginManager *p) { pm_ = p; }
 
-    virtual bool Start();
     virtual bool Destory();
-    virtual bool Update();
     virtual bool AfterStart();
 
+    virtual void OnClientDisconnect(socket_t sock) override;
+    virtual void OnClientConnected(socket_t sock) override;
   protected:
   private:
 };
-} // namespace gameplay::server
+} // namespace game::node

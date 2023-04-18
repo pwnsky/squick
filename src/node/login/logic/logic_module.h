@@ -7,7 +7,7 @@
 #include <squick/plugin/net/export.h>
 
 #include "i_logic_module.h"
-#include <server/login/redis/i_redis_module.h>
+#include <node/login/redis/i_redis_module.h>
 
 namespace login::logic {
 class LogicModule : public ILogicModule {

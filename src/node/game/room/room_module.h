@@ -16,13 +16,13 @@
 // #include "../play/i_gameplay_manager_module.h"
 // #include "i_player_manager_module.h"
 
-#include "../server/i_server_module.h"
+#include "../server/i_node_module.h"
 
 #include "i_room_module.h"
 #include <squick/struct/struct.h>
 #include <unordered_map>
 
-namespace game::lobby {
+namespace game::room {
 
 class RoomModule : public IRoomModule {
   public:
@@ -70,7 +70,7 @@ class RoomModule : public IRoomModule {
     INetModule *m_net_;
     ILuaScriptModule *m_lua_script_;
     ILogModule *m_log_;
-    server::IServerModule *m_server_;
+    node::IServerModule *m_server_;
     // IPlayerManagerModule *m_player_manager_;
     // play::IGameplayManagerModule *m_gameplay_manager_;
 };

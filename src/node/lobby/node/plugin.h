@@ -3,7 +3,7 @@
 #include <squick/core/i_plugin.h>
 #include <squick/core/i_plugin_manager.h>
 
-namespace lobby::server {
+namespace lobby::node {
 class Plugin : public IPlugin {
   public:
     Plugin(IPluginManager *p) { pm_ = p; }

@@ -40,17 +40,17 @@ int main(int argc, char *argv[]) {
                 "Examples: ./squick plugin=test.xml server=defualt id=1\n";
         "\n";*/
 
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=master id=1 plugin=master.xml")));
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=login id=2 plugin=login.xml")));
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=world id=100 plugin=world.xml")));
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=db_proxy id=300 plugin=db_proxy.xml")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=master id=1")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=login id=2")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=world id=100")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=db_proxy id=300")));
 
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=game id=1000 plugin=game.xml")));
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=game id=1001 plugin=game.xml")));
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=gameplay_manager id=2000 plugin=gameplay_manager.xml")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=1000")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=1001")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=gameplay_manager id=2000")));
 
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=proxy id=500 plugin=proxy.xml")));
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " server=proxy id=501 plugin=proxy.xml")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=500")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=501")));
     } else {
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList)));
     }

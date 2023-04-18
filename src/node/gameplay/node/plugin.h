@@ -2,7 +2,7 @@
 #include <squick/core/i_plugin.h>
 #include <squick/core/i_plugin_manager.h>
 
-namespace gameplay::server {
+namespace gameplay::node {
 class Plugin : public IPlugin {
   public:
     Plugin(IPluginManager *p) { pm_ = p; }

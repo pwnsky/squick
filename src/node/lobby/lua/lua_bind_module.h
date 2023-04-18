@@ -18,7 +18,7 @@ class LuaBindModule : public ILuaBindModule {
   public:
     LuaBindModule(IPluginManager *p) {
         pm_ = p;
-        is_update_ = true;
+        is_update_ = false;
     }
 
     virtual bool Start();
@@ -28,7 +28,6 @@ class LuaBindModule : public ILuaBindModule {
     virtual bool Update();
 
   protected:
-    bool OnGetServerList(std::shared_ptr<HttpRequest> req);
     bool Bind();
 
     void SendToPlayer(string &player_guid_str, uint16_t msg_id, std::string &data);
@@ -37,7 +36,7 @@ class LuaBindModule : public ILuaBindModule {
   private:
     ILuaScriptModule *m_lua_script_;
     player::IPlayerManagerModule *m_player_manager_;
-    server::IServerModule *m_server_;
+    node::INodeModule *m_node_;
 };
 
 } // namespace lobby::lua

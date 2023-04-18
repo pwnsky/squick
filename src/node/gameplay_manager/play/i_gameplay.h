@@ -8,7 +8,7 @@
 #include "i_gameplay_manager_module.h"
 #include <squick/core/base.h>
 
-namespace game::play {
+namespace gameplay_manager::play {
 using namespace rpc;
 class IGameplay {
   public:
@@ -54,7 +54,7 @@ class IGameplay {
         status = RUNNING;
         dout << "Game Play Parent Start!\n";
         // 初始化完毕后，通过告诉房间实现加入
-        manager->m_room_->GamePlayPrepared(id, "game", "", 0);
+        //manager->m_room_->GamePlayPrepared(id, "game", "", 0);
         Start();
     };
 

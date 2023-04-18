@@ -1,6 +1,6 @@
 #include "gameplay.h"
 #include <squick/struct/struct.h>
-namespace game::play {
+namespace gameplay_manager::play {
 
 Gameplay::Gameplay() {}
 

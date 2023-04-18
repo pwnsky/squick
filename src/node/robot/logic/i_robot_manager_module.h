@@ -7,7 +7,7 @@
 #include <squick/plugin/kernel/export.h>
 #include <squick/plugin/net/export.h>
 
-#include "../server/i_server_module.h"
+#include "../node/i_node_module.h"
 
 namespace robot::logic {
 class IRobotManagerModule : public IModule {};

@@ -5,10 +5,9 @@ namespace login::http {
 bool HttpModule::Start() {
     m_http_server_ = pm_->FindModule<IHttpServerModule>();
     m_kernel_ = pm_->FindModule<IKernelModule>();
-    m_server_ = pm_->FindModule<server::IServerModule>();
+    m_node_ = pm_->FindModule<node::INodeModule>();
     m_class_ = pm_->FindModule<IClassModule>();
     m_element_ = pm_->FindModule<IElementModule>();
-    m_master_ = pm_->FindModule<client::IMasterModule>();
     m_net_client_ = pm_->FindModule<INetClientModule>();
     m_mysql_ = pm_->FindModule<mysql::IMysqlModule>();
     m_redis_ = pm_->FindModule<redis::IRedisModule>();
@@ -122,7 +121,7 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
 
 bool HttpModule::OnWorldList(std::shared_ptr<HttpRequest> req) {
     AckWorldList ack;
-    auto &servers = m_master_->GetServers();
+    auto &servers = m_node_->GetServers();
 
     for (auto &iter : servers) {
         auto &server = iter.second;
@@ -153,7 +152,7 @@ bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
     do {
 
         // 判断world id是否存在
-        auto &servers = m_master_->GetServers();
+        auto &servers = m_node_->GetServers();
         auto witer = servers.find(req.world_id);
         if (witer == servers.end()) {
             dout << "客户端选择world_id错误: " << req.world_id << std::endl;

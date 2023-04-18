@@ -1,13 +1,10 @@
 
-#include "server_module.h"
+#include "node_module.h"
 
-namespace gameplay::server {
-bool ServerModule::Start() { return true; }
+namespace gameplay::node {
 
-bool ServerModule::Destory() { return true; }
+bool NodeModule::Destory() { return true; }
 
-bool ServerModule::Update() { return true; }
+bool NodeModule::AfterStart() { return true; }
 
-bool ServerModule::AfterStart() { return true; }
-
-} // namespace gameplay::server
+} // namespace gameplay::node

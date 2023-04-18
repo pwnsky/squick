@@ -3,16 +3,16 @@
 // Email : l418894113@gmail.com
 // Date  : 2022-03-22
 // Github: https://github.com/pwnsky/squick
-// Description: gameplay server module
+// Description: gameplay node module
 
 #pragma once
 
-#include <squick/core/i_module.h>
+#include <node/i_node_base_module.h>
 
-namespace gameplay::server {
-class IServerModule : public IModule {
+namespace gameplay::node {
+class INodeModule : public INodeBaseModule {
   public:
   protected:
   private:
 };
-} // namespace gameplay::server
+} // namespace gameplay::node

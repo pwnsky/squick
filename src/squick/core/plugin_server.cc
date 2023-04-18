@@ -74,9 +74,9 @@ void PluginServer::ProcessParameter() {
     while (std::getline(tokenStream, token, ' ')) {
         argList.push_back(token);
     }
-
-    pm_->SetConfigName(FindParameterValue(argList, "plugin="));
-    pm_->SetAppName(FindParameterValue(argList, "server="));
+    string type = FindParameterValue(argList, "type=");
+    pm_->SetConfigName(type + ".xml");
+    pm_->SetAppName(type);
 
     std::string strAppID = FindParameterValue(argList, "id=");
     int appID = 0;

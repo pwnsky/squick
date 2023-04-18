@@ -1,13 +1,24 @@
 
-#include "server_module.h"
+#include "node_module.h"
 
-namespace gameplay::server {
-bool ServerModule::Start() { return true; }
+namespace game::node {
 
-bool ServerModule::Destory() { return true; }
+bool NodeModule::Destory() { return true; }
 
-bool ServerModule::Update() { return true; }
+bool NodeModule::AfterStart() {
 
-bool ServerModule::AfterStart() { return true; }
+	Listen();
+	AddServer(ST_WORLD);
 
-} // namespace gameplay::server
+	return true;
+}
+
+void NodeModule::OnClientDisconnect(socket_t sock) {
+
+}
+
+void NodeModule::OnClientConnected(socket_t sock) {
+
+}
+
+} // namespace game::node

@@ -1,5 +1,4 @@
 #include "player_manager_module.h"
-#include <server/db_proxy/logic/common_redis_module.h>
 
 namespace lobby::player {
 bool PlayerManagerModule::Start() {
@@ -7,10 +6,9 @@ bool PlayerManagerModule::Start() {
     m_class_ = pm_->FindModule<IClassModule>();
     m_net_ = pm_->FindModule<INetModule>();
     m_kernel_ = pm_->FindModule<IKernelModule>();
-    m_db_module = pm_->FindModule<client::IDBModule>();
     m_log_ = pm_->FindModule<ILogModule>();
 
-    m_server_ = pm_->FindModule<server::IServerModule>();
+    m_node_ = pm_->FindModule<node::INodeModule>();
     m_net_client_ = pm_->FindModule<INetClientModule>();
     m_schedule_ = pm_->FindModule<IScheduleModule>();
     m_data_tail_ = pm_->FindModule<IDataTailModule>();
@@ -29,6 +27,7 @@ bool PlayerManagerModule::ReadyUpdate() {
     m_net_->AddReceiveCallBack(rpc::LobbyBaseRPC::REQ_ENTER, this, &PlayerManagerModule::OnReqPlayerEnter);
     m_net_->AddReceiveCallBack(rpc::LobbyBaseRPC::REQ_LEAVE, this, &PlayerManagerModule::OnReqPlayerLeave);
     m_net_->AddReceiveCallBack(rpc::LobbyBaseRPC::REQ_RECONNECT, this, &PlayerManagerModule::OnReqPlayerReconnect);
+
     m_net_client_->AddReceiveCallBack(ServerType::ST_DB_PROXY, rpc::DbProxyRPC::ACK_PLAYER_DATA_LOAD, this,
                                       &PlayerManagerModule::OnAckPlayerDataLoad); // 每一次进入游戏都从数据库拉取一下
 
@@ -217,7 +216,7 @@ bool PlayerManagerModule::Update() {
 // 发送数据给客户端，用于给player.cc使用
 void PlayerManagerModule::OnSendToClient(const uint16_t msg_id, google::protobuf::Message &xMsg, const Guid &client_id) {
     dout << "发送数据给: " << client_id.ToString() << " msgID: " << msg_id << std::endl;
-    m_server_->SendPBToPlayer(msg_id, xMsg, client_id);
+    m_node_->SendPBToPlayer(msg_id, xMsg, client_id);
 }
 
 /*

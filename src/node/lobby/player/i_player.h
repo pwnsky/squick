@@ -47,7 +47,7 @@ class IPlayer {
 
     void SendToPlayer(int msg_id, google::protobuf::Message &xMsg, const Guid &player) {
         // dout << " 发送给客户端: " << player.ToString() << "   MSGID: " << msg_id << std::endl;
-        manager->m_server_->SendPBToPlayer(msg_id, xMsg, player);
+        manager->m_node_->SendPBToPlayer(msg_id, xMsg, player);
     }
 
     int offline_time_ = 0;

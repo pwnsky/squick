@@ -2,9 +2,6 @@
 
 #include <iostream>
 #include <map>
-
-#include "../client/i_master_module.h"
-#include "../server/i_server_module.h"
 #include "i_http_module.h"
 #include <squick/core/platform.h>
 #include <squick/plugin/config/export.h>
@@ -13,8 +10,9 @@
 #include <squick/struct/struct.h>
 #include <third_party/nlohmann/json.hpp>
 
-#include <server/login/mysql/i_mysql_module.h>
-#include <server/login/redis/i_redis_module.h>
+#include <node/login/mysql/i_mysql_module.h>
+#include <node/login/redis/i_redis_module.h>
+#include <node/login/node/i_node_module.h>
 
 #include <unordered_map>
 namespace login::http {
@@ -48,8 +46,7 @@ class HttpModule : public IHttpModule {
     INetClientModule *m_net_client_;
     IKernelModule *m_kernel_;
     IHttpServerModule *m_http_server_;
-    server::IServerModule *m_server_;
-    client::IMasterModule *m_master_;
+    node::INodeModule *m_node_;
     IClassModule *m_class_;
     IElementModule *m_element_;
     redis::IRedisModule *m_redis_;

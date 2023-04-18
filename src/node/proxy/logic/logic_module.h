@@ -7,7 +7,7 @@
 #include <squick/plugin/net/export.h>
 
 #include "i_logic_module.h"
-#include <server/proxy/client/i_login_module.h>
+#include <node/proxy/node/i_node_module.h>
 #include <vector>
 
 namespace proxy::logic {
@@ -78,7 +78,7 @@ class LogicModule : public ILogicModule {
     IScheduleModule *m_schedule_;
     INetModule *m_net_;
     INetClientModule *m_net_client_;
-    client::ILoginModule *m_login_;
+    node::INodeModule *m_node_;
 
   private:
 };

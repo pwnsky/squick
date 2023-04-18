@@ -1,6 +1,6 @@
-set(ProjectName "robot_server")
+set(ProjectName "robot_node")
 file(GLOB soruces *.cc)
 file(GLOB headers *.h)
 add_library(${ProjectName} SHARED ${soruces} ${headers})
 LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "node/robot" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/robot "server")
+SquickOut(${ProjectName} "node/robot" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/robot "node")

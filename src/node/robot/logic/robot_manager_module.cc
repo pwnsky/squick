@@ -1,7 +1,6 @@
 
 
 #include "robot_manager_module.h"
-#include <server/db_proxy/logic/common_redis_module.h>
 
 namespace robot::logic {
 

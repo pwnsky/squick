@@ -6,13 +6,9 @@
 #include <squick/plugin/config/export.h>
 #include <squick/plugin/kernel/export.h>
 #include <squick/plugin/net/export.h>
+#include <node/gameplay_manager/node/i_node_module.h>
 
-// #include "../client/i_db_module.h"
-// #include "../lobby/i_player_manager_module.h"
-// #include "../lobby/i_room_module.h"
-#include "../server/i_server_module.h"
-
-namespace game::play {
+namespace gameplay_manager::play {
 
 typedef std::function<void(const Guid &clientID, const int msg_id, const std::string &data)> GAME_PLAY_RECEIVE_FUNCTOR;
 typedef std::shared_ptr<GAME_PLAY_RECEIVE_FUNCTOR> GAME_PLAY_RECEIVE_FUNCTOR_PTR;
@@ -59,15 +55,11 @@ class IGameplayManagerModule : public IModule {
     IElementModule *m_element_;
     IKernelModule *m_kernel_;
     ISceneModule *m_scene_;
-    server::IServerModule *m_server_;
-    client::IDBModule *m_db_;
+    node::INodeModule *m_server_;
     INetClientModule *m_net_client_;
     IScheduleModule *m_schedule_;
     IDataTailModule *m_data_tail_;
     IEventModule *m_event_;
-
-    // lobby::IPlayerManagerModule *m_player_manager_;
-    // lobby::IRoomModule *m_room_;
 
   private:
     std::unordered_map<int, std::map<int, GAME_PLAY_RECEIVE_FUNCTOR_PTR>> mxReceiveCallBack;

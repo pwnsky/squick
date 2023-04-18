@@ -1,6 +1,6 @@
-set(ProjectName "world_server")
+set(ProjectName "world_node")
 file(GLOB soruces *.cc)
 file(GLOB headers *.h)
 add_library(${ProjectName} SHARED ${soruces} ${headers})
 LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "node/world" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/world "server")
+SquickOut(${ProjectName} "node/world" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/world "node")

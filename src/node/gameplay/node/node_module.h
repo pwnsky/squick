@@ -12,15 +12,13 @@
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
 
-#include "i_server_module.h"
-namespace gameplay::server {
-class ServerModule : public IServerModule {
+#include "i_node_module.h"
+namespace gameplay::node {
+class NodeModule : public INodeModule {
   public:
-    ServerModule(IPluginManager *p) { pm_ = p; }
+      NodeModule(IPluginManager *p) { pm_ = p; }
 
-    virtual bool Start();
     virtual bool Destory();
-    virtual bool Update();
     virtual bool AfterStart();
 
   protected:

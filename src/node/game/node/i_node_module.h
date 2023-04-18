@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include <squick/core/i_module.h>
+#include <node/i_node_base_module.h>
 
-namespace gameplay::server {
-class IServerModule : public IModule {
+namespace game::node {
+class INodeModule : public INodeBaseModule {
   public:
   protected:
   private:

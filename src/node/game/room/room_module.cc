@@ -3,7 +3,7 @@
 // #include <third_party/nlohmann/json.hpp>
 #include <third_party/common/crc32.hpp>
 
-namespace game::lobby {
+namespace game::room {
 bool RoomModule::Start() {
     m_net_ = pm_->FindModule<INetModule>();
     m_lua_script_ = pm_->FindModule<ILuaScriptModule>();

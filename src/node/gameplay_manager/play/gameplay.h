@@ -4,7 +4,7 @@
 #include <list>
 #include <vector>
 
-namespace game::play {
+namespace gameplay_manager::play {
 
 class Gameplay : public IGameplay {
   public:

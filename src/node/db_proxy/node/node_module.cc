@@ -1,36 +1,30 @@
 #include <squick/struct/struct.h>
 
-#include "../logic/player_redis_module.h"
-#include "server_module.h"
+//#include "../logic/player_redis_module.h"
+#include "node_module.h"
 
-namespace db_proxy::server {
-bool ServerModule::Awake() { return true; }
+namespace db_proxy::node {
 
-bool ServerModule::Start() {
-    BaseStart();
+bool NodeModule::AfterStart() {
+    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_PLAYER_DATA_LOAD, this, &NodeModule::OnLoadRoleDataProcess);
+    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_PLAYER_DATA_SAVE, this, &NodeModule::OnSaveRoleDataProcess);
+
+
     m_pAccountRedisModule = pm_->FindModule<IAccountRedisModule>();
     m_pPlayerRedisModule = pm_->FindModule<IPlayerRedisModule>();
-
-    return true;
-}
-
-bool ServerModule::AfterStart() {
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_PLAYER_DATA_LOAD, this, &ServerModule::OnLoadRoleDataProcess);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_PLAYER_DATA_SAVE, this, &ServerModule::OnSaveRoleDataProcess);
-
+    
     Listen();
     return true;
 }
 
-bool ServerModule::Destory() { return true; }
+bool NodeModule::Destory() { return true; }
 
-bool ServerModule::Update() { return true; }
 
-void ServerModule::OnClientDisconnect(const socket_t sock) {}
+void NodeModule::OnClientDisconnect(const socket_t sock) {}
 
-void ServerModule::OnClientConnected(const socket_t sock) {}
+void NodeModule::OnClientConnected(const socket_t sock) {}
 
-void ServerModule::OnLoadRoleDataProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void NodeModule::OnLoadRoleDataProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     Guid guid;
     rpc::ReqEnter req;
     if (!m_net_->ReceivePB(msg_id, msg, len, req, guid)) {
@@ -51,7 +45,7 @@ void ServerModule::OnLoadRoleDataProcess(const socket_t sock, const int msg_id, 
     m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_PLAYER_DATA_LOAD, ack, sock, guid);
 }
 
-void ServerModule::OnSaveRoleDataProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void NodeModule::OnSaveRoleDataProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     /*
     Guid clientID;
     rpc::RoleDataPack xMsg;

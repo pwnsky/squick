@@ -2,7 +2,7 @@
 #include <map>
 #include <squick/core/base.h>
 #include <squick/struct/struct.h>
-namespace game::lobby {
+namespace game::room {
 using namespace std;
 struct Game {
     int id = -1;

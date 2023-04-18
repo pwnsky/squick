@@ -17,7 +17,7 @@ bool LogicModule::AfterStart() {
     m_net_client_ = pm_->FindModule<INetClientModule>();
     m_log_ = pm_->FindModule<ILogModule>();
     m_schedule_ = pm_->FindModule<IScheduleModule>();
-    m_login_ = pm_->FindModule<client::ILoginModule>();
+    m_node_ = pm_->FindModule<node::INodeModule>();
 
     m_net_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_HEARTBEAT, this, &LogicModule::OnHeartbeat);
@@ -318,7 +318,7 @@ void LogicModule::OnReqConnect(const socket_t sock, const int msg_id, const char
     s.time = SquickGetTimeMS();
     s.sock = sock;
     sessions_[sock] = s;
-    m_login_->OnReqProxyConnectVerify(sock, guid.ToString(), req.key());
+    m_node_->OnReqProxyConnectVerify(sock, guid.ToString(), req.key());
 }
 
 void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const uint32_t len) {

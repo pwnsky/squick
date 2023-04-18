@@ -2,7 +2,7 @@
 
 #include <squick/core/i_plugin.h>
 #include <squick/core/i_plugin_manager.h>
-namespace world::server {
+namespace world::node {
 class Plugin : public IPlugin {
   public:
     Plugin(IPluginManager *p) { pm_ = p; }

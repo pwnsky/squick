@@ -25,7 +25,7 @@ PluginManager::PluginManager() : IPluginManager() {
     mGetFileContentFunctor = nullptr;
 
     configPath = "..";                       // 主要服务路径
-    configName = "config/plugin/plugin.xml"; // 默认插件加载路径
+    configName = "config/node/plugin.xml"; // 默认插件加载路径
 }
 
 PluginManager::~PluginManager() {}
@@ -262,7 +262,7 @@ void PluginManager::SetConfigName(const std::string &fileName) {
     if (fileName.find(".xml") == string::npos) {
         return;
     }
-    configName = "config/plugin/" + fileName;
+    configName = "config/node/" + fileName;
 }
 
 const std::string &PluginManager::GetConfigName() const { return configName; }
@@ -273,7 +273,6 @@ void PluginManager::SetAppName(const std::string &name) {
     if (name.empty()) {
         return;
     }
-
     appName = name;
 }
 
