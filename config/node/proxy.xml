@@ -1,0 +1,13 @@
+<XML>
+	<ProxyServer>
+		<Plugin Name="core/net" />
+		<Plugin Name="core/kernel" />
+		<Plugin Name="core/config" />
+		<Plugin Name="core/log" />	
+		<Plugin Name="core/security" />
+		<Plugin Name="core/actor" />
+		
+		<Plugin Name="node/proxy/logic" />
+		<Plugin Name="node/proxy/node" />
+</ProxyServer>
+</XML>

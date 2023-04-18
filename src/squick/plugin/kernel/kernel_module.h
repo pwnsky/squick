@@ -46,7 +46,7 @@ class KernelModule : public IKernelModule, public MapEx<Guid, IObject> {
 
     virtual std::shared_ptr<IObject> GetObject(const Guid &ident);
     virtual std::shared_ptr<IObject> CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className,
-                                                   const std::string &configIndex, const DataList &arg);
+                                                  const std::string &configIndex, const DataList &arg);
 
     virtual bool DestroyAll();
     virtual bool DestroySelf(const Guid &self);

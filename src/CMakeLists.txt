@@ -40,7 +40,7 @@ set(SQUICK_RUNTIME_LIB_PATH ${SolutionDir}/bin)
 # 核心插件路径
 set(SQUICK_BUILD_PLUGIN_CORE_PATH ${SolutionDir}/bin/plugin/core)
 # 服务器插件路径
-set(SQUICK_BUILD_PLUGIN_SERVER_PATH ${SolutionDir}/bin/plugin/server)
+set(SQUICK_BUILD_PLUGIN_SERVER_PATH ${SolutionDir}/bin/plugin/node)
 # 拓展插件路径
 set(SQUICK_BUILD_PLUGIN_EXTEND_PATH ${SolutionDir}/bin/plugin/extend)
 # 测试插件路径
@@ -120,8 +120,7 @@ link_directories(${ThirdPartyLibPath} ${SquickLibPath})
 add_definitions(-D_X64 -D_CONSOLE -DSQUICK_DYNAMIC_PLUGIN)
 
 add_subdirectory(squick)
-add_subdirectory(server)
-
+add_subdirectory(node)
 
 if( EXTRA STREQUAL "EXTRA" )
 	

@@ -76,8 +76,7 @@ class NetClientModule : public INetClientModule {
                               const Guid id);
 
     virtual void SendSuitByPB(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const google::protobuf::Message &xData);
-    virtual void SendSuitByPB(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const google::protobuf::Message &xData,
-                              const Guid id);
+    virtual void SendSuitByPB(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const google::protobuf::Message &xData, const Guid id);
 
     ////////////////////////////////////////////////////////////////////////////////
 

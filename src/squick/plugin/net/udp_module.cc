@@ -128,9 +128,7 @@ bool UDPModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
     return true;
 }
 
-bool UDPModule::SendMsgPB(const uint16_t msg_id, const std::string &strData, const socket_t sock, const std::vector<Guid> *pClientIDList) {
-    return true;
-}
+bool UDPModule::SendMsgPB(const uint16_t msg_id, const std::string &strData, const socket_t sock, const std::vector<Guid> *pClientIDList) { return true; }
 
 INet *UDPModule::GetNet() { return nullptr; }
 

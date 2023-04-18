@@ -4,7 +4,7 @@
 RecordManager::~RecordManager() { ClearAll(); }
 
 std::shared_ptr<IRecord> RecordManager::AddRecord(const Guid &self, const std::string &recordName, const std::shared_ptr<DataList> &ValueList,
-                                                   const std::shared_ptr<DataList> &tagList, const int nRows) {
+                                                  const std::shared_ptr<DataList> &tagList, const int nRows) {
     std::shared_ptr<IRecord> pRecord = GetElement(recordName);
     if (!pRecord) {
         // std::shared_ptr<IRecord>

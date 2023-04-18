@@ -19,6 +19,8 @@ enum DbProxyRPC {
 
 message PlayerData {
     Ident object = 1;
-    ObjectPropertyList property = 2;
-    ObjectRecordList record = 3;
+    Ident guid = 2;
+    bytes account = 3;
+    ObjectPropertyList property = 4;
+    ObjectRecordList record = 5;
 }

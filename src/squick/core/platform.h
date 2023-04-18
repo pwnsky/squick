@@ -201,8 +201,8 @@ warn_unusedarg off #     pragma warn_emptydecl off #     pragma warn_possunwant 
 */
 //----------------------------------------------------------------------------
 // Linux/Apple/iOs/Android/Symbian/Tegra2/NaCl Settings
-#if PLATFORM == PLATFORM_LINUX || PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS ||                    \
-    PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_TEGRA2 || PLATFORM == PLATFORM_NACL
+#if PLATFORM == PLATFORM_LINUX || PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS || PLATFORM == PLATFORM_ANDROID ||                              \
+    PLATFORM == PLATFORM_TEGRA2 || PLATFORM == PLATFORM_NACL
 
 // #include <syswait.h>
 
@@ -265,7 +265,7 @@ typedef int64_t socket_t;
 
 #if PLATFORM == PLATFORM_WIN
 #include <crtdbg.h>
-#define SQUICK_ASSERT(exp_, msg_, file_, func_)                                                                                                                     \
+#define SQUICK_ASSERT(exp_, msg_, file_, func_)                                                                                                                \
     std::string strInfo("Message:");                                                                                                                           \
     strInfo += msg_ + std::string(" don't exist or some warning") + std::string("\n\nFile:") + std::string(file_) + std::string("\n Function:") + func_;       \
     MessageBoxA(0, strInfo.c_str(), ("Error_" #exp_), MB_RETRYCANCEL | MB_ICONERROR);                                                                          \
@@ -333,7 +333,6 @@ typedef int64_t socket_t;
 #endif
 
 #define GET_CLASS_NAME(className) typeid(className).name()
-
 
 template <typename DTYPE> bool SQUICK_StrTo(const std::string &value, DTYPE &nValue) {
     try {

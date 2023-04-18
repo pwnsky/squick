@@ -5,7 +5,7 @@ import "base.proto";
 // GameplayManagerRPC RPC 500 ~ 600
 enum GameplayManagerRPC {
     GAMEPLAY_MANAGER_RPC_NONE = 0;
-    
+
     // GAME_PLAY Manager API
     // GAME_PLAY 管理服 接口
     REQ_GAMEPLAY_CREATE = 500; // 创建 GAME_PLAY 对战服实例
@@ -22,17 +22,13 @@ enum GameplayManagerRPC {
     REQ_GAMEPLAY_STATUS = 506;
     ACK_GAMEPLAY_STATUS = 507;
     REQ_GAMEPLAY_DATA = 508; // 创建完毕Game Play服务器后， Game
-                            // Play服务器向Game服务器初始化对战服数据和各玩家数据
+                             // Play服务器向Game服务器初始化对战服数据和各玩家数据
     ACK_GAMEPLAY_DATA = 509;
     REQ_GAMEPLAY_PREPARED = 510; // Game Play服务器初始化数据完成
     ACK_GAMEPLAY_PREPARED = 511;
     REQ_GAMEPLAY_OVER = 512;
     ACK_GAMEPLAY_OVER = 513;
-
-    REQ_GAMEPLAY_CONNECT_GAME_SERVER = 514; // Game Play Server 请求连接 Game Server
-    ACK_GAMEPLAY_CONNECT_GAME_SERVER = 515;
 }
-
 
 // ---------------------------------------------------------
 // GamePlay服务器在GamePlay Manager服务器上 请求连接 Game Server

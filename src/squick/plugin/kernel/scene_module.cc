@@ -94,7 +94,7 @@ int SceneModule::RequestGroupScene(const int sceneID) {
                     std::shared_ptr<IRecord> pConfigRecordInfo = pStaticClassRecordManager->First();
                     while (pConfigRecordInfo) {
                         std::shared_ptr<IRecord> xRecord = pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(),
-                                                                                      pConfigRecordInfo->GetTag(), pConfigRecordInfo->GetRows());
+                                                                                     pConfigRecordInfo->GetTag(), pConfigRecordInfo->GetRows());
 
                         xRecord->SetPublic(pConfigRecordInfo->GetPublic());
                         xRecord->SetPrivate(pConfigRecordInfo->GetPrivate());

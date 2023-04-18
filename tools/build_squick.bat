@@ -1,3 +1,4 @@
+@echo off
 rem Author: i0gan
 rem Email : l418894113@gmail.com
 rem Date  : 2022-12-14

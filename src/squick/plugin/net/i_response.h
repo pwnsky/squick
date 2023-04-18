@@ -15,6 +15,7 @@ class IResponse {
         SERVER_ERROR,
         QEUEST_ERROR,
     };
+
   public:
     ResponseType code;
     std::string msg;

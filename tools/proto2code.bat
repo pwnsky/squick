@@ -1,8 +1,10 @@
+@echo off
 rem Author: i0gan
 rem Email : l418894113@gmail.com
 rem Date  : 2023-01-04
 rem Github: https://github.com/i0gan/Squick
 rem Description: Generate proto code
+
 
 set proto_bin=..\third_party\build\bin\protoc
 set proto_path="..\src\proto"

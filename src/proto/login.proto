@@ -8,12 +8,12 @@ enum LoginRPC {
     LOGIN_RPC_NONE = 0;
 
     REQ_PROXY_CONNECT_VERIFY = 6000; // 来自代理服务器的验证请求
-    ACK_PROXY_CONNECT_VERIFY = 6001;   
+    ACK_PROXY_CONNECT_VERIFY = 6001;
 }
 
 message ReqConnectProxyVerify {
     int64 session = 1; // 请求会话
-    Ident guid = 2;
+    bytes guid = 2;
     bytes key = 3;
 }
 
@@ -21,4 +21,5 @@ message AckConnectProxyVerify {
     int64 session = 1;
     int32 code = 2;
     int32 world_id = 3;
+    bytes account = 4;
 }

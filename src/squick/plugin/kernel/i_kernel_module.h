@@ -97,7 +97,7 @@ class IKernelModule : public IModule {
 
     virtual std::shared_ptr<IObject> GetObject(const Guid &ident) = 0;
     virtual std::shared_ptr<IObject> CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className,
-                                                   const std::string &configIndex, const DataList &arg) = 0;
+                                                  const std::string &configIndex, const DataList &arg) = 0;
 
     virtual bool DestroySelf(const Guid &self) = 0;
     virtual bool DestroyObject(const Guid &self) = 0;

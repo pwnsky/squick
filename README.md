@@ -16,6 +16,8 @@ Squick是游戏服务器快速相对较成熟开发方案，支持局部热重�
 
 [快速开始](#快速开始)
 
+[论文](./docs/论文.md)
+
 **讨论QQ群：739065686**
 
 **version:** 1.0.0
@@ -50,6 +52,16 @@ Squick是游戏服务器快速相对较成熟开发方案，支持局部热重�
 - 支持 kubernetes 部署
 
 
+
+## 服务端架构
+
+连接架构
+
+![img](./docs/images/object_connections.png)
+
+服务端之间的RPC通信方式
+
+<img src="./docs/images/server_to_server_rpc.png" alt="img" style="zoom: 33%;" />
 
 # 安装
 

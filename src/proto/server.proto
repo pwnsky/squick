@@ -6,83 +6,67 @@ import "base.proto";
 // Servers RPC 0 ~ 500
 enum ServerRPC {
     SERVER_RPC_NONE = 0;
-    WORLD_TO_MASTER_REGISTERED = 1;
-    WORLD_TO_MASTER_UNREGISTERED = 2;
-    WORLD_TO_MASTER_REFRESH = 3;
 
-    LOGIN_TO_MASTER_REGISTERED = 4;
-    LOGIN_TO_MASTER_UNREGISTERED = 5;
-    LOGIN_TO_MASTER_REFRESH = 6;
+    REQ_REGISTER_SERVER = 1;
+    ACK_REGISTER_SERVER = 2;
 
-    PROXY_TO_WORLD_REGISTERED = 7;
-    PROXY_TO_WORLD_UNREGISTERED = 8;
-    PROXY_TO_WORLD_REFRESH = 9;
+    REQ_UNREGISTER_SERVER = 3;
+    ACK_UNREGISTER_SERVER = 4;
 
-    PROXY_TO_GAME_REGISTERED = 10;
-    PROXY_TO_GAME_UNREGISTERED = 11;
-    PROXY_TO_GAME_REFRESH = 12;
+    REQ_REPORT = 5; // 服务端报告服务状态
+    ACK_REPORT = 6;
 
-    GAME_TO_WORLD_REGISTERED = 13;
-    GAME_TO_WORLD_UNREGISTERED = 14;
-    GAME_TO_WORLD_REFRESH = 15;
-
-    DB_TO_WORLD_REGISTERED = 16;
-    DB_TO_WORLD_UNREGISTERED = 17;
-    DB_TO_WORLD_REFRESH = 18;
-
-    GAMEPLAY_MANAGER_TO_WORLD_REGISTERED = 19; // 将GAMEPLAY管理服务器注册到 World 服务器
-    GAMEPLAY_MANAGER_TO_WORLD_UNREGISTERED = 20;
-    GAMEPLAY_MANAGER_TO_WORLD_REFRESH = 21;
-
-    GAMEPLAY_MANAGER_TO_GAME_REGISTERED = 22; // 将GAME_PLAY管理服务器注册到 GAME 服务器, GAME_PLAY Manager
-    GAMEPLAY_MANAGER_TO_GAME_UNREGISTERED = 23;
-    GAMEPLAY_MANAGER_TO_GAME_REFRESH = 24;
+    PLAYER_ENETER = 10;
+    PLAYER_LEAVE = 11;
 
     CLOSE_SOCKET = 100; // want to close some one
-    STS_NET_INFO = 101;
-    STS_SERVER_REPORT = 102; // 服务端报告服务状态
-    STS_HEART_BEAT = 103;    // 服务端之间心跳包
+    SERVER_ADD = 101;
 
-    ACK_PLAYER_ONLINE = 110;
-    ACK_PLAYER_OFFLINE = 111;
+    SERVER_HEARTBEAT = 103; // 服务端之间心跳包
+
+    SERVER_MSG_TRANSMISSION = 200; // 无连接的服务端之间的消息转发, 由代理来进行转发消息
 }
 
-enum ServerState {
-    SERVER_CRASH = 0;
-    SERVER_NORMAL = 1;
-    SERVER_BUSY = 2;
-    SERVER_FIRE = 3;
-    SERVER_MAINTEN = 4;
-}
-
-message ServerInfo {
-    int32 server_id = 1;
+message Server {
+    int32 id = 1;
     bytes name = 2;
-    int32 wait_count = 3;
-    ServerState status = 4;
+    bytes ip = 3;
+    int32 port = 4;
+    int32 max_online = 5;
+    int32 cpu_count = 6;
+    ServerState state = 7;
+    int32 type = 8;
+    int32 area = 9; // 区
+    int32 connections = 10;
+    int32 workload = 11;
 }
 
-message ServerInfoReport {
-    int32 server_id = 1;
-    bytes server_name = 2;
-    bytes server_ip = 3;
-    int32 server_port = 4;
-    int32 server_max_online = 5;
-    int32 server_cur_count = 6;
-    ServerState server_state = 7;
-    int32 server_type = 8;
-    int32 area = 9; // 区服
+message ReqRegisterServer {
+    bytes key = 1;
+    Server server = 2;
 }
 
-message ServerInfoReportList { repeated ServerInfoReport server_list = 1; }
+message AckRegisterServer { int32 code = 1; }
+
+message ReqUnregisterServer {}
+
+message AckUnregisterServer { int32 code = 1; }
+
+// 玩家在线
+message PlayerEneter {
+    Ident guid = 1;
+    bytes name = 2;
+    bytes account = 3;
+    int32 world_id = 4;
+    int32 game_id = 5;
+    int32 micro_id = 6;
+    int32 lobby_id = 7;
+    int32 gameplay_manager_id = 8;
+}
+
+// 玩家离线
+message PlayerLeave { Ident guid = 1; }
+
+message ServerList { repeated Server list = 1; }
 
 message ServerHeartBeat { int32 count = 1; }
-
-message ReqServerList {
-     //ServerType type = 1;
-}
-
-message AckServerList {
-    //ServerType type = 1;
-    repeated ServerInfo info = 2;
-}

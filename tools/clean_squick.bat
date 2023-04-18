@@ -1,3 +1,4 @@
+@echo off
 rem 删除缓存以及编译出来的文件
 cd ..
 del /f /q /s  client

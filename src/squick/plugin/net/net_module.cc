@@ -378,5 +378,5 @@ void NetModule::KeepAlive() {
     rpc::ServerHeartBeat xMsg;
     xMsg.set_count(0);
 
-    SendMsgPB(rpc::ServerRPC::STS_HEART_BEAT, xMsg, 0);
+    SendMsgPB(rpc::ServerRPC::SERVER_HEARTBEAT, xMsg, 0);
 }

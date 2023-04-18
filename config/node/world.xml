@@ -1,0 +1,16 @@
+<XML>
+	<WorldServer>
+		<Plugin Name="core/net" />
+		<Plugin Name="core/kernel" />
+		<Plugin Name="core/config" />
+		<Plugin Name="core/log" />	
+		<Plugin Name="core/security" />
+		<Plugin Name="core/actor" />
+		<Plugin Name="core/lua" />
+		<Plugin Name="core/redis" />
+		
+		<Plugin Name="node/world/node" />
+		<Plugin Name="node/world/logic" />
+
+	</WorldServer>
+</XML>

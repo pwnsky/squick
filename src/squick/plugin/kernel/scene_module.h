@@ -143,9 +143,7 @@ class SceneInfo : public MapEx<int, SceneGroupInfo> {
 
     bool RemoveSeedObject(const std::string &seedID) { return true; }
 
-    bool AddReliveInfo(const int nIndex, const Vector3 &vPos) {
-        return mtSceneRelivePos.AddElement(nIndex, std::shared_ptr<Vector3>(new Vector3(vPos)));
-    }
+    bool AddReliveInfo(const int nIndex, const Vector3 &vPos) { return mtSceneRelivePos.AddElement(nIndex, std::shared_ptr<Vector3>(new Vector3(vPos))); }
 
     const Vector3 &GetReliveInfo(const int nIndex) {
         if (mtSceneRelivePos.Count() > 0) {

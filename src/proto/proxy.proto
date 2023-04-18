@@ -13,6 +13,8 @@ enum ProxyRPC {
     ACK_CONNECT_PROXY = 8004;
     REQ_DISCONNECT_PROXY = 8005;
     ACK_DISCONNECT_PROXY = 8006;
+
+    ACK_KICK_OFF = 8010; // 被踢下线
 }
 
 ////////////////////////////////////////////////////
@@ -30,3 +32,5 @@ message AckDisconnectProxy { int32 code = 1; }
 message ReqHeartBeat { int32 index = 1; }
 
 message AckHeartBeat { int32 index = 1; }
+
+message AckKickOff { int64 time = 1; }
