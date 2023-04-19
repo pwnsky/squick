@@ -18,6 +18,7 @@ enum ServerRPC {
 
     PLAYER_ENETER = 10;
     PLAYER_LEAVE = 11;
+    PLAYER_OFFLINE = 12;
 
     CLOSE_SOCKET = 100; // want to close some one
     SERVER_ADD = 101;

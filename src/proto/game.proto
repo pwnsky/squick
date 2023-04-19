@@ -120,6 +120,7 @@ message RoomGamePlay {
     int32 port = 5;
     int32 scene = 6;
     int32 mode = 7;
+    int32 nrobots = 8;
 }
 
 // 请求开始游戏

@@ -8,7 +8,7 @@
 #include <queue>
 #include <squick/struct/struct.h>
 
-namespace game::play {
+namespace gameplay_manager::play {
 
 // 采用工厂模式来进行管理gameplay
 class GameplayManagerModule : public IGameplayManagerModule {

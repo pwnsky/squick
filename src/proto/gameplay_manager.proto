@@ -1,7 +1,7 @@
 syntax = "proto3";
 package rpc;
-import "base.proto";
-
+import "game.proto";
+import "lobby_player.proto";
 // GameplayManagerRPC RPC 500 ~ 600
 enum GameplayManagerRPC {
     GAMEPLAY_MANAGER_RPC_NONE = 0;
@@ -48,6 +48,8 @@ message ReqGameplayCreate {
     int32 id = 1;
     bytes key = 2;
     int32 game_id = 3;
+    RoomDetails room = 4;
+    repeated PlayerData players = 5;
 }
 
 // 不用 GamePlay Manager 不用响应也行

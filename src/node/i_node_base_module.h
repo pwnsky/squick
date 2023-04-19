@@ -40,6 +40,12 @@ class INodeBaseModule : public IModule {
         m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REGISTER, this, &INodeBaseModule::OnServerRegistered);
         m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_UNREGISTER, this, &INodeBaseModule::OnServerUnRegistered);
         m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REPORT, this, &INodeBaseModule::OnServerReport);
+
+        // Player action
+        m_net_->AddReceiveCallBack(rpc::ServerRPC::PLAYER_ENETER, this, &INodeBaseModule::OnPlayerEnter);
+        m_net_->AddReceiveCallBack(rpc::ServerRPC::PLAYER_LEAVE, this, &INodeBaseModule::OnPlayerLeave);
+        m_net_->AddReceiveCallBack(rpc::ServerRPC::PLAYER_OFFLINE, this, &INodeBaseModule::OnPlayerOffline);
+
         m_net_->AddEventCallBack(this, &INodeBaseModule::OnServerSocketEvent);
         m_net_->ExpandBufferSize();
 
@@ -204,6 +210,8 @@ class INodeBaseModule : public IModule {
     }
     
     virtual void OnPlayerLeave(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
+
+    virtual void OnPlayerOffline(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
 
     //////////////////////////// PRIVATE ////////////////////////////
   private:

@@ -55,7 +55,7 @@ class IGameplayManagerModule : public IModule {
     IElementModule *m_element_;
     IKernelModule *m_kernel_;
     ISceneModule *m_scene_;
-    node::INodeModule *m_server_;
+    node::INodeModule *m_node_;
     INetClientModule *m_net_client_;
     IScheduleModule *m_schedule_;
     IDataTailModule *m_data_tail_;

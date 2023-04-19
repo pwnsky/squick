@@ -1,26 +1,20 @@
 
 
 #include "gameplay_manager_module.h"
-#include <server/db_proxy/logic/common_redis_module.h>
 
-namespace game::play {
+namespace gameplay_manager::play {
 
 bool GameplayManagerModule::Start() {
     m_element_ = pm_->FindModule<IElementModule>();
     m_class_ = pm_->FindModule<IClassModule>();
     m_net_ = pm_->FindModule<INetModule>();
     m_kernel_ = pm_->FindModule<IKernelModule>();
-    m_pGameToDBModule = pm_->FindModule<IGameServerToDBModule>();
-
-    m_pGameServerNet_ServerModule = pm_->FindModule<IGameServerNet_ServerModule>();
     m_net_client_ = pm_->FindModule<INetClientModule>();
     m_schedule_ = pm_->FindModule<IScheduleModule>();
     m_data_tail_ = pm_->FindModule<IDataTailModule>();
     m_scene_ = pm_->FindModule<ISceneModule>();
     m_event_ = pm_->FindModule<IEventModule>();
-
-    m_room_ = pm_->FindModule<lobby::IRoomModule>();
-    m_player_manager_ = pm_->FindModule<lobby::IPlayerManagerModule>();
+    m_node_ = pm_->FindModule<node::INodeModule>();
     return true;
 }
 

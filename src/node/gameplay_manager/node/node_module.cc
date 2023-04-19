@@ -14,6 +14,7 @@ bool NodeModule::AfterStart() {
     //m_net_->AddReceiveCallBack(rpc::REQ_GAMEPLAY_CONNECT_GAME_SERVER, this, &NodeModule::OnReqConnect);
     //m_net_->AddReceiveCallBack(this, &NodeModule::OnOtherMessage);
     Listen();
+    AddServer(ServerType::ST_GAME);
     return true;
 }
 

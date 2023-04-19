@@ -1,6 +1,5 @@
 syntax = "proto3";
 package rpc;
-import "base.proto";
 
 // 6000 ~ 7000
 // RPC用于服务器之间的通信，不与客户端通信

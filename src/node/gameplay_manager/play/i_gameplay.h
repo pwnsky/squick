@@ -21,6 +21,7 @@ class IGameplay {
         DESTROYING,
         DESTROYED,
     };
+
     IGameplay() { status = CREATED; }
 
     // 析构函数采用虚函数，不然子类没法正确释放内存
