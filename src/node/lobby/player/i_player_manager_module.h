@@ -26,7 +26,7 @@ class IPlayerManagerModule : public IModule {
     virtual void SetPlayerGameplayID(const Guid &clientID, int gameplayID) = 0;
 
     template <typename BaseType>
-    bool AddReceiveCallBack(const int msg_id, const int id, BaseType *pBase,
+    bool AddReceiveCallBack(const int msg_id, Guid id, BaseType *pBase,
                             void (BaseType::*handleReceiver)(const Guid &clientID, const int msg_id, const std::string &data)) {
         GAMEPLAY_RECEIVE_FUNCTOR functor = std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
         GAMEPLAY_RECEIVE_FUNCTOR_PTR functorPtr(new GAMEPLAY_RECEIVE_FUNCTOR(functor));
@@ -38,7 +38,7 @@ class IPlayerManagerModule : public IModule {
             m_net_->AddReceiveCallBack(msg_id, this, &IPlayerManagerModule::OnRecv);
 
             std::unordered_map<int, GAMEPLAY_RECEIVE_FUNCTOR_PTR> msg_idMap;
-            msg_idMap[id] = functorPtr;
+            msg_idMap[id.ToString()] = functorPtr;
             callbacks_.insert(std::unordered_map<int, std::unordered_map<string, GAMEPLAY_RECEIVE_FUNCTOR_PTR>>::value_type(msg_id, msg_idMap));
             return true;
         }
