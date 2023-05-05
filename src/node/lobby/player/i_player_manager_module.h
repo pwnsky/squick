@@ -14,8 +14,8 @@
 
 class Player;
 namespace lobby::player {
-typedef std::function<void(const Guid &clientID, const int msg_id, const std::string &data)> GAME_PLAY_RECEIVE_FUNCTOR;
-typedef std::shared_ptr<GAME_PLAY_RECEIVE_FUNCTOR> GAME_PLAY_RECEIVE_FUNCTOR_PTR;
+typedef std::function<void(const Guid &clientID, const int msg_id, const std::string &data)> GAMEPLAY_RECEIVE_FUNCTOR;
+typedef std::shared_ptr<GAMEPLAY_RECEIVE_FUNCTOR> GAMEPLAY_RECEIVE_FUNCTOR_PTR;
 
 class IPlayerManagerModule : public IModule {
   public:
@@ -28,17 +28,17 @@ class IPlayerManagerModule : public IModule {
     template <typename BaseType>
     bool AddReceiveCallBack(const int msg_id, const int id, BaseType *pBase,
                             void (BaseType::*handleReceiver)(const Guid &clientID, const int msg_id, const std::string &data)) {
-        GAME_PLAY_RECEIVE_FUNCTOR functor = std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-        GAME_PLAY_RECEIVE_FUNCTOR_PTR functorPtr(new GAME_PLAY_RECEIVE_FUNCTOR(functor));
+        GAMEPLAY_RECEIVE_FUNCTOR functor = std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+        GAMEPLAY_RECEIVE_FUNCTOR_PTR functorPtr(new GAMEPLAY_RECEIVE_FUNCTOR(functor));
 
         if (callbacks_.find(msg_id) == callbacks_.end()) // 之前未绑定
         {
             m_net_->RemoveReceiveCallBack(msg_id);
             m_net_->AddReceiveCallBack(msg_id, this, &IPlayerManagerModule::OnRecv);
 
-            std::unordered_map<int, GAME_PLAY_RECEIVE_FUNCTOR_PTR> msg_idMap;
+            std::unordered_map<int, GAMEPLAY_RECEIVE_FUNCTOR_PTR> msg_idMap;
             msg_idMap[id] = functorPtr;
-            callbacks_.insert(std::unordered_map<int, std::unordered_map<Guid, GAME_PLAY_RECEIVE_FUNCTOR_PTR>>::value_type(msg_id, msg_idMap));
+            callbacks_.insert(std::unordered_map<int, std::unordered_map<Guid, GAMEPLAY_RECEIVE_FUNCTOR_PTR>>::value_type(msg_id, msg_idMap));
             return true;
         }
 
@@ -49,7 +49,7 @@ class IPlayerManagerModule : public IModule {
 
     virtual void OnRecv(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) = 0;
 
-    GAME_PLAY_RECEIVE_FUNCTOR_PTR &GetCallback(int msg_id, string userid) {
+    GAMEPLAY_RECEIVE_FUNCTOR_PTR &GetCallback(int msg_id, string userid) {
         auto &callback = callbacks_[msg_id];
         return callback[userid];
     }
@@ -67,7 +67,7 @@ class IPlayerManagerModule : public IModule {
     // IRoomModule* m_room_;
 
   private:
-    std::unordered_map<int, std::unordered_map<string, GAME_PLAY_RECEIVE_FUNCTOR_PTR>> callbacks_;
+    std::unordered_map<int, std::unordered_map<string, GAMEPLAY_RECEIVE_FUNCTOR_PTR>> callbacks_;
 };
 
 } // namespace lobby::player

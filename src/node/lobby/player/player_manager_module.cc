@@ -398,9 +398,9 @@ void PlayerManagerModule::OnRecv(const socket_t sock, const int msg_id, const ch
 
     auto player = iter->second;
     if (player != nullptr) {
-        GAME_PLAY_RECEIVE_FUNCTOR_PTR &ptr = GetCallback(msg_id, clientID.ToString());
+        GAMEPLAY_RECEIVE_FUNCTOR_PTR &ptr = GetCallback(msg_id, clientID.ToString());
         if (ptr != nullptr) {
-            GAME_PLAY_RECEIVE_FUNCTOR *pFunc = ptr.get();
+            GAMEPLAY_RECEIVE_FUNCTOR *pFunc = ptr.get();
             pFunc->operator()(clientID, msg_id, xMsg.msg_data());
         } else {
             dout << "不存在该 callback! msg_id: " << msg_id << std::endl;
