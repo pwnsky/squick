@@ -31,18 +31,18 @@ class IPlayerManagerModule : public IModule {
         GAMEPLAY_RECEIVE_FUNCTOR functor = std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
         GAMEPLAY_RECEIVE_FUNCTOR_PTR functorPtr(new GAMEPLAY_RECEIVE_FUNCTOR(functor));
 
-        if (callbacks_.find(msg_id) == callbacks_.end()) // 之前未绑定
+        auto it = callbacks_.find(msg_id);
+        if (it == callbacks_.end()) // 之前未绑定
         {
             m_net_->RemoveReceiveCallBack(msg_id);
             m_net_->AddReceiveCallBack(msg_id, this, &IPlayerManagerModule::OnRecv);
 
             std::unordered_map<int, GAMEPLAY_RECEIVE_FUNCTOR_PTR> msg_idMap;
             msg_idMap[id] = functorPtr;
-            callbacks_.insert(std::unordered_map<int, std::unordered_map<Guid, GAMEPLAY_RECEIVE_FUNCTOR_PTR>>::value_type(msg_id, msg_idMap));
+            callbacks_.insert(std::unordered_map<int, std::unordered_map<string, GAMEPLAY_RECEIVE_FUNCTOR_PTR>>::value_type(msg_id, msg_idMap));
             return true;
         }
 
-        auto it = callbacks_.find(msg_id);
         it->second[id] = functorPtr;
         return true;
     }
