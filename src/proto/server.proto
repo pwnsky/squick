@@ -3,17 +3,78 @@ syntax = "proto3";
 package rpc;
 import "base.proto";
 
-// Servers RPC 50000 ~ 50200
-enum TestRPC {
-    TEST_RPC_NONE = 0;
+// Servers RPC 0 ~ 500
+enum ServerRPC {
+    SERVER_RPC_NONE = 0;
 
-    REQ_TEST_PROXY = 50000;
-    ACK_TEST_PROXY = 50001;
+    REQ_REGISTER = 1;
+    ACK_REGISTER = 2;
 
-    REQ_TEST_GAMEPLAY = 50002;
-    ACK_TEST_GAMEPLAY = 50003;
+    REQ_UNREGISTER = 3;
+    ACK_UNREGISTER = 4;
 
-    REQ_TEST_PLAYER_DATA_READ = 50004;
-    REQ_TEST_PLAYER_DATA_WRITE = 50005;
+    REQ_REPORT = 5; // 服务端报告服务状态
+    ACK_REPORT = 6;
 
+    PLAYER_ENETER = 10;
+    PLAYER_LEAVE = 11;
+    PLAYER_OFFLINE = 12;
+
+    CLOSE_SOCKET = 100; // want to close some one
+    SERVER_ADD = 101;
+
+    SERVER_HEARTBEAT = 103; // 服务端之间心跳包
+
+    SERVER_MSG_TRANSMISSION = 200; // 无连接的服务端之间的消息转发, 由代理来进行转发消息
 }
+
+enum ServerState {
+    ServerCrash = 0;
+    ServerNormal = 1;
+    ServerBusy = 2;
+    ServerFrie = 3;
+}
+
+message Server {
+    int32 id = 1;
+    bytes name = 2;
+    bytes ip = 3;
+    int32 port = 4;
+    int32 max_online = 5;
+    int32 cpu_count = 6;
+    ServerState state = 7;
+    int32 type = 8;
+    int32 area = 9; // 区
+    int32 connections = 10;
+    int32 workload = 11;
+}
+
+message ReqRegisterServer {
+    bytes key = 1;
+    Server server = 2;
+}
+
+message AckRegisterServer { int32 code = 1; }
+
+message ReqUnregisterServer {}
+
+message AckUnregisterServer { int32 code = 1; }
+
+// 玩家在线
+message PlayerEneter {
+    Ident guid = 1;
+    bytes name = 2;
+    bytes account = 3;
+    int32 world_id = 4;
+    int32 game_id = 5;
+    int32 micro_id = 6;
+    int32 lobby_id = 7;
+    int32 gameplay_manager_id = 8;
+}
+
+// 玩家离线
+message PlayerLeave { Ident guid = 1; }
+
+message ServerList { repeated Server list = 1; }
+
+message ServerHeartBeat { int32 count = 1; }
