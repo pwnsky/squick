@@ -16,7 +16,7 @@
 // #include "../play/i_gameplay_manager_module.h"
 // #include "i_player_manager_module.h"
 
-#include "../server/i_node_module.h"
+#include <node/game/node/i_node_module.h>
 
 #include "i_room_module.h"
 #include <squick/struct/struct.h>
@@ -70,7 +70,7 @@ class RoomModule : public IRoomModule {
     INetModule *m_net_;
     ILuaScriptModule *m_lua_script_;
     ILogModule *m_log_;
-    node::IServerModule *m_server_;
+    node::INodeModule *m_node_;
     // IPlayerManagerModule *m_player_manager_;
     // play::IGameplayManagerModule *m_gameplay_manager_;
 };

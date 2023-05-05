@@ -35,7 +35,7 @@ void NodeModule::OnLoadRoleDataProcess(const socket_t sock, const int msg_id, co
 
     // Guid roleID = INetModule::ProtobufToStruct(xMsg.object());
     Guid xID = m_kernel_->CreateGUID();
-    rpc::PlayerData ack;
+    rpc::DbPlayerData ack;
     ack.mutable_object()->CopyFrom(INetModule::StructToProtobuf(xID));
     ack.set_account(req.account());
     ack.mutable_guid()->CopyFrom(req.guid());

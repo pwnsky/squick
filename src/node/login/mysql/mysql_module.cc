@@ -56,9 +56,9 @@ bool MysqlModule::Connect(const std::string &user, const std::string &password, 
     // 使用C++连接MySql8.0提示错误：CDK Error: unexpected message: ref: https://blog.csdn.net/donotgogentle/article/details/106750465
 
     try {
-        session_ = new Session(SessionOption::USER, user, SessionOption::PWD, password, SessionOption::HOST, host, SessionOption::PORT, port,
+        session_ = new Session(SessionOption::USER, user, SessionOption::PWD, password, SessionOption::HOST, host, SessionOption::PORT, port
                                // SessionOption::DB, "player",
-                               SessionOption::SSL_MODE, SSLMode::DISABLED // 将ssl关闭,更快传输
+                               // SessionOption::SSL_MODE, SSLMode::DISABLED // 将ssl关闭,更快传输
         );
     } catch (const mysqlx::Error &err) {
         dout << "ERROR: " << err << endl;

@@ -74,17 +74,17 @@ class IGameplay {
     // 玩家加入
     void DoPlayerJoin(const Guid &player) {
 
-        int roomd_id = manager->m_player_manager_->GetPlayerRoomID(player);
-        if (id != roomd_id) {
-            dout << "Join Failed!\n";
-            return;
-        }
+        //int roomd_id = manager->m_player_manager_->GetPlayerRoomID(player);
+        //if (id != roomd_id) {
+        //    dout << "Join Failed!\n";
+        //    return;
+        //}
 
         // 判断是否重复加入
-        if (-1 != manager->m_player_manager_->GetPlayerGameplayID(player)) {
-            dout << "重复加入!\n";
-            return;
-        }
+        //if (-1 != manager->m_player_manager_->GetPlayerGameplayID(player)) {
+        //    dout << "重复加入!\n";
+        //    return;
+        //}
 
         // 判断玩家数量是否超限
         if (onlinePlayerCount > 5) {
@@ -92,12 +92,12 @@ class IGameplay {
             return;
         }
 
-        auto p = manager->m_player_manager_->GetPlayer(player);
+        //auto p = manager->m_player_manager_->GetPlayer(player);
 
-        if (p == nullptr) {
-            dout << "No this player\n";
+        //if (p == nullptr) {
+        //    dout << "No this player\n";
             return;
-        }
+        //}
 
         BasePlayer pd;
         pd.enterTime = SquickGetTimeMS();
@@ -105,17 +105,17 @@ class IGameplay {
         pd.guid = player;
         pd.isOnline = true;
 
-        pd.name = p->name_;
-        pd.account = p->account_;
-        pd.mask = p->mask_;
-        pd.glove = p->glove_;
+        //pd.name = p->name_;
+        //pd.account = p->account_;
+        //pd.mask = p->mask_;
+        //pd.glove = p->glove_;
 
         index_id++;
         onlinePlayerCount++;
 
         base_players[player] = pd;
 
-        manager->m_player_manager_->SetPlayerGameplayID(player, id);
+        // manager->m_player_manager_->SetPlayerGameplayID(player, id);
 
         rpc::AckGameJoin ack;
         ack.set_code(0);
@@ -146,19 +146,19 @@ class IGameplay {
         PlayerBaseInfo *pEntryInfo = xNewPlayerEntryInfoList.add_list();
         *(pEntryInfo->mutable_guid()) = INetModule::StructToProtobuf(player);
         pEntryInfo->set_index(pd.index);
-        pEntryInfo->set_name(p->name_);
-        pEntryInfo->set_account(p->account_);
-        pEntryInfo->set_mask(p->mask_);
-        pEntryInfo->set_glove(p->glove_);
+        //pEntryInfo->set_name(p->name_);
+        //pEntryInfo->set_account(p->account_);
+        //pEntryInfo->set_mask(p->mask_);
+        //pEntryInfo->set_glove(p->glove_);
 
         // 广播新加入者
         BroadcastToPlayersExcept(GameBaseRPC::ACK_PLAYER_ENTER, xNewPlayerEntryInfoList, player);
 
         // 调用子类
         PlayerJoin(player);
-        if (base_players.size() == manager->m_room_->GetRoomByID(id)->players.size()) {
-            AllPlayerJoined();
-        }
+        //if (base_players.size() == manager->m_room_->GetRoomByID(id)->players.size()) {
+         //   AllPlayerJoined();
+        //}
     }
 
     // 玩家退出
@@ -178,7 +178,7 @@ class IGameplay {
 
     void SendToPlayer(int msg_id, google::protobuf::Message &xMsg, const Guid &player) {
         // dout << " 发送给客户端: " << player.ToString() << "   MSGID: " << msg_id << std::endl;
-        manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msg_id, xMsg, player);
+        manager->m_node_->SendPBToPlayer(msg_id, xMsg, player);
     }
 
     //
@@ -187,7 +187,7 @@ class IGameplay {
             auto &player = iter.second;
             if (player.isOnline == true) {
                 // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msg_id << std::endl;
-                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msg_id, xMsg, player.guid);
+                manager->m_node_->SendPBToPlayer(msg_id, xMsg, player.guid);
             }
         }
     }
@@ -201,7 +201,7 @@ class IGameplay {
             }
             if (player.isOnline == true) {
                 // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msg_id << std::endl;
-                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msg_id, xMsg, player.guid);
+                manager->m_node_->SendPBToPlayer(msg_id, xMsg, player.guid);
             }
         }
     }
@@ -212,7 +212,7 @@ class IGameplay {
             auto &player = iter.second;
             if (player.isOnline && player.isActive) {
                 // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msg_id << std::endl;
-                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msg_id, xMsg, player.guid);
+                manager->m_node_->SendPBToPlayer(msg_id, xMsg, player.guid);
             }
         }
     }
@@ -226,7 +226,7 @@ class IGameplay {
             }
             if (player.isOnline && player.isActive) {
                 // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msg_id << std::endl;
-                manager->m_pGameServerNet_ServerModule->SendMsgPBToProxy(msg_id, xMsg, player.guid);
+                manager->m_node_->SendPBToPlayer(msg_id, xMsg, player.guid);
             }
         }
     }

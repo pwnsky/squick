@@ -17,3 +17,8 @@ enum TestRPC {
     REQ_TEST_PLAYER_DATA_WRITE = 50005;
 
 }
+
+message Test {
+    int32 index = 1;
+    bytes data = 2;
+}

@@ -2,7 +2,7 @@
 #include "plugin.h"
 #include "gameplay_manager_module.h"
 
-namespace game::play {
+namespace gameplay_manager::play {
 SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){CREATE_PLUGIN(pm, Plugin)};
 
 SQUICK_EXPORT void SquickPluginUnload(IPluginManager *pm){DESTROY_PLUGIN(pm, Plugin)};

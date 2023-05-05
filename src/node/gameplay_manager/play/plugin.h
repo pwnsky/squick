@@ -3,8 +3,7 @@
 #include <squick/core/i_plugin.h>
 #include <squick/core/i_plugin_manager.h>
 
-namespace game::play {
-//////////////////////////////////////////////////////////////////////////
+namespace gameplay_manager::play {
 class Plugin : public IPlugin {
   public:
     Plugin(IPluginManager *p) { pm_ = p; }

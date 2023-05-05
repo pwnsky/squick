@@ -21,7 +21,7 @@ bool PlayerRedisModule::Update() { return true; }
 
 bool PlayerRedisModule::AfterStart() { return true; }
 
-bool PlayerRedisModule::LoadPlayerData(const Guid &self, rpc::PlayerData &playerData) {
+bool PlayerRedisModule::LoadPlayerData(const Guid &self, rpc::DbPlayerData &playerData) {
     CommonRedisModule *pCommonRedisModule = (CommonRedisModule *)(m_pCommonRedisModule);
     std::shared_ptr<IPropertyManager> xPropertyManager = m_pCommonRedisModule->GetPropertyInfo(self.ToString(), excel::Player::ThisName(), false, true);
     if (xPropertyManager) {
@@ -36,7 +36,7 @@ bool PlayerRedisModule::LoadPlayerData(const Guid &self, rpc::PlayerData &player
     return false;
 }
 
-bool PlayerRedisModule::SavePlayerData(const Guid &self, const rpc::PlayerData &playerData) {
+bool PlayerRedisModule::SavePlayerData(const Guid &self, const rpc::DbPlayerData &playerData) {
     CommonRedisModule *pCommonRedisModule = (CommonRedisModule *)m_pCommonRedisModule;
 
     std::shared_ptr<IPropertyManager> xPropManager = pCommonRedisModule->NewPropertyManager(excel::Player::ThisName());

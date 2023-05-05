@@ -66,7 +66,7 @@ void PlayerManagerModule::OnReqPlayerEnter(const socket_t sock, const int msg_id
 void PlayerManagerModule::OnAckPlayerDataLoad(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     // dout << "返回角色数据\n";
     Guid guid;
-    rpc::PlayerData data;
+    rpc::DbPlayerData data;
     if (!m_net_->ReceivePB(msg_id, msg, len, data, guid)) {
         return;
     }
@@ -308,8 +308,6 @@ void PlayerManagerModule::OnReqPlayerData(const socket_t sock, const int msg_id,
         }
         auto player = iter->second;
         ack.set_code(0);
-        ack.set_room(player->GetRoomID());
-        ack.set_gameplay(player->GetGameplayID());
     } while (false);
     OnSendToClient(rpc::LobbyPlayerRPC::ACK_PLAYER_DATA, ack, guid);
 }

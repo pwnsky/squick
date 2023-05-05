@@ -8,7 +8,7 @@ bool RoomModule::Start() {
     m_net_ = pm_->FindModule<INetModule>();
     m_lua_script_ = pm_->FindModule<ILuaScriptModule>();
     m_log_ = pm_->FindModule<ILogModule>();
-    // m_pGameServerNet_ServerModule = pm_->FindModule<IGameServerNet_ServerModule>();
+    m_node_ = pm_->FindModule<node::INodeModule>();
     // m_player_manager_ = pm_->FindModule<IPlayerManagerModule>();
     // m_gameplay_manager_ = pm_->FindModule<play::IGameplayManagerModule>();
     return true;
@@ -69,7 +69,8 @@ void RoomModule::OnReqRoomCreate(const socket_t sock, const int msg_id, const ch
             break;
         }
 
-        int old_room_id = m_player_manager_->GetPlayerRoomID(player);
+        //int old_room_id = m_player_manager_->GetPlayerRoomID(player);
+        int old_room_id = -1;
         if (old_room_id != -1) {
             dout << "不能创建房间, 该玩家已加入房间 " << old_room_id << " \n";
             ack.set_code(2);
@@ -79,7 +80,8 @@ void RoomModule::OnReqRoomCreate(const socket_t sock, const int msg_id, const ch
         // 生成组ID
         const int room_id = SquickGetTimeMSEx() & 0x7fffffff; // 在 游戏 场景中申请一个roomID
         dout << "Room 申请新的 room id: " << room_id << " \n";
-        m_player_manager_->SetPlayerRoomID(player, room_id);
+        
+        //m_player_manager_->SetPlayerRoomID(player, room_id);
 
         auto room = new Room;
         // .......
@@ -135,7 +137,8 @@ void RoomModule::OnReqRoomJoin(const socket_t sock, const int msg_id, const char
         }
 
         // 检查当前玩家是否绑定了房间
-        int old_room = m_player_manager_->GetPlayerRoomID(player);
+        // int old_room = m_player_manager_->GetPlayerRoomID(player);
+        int old_room = -1;
         if (old_room != -1) {
             dout << "已加入房间 " << old_room << "\n";
             ack.set_code(4);
@@ -144,7 +147,7 @@ void RoomModule::OnReqRoomJoin(const socket_t sock, const int msg_id, const char
 
         ack.set_code(0);
         // 将当前玩家加入到房间
-        m_player_manager_->SetPlayerRoomID(player, room_id);
+        //m_player_manager_->SetPlayerRoomID(player, room_id);
 
         int nplayers = room->nplayers + 1;
         room->nplayers = nplayers;
@@ -155,7 +158,7 @@ void RoomModule::OnReqRoomJoin(const socket_t sock, const int msg_id, const char
         BroadcastToPlayers(rpc::GameRPC::ACK_ROOM_JOIN, ack, room_id);
         return;
     } while (false);
-    m_server_->SendMsgPBToProxy(rpc::ACK_ROOM_JOIN, ack, player);
+    m_node_->SendPBToPlayer(rpc::ACK_ROOM_JOIN, ack, player);
 }
 
 // 获取房间列表
@@ -200,7 +203,7 @@ void RoomModule::OnReqRoomList(const socket_t sock, const int msg_id, const char
         // dout << "遍历: " << iter->second->name() << std::endl;
     }
 
-    m_pGameServerNet_ServerModule->SendMsgPBToProxy(rpc::ACK_ROOM_LIST, ack, clientID);
+    m_node_->SendPBToPlayer(rpc::ACK_ROOM_LIST, ack, clientID);
 }
 
 void RoomModule::OnReqRoomDetails(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
@@ -282,25 +285,27 @@ void RoomModule::OnReqRoomQuit(const socket_t sock, const int msg_id, const char
     } else {
         ack.set_code(1);
     }
-    m_pGameServerNet_ServerModule->SendMsgPBToProxy(rpc::ACK_ROOM_QUIT, ack, player); // 发送给退出者
+
+    m_node_->SendPBToPlayer(rpc::ACK_ROOM_QUIT, ack, player);// 发送给退出者
 }
 
 bool RoomModule::RoomQuit(const Guid &player) {
 
-    int roomID = m_player_manager_->GetPlayerRoomID(player);
+    //int roomID = m_player_manager_->GetPlayerRoomID(player);
+    int roomID = -1;
     if (roomID == -1) {
         return true;
     }
 
     auto room = GetRoom(roomID);
     if (room == nullptr) {
-        m_player_manager_->SetPlayerRoomID(player, -1);
+        //m_player_manager_->SetPlayerRoomID(player, -1);
         // 房间不存在
         dout << "Error: roomID" << roomID << "房间不存在\n";
         return false;
     }
 
-    m_player_manager_->SetPlayerRoomID(player, -1);
+    //m_player_manager_->SetPlayerRoomID(player, -1);
 
     for (auto iter = room->players.begin(); iter != room->players.end(); ++iter) {
         if (iter->guid == player) {
@@ -324,7 +329,7 @@ bool RoomModule::RoomQuit(const Guid &player) {
         }
     }
 
-    m_player_manager_->SetPlayerRoomID(player, -1);
+    //m_player_manager_->SetPlayerRoomID(player, -1);
     return true;
 }
 
@@ -372,7 +377,7 @@ void RoomModule::OnReqRoomGamePlayStart(const socket_t sock, const int msg_id, c
             m_gameplay_manager_->SingleGameplayCreate(instance_id, instance_key);
 #else
             // 启动 融合在game服务器上的gameplay
-            m_gameplay_manager_->GameplayCreate(instance_id, instance_key);
+            //m_gameplay_manager_->GameplayCreate(instance_id, instance_key);
 #endif // SINGLE_GAMEPLAY
 
         } else {
@@ -391,7 +396,7 @@ void RoomModule::OnReqRoomGamePlayStart(const socket_t sock, const int msg_id, c
         gamePlay->set_key(room->game.key);
         gamePlay->set_name(room->game.name);
         ack.set_allocated_game_play(gamePlay);
-        m_pGameServerNet_ServerModule->SendMsgPBToProxy(rpc::GameRPC::ACK_ROOM_GAME_PLAY_START, ack, player);
+        m_node_->SendPBToPlayer(rpc::ACK_ROOM_GAME_PLAY_START, ack, player);// 发送给退出者
     } break;
     }
 }
@@ -426,7 +431,7 @@ void RoomModule::OnReqGameplayData(const socket_t sock, const int msg_id, const 
     *ack.mutable_room() = rd;
 
     // 发送房间内详细数据给Gameplay服务器
-    m_pGameServerNet_ServerModule->SendPBToGameplay(rpc::ACK_GAMEPLAY_DATA, ack, clientID);
+    m_node_->SendPBToPlayer(rpc::ACK_GAMEPLAY_DATA, ack, clientID);// 发送给退出者
 }
 
 // PVP Server初始化游戏数据完成
@@ -485,8 +490,8 @@ void RoomModule::GamePlayPrepared(int room_id, const string &name, const string 
     BroadcastToPlayers(rpc::ACK_ROOM_GAME_PLAY_START, ack, roomID);
 }
 
-void RoomModule::SendToPlayer(const uint16_t msg_id, google::protobuf::Message &xMsg, const Guid &player) {
-    m_pGameServerNet_ServerModule->SendMsgPBToProxy(msg_id, xMsg, player);
+void RoomModule::SendToPlayer(const uint16_t msg_id, google::protobuf::Message & xMsg, const Guid & player) {
+    m_node_->SendPBToPlayer(msg_id, xMsg, player);// 发送给退出者
 }
 
 // 广播发送给房间内所有玩家
@@ -502,7 +507,7 @@ void RoomModule::BroadcastToPlayers(const uint16_t msg_id, google::protobuf::Mes
 
     for (auto const &player : room->players) {
         dout << "Broad cast to: " << player.guid.ToString() << std::endl;
-        m_pGameServerNet_ServerModule->SendMsgPBToProxy(msg_id, xMsg, player.guid);
+        SendToPlayer(msg_id, xMsg, player.guid);
     }
 }
 

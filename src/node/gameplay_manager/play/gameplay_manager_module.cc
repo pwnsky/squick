@@ -88,7 +88,9 @@ bool GameplayManagerModule::GameplayDestroy(int id) {
 
 bool GameplayManagerModule::GameplayPlayerQuit(const Guid &player) {
     dout << "玩家: " << player.ToString() << " quit \n";
-    int id = m_player_manager_->GetPlayerGameplayID(player);
+    //int id = m_player_manager_->GetPlayerGameplayID(player);
+    int id = -1;
+
     if (id != -1) {
         auto iter = m_gameplay.find(id);
         if (iter == m_gameplay.end()) {
@@ -116,7 +118,10 @@ bool GameplayManagerModule::SingleGameplayCreate(int id, const string &key) {
     xMsg.set_id(id);
     xMsg.set_key(key);
     xMsg.set_game_id(pm_->GetAppID()); // 获取当前Game ID
-    m_pGameServerNet_ServerModule->SendMsgPBToGameplayManager(GameplayManagerRPC::REQ_GAMEPLAY_CREATE, xMsg);
+
+
+    //m_pGameServerNet_ServerModule->SendMsgPBToGameplayManager(GameplayManagerRPC::REQ_GAMEPLAY_CREATE, xMsg);
+    //m_node_->SendToServer(GameplayManagerRPC::REQ_GAMEPLAY_CREATE, )
     return true;
 }
 
@@ -131,8 +136,8 @@ void GameplayManagerModule::OnRecv(const socket_t sock, const int msg_id, const 
     }
 
     Guid clientID = m_net_->ProtobufToStruct(xMsg.player_id());
-    int group_id = m_player_manager_->GetPlayerRoomID(clientID);
-
+    //int group_id = m_player_manager_->GetPlayerRoomID(clientID);
+    int group_id = -1;
     if (group_id == -1)
         return;
 

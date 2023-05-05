@@ -17,7 +17,7 @@ enum DbProxyRPC {
     ACK_PLAYER_DATA_SAVE = 30007; //
 }
 
-message PlayerData {
+message DbPlayerData {
     Ident object = 1;
     Ident guid = 2;
     bytes account = 3;
