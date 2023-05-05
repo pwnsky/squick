@@ -37,13 +37,13 @@ class IPlayerManagerModule : public IModule {
             m_net_->RemoveReceiveCallBack(msg_id);
             m_net_->AddReceiveCallBack(msg_id, this, &IPlayerManagerModule::OnRecv);
 
-            std::unordered_map<int, GAMEPLAY_RECEIVE_FUNCTOR_PTR> msg_idMap;
-            msg_idMap[id.ToString()] = functorPtr;
-            callbacks_.insert(std::unordered_map<int, std::unordered_map<string, GAMEPLAY_RECEIVE_FUNCTOR_PTR>>::value_type(msg_id, msg_idMap));
+            std::unordered_map<string, GAMEPLAY_RECEIVE_FUNCTOR_PTR> funcs;
+            funcs[id.ToString()] = functorPtr;
+            callbacks_.insert(std::unordered_map<int, std::unordered_map<string, GAMEPLAY_RECEIVE_FUNCTOR_PTR>>::value_type(msg_id, funcs));
             return true;
         }
 
-        it->second[id] = functorPtr;
+        it->second[id.ToString()] = functorPtr;
         return true;
     }
 
