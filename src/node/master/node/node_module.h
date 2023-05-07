@@ -18,13 +18,6 @@ class NodeModule : public INodeModule {
   protected:
     void OnHeartBeat(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     void InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-
-  private:
-    IElementModule *m_element_;
-    IClassModule *m_class_;
-    IKernelModule *m_kernel_;
-    ILogModule *m_log_;
-    INetModule *m_net_;
 };
 
 } // namespace master::server

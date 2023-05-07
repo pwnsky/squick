@@ -21,7 +21,7 @@
 #include "proxy.pb.h"
 #include "server.pb.h"
 #include "world.pb.h"
-
+#include "test.pb.h"
 // -------------------------------------------------------------------------
 #pragma pack(push, 1)
 

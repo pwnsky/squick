@@ -23,12 +23,17 @@ class LogicModule : public ILogicModule {
 
   protected:
     void OnOtherMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    
     void OnHeartbeat(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnReqTestProxy(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+
     void OnReqConnect(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     virtual void OnAckConnectVerify(const int msg_id, const char *msg, const uint32_t len) override;
     void OnReqEnterGameServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     bool SelectGameServer(int sock);
     int EnterGameSuccessEvent(const Guid xClientID, const Guid xPlayerID);
+
+    
 
     virtual void OnClientConnected(const socket_t sock) override;
     virtual void OnClientDisconnect(const socket_t sock) override;

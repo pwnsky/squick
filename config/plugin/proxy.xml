@@ -1,5 +1,5 @@
 <XML>
-	<ProxyServer>
+	<Proxy>
 		<Plugin Name="core/net" />
 		<Plugin Name="core/kernel" />
 		<Plugin Name="core/config" />
@@ -9,5 +9,5 @@
 		
 		<Plugin Name="node/proxy/logic" />
 		<Plugin Name="node/proxy/node" />
-</ProxyServer>
+	</Proxy>
 </XML>

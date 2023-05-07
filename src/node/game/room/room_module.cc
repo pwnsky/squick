@@ -174,8 +174,7 @@ void RoomModule::OnReqRoomList(const socket_t sock, const int msg_id, const char
     int start = xMsg.start();
     int limit = xMsg.limit();
     if (start >= rooms_.size()) {
-        dout << "bad request: "
-             << "\n";
+        dout << "bad request: " << "\n";
         return;
     }
 
@@ -333,7 +332,8 @@ bool RoomModule::RoomQuit(const Guid &player) {
     return true;
 }
 
-void RoomModule::OnReqRoomPlayerEvent(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) { dout << "OnReqRoomQuit\n"; }
+void RoomModule::OnReqRoomPlayerEvent(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) { dout << "OnReqRoomQuit\n"; 
+}
 
 // 开始游戏
 void RoomModule::OnReqRoomGamePlayStart(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
@@ -420,7 +420,7 @@ void RoomModule::OnReqGameplayData(const socket_t sock, const int msg_id, const 
 
 #ifndef SQUICK_DEV
     // 检查id 和key
-    if (room->server().instance_id() != xMsg.instance_id() || room->server().instance_key() != xMsg.instance_key()) {
+    if (room->game.id != xMsg.id() || room->game.key != xMsg.key()) {
         dout << "Error: Id or key is error!\n";
         return;
     }
@@ -450,7 +450,7 @@ void RoomModule::OnReqGameplayPrepared(const socket_t sock, const int msg_id, co
         return;
     }
 #ifndef SQUICK_DEV
-    if (room->server().instance_id() != xMsg.instance_id() || room->server().instance_key() != xMsg.instance_key()) {
+    if (room->game.id != xMsg.id() || room->game.key != xMsg.key()) {
         dout << "Error: Id or key is error!\n";
         return;
     }

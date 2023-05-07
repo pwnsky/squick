@@ -15,7 +15,7 @@ class INodeBaseModule : public IModule {
     //////////////////////////// PUBLIC ////////////////////////////
   public:
       virtual bool Awake() final { return true; }
-    virtual bool Start() final {
+    virtual bool Start() override final {
         m_net_ = pm_->FindModule<INetModule>();
         m_kernel_ = pm_->FindModule<IKernelModule>();
         m_log_ = pm_->FindModule<ILogModule>();
@@ -25,10 +25,11 @@ class INodeBaseModule : public IModule {
         m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
         
         is_update_ = true;
+
         return true;
     }
 
-    virtual bool Update() final {
+    virtual bool Update() override final {
         if (last_report_time_ + 15 > pm_->GetNowTime()) {
             return true;
         }

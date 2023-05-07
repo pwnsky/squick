@@ -8,9 +8,7 @@
 		<Plugin Name="core/lua" />
 		
 		<Plugin Name="node/game/node" />
-		<Plugin Name="node/game/client" />
 		<Plugin Name="node/game/lua" />
-		<Plugin Name="node/game/lobby" />
-		<Plugin Name="node/game/play" />
+		<Plugin Name="node/game/player" />
 	</GameServer>
 </XML>

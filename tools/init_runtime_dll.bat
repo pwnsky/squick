@@ -6,7 +6,7 @@ rem Github: https://github.com/i0gan/Squick
 rem Description: Copy Windows dependency library
 
 set project_path=%~dp0\..
-
+mkdir %project_path%\bin
 cd %project_path%\bin
 xcopy /s /e /y ..\third_party\build\lib\*.dll .
 copy ..\third_party\build\bin\*.dll .

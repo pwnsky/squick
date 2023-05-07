@@ -1,0 +1,13 @@
+<XML>
+	<Game>
+		<Plugin Name="core/net" />
+		<Plugin Name="core/kernel" />
+		<Plugin Name="core/config" />
+		<Plugin Name="core/log" />	
+		<Plugin Name="core/actor" />
+		<Plugin Name="core/lua" />
+		
+		<Plugin Name="node/game/node" />
+		<Plugin Name="node/game/room" />
+	</Game>
+</XML>

@@ -1,13 +1,10 @@
-
 #pragma once
 
-///
-#include <squick/core/i_plugin.h>
-#include <squick/core/i_plugin_manager.h>
-
-class TestPlugin : public IPlugin {
+#include <squick/core/base.h>
+namespace world::logic {
+class Plugin : public IPlugin {
   public:
-    TestPlugin(IPluginManager *p) { pm_ = p; }
+    Plugin(IPluginManager *p) { pm_ = p; }
     virtual const int GetPluginVersion();
 
     virtual const std::string GetPluginName();
@@ -16,3 +13,5 @@ class TestPlugin : public IPlugin {
 
     virtual void Uninstall();
 };
+
+} // namespace world::server

@@ -24,6 +24,8 @@ bool LogicModule::AfterStart() {
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnect);
     m_net_->AddReceiveCallBack(rpc::LobbyBaseRPC::REQ_ENTER, this, &LogicModule::OnReqEnterGameServer);
 
+    m_net_->AddReceiveCallBack(rpc::TestRPC::REQ_TEST_PROXY, this, &LogicModule::OnReqTestProxy);
+
     return true;
 }
 
@@ -201,6 +203,26 @@ void LogicModule::OnHeartbeat(const socket_t sock, const int msg_id, const char 
     }
 
     m_net_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_HEARTBEAT, msgData, sock);
+}
+
+void LogicModule::OnReqTestProxy(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    INT64 now_time = SquickGetTimeMSEx();
+    static INT64 last_time = 0;
+    static INT64 request_time = 0;
+    static INT64 last_request_times = 0;
+    request_time++;
+
+    
+    if (now_time - last_time > 1000000) {
+        rpc::Test req;
+        Guid guid;
+        INetModule::ReceivePB(msg_id, string(msg, len), req, guid);
+        std::cout << "Proxy Test:\n" << "handle quests: " << request_time - last_request_times << " times/second \n req network time: " << (now_time - req.req_time()) / 1000.0f << " ms \n";
+        last_time = now_time;
+        last_request_times = request_time;
+    }
+    
+    m_net_->SendMsgWithOutHead(rpc::TestRPC::ACK_TEST_PROXY, string(msg, len), sock);
 }
 
 int LogicModule::OnHeatbeatCheck(const Guid &self, const std::string &heartBeat, const float time, const int count) {

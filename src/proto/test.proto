@@ -20,5 +20,6 @@ enum TestRPC {
 
 message Test {
     int32 index = 1;
-    bytes data = 2;
+    int64 req_time = 2;
+    bytes data = 3;
 }

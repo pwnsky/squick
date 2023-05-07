@@ -52,13 +52,13 @@ bool LuaScriptModule::Awake() {
     p->SetLuaState(mLuaContext.state());
 
     Register();
-#ifdef SQUICK_DEV
+//#ifdef SQUICK_DEV
     scriptPath = "../src/lua";
-#else
-    scriptPath = pm_->GetConfigPath() + "/lua";
-#endif
+//#else
+//    scriptPath = pm_->GetConfigPath() + "/lua";
+//#endif
 
-    std::string strRootFile = scriptPath + "/system.lua";
+    std::string strRootFile = scriptPath + "/main.lua";
 
     TRY_LOAD_SCRIPT_FLE(strRootFile.c_str());
 

@@ -35,13 +35,14 @@ enum class DbType {
 };
 
 //
+#undef SQUICK_DEV
 #ifdef SQUICK_DEV
 #define dout std::cout << "SQUICK_DEV LOG:" << __FILE__ << ":" << __LINE__ << " "
 #define eout std::cout << "ERROR: "
 #else
 // Release版本时可以将 dout 打印给注释掉
 #define stuff
-#define dout / stuff /
+#define dout /stuff/
 #endif
 
 #define dlog(x) "SQUICK_DEV LOG:" + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "\n" + std::string(x) + "\n"

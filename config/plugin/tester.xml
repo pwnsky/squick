@@ -1,0 +1,12 @@
+<XML>
+	<Tester>
+		<Plugin Name="core/net" />
+		<Plugin Name="core/kernel" />
+		<Plugin Name="core/config" />
+		<Plugin Name="core/log" />	
+		<Plugin Name="core/security" />
+		<Plugin Name="core/actor" />
+		
+		<Plugin Name="tester/core" />
+	</Tester>
+</XML>
