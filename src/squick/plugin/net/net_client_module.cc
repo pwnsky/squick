@@ -349,8 +349,7 @@ void NetClientModule::SendBySuit(const ServerType eType, const std::string &strH
     SendBySuit(eType, nCRC32, msg_id, strData);
 }
 
-void NetClientModule::SendBySuit(const ServerType eType, const std::string &strHashKey, const uint16_t msg_id, const std::string &strData,
-                                 const Guid id) {
+void NetClientModule::SendBySuit(const ServerType eType, const std::string &strHashKey, const uint16_t msg_id, const std::string &strData, const Guid id) {
     uint32_t nCRC32 = SquickProtocol::CRC32(strHashKey);
     SendBySuit(eType, nCRC32, msg_id, strData, id);
 }
@@ -400,8 +399,7 @@ void NetClientModule::SendBySuit(const ServerType eType, const int nHashKey32, c
     }
 }
 
-void NetClientModule::SendSuitByPB(const ServerType eType, const std::string &strHashKey, const uint16_t msg_id,
-                                   const google::protobuf::Message &xData) {
+void NetClientModule::SendSuitByPB(const ServerType eType, const std::string &strHashKey, const uint16_t msg_id, const google::protobuf::Message &xData) {
     uint32_t nCRC32 = SquickProtocol::CRC32(strHashKey);
     SendSuitByPB(eType, nCRC32, msg_id, xData);
 }
@@ -422,8 +420,7 @@ void NetClientModule::SendSuitByPB(const ServerType eType, const int nHashKey, c
     }
 }
 
-void NetClientModule::SendSuitByPB(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const google::protobuf::Message &xData,
-                                   const Guid id) {
+void NetClientModule::SendSuitByPB(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const google::protobuf::Message &xData, const Guid id) {
     std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
     if (xConnectDataMap) {
         std::shared_ptr<ConnectData> pConnectData = xConnectDataMap->GetElementBySuit(nHashKey32);

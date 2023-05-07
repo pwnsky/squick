@@ -75,16 +75,19 @@ void PluginServer::ProcessParameter() {
         argList.push_back(token);
     }
 
-    pm_->SetConfigName(FindParameterValue(argList, "plugin="));
-    pm_->SetAppName(FindParameterValue(argList, "server="));
+    pm_->SetArgs(argList);
 
-    std::string strAppID = FindParameterValue(argList, "id=");
+    string type = pm_->FindParameterValue("type=");
+    pm_->SetConfigName(type + ".xml");
+    pm_->SetAppName(type);
+
+    std::string strAppID = pm_->FindParameterValue("id=");
     int appID = 0;
     if (SQUICK_StrTo(strAppID, appID)) {
         pm_->SetAppID(appID);
     }
 
-    std::string strDockerFlag = FindParameterValue(argList, "docker=");
+    std::string strDockerFlag = pm_->FindParameterValue("docker=");
     int nDockerFlag = 0;
     if (SQUICK_StrTo(strDockerFlag, nDockerFlag)) {
         pm_->SetRunningDocker(nDockerFlag);
@@ -166,7 +169,7 @@ bool PluginServer::GetFileContent(IPluginManager *p, const std::string &strFileP
 
     return true;
 }
-
+/*
 std::string PluginServer::FindParameterValue(const std::vector<std::string> &argList, const std::string &header) {
     for (int i = 0; i < argList.size(); i++) {
         std::string name = argList[i];
@@ -175,6 +178,5 @@ std::string PluginServer::FindParameterValue(const std::vector<std::string> &arg
             return name;
         }
     }
-
     return "";
-}
+}*/

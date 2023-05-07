@@ -16,40 +16,40 @@
 ////////////////////////////////////////////////////////////////////////////
 
 // only use this macro when u has entered game server
-#define CLIENT_MSG_PROCESS(msg_id, msgData, len, msg)                                                                                                           \
+#define CLIENT_MSG_PROCESS(msg_id, msgData, len, msg)                                                                                                          \
     Guid nPlayerID;                                                                                                                                            \
     msg xMsg;                                                                                                                                                  \
-    if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                        \
-        m_log_->LogError(Guid(), "Parse msg error " + std::to_string(msg_id).append(" in file: ").append(__FILE__), __FUNCTION__, __LINE__);              \
+    if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                       \
+        m_log_->LogError(Guid(), "Parse msg error " + std::to_string(msg_id).append(" in file: ").append(__FILE__), __FUNCTION__, __LINE__);                   \
         return;                                                                                                                                                \
     }                                                                                                                                                          \
                                                                                                                                                                \
-    std::shared_ptr<IObject> pObject = m_kernel_->GetObject(nPlayerID);                                                                                 \
+    std::shared_ptr<IObject> pObject = m_kernel_->GetObject(nPlayerID);                                                                                        \
     if (NULL == pObject.get()) {                                                                                                                               \
-        m_log_->LogError(nPlayerID, "From client object do not exist, msg_id:  " + std::to_string(msg_id).append(" in file: ").append(__FILE__),          \
-                               __FUNCTION__, __LINE__);                                                                                                        \
+        m_log_->LogError(nPlayerID, "From client object do not exist, msg_id:  " + std::to_string(msg_id).append(" in file: ").append(__FILE__), __FUNCTION__, \
+                         __LINE__);                                                                                                                            \
         return;                                                                                                                                                \
     }
 
-#define CLIENT_MSG_PROCESS_NO_OBJECT(msg_id, msgData, len, msg)                                                                                                 \
+#define CLIENT_MSG_PROCESS_NO_OBJECT(msg_id, msgData, len, msg)                                                                                                \
     Guid nPlayerID;                                                                                                                                            \
     msg xMsg;                                                                                                                                                  \
-    if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                        \
-        m_log_->LogError(nPlayerID, "Parse msg error " + std::to_string(msg_id).append(" in file: ").append(__FILE__), __FUNCTION__, __LINE__);           \
+    if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                       \
+        m_log_->LogError(nPlayerID, "Parse msg error " + std::to_string(msg_id).append(" in file: ").append(__FILE__), __FUNCTION__, __LINE__);                \
         return;                                                                                                                                                \
     }
 
-#define CLIENT_MSG_PROCESS_NO_LOG(msg_id, msgData, len, msg)                                                                                                    \
+#define CLIENT_MSG_PROCESS_NO_LOG(msg_id, msgData, len, msg)                                                                                                   \
     Guid nPlayerID;                                                                                                                                            \
     msg xMsg;                                                                                                                                                  \
-    if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                        \
+    if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                       \
         return 0;                                                                                                                                              \
     }
 
 //////////////////////////////////////////////////////////////////////////
 struct ServerData {
     ServerData() {
-        pData = std::shared_ptr<rpc::ServerInfoReport>(new rpc::ServerInfoReport());
+        pData = std::shared_ptr<rpc::Server>(new rpc::Server());
         nFD = 0;
     }
     ~ServerData() {
@@ -58,7 +58,7 @@ struct ServerData {
     }
 
     socket_t nFD;
-    std::shared_ptr<rpc::ServerInfoReport> pData;
+    std::shared_ptr<rpc::Server> pData;
 };
 
 class INetModule : public IModule {
@@ -248,8 +248,7 @@ class INetModule : public IModule {
 
     virtual bool SendMsgPBToAllClient(const uint16_t msg_id, const google::protobuf::Message &xData) = 0;
 
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock,
-                           const std::vector<Guid> *pClientIDList) = 0;
+    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const std::vector<Guid> *pClientIDList) = 0;
     virtual bool SendMsgPB(const uint16_t msg_id, const std::string &strData, const socket_t sock, const std::vector<Guid> *pClientIDList) = 0;
 
     virtual INet *GetNet() = 0;

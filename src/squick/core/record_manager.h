@@ -18,7 +18,7 @@ class _SquickExport RecordManager : public IRecordManager {
     virtual ~RecordManager();
 
     virtual std::shared_ptr<IRecord> AddRecord(const Guid &self, const std::string &recordName, const std::shared_ptr<DataList> &TData,
-                                                const std::shared_ptr<DataList> &tagData, const int nRows);
+                                               const std::shared_ptr<DataList> &tagData, const int nRows);
 
     virtual const Guid &Self();
 

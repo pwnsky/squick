@@ -55,8 +55,7 @@ class INetClientModule : public IModule {
     }
 
     template <typename BaseType>
-    int AddReceiveCallBack(const ServerType eType, BaseType *pBase,
-                           void (BaseType::*handleReceiver)(const socket_t, const int, const char *, const uint32_t)) {
+    int AddReceiveCallBack(const ServerType eType, BaseType *pBase, void (BaseType::*handleReceiver)(const socket_t, const int, const char *, const uint32_t)) {
         NET_RECEIVE_FUNCTOR functor =
             std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
         NET_RECEIVE_FUNCTOR_PTR functorPtr(new NET_RECEIVE_FUNCTOR(functor));
@@ -113,8 +112,7 @@ class INetClientModule : public IModule {
     virtual void SendBySuitWithOutHead(const ServerType eType, const std::string &strHashKey, const uint16_t msg_id, const std::string &strData) = 0;
 
     virtual void SendBySuit(const ServerType eType, const std::string &strHashKey, const uint16_t msg_id, const std::string &strData) = 0;
-    virtual void SendBySuit(const ServerType eType, const std::string &strHashKey, const uint16_t msg_id, const std::string &strData,
-                            const Guid id) = 0;
+    virtual void SendBySuit(const ServerType eType, const std::string &strHashKey, const uint16_t msg_id, const std::string &strData, const Guid id) = 0;
 
     virtual void SendBySuitWithOutHead(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const std::string &strData) = 0;
 
@@ -126,8 +124,7 @@ class INetClientModule : public IModule {
                               const Guid id) = 0;
 
     virtual void SendSuitByPB(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const google::protobuf::Message &xData) = 0;
-    virtual void SendSuitByPB(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const google::protobuf::Message &xData,
-                              const Guid id) = 0;
+    virtual void SendSuitByPB(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const google::protobuf::Message &xData, const Guid id) = 0;
 
     ////////////////////////////////////////////////////////////////////////////////
 

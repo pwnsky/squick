@@ -1,3 +1,4 @@
+@echo off
 rem Author: i0gan
 rem Email : l418894113@gmail.com
 rem Date  : 2022-11-27
@@ -12,9 +13,6 @@ set struct_path=..\src\squick\struct
 set lua_proto_path=
 set client_config_path=..\client
 set lua_src_path=..\src\lua
-
-rem 生成配置文件
-start .\proto2code.bat
 
 mkdir %config_path%\excel
 mkdir %config_path%\struct

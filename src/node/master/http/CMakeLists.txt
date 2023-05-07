@@ -1,0 +1,6 @@
+set(ProjectName "master_http")
+file(GLOB soruces *.cc)
+file(GLOB headers *.h)
+add_library(${ProjectName} SHARED ${soruces} ${headers})
+LinkSquick(${ProjectName})
+SquickOut(${ProjectName} "node/master" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/master "http")

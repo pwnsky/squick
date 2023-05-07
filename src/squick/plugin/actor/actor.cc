@@ -21,8 +21,8 @@ bool Actor::Update() {
         ACTOR_PROCESS_FUNCTOR_PTR xBeginFunctor = mxProcessFunctor.GetElement(messageObject.msg_id);
 
         if (xBeginFunctor != nullptr) {
-            // std::cout << ID().ToString() << " received message " << messageObject.msg_id << " and msg index is " << messageObject.index << " totaly msg count:
-            // " << mMessageQueue.size_approx() << std::endl;
+            // std::cout << ID().ToString() << " received message " << messageObject.msg_id << " and msg index is " << messageObject.index << " totaly msg
+            // count: " << mMessageQueue.size_approx() << std::endl;
 
             xBeginFunctor->operator()(messageObject);
 

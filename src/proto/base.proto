@@ -233,13 +233,6 @@ message MsgBase {
     Ident hash_ident = 4;
 }
 
-/*
-message ReqAckLagTest
-{
-        int32 index = 1;
-}
-*/
-
 // Game command
 message ReqCommand {
     enum EGameCommandType {

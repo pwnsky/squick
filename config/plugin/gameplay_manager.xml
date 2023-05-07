@@ -1,5 +1,5 @@
 <XML>
-    <GameplayManagerServer>
+    <GameplayManager>
 		<Plugin Name="core/net" />
 		<Plugin Name="core/kernel" />
 		<Plugin Name="core/config" />
@@ -7,8 +7,8 @@
 		<Plugin Name="core/actor" />
 		<Plugin Name="core/security" />
 		
-		<Plugin Name="server/gameplay_manager/server" />
-		<Plugin Name="server/gameplay_manager/logic" />
-		<Plugin Name="server/gameplay_manager/client" />
-    </GameplayManagerServer>
+		<Plugin Name="node/gameplay_manager/node" />
+		<Plugin Name="node/gameplay_manager/logic" />
+		<Plugin Name="node/gameplay_manager/play" />
+    </GameplayManager>
 </XML>

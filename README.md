@@ -16,6 +16,8 @@ Squick是游戏服务器快速相对较成熟开发方案，支持局部热重�
 
 [快速开始](#快速开始)
 
+[论文](./docs/论文.md)
+
 **讨论QQ群：739065686**
 
 **version:** 1.0.0
@@ -50,6 +52,16 @@ Squick是游戏服务器快速相对较成熟开发方案，支持局部热重�
 - 支持 kubernetes 部署
 
 
+
+## 服务端架构
+
+连接架构
+
+![img](./docs/images/object_connections.png)
+
+服务端之间的RPC通信方式
+
+<img src="./docs/images/server_to_server_rpc.png" alt="img" style="zoom: 33%;" />
 
 # 安装
 
@@ -354,7 +366,6 @@ deploy/bin/
 负责登录以及玩家的基本数据，本次数据库采用最新版本的mysql8。
 
 ```
-docker pull mysql:8.0
 docker run -d --restart always --name squick_db_mysql_1 -p 10400:33060 -e MYSQL_ROOT_PASSWORD=pwnsky_squick  mysql:8.0
 ```
 
@@ -375,7 +386,6 @@ mysql -uroot -ppwnsky_squick
 拉取mongo镜像并创建运行mongo容器
 
 ```
-docker pull mongo:6.0.5
 docker run -d --restart always --name squick_db_mongo_1 -p 10410:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=pwnsky_squick mongo:6.0.5 mongod --auth
 ```
 
@@ -386,7 +396,6 @@ docker run -d --restart always --name squick_db_mongo_1 -p 10410:27017 -e MONGO_
 负责缓存Squick服务器之间的数据
 
 ```
-docker pull redis:7.0
 docker run -d --restart always --name squick_db_redis_1 -p 10420:6379 redis:7.0 --requirepass pwnsky_squick
 ```
 

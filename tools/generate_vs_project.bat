@@ -1,8 +1,11 @@
+@echo off
 set build_version="debug"
 set project_path= %~dp0\..
 set build_path=%project_path%\cache
 
 mkdir %build_path%
+rem 生成配置文件
+start .\proto2code.bat
 start cmd /c "generate_config.bat"
 start cmd /c "init_runtime_dll.bat"
 

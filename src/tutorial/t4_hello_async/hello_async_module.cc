@@ -11,8 +11,8 @@ bool HelloWorld4Module::Start() {
 }
 
 void HelloWorld4Module::RequestAsyEnd(ActorMessage &actorMessage) {
-    // std::cout << "Main thread: " << std::this_thread::get_id() << " Actor: " << actorMessage.id.ToString() << " MsgID: " << actorMessage.msg_id << " Data:" <<
-    // actorMessage.data << std::endl;
+    // std::cout << "Main thread: " << std::this_thread::get_id() << " Actor: " << actorMessage.id.ToString() << " MsgID: " << actorMessage.msg_id << " Data:"
+    // << actorMessage.data << std::endl;
 }
 
 bool HelloWorld4Module::AfterStart() {

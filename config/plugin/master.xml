@@ -6,9 +6,9 @@
 		<Plugin Name="core/log" />
 		<Plugin Name="core/actor" />
 		
-		<Plugin Name="server/master/logic" />
-		<Plugin Name="server/master/server" />
-		<Plugin Name="server/master/http_server" />
+		<Plugin Name="node/master/logic" />
+		<Plugin Name="node/master/node" />
+		<Plugin Name="node/master/http" />
 		
     </MasterServer>
 </XML>

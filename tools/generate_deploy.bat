@@ -1,3 +1,4 @@
+@echo off
 rem 生成deploy文件
 
 del /f /q /s  ..\deploy

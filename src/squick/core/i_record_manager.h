@@ -12,7 +12,7 @@ class _SquickExport IRecordManager : public MapEx<std::string, IRecord> {
     virtual ~IRecordManager() {}
 
     virtual std::shared_ptr<IRecord> AddRecord(const Guid &self, const std::string &recordName, const std::shared_ptr<DataList> &TData,
-                                                const std::shared_ptr<DataList> &tagData, const int nRows) = 0;
+                                               const std::shared_ptr<DataList> &tagData, const int nRows) = 0;
     virtual const Guid &Self() = 0;
     virtual std::string ToString() = 0;
     //////////////////////////////////////////////////////////////////////////

@@ -5,15 +5,13 @@
 		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />
 		<Plugin Name="core/actor" />
-		<Plugin Name="core/lua" />
 		<Plugin Name="core/redis" />
 
-		<Plugin Name="server/login/server" />
-		<Plugin Name="server/login/client" />
-		<Plugin Name="server/login/logic" />
-		<Plugin Name="server/login/http" />
-		<Plugin Name="server/login/redis" />
-		<Plugin Name="server/login/mysql" />
+		<Plugin Name="node/login/node" />
+		<Plugin Name="node/login/logic" />
+		<Plugin Name="node/login/http" />
+		<Plugin Name="node/login/redis" />
+		<Plugin Name="node/login/mysql" />
 	</LoginServer>
 
 </XML>

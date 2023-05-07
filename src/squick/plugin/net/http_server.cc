@@ -1,5 +1,6 @@
 #include "http_server.h"
 #include <thread>
+#include <squick/core/base.h>
 
 bool HttpServer::Update() {
     if (mxBase) {
@@ -87,7 +88,7 @@ struct evhttp *httpserv = evhttp_start(addr,port);
 }
 
 void HttpServer::listener_cb(struct evhttp_request *req, void *arg) {
-    std::cout << "HttpServer::listener_cb" << endl;
+    dout << "HttpServer::listener_cb" << endl;
     if (req == NULL) {
         std::cout << "req ==NULL"
                   << " " << __FUNCTION__ << " " << __LINE__;
@@ -167,10 +168,9 @@ void HttpServer::listener_cb(struct evhttp_request *req, void *arg) {
 
     evhttp_uri_free(decoded);
 
-    std::cout << "Got a GET request:" << uri << std::endl;
+    dout << "Got a GET request:" << uri << std::endl;
     if (evhttp_request_get_command(req) == evhttp_cmd_type::EVHTTP_REQ_GET) {
         // OnGetProcess(request, );
-        std::cout << "EVHTTP_REQ_GET" << std::endl;
 
         struct evkeyvalq params;
         evhttp_parse_query(uri, &params);
@@ -254,7 +254,6 @@ bool HttpServer::ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string
     if (req == nullptr) {
         return false;
     }
-    std::cout << "ResponseMsg" << std::endl;
     evhttp_request *pHttpReq = (evhttp_request *)req->req;
     // create buffer
     struct evbuffer *eventBuffer = evbuffer_new();

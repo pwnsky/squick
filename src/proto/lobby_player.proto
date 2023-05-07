@@ -1,0 +1,73 @@
+// 玩家RPC
+syntax = "proto3";
+package rpc;
+import "base.proto";
+
+// LobbyPlayerRPC 12000 ~ 15000
+enum LobbyPlayerRPC {
+    LOBBY_PLAYER_RPC_NONE = 0;
+
+    REQ_PLAYER_DATA = 12000; // 获取玩家详细全部数据
+    ACK_PLAYER_DATA = 12001;
+
+    REQ_PLAYER_PUBLIC_DATA = 12002; // 获取玩家公有数据, 查看其他玩家的数据或游戏开局使用
+    ACK_PLAYER_PUBLIC_DATA = 12003;
+
+    REQ_PLAYER_EQUIPMENT = 12004; // 玩家的装备信息
+    ACK_PLAYER_EQUIPMENT = 12005;
+}
+
+message BasicPlayerData {
+    Ident object = 1;
+    bytes name = 2;
+}
+
+message ReqBasicPlayerData {}
+
+message AckBasicPlayerData { repeated BasicPlayerData list = 1; }
+
+message ReqNewPlayer { bytes name = 1; }
+
+message AckNewPlayer {
+    int32 code = 1;
+    Ident object = 2;
+}
+
+message ReqPlayerData {}
+
+message PlayerData {
+    int32 room = 2;
+    int32 gameplay = 3;
+
+    int32 mask = 4;
+    repeated int32 masks = 5;
+    int32 glove = 6;
+    repeated int32 gloves = 7;
+}
+
+
+message AckPlayerData {
+    int32 code = 1;
+    PlayerData data = 2;
+}
+
+// REQ_PLAYER_PUBLIC_DATA
+message ReqPlayerPublicData { Ident guid = 1; }
+
+message AckPlayerPublicData {
+    int32 code = 1;
+    Ident guid = 2;
+    repeated int32 masks = 3;
+    repeated int32 gloves = 4;
+}
+
+message ReqPlayerEquipment { Ident guid = 1; }
+
+
+message AckPlayerEquipment {
+    int32 code = 1;
+    Ident guid = 2;
+    int32 mask = 3;
+    int32 glove = 4;
+}
+

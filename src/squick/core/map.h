@@ -1,6 +1,4 @@
-
-#ifndef SQUICK_MAP_H
-#define SQUICK_MAP_H
+#pragma once
 
 #include "map_ex.h"
 #include <iostream>
@@ -124,5 +122,3 @@ template <typename T, typename TD> class Map {
     MapOBJECT mObjectList;
     typename MapOBJECT::iterator mObjectCurIter;
 };
-
-#endif

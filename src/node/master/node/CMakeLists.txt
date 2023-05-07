@@ -1,0 +1,6 @@
+set(ProjectName "master_node")
+file(GLOB soruces *.cc)
+file(GLOB headers *.h)
+add_library(${ProjectName} SHARED ${soruces} ${headers})
+LinkSquick(${ProjectName})
+SquickOut(${ProjectName} "node/master" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/master "node")

@@ -100,7 +100,6 @@ bool PluginManager::LoadPluginConfig() {
         }
     } else {
 
-        // std::cout << "ddddddddddddddddddddddd-----------------------------------" << pRoot->first_node()->name() << " args: " << strTitleName << std::endl;
         for (rapidxml::xml_node<> *pServerNode = pRoot->first_node(); pServerNode; pServerNode = pServerNode->next_sibling()) {
 
             for (rapidxml::xml_node<> *pPluginNode = pServerNode->first_node("Plugin"); pPluginNode; pPluginNode = pPluginNode->next_sibling("Plugin")) {
@@ -242,6 +241,22 @@ inline int PluginManager::GetAppID() const { return appID; }
 
 inline void PluginManager::SetAppID(const int id) { appID = id; }
 
+inline std::vector<std::string> PluginManager::GetArgs() const { return args_; }
+
+inline void PluginManager::SetArgs(const std::vector<std::string> & args) { args_ = args; }
+
+inline std::string PluginManager::FindParameterValue(const std::string& header) {
+    for (int i = 0; i < args_.size(); i++) {
+        std::string name = args_[i];
+        if (name.find(header) != string::npos) {
+            name.erase(0, header.length());
+            return name;
+        }
+    }
+
+    return "";
+}
+
 bool PluginManager::IsRunningDocker() const { return mbIsDocker; }
 
 void PluginManager::SetRunningDocker(bool bDocker) { mbIsDocker = bDocker; }
@@ -273,7 +288,6 @@ void PluginManager::SetAppName(const std::string &name) {
     if (name.empty()) {
         return;
     }
-
     appName = name;
 }
 

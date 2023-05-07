@@ -65,6 +65,11 @@ class PluginManager : public IPluginManager {
     virtual int GetAppID() const override;
     virtual void SetAppID(const int appID) override;
 
+    virtual std::vector<std::string> GetArgs() const override;
+    virtual void SetArgs(const std::vector<std::string>& args) override;
+
+    virtual std::string FindParameterValue(const std::string& header) override;
+
     virtual int GetAppType() const override;
     virtual void SetAppType(const int type) override;
 
@@ -131,6 +136,8 @@ class PluginManager : public IPluginManager {
 
     IPlugin *currentPlugin;
     IModule *currentModule;
+
+    std::vector<std::string> args_;
 
     typedef std::map<std::string, bool> PluginNameMap;
     typedef std::map<std::string, DynLib *> PluginLibMap;

@@ -52,13 +52,13 @@ bool LuaScriptModule::Awake() {
     p->SetLuaState(mLuaContext.state());
 
     Register();
-#ifdef SQUICK_DEV
+//#ifdef SQUICK_DEV
     scriptPath = "../src/lua";
-#else
-    scriptPath = pm_->GetConfigPath() + "/lua";
-#endif
+//#else
+//    scriptPath = pm_->GetConfigPath() + "/lua";
+//#endif
 
-    std::string strRootFile = scriptPath + "/system.lua";
+    std::string strRootFile = scriptPath + "/main.lua";
 
     TRY_LOAD_SCRIPT_FLE(strRootFile.c_str());
 
@@ -158,19 +158,13 @@ int LuaScriptModule::GetPropertyInt32(const Guid &self, const std::string &prope
 
 double LuaScriptModule::GetPropertyFloat(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyFloat(self, propertyName); }
 
-std::string LuaScriptModule::GetPropertyString(const Guid &self, const std::string &propertyName) {
-    return m_kernel_->GetPropertyString(self, propertyName);
-}
+std::string LuaScriptModule::GetPropertyString(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyString(self, propertyName); }
 
 Guid LuaScriptModule::GetPropertyObject(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyObject(self, propertyName); }
 
-Vector2 LuaScriptModule::GetPropertyVector2(const Guid &self, const std::string &propertyName) {
-    return m_kernel_->GetPropertyVector2(self, propertyName);
-}
+Vector2 LuaScriptModule::GetPropertyVector2(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyVector2(self, propertyName); }
 
-Vector3 LuaScriptModule::GetPropertyVector3(const Guid &self, const std::string &propertyName) {
-    return m_kernel_->GetPropertyVector3(self, propertyName);
-}
+Vector3 LuaScriptModule::GetPropertyVector3(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyVector3(self, propertyName); }
 
 bool LuaScriptModule::AddClassCallBack(std::string &className, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
     auto callbackList = mxClassEventFuncMap.GetElement(className);
@@ -591,13 +585,10 @@ void LuaScriptModule::AddMsgCallBackAsServer(const int msg_id, const LuaIntf::Lu
     }
 }
 
-void LuaScriptModule::RemoveMsgCallBackAsClient(const ServerType serverType, const int msg_id) {
-    m_net_client_->RemoveReceiveCallBack(serverType, msg_id);
-}
+void LuaScriptModule::RemoveMsgCallBackAsClient(const ServerType serverType, const int msg_id) { m_net_client_->RemoveReceiveCallBack(serverType, msg_id); }
 
 // 做为服务器做为客户端连接的网络 回调
-void LuaScriptModule::AddMsgCallBackAsClient(const ServerType serverType, const int msg_id, const LuaIntf::LuaRef &luaTable,
-                                             const LuaIntf::LuaRef &luaFunc) {
+void LuaScriptModule::AddMsgCallBackAsClient(const ServerType serverType, const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
     auto serverMap = mxNetMsgCallBackFuncMapAsClient.GetElement(serverType);
     if (!serverMap) {
         serverMap = new Map<int, List<LuaCallBack>>();

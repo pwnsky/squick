@@ -75,7 +75,7 @@ bool KernelModule::Update() {
 }
 
 std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className,
-                                                     const std::string &configIndex, const DataList &arg) {
+                                                    const std::string &configIndex, const DataList &arg) {
     std::shared_ptr<IObject> pObject;
     Guid ident = self;
 
@@ -140,9 +140,8 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
 
                         std::shared_ptr<IRecord> pConfigRecordInfo = pStaticClassRecordManager->First();
                         while (pConfigRecordInfo) {
-                            std::shared_ptr<IRecord> xRecord =
-                                pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(), pConfigRecordInfo->GetTag(),
-                                                          pConfigRecordInfo->GetRows());
+                            std::shared_ptr<IRecord> xRecord = pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(),
+                                                                                         pConfigRecordInfo->GetTag(), pConfigRecordInfo->GetRows());
 
                             xRecord->SetPublic(pConfigRecordInfo->GetPublic());
                             xRecord->SetPrivate(pConfigRecordInfo->GetPrivate());
@@ -180,8 +179,7 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
                         // backup thread
                         {
                             std::shared_ptr<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
-                            std::shared_ptr<IPropertyManager> pConfigPropertyManager =
-                                m_element_->GetThreadElementModule()->GetPropertyManager(configIndex);
+                            std::shared_ptr<IPropertyManager> pConfigPropertyManager = m_element_->GetThreadElementModule()->GetPropertyManager(configIndex);
                             std::shared_ptr<IRecordManager> pConfigRecordManager = m_element_->GetThreadElementModule()->GetRecordManager(configIndex);
 
                             if (pConfigPropertyManager && pConfigRecordManager) {
@@ -312,7 +310,7 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
                 std::shared_ptr<IRecord> pConfigRecordInfo = pStaticClassRecordManager->First();
                 while (pConfigRecordInfo) {
                     std::shared_ptr<IRecord> xRecord = pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(),
-                                                                                  pConfigRecordInfo->GetTag(), pConfigRecordInfo->GetRows());
+                                                                                 pConfigRecordInfo->GetTag(), pConfigRecordInfo->GetRows());
 
                     xRecord->SetPublic(pConfigRecordInfo->GetPublic());
                     xRecord->SetPrivate(pConfigRecordInfo->GetPrivate());

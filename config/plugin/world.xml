@@ -9,9 +9,8 @@
 		<Plugin Name="core/lua" />
 		<Plugin Name="core/redis" />
 		
-		<Plugin Name="server/world/client" />
-		<Plugin Name="server/world/server" />
-		<Plugin Name="server/db_proxy/logic" />
+		<Plugin Name="node/world/node" />
+		<Plugin Name="node/world/logic" />
 
 	</WorldServer>
 </XML>
