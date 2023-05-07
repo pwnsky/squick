@@ -25,6 +25,9 @@ bool TesterModule::AfterStart() {
     
     
     string test_type = pm_->FindParameterValue("test=");
+    if (pm_->FindParameterValue("hide=") == "true") {
+        is_hide_ = true;
+    }
 
     std::cout << test_type << std::endl;
 
@@ -71,7 +74,8 @@ void TesterModule::TestProxyTransferSpeed_Ack(const socket_t sock, const int msg
     
     if (now_time - last_ack_time > 10000000) {
 
-        std::cout << "Test:" << "\n  req_times: " << ack.index() - last_index  << " times/10 second \n  last_req_ack_time: " << (now_time - ack.req_time()) / 1000.0f  << " ms " << std::endl;
+        if(!is_hide_)
+            std::cout << "Test:" << "\n  req_times: " << ack.index() - last_index  << " times/10 second \n  last_req_ack_time: " << (now_time - ack.req_time()) / 1000.0f  << " ms " << std::endl;
         
         last_index = ack.index();
         last_ack_time = now_time;

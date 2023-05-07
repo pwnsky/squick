@@ -47,6 +47,8 @@ class TesterModule : public ITesterModule {
 
       int test_ack_index_ = 0;
       string test_ack_data_;
+
+      bool is_hide_ = false;
       //IKe
 
       IElementModule* m_element_;

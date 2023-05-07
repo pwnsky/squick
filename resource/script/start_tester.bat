@@ -9,8 +9,6 @@ cd bin
 
 for /l %%i in (1,1,100) do (
 echo start tester_%%i
-start .\tester type=tester test=proxy id=100%%i
+start /b .\tester type=tester test=proxy hide=true id=100%%i
 )
 
-
-pause
