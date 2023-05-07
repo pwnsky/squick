@@ -7,15 +7,13 @@ rem Description: Start all servers script
 
 cd bin
 
-start cmd /c " squick plugin=master.xml server=master id=1 "
-start cmd /c " squick plugin=db_proxy.xml server=db_proxy id=4 "
-start cmd /c " squick plugin=world.xml server=world id=2 "
-start cmd /c " squick plugin=login.xml server=login id=3 "
-start cmd /c " squick plugin=gateway.xml server=gateway id=5 "
+start cmd /c " squick type=master id=1 "
+start cmd /c " squick type=login id=2 "
+start cmd /c " squick type=world id=100 "
+start cmd /c " squick type=db_proxy id=300 "
+start cmd /c " squick type=game id=1000 "
+start cmd /c " squick type=game id=1001 "
+start cmd /c " squick type=gameplay_manager id=2000 "
 
-start cmd /c " squick plugin=game.xml server=game id=10 "
-start cmd /c " squick plugin=game.xml server=game id=11 "
-
-start cmd /c " squick plugin=gameplay_manager.xml server=gameplay_manager id=20 "
-
-start cmd /c " squick plugin=proxy.xml server=proxy id= 6"
+start cmd /c " squick type=proxy id=500 "
+start cmd /c " squick type=proxy id=501 "

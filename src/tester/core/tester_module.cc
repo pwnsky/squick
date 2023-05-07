@@ -69,9 +69,9 @@ void TesterModule::TestProxyTransferSpeed_Ack(const socket_t sock, const int msg
     static INT64 last_ack_time = 0;
     static int last_index = 0;
     
-    if (now_time - last_ack_time > 1000000) {
+    if (now_time - last_ack_time > 10000000) {
 
-        std::cout << "Test:" << "\n  req_times: " << ack.index() - last_index  << " times/second \n  last_req_ack_time: " << (now_time - ack.req_time()) / 1000.0f  << " ms " << std::endl;
+        std::cout << "Test:" << "\n  req_times: " << ack.index() - last_index  << " times/10 second \n  last_req_ack_time: " << (now_time - ack.req_time()) / 1000.0f  << " ms " << std::endl;
         
         last_index = ack.index();
         last_ack_time = now_time;
