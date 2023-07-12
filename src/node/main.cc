@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
     while (true) {
         nIndex++;
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(MAIN_THREAD_SLEEP_TIME));
         for (auto item : serverList) {
             item->Update();
         }
