@@ -94,7 +94,7 @@ i0gan/squick-runtime # squick程序运行容器，版本 1.0
 
 下载 https://cmake.org/download/
 
-
+点击安装时，记得选择 增加环境变量选项。
 
 ### 1. 第三方库编译
 

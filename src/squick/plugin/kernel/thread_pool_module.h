@@ -22,11 +22,11 @@ class ThreadCell : MemoryCounter {
 
   protected:
     void Update() {
+        ThreadTask task;
         while (true) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             {
                 // pick the first task and do it
-                ThreadTask task;
                 while (mTaskList.TryPop(task)) {
                     if (task.xThreadFunc) {
                         task.xThreadFunc.operator()(task);
