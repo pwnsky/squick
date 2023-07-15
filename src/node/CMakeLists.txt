@@ -10,20 +10,3 @@ add_subdirectory(world)
 add_subdirectory(gameplay_manager)
 add_subdirectory(gameplay)
 add_subdirectory(robot)
-
-set(ProjectName "squick_exe")
-file(GLOB soruces *.cc)
-file(GLOB headers *.h)
-
-add_executable(${ProjectName} ${soruces} ${headers})
-
-if (APPLE)
-
-elseif(UNIX)
-target_link_libraries( ${ProjectName} -pthread libprotobuf.so)
-else()
-	target_link_libraries(${ProjectName} libprotobufd.dll)
-endif()
-
-LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "node" ${SQUICK_BUILD_EXE_PATH} "squick")

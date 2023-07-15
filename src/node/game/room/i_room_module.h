@@ -1,7 +1,7 @@
 #pragma once
 #include <map>
 #include <squick/core/base.h>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 namespace game::room {
 using namespace std;
 struct Game {

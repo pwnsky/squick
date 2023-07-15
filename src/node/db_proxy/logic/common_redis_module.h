@@ -7,7 +7,7 @@
 #include <squick/plugin/log/i_log_module.h>
 #include <squick/plugin/net/i_net_module.h>
 #include <squick/plugin/redis/export.h>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 
 class CommonRedisModule : public ICommonRedisModule {
   public:

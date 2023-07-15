@@ -10,7 +10,7 @@ echo $LD_LIBRARY_PATH
 
 proto_bin='../third_party/build/bin/protoc'
 proto_path="../src/proto"
-cpp_out_path="../src/squick/struct"
+cpp_out_path="../src/struct"
 csharp_out_path='../client/proto'
 
 

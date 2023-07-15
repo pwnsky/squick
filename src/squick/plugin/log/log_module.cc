@@ -119,11 +119,11 @@ bool LogModule::Log(const SQUICK_LOG_LEVEL nll, const char *format, ...) {
 
     switch (nll) {
     case ILogModule::NLL_DEBUG_NORMAL: {
-        std::cout << termcolor::green;
+        std::cout << termcolor::magenta;
         LOG(DEBUG) << mstrLocalStream;
     } break;
     case ILogModule::NLL_INFO_NORMAL: {
-        std::cout << termcolor::green;
+        std::cout << termcolor::cyan;
         LOG(INFO) << mstrLocalStream;
     } break;
     case ILogModule::NLL_WARING_NORMAL: {
@@ -140,7 +140,7 @@ bool LogModule::Log(const SQUICK_LOG_LEVEL nll, const char *format, ...) {
         LOG(FATAL) << mstrLocalStream;
     } break;
     default: {
-        std::cout << termcolor::green;
+        std::cout << termcolor::white;
         LOG(INFO) << mstrLocalStream;
     } break;
     }

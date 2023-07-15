@@ -7,12 +7,10 @@ del /f /q /s  bin
 del /f /q /s  config\struct\*
 del /f /q /s  config\proto\*
 del /f /q /s  config\ini\*
-cd src\squick\struct
+cd src\struct
 del /f /q /s *.pb.h
 del /f /q /s *.pb.cc
 del /f /q /s excel.h
 
 cd ..\..\
 del /f /q /s lua\proto
-
-pause

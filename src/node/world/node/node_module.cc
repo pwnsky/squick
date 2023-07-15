@@ -1,7 +1,7 @@
 
 #include "node_module.h"
 #include "plugin.h"
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 namespace world::node {
 bool NodeModule::AfterStart() {
 	Listen();

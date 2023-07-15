@@ -34,10 +34,10 @@
 *.bsc
 
 # Generated source code
-/src/squick/struct/*.pb.h
-/src/squick/struct/*.pb.cc
-/src/squick/struct/excel.h
-/src/squick/struct/*.cs
+/src/struct/*.pb.h
+/src/struct/*.pb.cc
+/src/struct/excel.h
+/src/struct/*.cs
 /src/lua/config
 /src/lua/proto
 # Codeblocks

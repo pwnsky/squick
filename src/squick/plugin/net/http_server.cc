@@ -44,8 +44,7 @@ struct evhttp *httpserv = evhttp_start(addr,port);
         return 1;
     }
 #ifdef SQUICK_SSL
-    /* 创建SSL上下文环境 ，可以理解为 SSL句柄 */
-
+    // 创建SSL上下文环境 ，可以理解为 SSL句柄
     SSL_CTX *ctx = SSL_CTX_new(SSLv23_server_method());
     SSL_CTX_set_options(ctx, SSL_OP_SINGLE_DH_USE | SSL_OP_SINGLE_ECDH_USE | SSL_OP_NO_SSLv2);
     /* Cheesily pick an elliptic curve to use with elliptic curve ciphersuites.
@@ -58,12 +57,11 @@ struct evhttp *httpserv = evhttp_start(addr,port);
     if (1 != SSL_CTX_set_tmp_ecdh(ctx, ecdh))
         die_most_horribly_from_openssl_error("SSL_CTX_set_tmp_ecdh");
 
-    /* 选择服务器证书 和 服务器私钥. */
+    
+    const char *certificate_chain = SQUICK_SSL_CERTIFICATE;
+    const char *private_key = SQUICK_SSL_PRIVATE_KEY;
 
-    const char *certificate_chain = "server-certificate-chain.pem";
-    const char *private_key = "server-private-key.pem";
-
-    /* 设置服务器证书 和 服务器私钥 到 OPENSSL ctx上下文句柄中 */
+    // 设置服务器证书 和 服务器私钥 到 OPENSSL ctx上下文句柄中
     server_setup_certs(ctx, certificate_chain, private_key);
 
     /*

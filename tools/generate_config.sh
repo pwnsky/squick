@@ -6,7 +6,7 @@
 # Description: Generate configuration files
 
 config_path="../config"
-struct_path="../src/squick/struct"
+struct_path="../src/struct"
 lua_proto_path=
 client_config_path="../client"
 excel_path='../resource/excel'

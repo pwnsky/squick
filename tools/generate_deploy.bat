@@ -22,5 +22,3 @@ del /f /q /s *.lib
 
 cd..
 del /f /q /s *.sh
-
-pause

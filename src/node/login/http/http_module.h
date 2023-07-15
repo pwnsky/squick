@@ -7,7 +7,7 @@
 #include <squick/plugin/config/export.h>
 #include <squick/plugin/kernel/export.h>
 #include <squick/plugin/net/export.h>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 #include <third_party/nlohmann/json.hpp>
 
 #include <node/login/mysql/i_mysql_module.h>

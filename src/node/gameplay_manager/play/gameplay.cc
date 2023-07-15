@@ -1,5 +1,5 @@
 #include "gameplay.h"
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 namespace gameplay_manager::play {
 
 Gameplay::Gameplay() {}

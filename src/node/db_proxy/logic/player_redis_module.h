@@ -7,7 +7,7 @@
 #include <squick/plugin/log/i_log_module.h>
 #include <squick/plugin/net/i_net_module.h>
 #include <squick/plugin/redis/export.h>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 
 #include "i_account_redis_module.h"
 #include "i_common_redis_module.h"

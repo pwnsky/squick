@@ -1,4 +1,4 @@
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 
 //#include "../logic/player_redis_module.h"
 #include "node_module.h"

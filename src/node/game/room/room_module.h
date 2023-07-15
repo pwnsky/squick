@@ -19,7 +19,7 @@
 #include <node/game/node/i_node_module.h>
 
 #include "i_room_module.h"
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 #include <unordered_map>
 
 namespace game::room {

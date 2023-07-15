@@ -3,7 +3,7 @@
 #include "scene_module.h"
 #include <squick/core/property_manager.h>
 #include <squick/core/record_manager.h>
-#include <squick/struct/excel.h>
+#include <struct/excel.h>
 
 bool SceneModule::Start() {
     m_kernel_ = pm_->FindModule<IKernelModule>();

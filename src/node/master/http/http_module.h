@@ -4,7 +4,7 @@
 #include <squick/plugin/config/i_element_module.h>
 #include <squick/plugin/kernel/i_kernel_module.h>
 #include <squick/plugin/net/i_http_server_module.h>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 
 #include "i_http_module.h"
 #include <node/master/node/i_node_module.h>

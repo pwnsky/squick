@@ -1,6 +1,6 @@
 
 #include "cell_module.h"
-#include <squick/struct/excel.h>
+#include <struct/excel.h>
 
 CellModule::CellModule(IPluginManager *p) { pm_ = p; }
 

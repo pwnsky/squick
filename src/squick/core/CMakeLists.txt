@@ -1,4 +1,4 @@
-set(ProjectName "squick_core")
+set(ProjectName "core")
 
 file(GLOB soruces
 	*.cc)
@@ -15,5 +15,5 @@ else()
 	#add_definitions( -DELPP_EXPORT_SYMBOLS ) # easylogging++ 使用
 endif()
 
-SquickOut(${ProjectName} "squick" ${SQUICK_RUNTIME_LIB_PATH} "squick_core")
+SquickOut(${ProjectName} "squick" ${SQUICK_RUNTIME_LIB_PATH} ${ProjectName})
 add_definitions(-DSQUICK_NONCLIENT_BUILD)

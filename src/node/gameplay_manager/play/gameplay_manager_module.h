@@ -6,7 +6,7 @@
 
 #include "i_gameplay_manager_module.h"
 #include <queue>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 
 namespace gameplay_manager::play {
 
