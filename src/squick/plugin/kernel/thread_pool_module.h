@@ -8,6 +8,7 @@
 #include <squick/core/platform.h>
 #include <squick/core/queue.h>
 #include <string>
+#include <squick/core/base.h>
 
 class ThreadCell : MemoryCounter {
   public:
@@ -22,11 +23,12 @@ class ThreadCell : MemoryCounter {
 
   protected:
     void Update() {
+        ThreadTask task;
         while (true) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            // 任务每0.1秒再执行
+            std::this_thread::sleep_for(std::chrono::milliseconds(THREAD_POOL_SLEEP_TIME));
             {
                 // pick the first task and do it
-                ThreadTask task;
                 while (mTaskList.TryPop(task)) {
                     if (task.xThreadFunc) {
                         task.xThreadFunc.operator()(task);
