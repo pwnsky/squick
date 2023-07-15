@@ -10,6 +10,6 @@ rm -rf ../bin
 rm -rf ../data
 rm -rf ../client
 rm -rf ../deploy
-rm -rf ../src/squick/struct/*.pb.h
-rm -rf ../src/squick/struct/*.pb.cc
-rm -rf ../src/squick/struct/protocol_define.h
+rm -rf ../src/struct/*.pb.h
+rm -rf ../src/struct/*.pb.cc
+rm -rf ../src/struct/protocol_define.h

@@ -11,7 +11,7 @@
 #include <squick/core/queue.h>
 #include <squick/core/vector4.h>
 #include <squick/plugin/log/i_log_module.h>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 
 ////////////////////////////////////////////////////////////////////////////
 

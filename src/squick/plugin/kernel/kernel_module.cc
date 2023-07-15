@@ -9,7 +9,7 @@
 #include <squick/core/property_manager.h>
 #include <squick/core/record.h>
 #include <squick/core/record_manager.h>
-#include <squick/struct/excel.h>
+#include <struct/excel.h>
 
 KernelModule::KernelModule(IPluginManager *p) {
     is_update_ = true;

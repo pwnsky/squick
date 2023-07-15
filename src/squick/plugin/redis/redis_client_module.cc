@@ -3,7 +3,7 @@
 #include "redis_client_module.h"
 #include <algorithm>
 #include <squick/core/base.h>
-#include <squick/struct/excel.h>
+#include <struct/excel.h>
 
 IPluginManager *xPluginManager;
 RedisModule::RedisModule(IPluginManager *p) {

@@ -2,7 +2,7 @@
 #include <list>
 #include <squick/plugin/net/i_request.h>
 #include <squick/plugin/net/i_response.h>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 #include <string>
 using namespace std;
 

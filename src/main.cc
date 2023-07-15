@@ -1,7 +1,7 @@
 #include <iostream>
 #include <squick/core/base.h>
 #include <squick/core/plugin_server.h>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 
 void BasicPluginLoader(IPluginManager *pm_) {
     // 可自行设定加载的插件
@@ -9,6 +9,40 @@ void BasicPluginLoader(IPluginManager *pm_) {
 
 void MidWareLoader(IPluginManager *pm_) {
     // 可自行设定加载的中间件插件
+}
+
+void PrintLogo() {
+    std::cout << R"(
+             ,        ,
+            /(        )`
+            \ \___   / |
+            /- _  `-/  '
+           (/\/ \ \   /\
+           / /   | `    \
+           O O   ) /    |
+           `-^--'`<     '
+          (_.)  _  )   /
+           `.___/`    /
+             `-----' /
+<----.     __ / __   \
+<----|====O)))==) \) /====
+<----'    `--' `.__,' \
+             |        |
+              \       /       /\
+         ______( (_  / \______/
+       ,'  ,-----'   |
+       `--{__________)
+                 _      _
+ ___  __ _ _   _(_) ___| | __
+/ __|/ _` | | | | |/ __| |/ /
+\__ \ (_| | |_| | | (__|   <
+|___/\__, |\__,_|_|\___|_|\_\
+        |_|
+Version: 0.8.0
+Github : https://github.com/pwnsky/squick
+QQ Group: 739065686 
+)";
+
 }
 
 int main(int argc, char *argv[]) {
@@ -26,6 +60,8 @@ int main(int argc, char *argv[]) {
         strArgvList += " ";
         strArgvList += argv[i];
     }
+
+    PrintLogo();
 
     if (argc == 1) // 如果没加参数运行
     {
@@ -60,8 +96,6 @@ int main(int argc, char *argv[]) {
         item->SetMidWareLoader(MidWareLoader);
         item->Start();
     }
-
-    ////////////////
     uint64_t nIndex = 0;
     while (true) {
         nIndex++;
@@ -72,7 +106,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    ////////////////
     for (auto item : serverList) {
         item->Final();
     }

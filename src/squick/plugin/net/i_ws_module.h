@@ -8,7 +8,7 @@
 #include <squick/core/i_plugin_manager.h>
 #include <squick/core/queue.h>
 #include <squick/plugin/log/i_log_module.h>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 #ifdef _MSC_VER
 #pragma warning(disable : 4244 4267)
 #endif

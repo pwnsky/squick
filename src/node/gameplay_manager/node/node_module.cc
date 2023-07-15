@@ -2,7 +2,7 @@
 
 #include "node_module.h"
 #include <squick/plugin/lua/export.h>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 #include <third_party/nlohmann/json.hpp>
 namespace gameplay_manager::node {
 

@@ -8,7 +8,7 @@ rem Description: Generate proto code
 
 set proto_bin=..\third_party\build\bin\protoc
 set proto_path="..\src\proto"
-set cpp_out_path="..\src\squick\struct"
+set cpp_out_path="..\src\struct"
 set csharp_out_path="..\client\csharp"
 
 mkdir %csharp_out_path%
@@ -22,5 +22,3 @@ rem 删除多余的proto
 del /f /q /s %csharp_out_path%\Server.cs
 del /f /q /s %csharp_out_path%\GameManager.cs
 del /f /q /s %csharp_out_path%\DbProxy.cs
-
-pause

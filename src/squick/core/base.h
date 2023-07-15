@@ -34,11 +34,17 @@ enum class DbType {
     Redis = 3,
 };
 
-
 // 线程池 每一帧睡眠时间，单位毫秒
 #define THREAD_POOL_SLEEP_TIME 100
 // 主线程 每一帧睡眠时间，单位毫秒
 #define MAIN_THREAD_SLEEP_TIME 1
+
+
+#ifdef SQUICK_SSL
+// 服务器证书 和 服务器私钥.
+#define SQUICK_SSL_CERTIFICATE "../config/ssl/certificate.pem"
+#define SQUICK_SSL_PRIVATE_KEY "../config/ssl/private-key.pem"
+#endif
 
 //
 #undef SQUICK_DEV

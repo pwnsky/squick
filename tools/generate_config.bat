@@ -9,7 +9,7 @@ set config_path=..\config
 set config_path_gen=../config
 set excel_path=..\resource\excel
 set excel_path_gen=../resource/excel
-set struct_path=..\src\squick\struct
+set struct_path=..\src\struct
 set lua_proto_path=
 set client_config_path=..\client
 set lua_src_path=..\src\lua
@@ -47,5 +47,3 @@ copy ..\src\lua\proto\code.lua %client_config_path%\lua
 rem 拷贝到client
 copy  %client_config_path%\lua\enum.lua ..\..\client\Content\Script\Proto
 copy  %client_config_path%\lua\code.lua ..\..\client\Content\Script\Proto
-
-pause

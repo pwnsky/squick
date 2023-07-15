@@ -6,7 +6,6 @@
 		<Plugin Name="core/log" />	
 		<Plugin Name="core/actor" />
 		<Plugin Name="core/redis" />
-		<Plugin Name="core/security" />
 		
 		<Plugin Name="node/db_proxy/node" />
 		<Plugin Name="node/db_proxy/logic" />

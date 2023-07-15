@@ -1,4 +1,4 @@
-set(ProjectName "squick_struct")
+set(ProjectName "struct")
 
 file(GLOB soruces *.cc)
 file(GLOB headers *.h)
@@ -18,4 +18,4 @@ else()
 	add_definitions( -DWIN_DLL_EXPORT=__declspec\(dllexport\) )
 endif()
 
-SquickOut(${ProjectName} "squick" ${SQUICK_RUNTIME_LIB_PATH} "squick_struct")
+SquickOut(${ProjectName} "" ${SQUICK_RUNTIME_LIB_PATH} ${ProjectName})

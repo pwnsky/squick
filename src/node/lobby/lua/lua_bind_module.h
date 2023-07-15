@@ -8,7 +8,7 @@
 #include <squick/plugin/kernel/export.h>
 #include <squick/plugin/lua/export.h>
 #include <squick/plugin/net/export.h>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 
 #include "../player/player_manager_module.h"
 namespace lobby::lua {

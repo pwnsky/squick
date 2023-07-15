@@ -1,7 +1,7 @@
 #pragma once
 
 #include "squick/core/map.h"
-#include "squick/struct/struct.h"
+#include <struct/struct.h>
 #include <squick/plugin/config/export.h>
 #include <squick/plugin/kernel/export.h>
 #include <squick/plugin/log/export.h>

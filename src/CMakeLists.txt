@@ -1,13 +1,12 @@
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
-#project(Squick)
 set(SolutionDir ${PROJECT_SOURCE_DIR}/..)
 message(STATUS "SolutionDir=" ${SolutionDir})
 
 # 链接Squick必要动态链接库
 macro(LinkSquick proName)
-	add_dependencies(${proName} squick_core squick_struct)
-	target_link_libraries(${proName} squick_core squick_struct)
+	add_dependencies(${proName} core struct)
+	target_link_libraries(${proName} core struct)
 endmacro(LinkSquick)
 
 
@@ -15,8 +14,15 @@ endmacro(LinkSquick)
 macro(SquickOut proName outFolder outPath outName)
 set_target_properties( ${proName} PROPERTIES OUTPUT_NAME ${outName} )
 set_target_properties( ${proName} PROPERTIES PREFIX "")
+
+string(COMPARE EQUAL "${outFolder}" "" result)
+if(result)
+  message("...")
+else()
+set_target_properties( ${proName} PROPERTIES FOLDER ${outFolder} )
+endif()
+
 set_target_properties( ${proName} PROPERTIES 
-	FOLDER ${outFolder}
 	RUNTIME_OUTPUT_DIRECTORY ${outPath}
 	RUNTIME_OUTPUT_DIRECTORY ${outPath}
 	ARCHIVE_OUTPUT_DIRECTORY ${outPath}
@@ -119,12 +125,35 @@ endif()
 link_directories(${ThirdPartyLibPath} ${SquickLibPath})
 add_definitions(-D_X64 -D_CONSOLE -DSQUICK_DYNAMIC_PLUGIN)
 
+add_subdirectory(struct)
 add_subdirectory(squick)
 add_subdirectory(node)
 add_subdirectory(tester)
+
 
 if( EXTRA STREQUAL "EXTRA" )
 	
 endif()
 
 message("Start to build squick")
+
+
+set(ProjectName "startup")
+file(GLOB soruces *.cc)
+file(GLOB headers *.h)
+
+add_executable(${ProjectName} ${soruces} ${headers})
+
+if (APPLE)
+
+elseif(UNIX)
+target_link_libraries( ${ProjectName} -pthread libprotobuf.so)
+else()
+	target_link_libraries(${ProjectName} libprotobufd.dll)
+	set_property ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${ProjectName} )
+	set_property(TARGET ${ProjectName} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${SolutionDir}/bin")
+endif()
+
+
+LinkSquick(${ProjectName})
+SquickOut(${ProjectName} "" ${SQUICK_BUILD_EXE_PATH} "squick")

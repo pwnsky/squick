@@ -5,7 +5,7 @@
 #include <iostream>
 #include <squick/core/performance.h>
 #include <squick/core/queue.h>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 
 #include "i_net_module.h"
 #include <squick/core/exception.h>

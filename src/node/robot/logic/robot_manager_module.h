@@ -4,7 +4,7 @@
 
 #include "i_robot_manager_module.h"
 #include <queue>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 namespace robot::logic {
 
 // 采用工厂模式来进行管理gameplay

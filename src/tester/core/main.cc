@@ -1,7 +1,7 @@
 #include <iostream>
 #include <squick/core/base.h>
 #include <squick/core/plugin_server.h>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 
 void BasicPluginLoader(IPluginManager *pm_) {
     // 可自行设定加载的插件

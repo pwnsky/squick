@@ -8,7 +8,7 @@
 #include <squick/plugin/kernel/export.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
-#include <squick/struct/struct.h>
+#include <struct/struct.h>
 
 class INodeBaseModule : public IModule {
 

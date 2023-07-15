@@ -1,7 +1,7 @@
 
 
 #include "navigation_module.h"
-#include <squick/struct/excel.h>
+#include <struct/excel.h>
 
 bool NavigationModule::Start() {
     m_log_ = pm_->FindModule<ILogModule>();
