@@ -1,13 +1,14 @@
+// Author: i0gan
+// Email : l418894113@gmail.com
+// Date  : 2023-07-23
+// Description: High availability of base mysql interface
 #pragma once
 
-#include "squick/core/map.h"
-#include <struct/struct.h>
 #include <squick/plugin/config/export.h>
 #include <squick/plugin/kernel/export.h>
 #include <squick/plugin/log/export.h>
 
 #include "i_mysql_module.h"
-
 #include <mysqlx/xdevapi.h>
 #include <string>
 
@@ -15,14 +16,10 @@ namespace imodule {
     using namespace ::mysqlx;
     class IMysqlModule : virtual public IModule {
     public:
-        //IMysqlModule(IPluginManager* p) { pm_ = p; }
-
         virtual bool Start() override {
             m_log_ = pm_->FindModule<ILogModule>();
             m_class_ = pm_->FindModule<IClassModule>();
             m_element_ = pm_->FindModule<IElementModule>();
-
-            
             return true;
         }
         virtual bool Destory() override  {
@@ -41,7 +38,7 @@ namespace imodule {
             // 检查连接
             if (session_) {
                 try {
-                    session_->sql("select 1");
+                    session_->sql("select 1").execute().fetchOne();
                     //dout << "AAAAA: " << a.execute().fetchAll() << std::endl;
                     is_connected_ = true;
                 }
