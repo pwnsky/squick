@@ -106,10 +106,11 @@ bool LogModule::Log(const SQUICK_LOG_LEVEL nll, const char *format, ...) {
     va_end(args);
 
     mstrLocalStream.clear();
-
-    mstrLocalStream.append(std::to_string(mnLogCountTotal));
+    mstrLocalStream.append(this->pm_->GetAppName());
     mstrLocalStream.append(" | ");
     mstrLocalStream.append(std::to_string(pm_->GetAppID()));
+    mstrLocalStream.append(" | ");
+    mstrLocalStream.append(std::to_string(mnLogCountTotal));
     mstrLocalStream.append(" | ");
     mstrLocalStream.append(szBuffer);
 

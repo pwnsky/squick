@@ -6,7 +6,7 @@
 namespace game::room {
 bool RoomModule::Start() {
     m_net_ = pm_->FindModule<INetModule>();
-    m_lua_script_ = pm_->FindModule<ILuaScriptModule>();
+    //m_lua_script_ = pm_->FindModule<ILuaScriptModule>();
     m_log_ = pm_->FindModule<ILogModule>();
     m_node_ = pm_->FindModule<node::INodeModule>();
     // m_player_manager_ = pm_->FindModule<IPlayerManagerModule>();

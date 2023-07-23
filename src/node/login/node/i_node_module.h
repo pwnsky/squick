@@ -1,5 +1,5 @@
 #pragma once
-#include <node/i_node_base_module.h>
+#include <squick/imodule/i_node_base_module.h>
 
 namespace login::node {
 class INodeModule : public INodeBaseModule {

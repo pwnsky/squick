@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include <node/i_node_base_module.h>
+#include <squick/imodule/i_node_base_module.h>
 
 namespace proxy::node {
 class INodeModule : public INodeBaseModule {
