@@ -1,10 +1,7 @@
 #pragma once
-
 #include <squick/core/base.h>
-#include <squick/core/guid.h>
-
 namespace login::mysql {
-class IMysqlModule : public IModule {
+class IMysqlModule : virtual public IModule {
   public:
     enum class AccountType {
         Account,

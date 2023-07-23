@@ -21,7 +21,7 @@ file(GLOB sqkctl_h *.h)
 
 
 file(GLOB sqkctl_excel_minizip_c ${SolutionDir}/third_party/minizip/ioapi.c ${SolutionDir}/third_party/minizip/ioapi_mem.c ${SolutionDir}/third_party/minizip/unzip.c)
-file(GLOB sqkctl_excel_minizip_h ${SolutionDir}/third_party//minizip/*.h)
+file(GLOB sqkctl_excel_minizip_h ${SolutionDir}/third_party/minizip/*.h)
 source_group("minizip" FILES ${sqkctl_excel_minizip_c})
 source_group("minizip" FILES ${sqkctl_excel_minizip_h})
 

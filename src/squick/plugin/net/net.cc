@@ -134,6 +134,7 @@ void Net::conn_readcb(struct bufferevent *bev, void *user_data) {
     }
 
     size_t len = evbuffer_get_length(input);
+
     unsigned char *pData = evbuffer_pullup(input, len);
     pObject->AddBuff((const char *)pData, len);
     evbuffer_drain(input, len);
@@ -143,7 +144,6 @@ void Net::conn_readcb(struct bufferevent *bev, void *user_data) {
         if (len > 0) {
             if (pNet->mRecvCB) {
                 pNet->mRecvCB(pObject->GetRealFD(), -1, pObject->GetBuff(), len);
-
                 pNet->mnReceiveMsgTotal++;
             }
 
@@ -394,8 +394,8 @@ int Net::StartClientNet() {
     int nSizeRead = (int)bufferevent_get_max_to_read(bev);
     int nSizeWrite = (int)bufferevent_get_max_to_write(bev);
 
-    std::cout << "want to connect " << mstrIP << ":" << nPort << " SizeRead: " << nSizeRead << std::endl;
-    std::cout << "SizeWrite: " << nSizeWrite << std::endl;
+    //std::cout << "want to connect " << mstrIP << ":" << nPort << " SizeRead: " << nSizeRead << std::endl;
+    //std::cout << "SizeWrite: " << nSizeWrite << std::endl;
 
     return sockfd;
 }
@@ -431,8 +431,6 @@ int Net::StartServerNet() {
     memset(&sin, 0, sizeof(sin));
     sin.sin_family = AF_INET;
     sin.sin_port = htons(nPort);
-
-    printf("server started with %d\n", nPort);
 
     listener = evconnlistener_new_bind(mxBase, listener_cb, (void *)this, LEV_OPT_REUSEABLE | LEV_OPT_CLOSE_ON_FREE, -1, (struct sockaddr *)&sin, sizeof(sin));
 

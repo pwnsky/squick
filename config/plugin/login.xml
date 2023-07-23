@@ -4,7 +4,6 @@
 		<Plugin Name="core/kernel" />
 		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />
-		<Plugin Name="core/actor" />
 		<Plugin Name="core/redis" />
 
 		<Plugin Name="node/login/node" />

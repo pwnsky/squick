@@ -47,7 +47,7 @@ enum class DbType {
 #endif
 
 //
-#undef SQUICK_DEV
+//#undef SQUICK_DEV
 #ifdef SQUICK_DEV
 #define dout std::cout << "SQUICK_DEV LOG:" << __FILE__ << ":" << __LINE__ << " "
 #define eout std::cout << "ERROR: "

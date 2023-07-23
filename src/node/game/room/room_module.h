@@ -68,7 +68,7 @@ class RoomModule : public IRoomModule {
 
   private:
     INetModule *m_net_;
-    ILuaScriptModule *m_lua_script_;
+    //ILuaScriptModule *m_lua_script_;
     ILogModule *m_log_;
     node::INodeModule *m_node_;
     // IPlayerManagerModule *m_player_manager_;

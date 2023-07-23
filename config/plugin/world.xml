@@ -4,9 +4,8 @@
 		<Plugin Name="core/kernel" />
 		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />
-		<Plugin Name="core/actor" />
-		<Plugin Name="core/lua" />
 		<Plugin Name="core/redis" />
+		<Plugin Name="core/lua" />
 		
 		<Plugin Name="node/world/node" />
 		<Plugin Name="node/world/logic" />
