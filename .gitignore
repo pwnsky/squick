@@ -78,3 +78,7 @@ third_party/lua/src/*.dll
 third_party/lua/src/*.exe
 tools/bin
 third_party/lua/src/liblua.so
+
+
+.pytest_cache
+__pycache__

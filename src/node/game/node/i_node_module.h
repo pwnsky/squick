@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <squick/imodule/i_node_base_module.h>
+#include <squick/imodule/i_node_module.h>
 
 namespace game::node {
 class INodeModule : public INodeBaseModule {
