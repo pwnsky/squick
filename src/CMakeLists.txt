@@ -128,7 +128,8 @@ add_definitions(-D_X64 -D_CONSOLE -DSQUICK_DYNAMIC_PLUGIN)
 add_subdirectory(struct)
 add_subdirectory(squick)
 add_subdirectory(node)
-
+add_subdirectory(tools/tester)
+add_subdirectory(tools/sqkcli)
 
 if( EXTRA STREQUAL "EXTRA" )
 	
