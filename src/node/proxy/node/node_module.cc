@@ -26,8 +26,7 @@ bool NodeModule::AfterStart() {
 
     // Login
     m_net_client_->AddReceiveCallBack(ServerType::ST_LOGIN, rpc::LoginRPC::ACK_PROXY_CONNECT_VERIFY, this, &NodeModule::OnAckProxyConnectVerify);
-
-
+    
     AddServer(ServerType::ST_GAME);
     AddServer(ServerType::ST_GAMEPLAY_MANAGER);
     AddServer(ServerType::ST_LOBBY);

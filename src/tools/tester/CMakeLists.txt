@@ -15,4 +15,4 @@ else()
 endif()
 
 LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "tester" ${SQUICK_BUILD_EXE_PATH} "tester")
+SquickOut(${ProjectName} "tools/tester" ${SQUICK_BUILD_EXE_PATH} "tester")
