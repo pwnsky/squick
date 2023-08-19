@@ -36,7 +36,7 @@ end
 @params nesting 打印内容的嵌套级数，默认3级
 ]]
 
-function dump(value, desciption, nesting)
+function Dump(value, desciption, nesting)
     if type(nesting) ~= "number" then nesting = 3 end
  
     local lookupTable = {}

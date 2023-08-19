@@ -159,6 +159,7 @@ class IKernelModule : public IModule {
 
     ////////////////////////////////////////////////////////////////
     virtual Guid CreateGUID() = 0;
+    virtual Guid CreatePlayerGUID() = 0;
 
     virtual bool CreateScene(const int sceneID) = 0;
     virtual bool DestroyScene(const int sceneID) = 0;

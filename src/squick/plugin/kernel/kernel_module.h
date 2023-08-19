@@ -104,6 +104,7 @@ class KernelModule : public IKernelModule, public MapEx<Guid, IObject> {
 
     ////////////////////////////////////////////////////////////////
     virtual Guid CreateGUID();
+    virtual Guid CreatePlayerGUID();
 
     virtual bool CreateScene(const int sceneID);
     virtual bool DestroyScene(const int sceneID);

@@ -77,13 +77,13 @@ class LuaScriptModule : public ILuaScriptModule {
     }
 
     virtual bool Awake();
-    virtual bool Init();
-    virtual bool Shut();
+    virtual bool Start();
+    virtual bool Destory();
     virtual bool ReadyUpdate();
     virtual bool Update();
 
-    virtual bool AfterInit();
-    virtual bool BeforeShut();
+    virtual bool AfterStart();
+    virtual bool BeforeDestory();
 
     virtual LuaIntf::LuaContext &GetLuaEnv();
 
@@ -142,9 +142,10 @@ class LuaScriptModule : public ILuaScriptModule {
     Vector3 GetRecordVector3(const Guid &self, const std::string &recordName, const int row, const std::string &colTag);
 
     INT64 GetNowTime();
-    Guid CreateId();
-    INT64 APPId();
-    INT64 APPType();
+    Guid CreateID();
+    INT64 AppID();
+    INT64 AppType();
+    string AppName();
 
     const std::string GetScriptPath();
     void SetScriptPath(const std::string &path);
@@ -173,7 +174,7 @@ class LuaScriptModule : public ILuaScriptModule {
             void AddHttpCallBack(const std::string& path, const int httpType, const LuaIntf::LuaRef& luaTable, const LuaIntf::LuaRef& luaFunc);
     */
 
-    void ImportProtoFile(const std::string &fileName);
+    bool ImportProtoFile(const std::string &fileName);
     const std::string Encode(const std::string &msgTypeName, const LuaIntf::LuaRef &luaTable);
     LuaIntf::LuaRef Decode(const std::string &msgTypeName, const std::string &data);
 

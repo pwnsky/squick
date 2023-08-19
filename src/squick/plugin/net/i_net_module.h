@@ -46,19 +46,18 @@
         return 0;                                                                                                                                              \
     }
 
-//////////////////////////////////////////////////////////////////////////
-struct ServerData {
-    ServerData() {
-        pData = std::shared_ptr<rpc::Server>(new rpc::Server());
-        nFD = 0;
+struct ServerInfo {
+    ServerInfo() {
+        fd_ = 0;
+        info_ = std::shared_ptr<rpc::Server>(new rpc::Server());
     }
-    ~ServerData() {
-        nFD = 0;
-        pData = NULL;
+    ~ServerInfo() {
+        fd_ = 0;
+        info_ = NULL;
     }
 
-    socket_t nFD;
-    std::shared_ptr<rpc::Server> pData;
+    socket_t fd_;
+    std::shared_ptr<rpc::Server> info_;
 };
 
 class INetModule : public IModule {

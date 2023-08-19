@@ -1,6 +1,7 @@
 #include "http_module.h"
 #include "struct.h"
-
+#include <third_party/common/sha256.h>
+#define SQUICK_HASH_SALT "7e82e88dfd98952b713c0d20170ce12b";
 namespace login::http {
 bool HttpModule::Start() {
     m_http_server_ = pm_->FindModule<IHttpServerModule>();
@@ -22,10 +23,10 @@ bool HttpModule::AfterStart() {
     m_http_server_->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnLogin);
     m_http_server_->AddRequestHandler("/cdn", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnGetCDN);
 
-    m_http_server_->AddRequestHandler("/world/list", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnWorldList);
-    m_http_server_->AddRequestHandler("/world/enter", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnWorldEnter);
-    m_http_server_->AddNetFilter("/world/list", this, &HttpModule::OnFilter);
-    m_http_server_->AddNetFilter("/world/enter", this, &HttpModule::OnFilter);
+    m_http_server_->AddRequestHandler("/area/list", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnAreaList);
+    m_http_server_->AddRequestHandler("/area/enter", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnAreaList);
+    //m_http_server_->AddNetFilter("/area/list", this, &HttpModule::OnFilter);
+    //m_http_server_->AddNetFilter("/area/enter", this, &HttpModule::OnFilter);
 
     std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
@@ -52,7 +53,6 @@ bool HttpModule::Update() {
 }
 
 bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
-    dout << "请求登录\n";
     std::string res_str;
     ReqLogin req;
     AckLogin ack;
@@ -81,7 +81,7 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
             if (!m_mysql_->IsHave("account", req.account)) {
                 dout << "AccountPasswordLogin 注册账号: account: " << req.account << " " << req.password << std::endl;
                 // 注册该账号
-                guid = m_kernel_->CreateGUID();
+                guid = m_kernel_->CreatePlayerGUID();
                 m_mysql_->RegisterAccount(guid.ToString(), req.account, req.password);
             } else {
                 // 获取账号guid
@@ -95,20 +95,22 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
         } else if (req.type == LoginType::PhonePasswordLogin) {
         }
         string sguid = guid.ToString();
-        dout << "AccountPasswordLogin 登录账号: account: " << req.account << " " << req.password << std::endl;
-        dout << "Guid: " << sguid << std::endl;
+        dout << "AccountPasswordLogin: account: " << req.account << " " << req.password << "  Guid: " << sguid << std::endl;
 
         // Account cache to redis
-        // ok
-        Guid token = m_kernel_->CreateGUID();
+        string sum = "UserID: " + sguid + std::to_string(SquickGetTimeMS()) + SQUICK_HASH_SALT;
+        SHA256 sha256;
+        string token = sha256(sum);
+
+
         ack.code = IResponse::SUCCESS;
-        ack.token = token.ToString();
+        ack.token = token;
         ack.guid = sguid;
         ack.limit_time = 1209600;
 
         // 缓存到redis
         m_redis_->HashSet(sguid, "account", req.account);
-        m_redis_->HashSet(sguid, "token", token.ToString());
+        m_redis_->HashSet(sguid, "token", token);
         m_redis_->HashSet(sguid, "guid", sguid);
         m_redis_->HashSet(sguid, "login_limit_time", std::to_string(1209600)); // 14天
         m_redis_->HashSet(sguid, "login_time", std::to_string(SquickGetTimeS()));
@@ -119,7 +121,7 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
     return m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
 }
 
-bool HttpModule::OnWorldList(std::shared_ptr<HttpRequest> req) {
+bool HttpModule::OnAreaList(std::shared_ptr<HttpRequest> req) {
     AckWorldList ack;
     auto &servers = m_node_->GetServers();
 
@@ -142,7 +144,7 @@ bool HttpModule::OnWorldList(std::shared_ptr<HttpRequest> req) {
     return m_http_server_->ResponseMsg(req, rep_ss.str(), WebStatus::WEB_OK);
 }
 
-bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
+bool HttpModule::OnAreaEnter(std::shared_ptr<HttpRequest> request) {
 
     ReqWorldEnter req;
     AckWorldEnter ack;
@@ -248,6 +250,9 @@ bool HttpModule::CheckUserJWT(const std::string &user, const std::string &jwt) {
 }
 
 WebStatus HttpModule::OnFilter(std::shared_ptr<HttpRequest> req) {
+
+    // Check auth:
+    // Cookie: User= "User=" + base64( AES( json_str{'guid' : "xxxx", "token" : "xxxx"} ) );
     std::string user = GetUserID(req);
     std::string jwt = GetUserJWT(req);
 

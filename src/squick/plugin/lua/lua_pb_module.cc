@@ -18,16 +18,16 @@ bool LuaPBModule::Awake() {
     return true;
 }
 
-bool LuaPBModule::Init() {
-
-    m_log_ = this->pm_->FindModule<ILogModule>();
-
+bool LuaPBModule::Start() {
     return true;
 }
 
-bool LuaPBModule::AfterInit() { return true; }
+bool LuaPBModule::AfterStart() { 
+    m_log_ = this->pm_->FindModule<ILogModule>();
+    return true;
+}
 
-bool LuaPBModule::Shut() {
+bool LuaPBModule::Destory() {
     delete m_pFactory;
     m_pFactory = nullptr;
 
@@ -41,13 +41,20 @@ bool LuaPBModule::ReadyUpdate() { return true; }
 
 bool LuaPBModule::Update() { return true; }
 
-bool LuaPBModule::BeforeShut() { return true; }
+bool LuaPBModule::BeforeDestory() { return true; }
 
-void LuaPBModule::ImportProtoFile(const std::string &strFile) {
-    const google::protobuf::FileDescriptor *pDesc = m_pImporter->Import(strFile);
-    if (!pDesc) {
-        m_log_->LogError("unknow protocol  file to import struct name: " + strFile);
-    };
+bool LuaPBModule::ImportProtoFile(const std::string &strFile) {
+    bool ret = false;
+    try {
+        const google::protobuf::FileDescriptor *pDesc = m_pImporter->Import(strFile);
+        if (!pDesc) {
+            m_log_->LogError("unknow protocol  file to import struct name: " + strFile);
+        };
+
+        ret = true;
+    }
+    catch (exception e) {}
+    return ret; 
 }
 
 void LuaPBModule::SetLuaState(lua_State *pState) { m_pLuaState = pState; }

@@ -6,9 +6,9 @@
 -- Description: 提供面向对象的支持
 -----------------------------------------------------------------------------
 
-function object(super)
+function Object(super)
     if type(super) ~= 'table' then
-        error_log('super object must be table type')
+        print('super object must be table type')
         return nil
     end
 
@@ -22,8 +22,8 @@ function object(super)
         local t = {}
         --update_table(t, inst)
         setmetatable(t, {__index = inst})
-        if inst.awake then
-            t:awake(...)
+        if inst.OnCreate then
+            t:OnCreate(...)
         end
         return t
     end

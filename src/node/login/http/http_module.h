@@ -32,8 +32,8 @@ class HttpModule : public IHttpModule {
 
   protected:
     bool OnLogin(std::shared_ptr<HttpRequest> request);
-    bool OnWorldList(std::shared_ptr<HttpRequest> request);
-    bool OnWorldEnter(std::shared_ptr<HttpRequest> request);
+    bool OnAreaList(std::shared_ptr<HttpRequest> request);
+    bool OnAreaEnter(std::shared_ptr<HttpRequest> request);
     WebStatus OnFilter(std::shared_ptr<HttpRequest> request);
     std::string GetUserID(std::shared_ptr<HttpRequest> request);
     std::string GetUserJWT(std::shared_ptr<HttpRequest> request);
