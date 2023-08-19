@@ -1,6 +1,4 @@
-
-#ifndef SQUICK_LOGICCLASS_MODULE_H
-#define SQUICK_LOGICCLASS_MODULE_H
+#pragma once
 
 #include "element_module.h"
 #include "i_class_module.h"
@@ -135,5 +133,3 @@ class ClassModule : public IClassModule {
     std::string mConfigFileName;
     bool mbBackup = false;
 };
-
-#endif

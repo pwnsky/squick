@@ -81,7 +81,7 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
             if (!m_mysql_->IsHave("account", req.account)) {
                 dout << "AccountPasswordLogin 注册账号: account: " << req.account << " " << req.password << std::endl;
                 // 注册该账号
-                guid = m_kernel_->CreateGUID();
+                guid = m_kernel_->CreatePlayerGUID();
                 m_mysql_->RegisterAccount(guid.ToString(), req.account, req.password);
             } else {
                 // 获取账号guid

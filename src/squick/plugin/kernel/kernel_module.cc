@@ -988,6 +988,29 @@ Guid KernelModule::CreateGUID() {
     return xID;
 }
 
+Guid KernelModule::CreatePlayerGUID() {
+    int64_t value = 0;
+    uint64_t time = SquickGetTimeMS();
+
+    // value = time << 16;
+    value = time * 1000000;
+
+    // value |= nGUIDIndex++;
+    value += nGUIDIndex++;
+
+    // if (sequence_ == 0x7FFF)
+    if (nGUIDIndex == 999999) {
+        nGUIDIndex = 0;
+    }
+
+    Guid xID;
+    xID.nHead64 = (pm_->GetArea() << 32) + pm_->GetAppID();
+    xID.nData64 = value;
+
+    return xID;
+}
+
+
 bool KernelModule::CreateScene(const int sceneID) {
     std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (pSceneInfo) {

@@ -102,10 +102,10 @@ bool TesterModule::AddServer(ServerType type) {
                 const std::string& name = m_element_->GetPropertyString(strId, excel::Server::ID());
                 const std::string& ip = m_element_->GetPropertyString(strId, excel::Server::IP());
                 ConnectData s;
-                s.nGameID = server_id;
-                s.eServerType = (ServerType)server_type;
+                s.id = server_id;
+                s.type = (ServerType)server_type;
                 s.ip = ip;
-                s.nPort = nPort;
+                s.port = nPort;
                 s.name = strId;
                 m_net_client_->AddServer(s);
                 return true;

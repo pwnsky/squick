@@ -248,22 +248,22 @@ bool LogicModule::SelectGameServer(int sock) {
 
     // 查找最小负载的服务器
     // actually, if you want the game server working with a good performance then we need to find the game server with lowest workload
-    int nWorkload = 999999;
-    int nGameID = 0;
+    int work_load = 999999;
+    int id = 0;
     MapEx<int, ConnectData> &xServerList = m_net_client_->GetServerList();
-    ConnectData *pGameData = xServerList.FirstNude();
-    while (pGameData) {
-        if (ConnectDataState::NORMAL == pGameData->eState && ServerType::ST_GAME == pGameData->eServerType) {
-            if (pGameData->nWorkLoad < nWorkload) {
-                nWorkload = pGameData->nWorkLoad;
-                nGameID = pGameData->nGameID;
+    ConnectData *c = xServerList.FirstNude();
+    while (c) {
+        if (ConnectDataState::NORMAL == c->state && ServerType::ST_GAME == c->type) {
+            if (c->work_load < work_load) {
+                work_load = c->work_load;
+                id = c->id;
             }
         }
-        pGameData = xServerList.NextNude();
+        c = xServerList.NextNude();
     }
 
-    if (nGameID > 0) {
-        pNetObject->SetGameID(nGameID);
+    if (id > 0) {
+        pNetObject->SetGameID(id);
         return true;
     }
 
@@ -301,7 +301,7 @@ void LogicModule::OnReqEnterGameServer(const socket_t sock, const int msg_id, co
     *xData.mutable_guid() = INetModule::StructToProtobuf(iter->second.guid);
 
     std::shared_ptr<ConnectData> pServerData = m_net_client_->GetServerNetInfo(pNetObject->GetGameID());
-    if (pServerData && ConnectDataState::NORMAL == pServerData->eState) {
+    if (pServerData && ConnectDataState::NORMAL == pServerData->state) {
         if (pNetObject->GetConnectKeyState() > 0) {
             rpc::MsgBase xMsg;
             if (!xData.SerializeToString(xMsg.mutable_msg_data())) {

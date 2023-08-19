@@ -14,26 +14,25 @@ enum ConnectDataState {
 
 struct ConnectData {
     ConnectData() {
-        nGameID = 0;
-        nPort = 0;
+        id = 0;
+        port = 0;
         name = "";
         ip = "";
-        eServerType = ST_NONE;
-        eState = ConnectDataState::DISCONNECT;
-        mnLastActionTime = 0;
-        nWorkLoad = 0;
+        type = ST_NONE;
+        state = ConnectDataState::DISCONNECT;
+        last_time = 0;
+        work_load = 0;
     }
 
-    int nGameID;
-    ServerType eServerType;
+    int id;
+    ServerType type;
     std::string ip;
-    int nPort;
-    int nWorkLoad;
+    int port;
+    int work_load;
     std::string name;
-    ConnectDataState eState;
-    INT64 mnLastActionTime;
-
-    std::shared_ptr<INetModule> mxNetModule;
+    ConnectDataState state;
+    INT64 last_time;
+    std::shared_ptr<INetModule> net_module;
 };
 
 class INetClientModule : public IModule {

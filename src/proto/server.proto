@@ -47,14 +47,20 @@ message Server {
     int32 area = 9; // 区
     int32 connections = 10;
     int32 workload = 11;
+    bytes key = 12; //密钥
+    bytes public_ip = 13;
+    int32 update_time = 14; // 更新时间
 }
 
 message ReqRegisterServer {
     bytes key = 1;
-    Server server = 2;
+    repeated Server list = 2;
 }
 
-message AckRegisterServer { int32 code = 1; }
+message AckRegisterServer {
+    int32 code = 1;
+    repeated Server list = 2;
+}
 
 message ReqUnregisterServer {}
 

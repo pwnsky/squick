@@ -14,8 +14,6 @@ class NodeModule : public INodeModule {
     void SyncServer();
 
   private:
-    // 同一区服，所有服务器
-    map<int, ServerData> servers_;
 };
 
 } // namespace world::server

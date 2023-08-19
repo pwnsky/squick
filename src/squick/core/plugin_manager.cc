@@ -9,6 +9,7 @@
 PluginManager::PluginManager() : IPluginManager() {
     appID = 0;
     mbIsDocker = false;
+    area_ = 0;
 
     currentPlugin = nullptr;
     currentModule = nullptr;
@@ -240,6 +241,10 @@ bool PluginManager::Update() {
 inline int PluginManager::GetAppID() const { return appID; }
 
 inline void PluginManager::SetAppID(const int id) { appID = id; }
+
+inline void PluginManager::SetArea(const int id) { area_ = id; }
+
+inline int PluginManager::GetArea() const { return area_; }
 
 inline std::vector<std::string> PluginManager::GetArgs() const { return args_; }
 

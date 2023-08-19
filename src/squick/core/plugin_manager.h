@@ -64,6 +64,8 @@ class PluginManager : public IPluginManager {
 
     virtual int GetAppID() const override;
     virtual void SetAppID(const int appID) override;
+    virtual void SetArea(const int id) override;
+    virtual int GetArea() const override;
 
     virtual std::vector<std::string> GetArgs() const override;
     virtual void SetArgs(const std::vector<std::string>& args) override;
@@ -121,6 +123,7 @@ class PluginManager : public IPluginManager {
   private:
     int appID = 0;
     int appType = 0;
+    int area_ = 0;
     bool mbIsDocker = false;
     bool mbStaticPlugin = false;
     bool usingBackThread = false;

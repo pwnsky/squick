@@ -6,7 +6,6 @@ NetClientModule::NetClientModule(IPluginManager *p) {
     is_update_ = true;
     mnBufferSize = 0;
     pm_ = p;
-
     mnLastActionTime = GetPluginManager()->GetNowTime();
 }
 
@@ -16,7 +15,6 @@ bool NetClientModule::Start() {
     for (int i = 0; i < ServerType::ST_MAX; ++i) {
         INetClientModule::AddEventCallBack((ServerType)i, this, &NetClientModule::OnSocketEvent);
     }
-
     return true;
 }
 
@@ -106,7 +104,7 @@ int NetClientModule::AddEventCallBack(const ServerType eType, NET_EVENT_FUNCTOR_
 void NetClientModule::SendByServerIDWithOutHead(const int serverID, const uint16_t msg_id, const std::string &strData) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(serverID);
     if (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->mxNetModule;
+        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule.get()) {
             if (!pNetModule->SendMsgWithOutHead(msg_id, strData, 0)) {
                 std::ostringstream stream;
@@ -126,7 +124,7 @@ void NetClientModule::SendByServerIDWithOutHead(const int serverID, const uint16
 void NetClientModule::SendByServerID(const int serverID, const uint16_t msg_id, const std::string &strData) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(serverID);
     if (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->mxNetModule;
+        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule.get()) {
             if (!pNetModule->SendMsg(msg_id, strData, 0)) {
                 std::ostringstream stream;
@@ -146,7 +144,7 @@ void NetClientModule::SendByServerID(const int serverID, const uint16_t msg_id, 
 void NetClientModule::SendByServerID(const int serverID, const uint16_t msg_id, const std::string &strData, const Guid id) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(serverID);
     if (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->mxNetModule;
+        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule.get()) {
             if (!pNetModule->SendMsg(msg_id, strData, 0, id)) {
                 std::ostringstream stream;
@@ -166,11 +164,11 @@ void NetClientModule::SendByServerID(const int serverID, const uint16_t msg_id, 
 void NetClientModule::SendToAllServerWithOutHead(const uint16_t msg_id, const std::string &strData) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->mxNetModule;
+        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule) {
             if (!pNetModule->SendMsgWithOutHead(msg_id, strData, 0)) {
                 std::ostringstream stream;
-                stream << " SendMsgWithOutHead failed " << pServer->nGameID;
+                stream << " SendMsgWithOutHead failed " << pServer->id;
                 stream << " msg id " << msg_id;
                 m_log_->LogError(stream, __FUNCTION__, __LINE__);
             }
@@ -183,11 +181,11 @@ void NetClientModule::SendToAllServerWithOutHead(const uint16_t msg_id, const st
 void NetClientModule::SendToAllServer(const uint16_t msg_id, const std::string &strData) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->mxNetModule;
+        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule) {
             if (!pNetModule->SendMsg(msg_id, strData, 0)) {
                 std::ostringstream stream;
-                stream << " SendMsgWithOutHead failed " << pServer->nGameID;
+                stream << " SendMsgWithOutHead failed " << pServer->id;
                 stream << " msg id " << msg_id;
                 m_log_->LogError(stream, __FUNCTION__, __LINE__);
             }
@@ -200,11 +198,11 @@ void NetClientModule::SendToAllServer(const uint16_t msg_id, const std::string &
 void NetClientModule::SendToAllServer(const uint16_t msg_id, const std::string &strData, const Guid id) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->mxNetModule;
+        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule) {
             if (!pNetModule->SendMsg(msg_id, strData, 0, id)) {
                 std::ostringstream stream;
-                stream << " SendMsgWithOutHead failed " << pServer->nGameID;
+                stream << " SendMsgWithOutHead failed " << pServer->id;
                 stream << " msg id " << msg_id;
                 m_log_->LogError(stream, __FUNCTION__, __LINE__);
             }
@@ -217,11 +215,11 @@ void NetClientModule::SendToAllServer(const uint16_t msg_id, const std::string &
 void NetClientModule::SendToAllServerWithOutHead(const ServerType eType, const uint16_t msg_id, const std::string &strData) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->mxNetModule;
-        if (pNetModule && eType == pServer->eServerType) {
+        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
+        if (pNetModule && eType == pServer->type) {
             if (!pNetModule->SendMsgWithOutHead(msg_id, strData, 0)) {
                 std::ostringstream stream;
-                stream << " SendMsgWithOutHead failed " << pServer->nGameID;
+                stream << " SendMsgWithOutHead failed " << pServer->id;
                 stream << " msg id " << msg_id;
                 m_log_->LogError(stream, __FUNCTION__, __LINE__);
             }
@@ -234,11 +232,11 @@ void NetClientModule::SendToAllServerWithOutHead(const ServerType eType, const u
 void NetClientModule::SendToAllServer(const ServerType eType, const uint16_t msg_id, const std::string &strData) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->mxNetModule;
-        if (pNetModule && eType == pServer->eServerType) {
+        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
+        if (pNetModule && eType == pServer->type) {
             if (!pNetModule->SendMsg(msg_id, strData, 0)) {
                 std::ostringstream stream;
-                stream << " SendMsgWithOutHead failed " << pServer->nGameID;
+                stream << " SendMsgWithOutHead failed " << pServer->id;
                 stream << " msg id " << msg_id;
                 m_log_->LogError(stream, __FUNCTION__, __LINE__);
             }
@@ -251,11 +249,11 @@ void NetClientModule::SendToAllServer(const ServerType eType, const uint16_t msg
 void NetClientModule::SendToAllServer(const ServerType eType, const uint16_t msg_id, const std::string &strData, const Guid id) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->mxNetModule;
-        if (pNetModule && eType == pServer->eServerType) {
+        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
+        if (pNetModule && eType == pServer->type) {
             if (!pNetModule->SendMsg(msg_id, strData, 0, id)) {
                 std::ostringstream stream;
-                stream << " SendMsgWithOutHead failed " << pServer->nGameID;
+                stream << " SendMsgWithOutHead failed " << pServer->id;
                 stream << " msg id " << msg_id;
                 m_log_->LogError(stream, __FUNCTION__, __LINE__);
             }
@@ -268,11 +266,11 @@ void NetClientModule::SendToAllServer(const ServerType eType, const uint16_t msg
 void NetClientModule::SendToServerByPB(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(serverID);
     if (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->mxNetModule;
+        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule) {
             if (!pNetModule->SendMsgPB(msg_id, xData, 0)) {
                 std::ostringstream stream;
-                stream << " SendMsgPB failed " << pServer->nGameID;
+                stream << " SendMsgPB failed " << pServer->id;
                 stream << " msg id " << msg_id;
                 m_log_->LogError(stream, __FUNCTION__, __LINE__);
             }
@@ -288,11 +286,11 @@ void NetClientModule::SendToServerByPB(const int serverID, const uint16_t msg_id
 void NetClientModule::SendToServerByPB(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData, const Guid id) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(serverID);
     if (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->mxNetModule;
+        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule) {
             if (!pNetModule->SendMsgPB(msg_id, xData, 0, id)) {
                 std::ostringstream stream;
-                stream << " SendMsgPB failed " << pServer->nGameID;
+                stream << " SendMsgPB failed " << pServer->id;
                 stream << " msg id " << msg_id;
                 m_log_->LogError(stream, __FUNCTION__, __LINE__);
             }
@@ -308,11 +306,11 @@ void NetClientModule::SendToServerByPB(const int serverID, const uint16_t msg_id
 void NetClientModule::SendToAllServerByPB(const uint16_t msg_id, const google::protobuf::Message &xData, const Guid id) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->mxNetModule;
+        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule) {
             if (!pNetModule->SendMsgPB(msg_id, xData, 0, id)) {
                 std::ostringstream stream;
-                stream << " SendMsgPB failed " << pServer->nGameID;
+                stream << " SendMsgPB failed " << pServer->id;
                 stream << " msg id " << msg_id;
                 m_log_->LogError(stream, __FUNCTION__, __LINE__);
             }
@@ -325,11 +323,11 @@ void NetClientModule::SendToAllServerByPB(const uint16_t msg_id, const google::p
 void NetClientModule::SendToAllServerByPB(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const Guid id) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->mxNetModule;
-        if (pNetModule && eType == pServer->eServerType && pServer->eState == ConnectDataState::NORMAL) {
+        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
+        if (pNetModule && eType == pServer->type && pServer->type == ConnectDataState::NORMAL) {
             if (!pNetModule->SendMsgPB(msg_id, xData, 0, id)) {
                 std::ostringstream stream;
-                stream << " SendMsgPB failed " << pServer->nGameID;
+                stream << " SendMsgPB failed " << pServer->id;
                 stream << " msg id " << msg_id;
                 m_log_->LogError(stream, __FUNCTION__, __LINE__);
             }
@@ -359,7 +357,7 @@ void NetClientModule::SendBySuitWithOutHead(const ServerType eType, const int nH
     if (xConnectDataMap) {
         std::shared_ptr<ConnectData> pConnectData = xConnectDataMap->GetElementBySuit(nHashKey32);
         if (pConnectData) {
-            SendByServerIDWithOutHead(pConnectData->nGameID, msg_id, strData);
+            SendByServerIDWithOutHead(pConnectData->id, msg_id, strData);
         }
     } else {
         std::ostringstream stream;
@@ -374,7 +372,7 @@ void NetClientModule::SendBySuit(const ServerType eType, const int nHashKey, con
     if (xConnectDataMap) {
         std::shared_ptr<ConnectData> pConnectData = xConnectDataMap->GetElementBySuit(nHashKey);
         if (pConnectData) {
-            SendByServerID(pConnectData->nGameID, msg_id, strData);
+            SendByServerID(pConnectData->id, msg_id, strData);
         }
     } else {
         std::ostringstream stream;
@@ -389,7 +387,7 @@ void NetClientModule::SendBySuit(const ServerType eType, const int nHashKey32, c
     if (xConnectDataMap) {
         std::shared_ptr<ConnectData> pConnectData = xConnectDataMap->GetElementBySuit(nHashKey32);
         if (pConnectData) {
-            SendByServerID(pConnectData->nGameID, msg_id, strData, id);
+            SendByServerID(pConnectData->id, msg_id, strData, id);
         }
     } else {
         std::ostringstream stream;
@@ -415,7 +413,7 @@ void NetClientModule::SendSuitByPB(const ServerType eType, const int nHashKey, c
     if (xConnectDataMap) {
         std::shared_ptr<ConnectData> pConnectData = xConnectDataMap->GetElementBySuit(nHashKey);
         if (pConnectData) {
-            SendToServerByPB(pConnectData->nGameID, msg_id, xData);
+            SendToServerByPB(pConnectData->id, msg_id, xData);
         }
     }
 }
@@ -425,7 +423,7 @@ void NetClientModule::SendSuitByPB(const ServerType eType, const int nHashKey32,
     if (xConnectDataMap) {
         std::shared_ptr<ConnectData> pConnectData = xConnectDataMap->GetElementBySuit(nHashKey32);
         if (pConnectData) {
-            SendToServerByPB(pConnectData->nGameID, msg_id, xData, id);
+            SendToServerByPB(pConnectData->id, msg_id, xData, id);
         }
     }
 }
@@ -446,7 +444,7 @@ MapEx<int, ConnectData> &NetClientModule::GetServerList() { return mxServerMap; 
 std::shared_ptr<ConnectData> NetClientModule::GetServerNetInfo(const INet *pNet) {
     int serverID = 0;
     for (std::shared_ptr<ConnectData> pData = mxServerMap.First(serverID); pData != NULL; pData = mxServerMap.Next(serverID)) {
-        if (pData->mxNetModule && pNet == pData->mxNetModule->GetNet()) {
+        if (pData->net_module && pNet == pData->net_module->GetNet()) {
             return pData;
         }
     }
@@ -456,15 +454,15 @@ std::shared_ptr<ConnectData> NetClientModule::GetServerNetInfo(const INet *pNet)
 
 void NetClientModule::StartCallBacks(std::shared_ptr<ConnectData> pServerData) {
     std::ostringstream stream;
-    stream << "AddServer Type: " << pServerData->eServerType << " Server ID: " << pServerData->nGameID << " State: " << pServerData->eState
-           << " IP: " << pServerData->ip << " Port: " << pServerData->nPort;
+    stream << "AddServer Type: " << pServerData->type << " Server ID: " << pServerData->id << " State: " << pServerData->state
+           << " IP: " << pServerData->ip << " Port: " << pServerData->port;
 
     m_log_->LogInfo(stream.str());
 
-    std::shared_ptr<CallBack> xCallBack = mxCallBack.GetElement(pServerData->eServerType);
+    std::shared_ptr<CallBack> xCallBack = mxCallBack.GetElement(pServerData->type);
     if (!xCallBack) {
         xCallBack = std::shared_ptr<CallBack>(new CallBack);
-        mxCallBack.AddElement(pServerData->eServerType, xCallBack);
+        mxCallBack.AddElement(pServerData->type, xCallBack);
     }
 
     // add msg callback
@@ -472,62 +470,62 @@ void NetClientModule::StartCallBacks(std::shared_ptr<ConnectData> pServerData) {
     for (; xCallBack->mxReceiveCallBack.end() != itReciveCB; ++itReciveCB) {
         std::list<NET_RECEIVE_FUNCTOR_PTR> &xList = itReciveCB->second;
         for (std::list<NET_RECEIVE_FUNCTOR_PTR>::iterator itList = xList.begin(); itList != xList.end(); ++itList) {
-            pServerData->mxNetModule->AddReceiveCallBack(itReciveCB->first, *itList);
+            pServerData->net_module->AddReceiveCallBack(itReciveCB->first, *itList);
         }
     }
 
     // add event callback
     std::list<NET_EVENT_FUNCTOR_PTR>::iterator itEventCB = xCallBack->mxEventCallBack.begin();
     for (; xCallBack->mxEventCallBack.end() != itEventCB; ++itEventCB) {
-        pServerData->mxNetModule->AddEventCallBack(*itEventCB);
+        pServerData->net_module->AddEventCallBack(*itEventCB);
     }
 
     std::list<NET_RECEIVE_FUNCTOR_PTR>::iterator itCB = xCallBack->mxCallBackList.begin();
     for (; xCallBack->mxCallBackList.end() != itCB; ++itCB) {
-        pServerData->mxNetModule->AddReceiveCallBack(*itCB);
+        pServerData->net_module->AddReceiveCallBack(*itCB);
     }
 }
 
 void NetClientModule::ProcessUpdate() {
     std::shared_ptr<ConnectData> pServerData = mxServerMap.First();
     while (pServerData) {
-        switch (pServerData->eState) {
+        switch (pServerData->type) {
         case ConnectDataState::DISCONNECT: {
-            if (NULL != pServerData->mxNetModule) {
-                pServerData->mxNetModule = nullptr;
-                pServerData->eState = ConnectDataState::RECONNECT;
+            if (NULL != pServerData->net_module) {
+                pServerData->net_module = nullptr;
+                pServerData->state = ConnectDataState::RECONNECT;
             }
         } break;
         case ConnectDataState::CONNECTING: {
-            if (pServerData->mxNetModule) {
-                pServerData->mxNetModule->Update();
+            if (pServerData->net_module) {
+                pServerData->net_module->Update();
             }
         } break;
         case ConnectDataState::NORMAL: {
-            if (pServerData->mxNetModule) {
-                pServerData->mxNetModule->Update();
+            if (pServerData->net_module) {
+                pServerData->net_module->Update();
 
                 KeepState(pServerData);
             }
         } break;
         case ConnectDataState::RECONNECT: {
-            if ((pServerData->mnLastActionTime + 10) >= GetPluginManager()->GetNowTime()) {
+            if ((pServerData->last_time + 10) >= GetPluginManager()->GetNowTime()) {
                 break;
             }
 
-            if (nullptr != pServerData->mxNetModule) {
-                pServerData->mxNetModule = nullptr;
+            if (nullptr != pServerData->net_module) {
+                pServerData->net_module = nullptr;
             }
 
-            pServerData->eState = ConnectDataState::CONNECTING;
-            pServerData->mxNetModule = std::shared_ptr<INetModule>(new NetModule(pm_));
+            pServerData->state = ConnectDataState::CONNECTING;
+            pServerData->net_module = std::shared_ptr<INetModule>(new NetModule(pm_));
 
-            pServerData->mxNetModule->Awake();
-            pServerData->mxNetModule->Start();
-            pServerData->mxNetModule->AfterStart();
-            pServerData->mxNetModule->ReadyUpdate();
+            pServerData->net_module->Awake();
+            pServerData->net_module->Start();
+            pServerData->net_module->AfterStart();
+            pServerData->net_module->ReadyUpdate();
 
-            pServerData->mxNetModule->Startialization(pServerData->ip.c_str(), pServerData->nPort);
+            pServerData->net_module->Startialization(pServerData->ip.c_str(), pServerData->port);
 
             StartCallBacks(pServerData);
         } break;
@@ -547,10 +545,10 @@ void NetClientModule::LogServerInfo() {
 
     ConnectData *pServerData = mxServerMap.FirstNude();
     while (nullptr != pServerData) {
-        stream << "\nNetClientModule::LogServerInfo:\nServer Info: Type: " << typeid(pServerData->eServerType).name() << " Server ID: " << pServerData->nGameID
-               << " State: " << pServerData->eState << " IP: " << pServerData->ip << " Port: " << pServerData->nPort << std::endl;
+        stream << "\nNetClientModule::LogServerInfo:\nServer Info: Type: " << typeid(pServerData->type).name() << " Server ID: " << pServerData->id
+               << " State: " << pServerData->state << " IP: " << pServerData->ip << " Port: " << pServerData->port << std::endl;
 
-        if (pServerData->eState != ConnectDataState::NORMAL) {
+        if (pServerData->state != ConnectDataState::NORMAL) {
             error = true;
         }
 
@@ -568,11 +566,11 @@ void NetClientModule::LogServerInfo() {
 }
 
 void NetClientModule::KeepState(std::shared_ptr<ConnectData> pServerData) {
-    if (pServerData->mnLastActionTime + 10 > GetPluginManager()->GetNowTime()) {
+    if (pServerData->last_time + 10 > GetPluginManager()->GetNowTime()) {
         return;
     }
 
-    pServerData->mnLastActionTime = GetPluginManager()->GetNowTime();
+    pServerData->last_time = GetPluginManager()->GetNowTime();
 
     // send message
 }
@@ -590,16 +588,16 @@ int NetClientModule::OnConnected(const socket_t fd, INet *pNet) {
     if (pServerInfo) {
         /////////////////////////////////////////////////////////////////////////////////////
         // AddServerWeightData(pServerInfo);
-        pServerInfo->eState = ConnectDataState::NORMAL;
+        pServerInfo->state = ConnectDataState::NORMAL;
 
         // for type--suit
-        std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(pServerInfo->eServerType);
+        std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(pServerInfo->type);
         if (!xConnectDataMap) {
             xConnectDataMap = std::shared_ptr<ConsistentHashMapEx<int, ConnectData>>(new ConsistentHashMapEx<int, ConnectData>());
-            mxServerTypeMap.AddElement(pServerInfo->eServerType, xConnectDataMap);
+            mxServerTypeMap.AddElement(pServerInfo->type, xConnectDataMap);
         }
 
-        xConnectDataMap->AddElement(pServerInfo->nGameID, pServerInfo);
+        xConnectDataMap->AddElement(pServerInfo->id, pServerInfo);
     }
 
     return 0;
@@ -610,13 +608,13 @@ int NetClientModule::OnDisConnected(const socket_t fd, INet *pNet) {
     if (nullptr != pServerInfo) {
         /////////////////////////////////////////////////////////////////////////////////////
         // RemoveServerWeightData(pServerInfo);
-        pServerInfo->eState = ConnectDataState::DISCONNECT;
-        pServerInfo->mnLastActionTime = GetPluginManager()->GetNowTime();
+        pServerInfo->state = ConnectDataState::DISCONNECT;
+        pServerInfo->last_time = GetPluginManager()->GetNowTime();
 
         // for type--suit
-        std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(pServerInfo->eServerType);
+        std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(pServerInfo->type);
         if (xConnectDataMap) {
-            xConnectDataMap->RemoveElement(pServerInfo->nGameID);
+            xConnectDataMap->RemoveElement(pServerInfo->id);
         }
     }
 
@@ -627,33 +625,33 @@ void NetClientModule::ProcessAddNetConnect() {
     std::list<ConnectData>::iterator it = mxTempNetList.begin();
     for (; it != mxTempNetList.end(); ++it) {
         const ConnectData &xInfo = *it;
-        std::shared_ptr<ConnectData> xServerData = mxServerMap.GetElement(xInfo.nGameID);
+        std::shared_ptr<ConnectData> xServerData = mxServerMap.GetElement(xInfo.id);
         if (nullptr == xServerData) {
             xServerData = std::shared_ptr<ConnectData>(new ConnectData());
 
-            xServerData->nGameID = xInfo.nGameID;
-            xServerData->eServerType = xInfo.eServerType;
+            xServerData->id = xInfo.id;
+            xServerData->type = xInfo.type;
             xServerData->ip = xInfo.ip;
             xServerData->name = xInfo.name;
-            xServerData->eState = ConnectDataState::CONNECTING;
-            xServerData->nPort = xInfo.nPort;
-            xServerData->mnLastActionTime = GetPluginManager()->GetNowTime();
+            xServerData->state = ConnectDataState::CONNECTING;
+            xServerData->port = xInfo.port;
+            xServerData->last_time = GetPluginManager()->GetNowTime();
 
-            xServerData->mxNetModule = std::shared_ptr<INetModule>(new NetModule(pm_));
+            xServerData->net_module = std::shared_ptr<INetModule>(new NetModule(pm_));
 
-            xServerData->mxNetModule->Awake();
-            xServerData->mxNetModule->Start();
-            xServerData->mxNetModule->AfterStart();
-            xServerData->mxNetModule->ReadyUpdate();
+            xServerData->net_module->Awake();
+            xServerData->net_module->Start();
+            xServerData->net_module->AfterStart();
+            xServerData->net_module->ReadyUpdate();
 
-            xServerData->mxNetModule->Startialization(xServerData->ip.c_str(), xServerData->nPort);
-            xServerData->mxNetModule->ExpandBufferSize((unsigned int)mnBufferSize);
+            xServerData->net_module->Startialization(xServerData->ip.c_str(), xServerData->port);
+            xServerData->net_module->ExpandBufferSize((unsigned int)mnBufferSize);
 
             StartCallBacks(xServerData);
 
-            mxServerMap.AddElement(xInfo.nGameID, xServerData);
+            mxServerMap.AddElement(xInfo.id, xServerData);
         } else {
-            xServerData->nWorkLoad = xInfo.nWorkLoad;
+            xServerData->work_load = xInfo.work_load;
         }
     }
 

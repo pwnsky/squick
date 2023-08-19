@@ -117,6 +117,9 @@ class IPluginManager {
     virtual int GetAppID() const = 0;
     virtual void SetAppID(const int appID) = 0;
 
+    virtual int GetArea() const = 0;
+    virtual void SetArea(const int id) = 0;
+
     virtual std::vector<std::string> GetArgs() const = 0;
     virtual void SetArgs(const std::vector<std::string>& id) = 0;
 
