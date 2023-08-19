@@ -62,32 +62,32 @@ bool LuaScriptModule::Awake() {
 
     TRY_LOAD_SCRIPT_FLE(strRootFile.c_str());
 
-    TRY_RUN_GLOBAL_SCRIPT_FUN1("init_script_system", this);
+    TRY_RUN_GLOBAL_SCRIPT_FUN1("Main", this);
 
-    TRY_RUN_GLOBAL_SCRIPT_FUN0("module_awake");
+    TRY_RUN_GLOBAL_SCRIPT_FUN0("Awake");
 
     return true;
 }
 // 用于Lua 初始化
 bool LuaScriptModule::Init() {
 
-    TRY_RUN_GLOBAL_SCRIPT_FUN0("module_init");
+    TRY_RUN_GLOBAL_SCRIPT_FUN0("Init");
 
     return true;
 }
 // 用于Lua 初始化
 bool LuaScriptModule::AfterInit() {
-    TRY_RUN_GLOBAL_SCRIPT_FUN0("module_after_init");
+    TRY_RUN_GLOBAL_SCRIPT_FUN0("AfterInit");
     return true;
 }
 
-bool LuaScriptModule::Shut() {
-    TRY_RUN_GLOBAL_SCRIPT_FUN0("module_shut");
+bool LuaScriptModule::Destory() {
+    TRY_RUN_GLOBAL_SCRIPT_FUN0("Destroy");
     return true;
 }
 
 bool LuaScriptModule::ReadyUpdate() {
-    TRY_RUN_GLOBAL_SCRIPT_FUN0("module_ready_update");
+    TRY_RUN_GLOBAL_SCRIPT_FUN0("ReadyUpdate");
     return true;
 }
 
@@ -95,8 +95,8 @@ bool LuaScriptModule::ReadyUpdate() {
 // Lua热重载方式通过http接口来显示触发
 bool LuaScriptModule::Update() { return true; }
 
-bool LuaScriptModule::BeforeShut() {
-    TRY_RUN_GLOBAL_SCRIPT_FUN0("module_before_shut");
+bool LuaScriptModule::BeforeDestory() {
+    TRY_RUN_GLOBAL_SCRIPT_FUN0("BeforeDestory");
 
     return true;
 }
@@ -458,11 +458,11 @@ Vector3 LuaScriptModule::GetRecordVector3(const Guid &self, const std::string &r
 
 INT64 LuaScriptModule::GetNowTime() { return pm_->GetNowTime(); }
 
-Guid LuaScriptModule::CreateId() { return m_kernel_->CreateGUID(); }
+Guid LuaScriptModule::CreateID() { return m_kernel_->CreateGUID(); }
 
-INT64 LuaScriptModule::APPId() { return pm_->GetAppID(); }
+INT64 LuaScriptModule::AppID() { return pm_->GetAppID(); }
 
-INT64 LuaScriptModule::APPType() {
+INT64 LuaScriptModule::AppType() {
     std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
@@ -478,6 +478,10 @@ INT64 LuaScriptModule::APPType() {
     }
 
     return 0;
+}
+
+string LuaScriptModule::AppName() {
+    return pm_->GetAppName();
 }
 
 bool LuaScriptModule::ExistElementObject(const std::string &configName) { return m_element_->ExistElement(configName); }
@@ -728,10 +732,10 @@ bool LuaScriptModule::Register() {
     LuaIntf::LuaBinding(mLuaContext)
         .beginClass<Guid>("Guid")
         .addConstructor(LUA_ARGS())
-        .addProperty("data", &Guid::GetData, &Guid::SetData)
-        .addProperty("head", &Guid::GetHead, &Guid::SetHead)
-        .addFunction("tostring", &Guid::ToString)
-        .addFunction("fromstring", &Guid::FromString)
+        .addProperty("GetData", &Guid::GetData, &Guid::SetData)
+        .addProperty("GetHead", &Guid::GetHead, &Guid::SetHead)
+        .addFunction("ToString", &Guid::ToString)
+        .addFunction("FromString", &Guid::FromString)
         .endClass();
 
     LuaIntf::LuaBinding(mLuaContext).beginClass<DataList>("DataList").endClass();
@@ -739,146 +743,147 @@ bool LuaScriptModule::Register() {
     LuaIntf::LuaBinding(mLuaContext)
         .beginExtendClass<DataList, DataList>("DataList")
         .addConstructor(LUA_ARGS())
-        .addFunction("empty", &DataList::IsEmpty)
-        .addFunction("count", &DataList::GetCount)
-        .addFunction("tye", &DataList::Type)
+        .addFunction("IsEmpty", &DataList::IsEmpty)
+        .addFunction("GetCount", &DataList::GetCount)
+        .addFunction("Type", &DataList::Type)
 
-        .addFunction("add_int", &DataList::AddInt)
-        .addFunction("add_float", &DataList::AddFloat)
-        .addFunction("add_string", &DataList::AddStringFromChar)
-        .addFunction("add_object", &DataList::AddObject)
-        .addFunction("add_vector2", &DataList::AddVector2)
-        .addFunction("add_vector3", &DataList::AddVector3)
+        .addFunction("AddInt", &DataList::AddInt)
+        .addFunction("AddFloat", &DataList::AddFloat)
+        .addFunction("AddStringFromChar", &DataList::AddStringFromChar)
+        .addFunction("AddObject", &DataList::AddObject)
+        .addFunction("AddVector2", &DataList::AddVector2)
+        .addFunction("AddVector3", &DataList::AddVector3)
 
-        .addFunction("set_int", &DataList::SetInt)
-        .addFunction("set_float", &DataList::SetFloat)
-        .addFunction("set_string", &DataList::SetString)
-        .addFunction("set_object", &DataList::SetObject)
-        .addFunction("set_vector2", &DataList::SetVector2)
-        .addFunction("set_vector3", &DataList::SetVector3)
+        .addFunction("SetInt", &DataList::SetInt)
+        .addFunction("SetFloat", &DataList::SetFloat)
+        .addFunction("SetString", &DataList::SetString)
+        .addFunction("SetObject", &DataList::SetObject)
+        .addFunction("SetVector2", &DataList::SetVector2)
+        .addFunction("SetVector3", &DataList::SetVector3)
 
-        .addFunction("int", &DataList::Int)
-        .addFunction("float", &DataList::Float)
-        .addFunction("string", &DataList::String)
-        .addFunction("object", &DataList::Object)
-        .addFunction("vector2", &DataList::Vector2At)
-        .addFunction("vector3", &DataList::Vector3At)
+        .addFunction("Int", &DataList::Int)
+        .addFunction("Float", &DataList::Float)
+        .addFunction("String", &DataList::String)
+        .addFunction("Object", &DataList::Object)
+        .addFunction("Vector2At", &DataList::Vector2At)
+        .addFunction("Vector3At", &DataList::Vector3At)
         .endClass();
 
     LuaIntf::LuaBinding(mLuaContext)
         .beginClass<SquickData>("TData")
         .addConstructor(LUA_ARGS())
-        .addFunction("float", &SquickData::GetFloat)
-        .addFunction("int", &SquickData::GetInt)
-        .addFunction("object", &SquickData::GetObject)
-        .addFunction("string", &SquickData::GetString)
-        .addFunction("vector2", &SquickData::GetVector2)
-        .addFunction("vector3", &SquickData::GetVector3)
+        .addFunction("GetFloat", &SquickData::GetFloat)
+        .addFunction("GetInt", &SquickData::GetInt)
+        .addFunction("GetObject", &SquickData::GetObject)
+        .addFunction("GetString", &SquickData::GetString)
+        .addFunction("GetVector2", &SquickData::GetVector2)
+        .addFunction("GetVector3", &SquickData::GetVector3)
 
-        .addFunction("type", &SquickData::GetType)
-        .addFunction("is_null", &SquickData::IsNullValue)
+        .addFunction("GetType", &SquickData::GetType)
+        .addFunction("IsNullValue", &SquickData::IsNullValue)
 
-        .addFunction("set_float", &SquickData::SetFloat)
-        .addFunction("set_int", &SquickData::SetInt)
-        .addFunction("set_object", &SquickData::SetObject)
-        .addFunction("set_string", &SquickData::SetString)
-        .addFunction("set_vector2", &SquickData::SetVector2)
-        .addFunction("set_vector3", &SquickData::SetVector3)
+        .addFunction("SetFloat", &SquickData::SetFloat)
+        .addFunction("SetInt", &SquickData::SetInt)
+        .addFunction("SetObject", &SquickData::SetObject)
+        .addFunction("SetString", &SquickData::SetString)
+        .addFunction("SetVector2", &SquickData::SetVector2)
+        .addFunction("SetVector3", &SquickData::SetVector3)
         .endClass();
 
     // for kernel module
     LuaIntf::LuaBinding(mLuaContext)
         .beginClass<LuaScriptModule>("LuaScriptModule")
-        .addFunction("register_module", &LuaScriptModule::RegisterModule)
-        .addFunction("create_object", &LuaScriptModule::CreateObject)
-        .addFunction("exist_object", &LuaScriptModule::ExistObject)
-        .addFunction("destroy_object", &LuaScriptModule::DestroyObject)
-        .addFunction("enter_scene", &LuaScriptModule::EnterScene)
-        .addFunction("do_event", &LuaScriptModule::DoEvent)
+        .addFunction("RegisterModule", &LuaScriptModule::RegisterModule)
+        .addFunction("CreateObject", &LuaScriptModule::CreateObject)
+        .addFunction("ExistObject", &LuaScriptModule::ExistObject)
+        .addFunction("DestroyObject", &LuaScriptModule::DestroyObject)
+        .addFunction("EnterScene", &LuaScriptModule::EnterScene)
+        .addFunction("DoEvent", &LuaScriptModule::DoEvent)
 
-        .addFunction("set_prop_int", &LuaScriptModule::SetPropertyInt)
-        .addFunction("set_prop_float", &LuaScriptModule::SetPropertyFloat)
-        .addFunction("set_prop_string", &LuaScriptModule::SetPropertyString)
-        .addFunction("set_prop_object", &LuaScriptModule::SetPropertyObject)
-        .addFunction("set_prop_vector2", &LuaScriptModule::SetPropertyVector2)
-        .addFunction("set_prop_vector3", &LuaScriptModule::SetPropertyVector3)
+        .addFunction("SetPropertyInt", &LuaScriptModule::SetPropertyInt)
+        .addFunction("SetPropertyFloat", &LuaScriptModule::SetPropertyFloat)
+        .addFunction("SetPropertyString", &LuaScriptModule::SetPropertyString)
+        .addFunction("SetPropertyObject", &LuaScriptModule::SetPropertyObject)
+        .addFunction("SetPropertyVector2", &LuaScriptModule::SetPropertyVector2)
+        .addFunction("SetPropertyVector3", &LuaScriptModule::SetPropertyVector3)
 
-        .addFunction("get_prop_int", &LuaScriptModule::GetPropertyInt)
-        .addFunction("get_prop_float", &LuaScriptModule::GetPropertyFloat)
-        .addFunction("get_prop_string", &LuaScriptModule::GetPropertyString)
-        .addFunction("get_prop_object", &LuaScriptModule::GetPropertyObject)
-        .addFunction("get_prop_vector2", &LuaScriptModule::GetPropertyVector2)
-        .addFunction("get_prop_vector3", &LuaScriptModule::GetPropertyVector3)
+        .addFunction("GetPropertyInt", &LuaScriptModule::GetPropertyInt)
+        .addFunction("GetPropertyFloat", &LuaScriptModule::GetPropertyFloat)
+        .addFunction("GetPropertyString", &LuaScriptModule::GetPropertyString)
+        .addFunction("GetPropertyObject", &LuaScriptModule::GetPropertyObject)
+        .addFunction("GetPropertyVector2", &LuaScriptModule::GetPropertyVector2)
+        .addFunction("GetPropertyVector3", &LuaScriptModule::GetPropertyVector3)
 
-        .addFunction("set_record_int", &LuaScriptModule::SetRecordInt)
-        .addFunction("set_record_float", &LuaScriptModule::SetRecordFloat)
-        .addFunction("set_record_string", &LuaScriptModule::SetRecordString)
-        .addFunction("set_record_object", &LuaScriptModule::SetRecordObject)
-        .addFunction("set_record_vector2", &LuaScriptModule::SetPropertyVector2)
-        .addFunction("set_record_vector3", &LuaScriptModule::SetPropertyVector3)
+        .addFunction("SetRecordInt", &LuaScriptModule::SetRecordInt)
+        .addFunction("SetRecordFloat", &LuaScriptModule::SetRecordFloat)
+        .addFunction("SetRecordString", &LuaScriptModule::SetRecordString)
+        .addFunction("SetRecordObject", &LuaScriptModule::SetRecordObject)
+        .addFunction("SetPropertyVector2", &LuaScriptModule::SetPropertyVector2)
+        .addFunction("SetPropertyVector3", &LuaScriptModule::SetPropertyVector3)
 
-        .addFunction("get_record_int", &LuaScriptModule::GetRecordInt)
-        .addFunction("get_record_float", &LuaScriptModule::GetRecordFloat)
-        .addFunction("get_record_string", &LuaScriptModule::GetRecordString)
-        .addFunction("get_record_object", &LuaScriptModule::GetRecordObject)
-        .addFunction("get_record_vector2", &LuaScriptModule::GetPropertyVector2)
-        .addFunction("get_record_vector3", &LuaScriptModule::GetPropertyVector3)
+        .addFunction("GetRecordInt", &LuaScriptModule::GetRecordInt)
+        .addFunction("GetRecordFloat", &LuaScriptModule::GetRecordFloat)
+        .addFunction("GetRecordString", &LuaScriptModule::GetRecordString)
+        .addFunction("GetRecordObject", &LuaScriptModule::GetRecordObject)
+        .addFunction("GetPropertyVector2", &LuaScriptModule::GetPropertyVector2)
+        .addFunction("GetPropertyVector3", &LuaScriptModule::GetPropertyVector3)
 
-        .addFunction("add_prop_cb", &LuaScriptModule::AddPropertyCallBack)
-        .addFunction("add_record_cb", &LuaScriptModule::AddRecordCallBack)
-        .addFunction("add_event_cb", &LuaScriptModule::AddEventCallBack)
-        .addFunction("add_class_cb", &LuaScriptModule::AddClassCallBack)
-        .addFunction("add_schedule", &LuaScriptModule::AddSchedule)
-        .addFunction("add_module_schedule", &LuaScriptModule::AddModuleSchedule)
-        .addFunction("do_event", &LuaScriptModule::DoEvent)
-        .addFunction("add_row", &LuaScriptModule::AddRow)
-        .addFunction("rem_row", &LuaScriptModule::RemRow)
+        .addFunction("AddPropertyCallBack", &LuaScriptModule::AddPropertyCallBack)
+        .addFunction("AddRecordCallBack", &LuaScriptModule::AddRecordCallBack)
+        .addFunction("AddEventCallBack", &LuaScriptModule::AddEventCallBack)
+        .addFunction("AddClassCallBack", &LuaScriptModule::AddClassCallBack)
+        .addFunction("AddSchedule", &LuaScriptModule::AddSchedule)
+        .addFunction("AddModuleSchedule", &LuaScriptModule::AddModuleSchedule)
+        .addFunction("DoEvent", &LuaScriptModule::DoEvent)
+        .addFunction("AddRow", &LuaScriptModule::AddRow)
+        .addFunction("RemRow", &LuaScriptModule::RemRow)
 
-        .addFunction("time", &LuaScriptModule::GetNowTime)
-        .addFunction("new_id", &LuaScriptModule::CreateId)
-        .addFunction("app_id", &LuaScriptModule::APPId)
-        .addFunction("app_type", &LuaScriptModule::APPType)
+        .addFunction("GetNowTime", &LuaScriptModule::GetNowTime)
+        .addFunction("CreateID", &LuaScriptModule::CreateID)
+        .addFunction("AppID", &LuaScriptModule::AppID)
+        .addFunction("AppType", &LuaScriptModule::AppType)
+        .addFunction("AppName", &LuaScriptModule::AppName)
 
         .addFunction("exist_ele", &LuaScriptModule::ExistElementObject)
-        .addFunction("get_ele_list", &LuaScriptModule::GetEleList)
-        .addFunction("get_ele_int", &LuaScriptModule::GetElePropertyInt)
-        .addFunction("get_ele_float", &LuaScriptModule::GetElePropertyFloat)
-        .addFunction("get_ele_string", &LuaScriptModule::GetElePropertyString)
-        .addFunction("get_ele_vector2", &LuaScriptModule::GetElePropertyVector2)
-        .addFunction("get_ele_vector3", &LuaScriptModule::GetElePropertyVector3)
+        .addFunction("GetEleList", &LuaScriptModule::GetEleList)
+        .addFunction("GetElePropertyInt", &LuaScriptModule::GetElePropertyInt)
+        .addFunction("GetElePropertyFloat", &LuaScriptModule::GetElePropertyFloat)
+        .addFunction("GetElePropertyString", &LuaScriptModule::GetElePropertyString)
+        .addFunction("GetElePropertyVector2", &LuaScriptModule::GetElePropertyVector2)
+        .addFunction("GetElePropertyVector3", &LuaScriptModule::GetElePropertyVector3)
 
         // 网络模块绑定
-        .addFunction("remove_msg_cb_as_server", &LuaScriptModule::RemoveCallBackAsServer)    // as server
-        .addFunction("add_msg_cb_as_server", &LuaScriptModule::AddMsgCallBackAsServer)       // as server
-        .addFunction("remove_msg_cb_as_client", &LuaScriptModule::RemoveMsgCallBackAsClient) // as client
-        .addFunction("add_msg_cb_as_client", &LuaScriptModule::AddMsgCallBackAsClient)       // as client
+        .addFunction("RemoveCallBackAsServer", &LuaScriptModule::RemoveCallBackAsServer)    // as server
+        .addFunction("AddMsgCallBackAsServer", &LuaScriptModule::AddMsgCallBackAsServer)       // as server
+        .addFunction("RemoveMsgCallBackAsClient", &LuaScriptModule::RemoveMsgCallBackAsClient) // as client
+        .addFunction("AddMsgCallBackAsClient", &LuaScriptModule::AddMsgCallBackAsClient)       // as client
 
         //.addFunction("remove_http_cb", &LuaScriptModule::RemoveHttpCallBack)
         //.addFunction("add_http_cb", &LuaScriptModule::AddHttpCallBack)
 
-        .addFunction("send_to_server_by_id", &LuaScriptModule::SendToServerByServerID)            // as client
-        .addFunction("send_to_all_server_by_type", &LuaScriptModule::SendToAllServerByServerType) // as client
-        .addFunction("send_to_server_by_suit", &LuaScriptModule::SendToServerBySuit)              // as client
+        .addFunction("SendToServerByServerID", &LuaScriptModule::SendToServerByServerID)            // as client
+        .addFunction("SendToAllServerByServerType", &LuaScriptModule::SendToAllServerByServerType) // as client
+        .addFunction("SendToServerBySuit", &LuaScriptModule::SendToServerBySuit)              // as client
 
-        .addFunction("send_to_client_by_fd", &LuaScriptModule::SendMsgToClientByFD) // as server
+        .addFunction("SendMsgToClientByFD", &LuaScriptModule::SendMsgToClientByFD) // as server
 
-        .addFunction("send_to_player", &LuaScriptModule::SendMsgToPlayer)         // as game server
-        .addFunction("send_to_group_player", &LuaScriptModule::SendToGroupPlayer) // as game server
-        .addFunction("send_to_all_player", &LuaScriptModule::SendToAllPlayer)     // as game server
+        .addFunction("SendMsgToPlayer", &LuaScriptModule::SendMsgToPlayer)         // as game server
+        .addFunction("SendToGroupPlayer", &LuaScriptModule::SendToGroupPlayer) // as game server
+        .addFunction("SendToAllPlayer", &LuaScriptModule::SendToAllPlayer)     // as game server
 
-        .addFunction("log_info", &LuaScriptModule::LogInfo)
-        .addFunction("log_error", &LuaScriptModule::LogError)
-        .addFunction("log_warning", &LuaScriptModule::LogWarning)
-        .addFunction("log_debug", &LuaScriptModule::LogDebug)
+        .addFunction("LogInfo", &LuaScriptModule::LogInfo)
+        .addFunction("LogError", &LuaScriptModule::LogError)
+        .addFunction("LogWarning", &LuaScriptModule::LogWarning)
+        .addFunction("LogDebug", &LuaScriptModule::LogDebug)
 
-        .addFunction("get_version_code", &LuaScriptModule::GetVersionCode)
-        .addFunction("set_version_code", &LuaScriptModule::SetVersionCode)
+        .addFunction("GetVersionCode", &LuaScriptModule::GetVersionCode)
+        .addFunction("SetVersionCode", &LuaScriptModule::SetVersionCode)
 
-        .addFunction("import_proto_file", &LuaScriptModule::ImportProtoFile)
-        .addFunction("encode", &LuaScriptModule::Encode)
-        .addFunction("decode", &LuaScriptModule::Decode)
+        .addFunction("ImportProto", &LuaScriptModule::ImportProtoFile)
+        .addFunction("Encode", &LuaScriptModule::Encode)
+        .addFunction("Decode", &LuaScriptModule::Decode)
 
-        .addFunction("get_script_path", &LuaScriptModule::GetScriptPath)
+        .addFunction("GetScriptPath", &LuaScriptModule::GetScriptPath)
         .endClass();
 
     return true;

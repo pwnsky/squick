@@ -46,14 +46,14 @@ function test_event_module:class_common_event(object_id, className, eventID, var
 end
 
 function test_event_module:event_cb(object_id, eventID, arg)
-	local nValue = arg:int(0);
-	local fValue = arg:float(1);
-	local strValue = arg:string(2);
+    local nValue = arg:int(0);
+    local fValue = arg:float(1);
+    local strValue = arg:string(2);
 
-	local ident = arg:object(3);
-	local head = ident.head;
-	local data = ident.data;
+    local ident = arg:object(3);
+    local head = ident.head;
+    local data = ident.data;
 
-	script_module:log_info("Hello Lua EventCallBack, object_id:" .. object_id:tostring() .. "  eventID:".. eventID .. "");
-	script_module:log_info("arg:nValue:".. tostring(nValue) .. " fValue:"..tostring(fValue).. " strValue:"..tostring(strValue).." ident:".. ident:tostring() .. "");
+    script_module:log_info("Hello Lua EventCallBack, object_id:" .. object_id:tostring() .. "  eventID:".. eventID .. "");
+    script_module:log_info("arg:nValue:".. tostring(nValue) .. " fValue:"..tostring(fValue).. " strValue:"..tostring(strValue).." ident:".. ident:tostring() .. "");
 end

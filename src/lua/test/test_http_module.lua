@@ -4,7 +4,7 @@ function test_http_module:reload()
 end
 
 function test_http_module:awake()
-	test_http_module:reload()
+    test_http_module:reload()
 end
 
 function test_http_module:init()
@@ -25,7 +25,7 @@ function test_http_module:shut()
 end
 
 function test_http_module:test()
-	print("-----------------test_http_module test--------------------------------\n");
+    print("-----------------test_http_module test--------------------------------\n");
 end
 
 

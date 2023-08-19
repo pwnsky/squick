@@ -27,16 +27,16 @@ ObjectEvent = CreatEnumTable(ObjectEvent, -1)
 
 RecordOpType =
 {
-	"Add",
-	"Del",
+    "Add",
+    "Del",
     "AfterDel",
-	"Swap",
-	"Create",
-	"Update",
-	"Cleared",
-	"Sort",
-	"Cover",
-	"UNKNOW",
+    "Swap",
+    "Create",
+    "Update",
+    "Cleared",
+    "Sort",
+    "Cover",
+    "UNKNOW",
 }
 
 RecordOpType = CreatEnumTable(RecordOpType, -1)
@@ -50,9 +50,9 @@ ServerType =
     "ST_LOGIN",
     "ST_PROXY",
     "ST_GAME",
-	"ST_WORLD",
-	"SQUICK_ST_DB",
-	"ST_MAX",
+    "ST_WORLD",
+    "SQUICK_ST_DB",
+    "ST_MAX",
     "SQUICK_ST_GATEWAY",
 };
 ServerType = CreatEnumTable(ServerType, -1)

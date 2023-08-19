@@ -5,7 +5,7 @@ end
 
 function http_module:awake()
     print("-----------------gateway http_module awake --------------------------------\n");
-	http_module:reload()
+    http_module:reload()
 end
 
 function http_module:init()
@@ -24,7 +24,7 @@ function http_module:shut()
 end
 
 function http_module:test()
-	
+    
 end
 
 
