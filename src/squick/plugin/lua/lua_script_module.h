@@ -77,12 +77,12 @@ class LuaScriptModule : public ILuaScriptModule {
     }
 
     virtual bool Awake();
-    virtual bool Init();
+    virtual bool Start();
     virtual bool Destory();
     virtual bool ReadyUpdate();
     virtual bool Update();
 
-    virtual bool AfterInit();
+    virtual bool AfterStart();
     virtual bool BeforeDestory();
 
     virtual LuaIntf::LuaContext &GetLuaEnv();
@@ -174,7 +174,7 @@ class LuaScriptModule : public ILuaScriptModule {
             void AddHttpCallBack(const std::string& path, const int httpType, const LuaIntf::LuaRef& luaTable, const LuaIntf::LuaRef& luaFunc);
     */
 
-    void ImportProtoFile(const std::string &fileName);
+    bool ImportProtoFile(const std::string &fileName);
     const std::string Encode(const std::string &msgTypeName, const LuaIntf::LuaRef &luaTable);
     LuaIntf::LuaRef Decode(const std::string &msgTypeName, const std::string &data);
 

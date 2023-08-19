@@ -69,15 +69,15 @@ bool LuaScriptModule::Awake() {
     return true;
 }
 // 用于Lua 初始化
-bool LuaScriptModule::Init() {
+bool LuaScriptModule::Start() {
 
-    TRY_RUN_GLOBAL_SCRIPT_FUN0("Init");
+    TRY_RUN_GLOBAL_SCRIPT_FUN0("Start");
 
     return true;
 }
 // 用于Lua 初始化
-bool LuaScriptModule::AfterInit() {
-    TRY_RUN_GLOBAL_SCRIPT_FUN0("AfterInit");
+bool LuaScriptModule::AfterStart() {
+    TRY_RUN_GLOBAL_SCRIPT_FUN0("AfterStart");
     return true;
 }
 
@@ -640,9 +640,9 @@ void LuaScriptModule::AddHttpCallBack(const std::string & path, const int httpTy
 }
 */
 
-void LuaScriptModule::ImportProtoFile(const std::string &fileName) {
+bool LuaScriptModule::ImportProtoFile(const std::string &fileName) {
     LuaPBModule *p = (LuaPBModule *)m_pLuaPBModule;
-    p->ImportProtoFile(fileName);
+    return p->ImportProtoFile(fileName);
 }
 
 const std::string LuaScriptModule::Encode(const std::string &msgTypeName, const LuaIntf::LuaRef &luaTable) {

@@ -31,23 +31,23 @@ class MultiFileErrorCollector : public google::protobuf::compiler::MultiFileErro
 
 class ILuaPBModule : public IModule {
   public:
-    virtual void ImportProtoFile(const std::string &strFile) = 0;
+    virtual bool ImportProtoFile(const std::string &strFile) = 0;
 };
 
 class LuaPBModule : public ILuaPBModule {
   public:
     LuaPBModule(IPluginManager *p) { pm_ = p; }
 
-    virtual bool Awake();
-    virtual bool Init();
-    virtual bool Shut();
-    virtual bool ReadyUpdate();
-    virtual bool Update();
+    virtual bool Awake() override;
+    virtual bool Start();
+    virtual bool AfterStart() override;
+    virtual bool BeforeDestory() override;
+    virtual bool Destory() override;
+    virtual bool ReadyUpdate() override;
+    virtual bool Update() override;
+    
 
-    virtual bool AfterInit();
-    virtual bool BeforeShut();
-
-    virtual void ImportProtoFile(const std::string &strFile);
+    virtual bool ImportProtoFile(const std::string &strFile);
 
   protected:
     void SetLuaState(lua_State *pState);

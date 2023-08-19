@@ -31,7 +31,7 @@ function PrintTable(table)
     if type(v) == "table" then
         key = k
         print(indent .. key .. " =")
-        print_table(v, level + 1)
+        PrintTable(v, level + 1)
     else
         local content = string.format("%s%s = %s", indent .. "  ",tostring(k), tostring(v))
         print(content..";")
