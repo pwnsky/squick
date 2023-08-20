@@ -7,9 +7,13 @@
 #pragma once
 
 #include <squick/core/map.h>
+#include <squick/plugin/config/export.h>
+#include <squick/plugin/kernel/export.h>
+#include <squick/plugin/log/export.h>
+#include <squick/plugin/net/export.h>
 
 #include "i_node_module.h"
-namespace game::node {
+namespace gameplay::node {
 class NodeModule : public INodeModule {
   public:
       NodeModule(IPluginManager *p) { pm_ = p; }
@@ -17,9 +21,7 @@ class NodeModule : public INodeModule {
     virtual bool Destory();
     virtual bool AfterStart();
 
-    virtual void OnClientDisconnect(socket_t sock) override;
-    virtual void OnClientConnected(socket_t sock) override;
   protected:
   private:
 };
-} // namespace game::node
+} // namespace gameplay::server

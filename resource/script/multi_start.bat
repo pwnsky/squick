@@ -1,4 +1,3 @@
-
 rem Author: i0gan
 rem Email : l418894113@gmail.com
 rem Date  : 2022-11-27
@@ -13,7 +12,7 @@ start cmd /c " squick type=world id=100 "
 start cmd /c " squick type=db_proxy id=300 "
 start cmd /c " squick type=game id=1000 "
 start cmd /c " squick type=game id=1001 "
-start cmd /c " squick type=gameplay_manager id=2000 "
+start cmd /c " squick type=game_mgr id=2000 "
 
 start cmd /c " squick type=proxy id=500 "
 start cmd /c " squick type=proxy id=501 "

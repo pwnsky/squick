@@ -4,14 +4,13 @@
 namespace proxy::node {
 class NodeModule : public INodeModule {
   public:
-    NodeModule(IPluginManager *p) { pm_ = p; }
+    NodeModule(IPluginManager* p) { pm_ = p; is_update_ = true; }
     virtual bool Destory();
     virtual bool AfterStart();
     virtual void OnClientDisconnect(socket_t sock) override;
     virtual void OnClientConnected(socket_t sock) override;
 
     virtual bool OnReqProxyConnectVerify(INT64 session, const std::string& guid, const std::string& key) override;
-
 private:
     void OnAckProxyConnectVerify(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
     // From lobby

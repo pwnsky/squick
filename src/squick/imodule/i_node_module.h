@@ -11,8 +11,6 @@
 #include <struct/struct.h>
 
 class INodeBaseModule : public IModule {
-
-    //////////////////////////// PUBLIC ////////////////////////////
   public:
       virtual bool Awake() final { return true; }
     virtual bool Start() override final {
@@ -30,23 +28,29 @@ class INodeBaseModule : public IModule {
     }
 
     virtual bool Update() override final {
-        if (last_report_time_ + 15 > pm_->GetNowTime()) {
+        if (last_report_time_ + 3 > pm_->GetNowTime()) {
             return true;
         }
-        ServerReport();
+        last_report_time_ = pm_->GetNowTime();
+        ReqServerReport();
         return true;
     }
 
     bool Listen() {
         m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REGISTER, this, &INodeBaseModule::OnReqRegister);
         m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_UNREGISTER, this, &INodeBaseModule::OnServerUnRegistered);
-        m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REPORT, this, &INodeBaseModule::OnServerReport);
+        m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REPORT, this, &INodeBaseModule::OnReqServerReport);
 
 
         // Player action
         m_net_->AddReceiveCallBack(rpc::ServerRPC::PLAYER_ENETER, this, &INodeBaseModule::OnPlayerEnter);
         m_net_->AddReceiveCallBack(rpc::ServerRPC::PLAYER_LEAVE, this, &INodeBaseModule::OnPlayerLeave);
         m_net_->AddReceiveCallBack(rpc::ServerRPC::PLAYER_OFFLINE, this, &INodeBaseModule::OnPlayerOffline);
+
+
+        m_net_->AddReceiveCallBack(rpc::ServerRPC::SERVER_HEARTBEAT, this, &INodeBaseModule::OnHeartBeat);
+        m_net_->AddReceiveCallBack(this, &INodeBaseModule::InvalidMessage);
+        
 
         m_net_->AddEventCallBack(this, &INodeBaseModule::OnServerSocketEvent);
         m_net_->ExpandBufferSize();
@@ -56,30 +60,35 @@ class INodeBaseModule : public IModule {
             const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
             for (int i = 0; i < strIdList.size(); ++i) {
                 const std::string &strId = strIdList[i];
-                const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-                if (pm_->GetAppID() == serverID) {
+                const int id = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
+                if (pm_->GetAppID() == id) {
                     ServerInfo s;
-                    
-                    s.info_->set_key(m_element_->GetPropertyString(strId, excel::Server::Key()));
-                    s.info_->set_type(m_element_->GetPropertyInt32(strId, excel::Server::Type()));
-                    s.info_->set_port(m_element_->GetPropertyInt32(strId, excel::Server::Port()));
-                    s.info_->set_max_online(m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline()));
-                    s.info_->set_cpu_count(m_element_->GetPropertyInt32(strId, excel::Server::CpuCount()));
-                    s.info_->set_name(m_element_->GetPropertyString(strId, excel::Server::Name()));
-                    s.info_->set_ip(m_element_->GetPropertyString(strId, excel::Server::IP()));
-                    s.info_->set_public_ip(m_element_->GetPropertyString(strId, excel::Server::PublicIP()));
-                    s.info_->set_area(m_element_->GetPropertyInt32(strId, excel::Server::Area()));
-                    s.info_->set_id(m_element_->GetPropertyInt32(strId, excel::Server::ID()));
-                    s.info_->set_cpu_count(m_element_->GetPropertyInt32(strId, excel::Server::CpuCount()));
-
-                    pm_->SetAppType(s.info_->type());
-                    pm_->SetArea(s.info_->type());
+                    s.info->set_id(id);
+                    s.info->set_key(m_element_->GetPropertyString(strId, excel::Server::Key()));
+                    s.info->set_type(m_element_->GetPropertyInt32(strId, excel::Server::Type()));
+                    s.info->set_port(m_element_->GetPropertyInt32(strId, excel::Server::Port()));
+                    s.info->set_max_online(m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline()));
+                    s.info->set_cpu_count(m_element_->GetPropertyInt32(strId, excel::Server::CpuCount()));
+                    s.info->set_name(m_element_->GetPropertyString(strId, excel::Server::ID()));
+                    s.info->set_ip(m_element_->GetPropertyString(strId, excel::Server::IP()));
+                    s.info->set_public_ip(m_element_->GetPropertyString(strId, excel::Server::PublicIP()));
+                    s.info->set_area(m_element_->GetPropertyInt32(strId, excel::Server::Area()));
+                    s.info->set_cpu_count(m_element_->GetPropertyInt32(strId, excel::Server::CpuCount()));
+                    s.type = ServerInfo::Type::Self;
+                    s.info->set_update_time(SquickGetTimeS());
+                    pm_->SetAppType(s.info->type());
+                    pm_->SetArea(s.info->area());
                     servers_[pm_->GetAppID()] = s;
 
-                    int nRet = m_net_->Startialization(s.info_->max_online(), s.info_->port(), s.info_->cpu_count());
+                    int nRet = m_net_->Startialization(s.info->max_online(), s.info->port(), s.info->cpu_count());
+
+                    std::ostringstream log;
+                    log << "Server Listen at port = " << s.info->port();
+                    m_log_->LogDebug(NULL_OBJECT, log, __FUNCTION__, __LINE__);
+
                     if (nRet < 0) {
                         std::ostringstream strLog;
-                        strLog << "Cannot init server net, Port = " << s.info_->port();
+                        strLog << "Cannot init server net, Port = " << s.info->port();
                         m_log_->LogError(NULL_OBJECT, strLog, __FUNCTION__, __LINE__);
                         SQUICK_ASSERT(nRet, "Cannot init server net", __FILE__, __FUNCTION__);
                         exit(0);
@@ -90,114 +99,86 @@ class INodeBaseModule : public IModule {
         return true;
     }
 
-    void LogServerInfo(const std::string &strServerInfo) { m_log_->LogInfo(Guid(), strServerInfo, ""); }
-
-    // Add upper server
-    void OnDynamicServerAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        Guid nPlayerID;
-        rpc::ServerList xMsg;
-        if (!INetModule::ReceivePB(msg_id, msg, len, xMsg, nPlayerID)) {
-            return;
-        }
-        for (int i = 0; i < xMsg.list_size(); ++i) {
-            const rpc::Server &xData = xMsg.list(i);
-            // type
-            ConnectData s;
-            s.id = xData.id();
-            s.ip = xData.ip();
-            s.port = xData.port();
-            s.name = xData.name();
-            s.work_load = xData.cpu_count();
-            s.type = (ServerType)xData.type();
-            m_net_client_->AddServer(s);
-        }
-    }
-
-    // Report to upper server
-    void ServerReport() {
-        last_report_time_ = pm_->GetNowTime();
-        std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
-        if (xLogicClass) {
-            const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
-            for (int i = 0; i < strIdList.size(); ++i) {
-                const std::string &strId = strIdList[i];
-
-                const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
-                const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-                if (pm_->GetAppID() == serverID) {
-                    const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
-                    const int maxConnect = m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline());
-                    const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
-                    const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
-
-                    rpc::Server s;
-
-                    s.set_id(serverID);
-                    s.set_name(strId);
-                    s.set_cpu_count(0);
-                    s.set_ip(ip);
-                    s.set_port(nPort);
-                    s.set_max_online(maxConnect);
-                    s.set_state(rpc::ServerState::ServerNormal);
-                    s.set_type(serverType);
-
-                    m_net_client_->SendToAllServerByPB(ServerType::ST_WORLD, rpc::ServerRPC::REQ_REPORT, s, Guid());
-                }
-            }
-        }
-    }
-
     // Add upper server
     bool AddServer(ServerType type) {
         m_net_client_->AddEventCallBack(type, this, &INodeBaseModule::OnClientSocketEvent);
-        m_net_client_->AddReceiveCallBack(type, rpc::SERVER_ADD, this, &INodeBaseModule::OnDynamicServerAdd);
-        m_net_client_->AddReceiveCallBack(type, rpc::ACK_REGISTER, this, &INodeBaseModule::OnAckRegister);
+        m_net_client_->AddReceiveCallBack(type, rpc::ServerRPC::SERVER_ADD, this, &INodeBaseModule::OnDynamicServerAdd);
+        m_net_client_->AddReceiveCallBack(type, rpc::ServerRPC::ACK_REGISTER, this, &INodeBaseModule::OnAckRegister);
+        m_net_client_->AddReceiveCallBack(type, rpc::ServerRPC::ACK_REPORT, this, &INodeBaseModule::OnAckServerReport);
         m_net_client_->ExpandBufferSize();
 
-        std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
-        if (xLogicClass) {
-            const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
+        std::shared_ptr<IClass> config = m_class_->GetElement(excel::Server::ThisName());
+        if (config) {
+            const std::vector<std::string>& list = config->GetIDList();
+            const int cur_area = pm_->GetArea();
+            for (auto k : list) {
+                const int server_type = m_element_->GetPropertyInt32(k, excel::Server::Type());
+                const int area = m_element_->GetPropertyInt32(k, excel::Server::Area());
 
-            const int nCurAppID = pm_->GetAppID();
-            std::vector<std::string>::const_iterator itr = std::find_if(strIdList.begin(), strIdList.end(), [&](const std::string &strConfigId) {
-                return nCurAppID == m_element_->GetPropertyInt32(strConfigId, excel::Server::ServerID());
-            });
+                if (server_type == type) {
+                    // 增加同一区服的，如果是Master或Login，不用校验区服
+                    if (type == ServerType::ST_MASTER || type == ServerType::ST_LOGIN || area == cur_area) {
+                        int id = m_element_->GetPropertyInt32(k, excel::Server::ServerID());
+                        ServerInfo info;
 
-            if (strIdList.end() == itr) {
-                std::ostringstream strLog;
-                strLog << "Cannot find current server, AppID = " << nCurAppID;
-                m_log_->LogError(NULL_OBJECT, strLog, __FILE__, __LINE__);
-                SQUICK_ASSERT(-1, "Cannot find current server", __FILE__, __FUNCTION__);
-                exit(0);
-            }
+                        info.type = ServerInfo::Type::Parrent; // 标识该节点为父节点
+                        info.status = ServerInfo::Status::Connecting;
+                        info.info->set_port(m_element_->GetPropertyInt32(k, excel::Server::Port()));
+                        info.info->set_name(m_element_->GetPropertyString(k, excel::Server::ID()));
+                        info.info->set_ip(m_element_->GetPropertyString(k, excel::Server::IP()));
+                        info.info->set_id(id);
+                        servers_[id] = info;
 
-            const int nCurArea = m_element_->GetPropertyInt32(*itr, excel::Server::Area());
-            for (int i = 0; i < strIdList.size(); ++i) {
-                const std::string &strId = strIdList[i];
+                        ConnectData s;
+                        s.id = id;
+                        s.type = (ServerType)server_type;
+                        s.ip = info.info->ip();
+                        s.port = info.info->port();
+                        s.name = k;
 
-                const int server_type = m_element_->GetPropertyInt32(strId, excel::Server::Type());
-                const int server_id = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-                const int area = m_element_->GetPropertyInt32(strId, excel::Server::Area());
-                if (server_type == type && nCurArea == area) { // 同一区服注册
-                    const int port = m_element_->GetPropertyInt32(strId, excel::Server::Port());
-                    const std::string &name = m_element_->GetPropertyString(strId, excel::Server::ID());
-                    const std::string &ip = m_element_->GetPropertyString(strId, excel::Server::IP());
-                    ConnectData s;
-                    s.id = server_id;
-                    s.type = (ServerType)server_type;
-                    s.ip = ip;
-                    s.port = port;
-                    s.name = strId;
-                    m_net_client_->AddServer(s);
-                    return true;
+                        std::ostringstream log;
+                        log << "Node Connect to " << s.name  << " host " << s.ip << ":" << s.port << " cur_area: " << cur_area << " target area:" << area << std::endl;
+                        m_log_->LogDebug(NULL_OBJECT, log, __FUNCTION__, __LINE__);
+                        m_net_client_->AddServer(s);
+                        return true;
+                    }
                 }
             }
         }
         return false;
     }
 
-    virtual void OnClientDisconnect(socket_t sock) {};
-    virtual void OnClientConnected(socket_t sock) {};
+    void OnHeartBeat(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+        
+    }
+
+    void InvalidMessage(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) { printf("Net || umsg_id=%d\n", msg_id); }
+
+
+    void LogServerInfo(const std::string &strServerInfo) { m_log_->LogInfo(Guid(), strServerInfo, ""); }
+
+    // Add upper server
+    void OnDynamicServerAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+        Guid guid;
+        rpc::ServerList req;
+        if (!INetModule::ReceivePB(msg_id, msg, len, req, guid)) {
+            return;
+        }
+        for (int i = 0; i < req.list_size(); ++i) {
+            const rpc::Server &sd = req.list(i);
+            // type
+            ConnectData s;
+            s.id = sd.id();
+            s.ip = sd.ip();
+            s.port = sd.port();
+            s.name = sd.name();
+            s.work_load = sd.cpu_count();
+            s.type = (ServerType)sd.type();
+            m_net_client_->AddServer(s);
+        }
+    }
+    
+    
 
     // 发送消息给玩家
     virtual void SendPBToPlayer(const uint16_t msg_id, google::protobuf::Message &msg, const Guid &player) {}
@@ -243,16 +224,131 @@ class INodeBaseModule : public IModule {
             const rpc::Server &s = sl.list(i);
             int id = s.id();
             ServerInfo d;
-            d.fd_ = sock;
-            *d.info_ = s;
+            d.fd = sock;
+            *d.info = s;
             servers_[id] = d;
             m_log_->LogInfo(Guid(0, s.id()), s.name(), " Refreshed");
         }
     }
 
-    virtual void OnServerReport(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
+    // Report to upper server
+    void ReqServerReport() {
+        rpc::ReqReport req;
+        req.set_id(pm_->GetAppID());
+        // 更新自己的时间
+        auto iter = servers_.find(pm_->GetAppID());
+        iter->second.info->set_update_time(SquickGetTimeS());
+        
+        // 将下游服务和自己全部注册更新到上游
+        for (auto sv : servers_) {
+            if (sv.second.info->area() == pm_->GetArea()) {
+                if (sv.second.type == ServerInfo::Type::Child || sv.second.type != ServerInfo::Type::Parrent) {
+                    auto s = req.add_list();
+                    *s = *sv.second.info.get();
+                }
+            }
+        }
+        for (auto sv : servers_) {
+            //m_log_->LogWarning("ReqServerReport to " + to_string(sv.second.info->id()));
+            if (sv.second.type == ServerInfo::Type::Parrent && sv.second.status == ServerInfo::Status::Connected) {
+                if (sv.second.info->area() == pm_->GetArea() ||
+                    sv.second.info->type() == ServerType::ST_LOGIN ||
+                    sv.second.info->type() == ServerType::ST_MASTER ) {
+                    ostringstream s;
+                    s << "ReqServerReport to " << sv.second.info->id() << " push: " << req.list().size();
+                    m_log_->LogWarning(s);
+                    m_net_client_->SendToServerByPB(sv.second.info->id(), rpc::REQ_REPORT, req);
+                }
+            }
+        }
+    }
 
-    // 监听socket状态事件
+    virtual void OnReqServerReport(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+        
+        Guid guid;
+        rpc::ReqReport req;
+        if (!INetModule::ReceivePB(msg_id, msg, len, req, guid)) {
+            return;
+        }
+        rpc::AckReport ack;
+        do {
+            ack.set_code(0);
+            for (auto s : req.list()) {
+                if (s.id() == pm_->GetAppID() || s.id() == 0) { // 排除自己和比当前时间更新晚的和排除异常的
+                    continue;
+                }
+                auto iter = servers_.find(s.id());
+                if (iter != servers_.end()) {
+                   if (iter->second.info->update_time() >= s.update_time()) {
+                        continue;
+                   }
+                   *iter->second.info = s;
+                   continue;
+                }
+
+                // 新增
+                ServerInfo info;
+                info.fd = 0;
+                info.status = ServerInfo::Status::Unknowing;
+                info.type = ServerInfo::Type::Unknowing;
+                *info.info = s;
+                servers_[s.id()] = info;
+            }
+            
+            int area = servers_[req.id()].info->area();
+            // 更新下游状态, area 为 0 的有权拉取所有，其他的只能拉取自己区域的和0区域的
+            for (auto sv : servers_) {
+                if (sv.first == 0 || sv.second.info->id() == 0) {
+                    continue;
+                }
+                if (area == 0 || sv.second.info->area() == area || sv.second.info->area() == 0) {
+                    auto s = ack.add_list();
+                    *s = *sv.second.info.get();
+                }
+            }
+        } while (false);
+        
+        m_net_->SendMsgPB(rpc::ServerRPC::ACK_REPORT, ack, sock);
+    }
+
+    virtual void OnAckServerReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+        
+        Guid guid;
+        rpc::AckReport ack;
+        if (!m_net_->ReceivePB(msg_id, msg, len, ack, guid)) {
+            return;
+        }
+
+        ostringstream s;
+        s << "Ack ServerReport from: " << guid.ToString() << " pulled: " << ack.list().size();
+        m_log_->LogDebug(s);
+
+        if (ack.code() == 0) {
+            for (auto s : ack.list()) {
+                auto iter = servers_.find(s.id());
+                if (iter != servers_.end()) {
+                    if (iter->second.info->update_time() >= s.update_time()) {
+                        continue;
+                    }
+                    *iter->second.info = s;
+                    continue;
+                }
+                
+                // 新增
+                ServerInfo info;
+                info.fd = 0;
+                info.status = ServerInfo::Status::Unknowing;
+                info.type = ServerInfo::Type::Unknowing;
+                *info.info = s;
+                servers_[s.id()] = info;
+            }
+        }
+        else {
+            dout << "更新失败!";
+        }
+    }
+
+    // 作为服务的监听socket状态事件
     void OnServerSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
         if (eEvent & SQUICK_NET_EVENT_EOF) {
             m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
@@ -269,44 +365,152 @@ class INodeBaseModule : public IModule {
         }
     }
 
+    virtual void OnClientDisconnect(socket_t sock) {};
+    virtual void OnClientConnected(socket_t sock) {};
+
+    // 作为客户端连接socket事件
+    void OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet) {
+        if (eEvent & SQUICK_NET_EVENT_EOF) {
+            m_log_->LogWarning(Guid(0, sock), "SQUICK_NET_EVENT_EOF", __FUNCTION__, __LINE__);
+        }
+        else if (eEvent & SQUICK_NET_EVENT_ERROR) {
+            m_log_->LogError(Guid(0, sock), "SQUICK_NET_EVENT_ERROR", __FUNCTION__, __LINE__);
+        }
+        else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
+            m_log_->LogError(Guid(0, sock), "SQUICK_NET_EVENT_TIMEOUT", __FUNCTION__, __LINE__);
+        }
+        else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
+            m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
+            ReqRegister(pNet);
+        }
+    }
+
+
+    // 向连接的服务注册自己
+    void ReqRegister(INet* pNet) {
+        rpc::ReqRegisterServer req;
+        req.set_id(pm_->GetAppID());
+        std::shared_ptr<ConnectData> ts = m_net_client_->GetServerNetInfo(pNet);
+        if (ts == nullptr) {
+            ostringstream msg;
+            msg << " Cannot find server info ";
+            m_log_->LogWarning(msg, __FUNCTION__, __LINE__);
+            return;
+        }
+        req.set_key("no passowrd");
+        // 取出即将连接服务器的密钥
+        std::shared_ptr<IClass> config = m_class_->GetElement(excel::Server::ThisName());
+        if (config) {
+            const std::vector<std::string>& idx_list = config->GetIDList();
+
+            for (auto& idx : idx_list) {
+                int id = m_element_->GetPropertyInt32(idx, excel::Server::ServerID());
+                if (id == ts->id) {
+                    string key = m_element_->GetPropertyString(idx, excel::Server::Key());
+                    req.set_key(key);
+                    break;
+                }
+            }
+        }
+
+        // 将下游服务和自己全部注册到上游
+        for (auto sv : servers_) {
+            if ( (sv.second.type == ServerInfo::Type::Child || sv.second.type == ServerInfo::Type::Self)&&
+                sv.second.status == ServerInfo::Status::Connected &&
+                sv.second.info->area() == pm_->GetArea()) {
+                    auto s = req.add_list();
+                    *s = *sv.second.info.get();
+            }
+        }
+
+
+        m_net_client_->SendToServerByPB(ts->id, rpc::ServerRPC::REQ_REGISTER, req);
+        //dout << pm_->GetAppName() << " 请求连接 " << ts->name << "\n";
+        //m_log_->LogInfo(Guid(0, pm_->GetAppID()), s->name(), "Register");
+
+    }
+
     virtual void OnReqRegister(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
         Guid nPlayerID;
         rpc::ReqRegisterServer req;
         if (!m_net_->ReceivePB(msg_id, msg, len, req, nPlayerID)) {
             return;
         }
-        auto& cs = servers_[pm_->GetAppID()];
-        // 验证key
-        if (req.key() != cs.info_->key()) {
-            dout << " 校验key失败: req key" << req.key() << "  our key" << cs.info_->key() << "\n";
-            return;
-        }
-        dout << "检验key成功\n";
-        for (auto s : req.list()) {
-            const int area = m_element_->GetPropertyInt(s.name(), excel::Server::Area());
-            if (area == s.area()) { // 同一区服的就同步转发表
-                int id = s.id();
-                ServerInfo d;
-                d.fd_ = sock;
-                *d.info_ = s;
-                servers_[id] = d;
-                m_log_->LogInfo(Guid(0, s.id()), s.name(), " Registered");
+        rpc::AckRegisterServer ack;
+        do {
+            auto& cs = servers_[pm_->GetAppID()];
+            // 验证key
+            if (req.key() != cs.info->key()) {
+                dout << " 校验key失败: req key" << req.key() << "  our key" << cs.info->key() << "\n";
+                ack.set_code(1);
+                break;
             }
-            else {
-                m_log_->LogError(Guid(0, s.id()), s.name(), " Not Registered");
+
+            ack.set_code(0);
+            for (auto s : req.list()) {
+                if (s.id() == pm_->GetAppID()) { // 排除自己
+                    continue;
+                }
+                if (s.id() == req.id()) {
+
+                }
+                ServerInfo info;
+                info.fd = sock;
+                *info.info = s;
+                servers_[s.id()] = info;
             }
-        }
+
+            // 标识为子节点
+            auto iter = servers_.find(req.id());
+            if (iter != servers_.end()) {
+                iter->second.status = ServerInfo::Status::Connected;
+                iter->second.type = ServerInfo::Type::Child;
+            }
+            
+            int area = servers_[req.id()].info->area();
+            for (auto sv : servers_) {
+                if (area == 0 || sv.second.info->area() == area || sv.second.info->area() == 0) {
+                    auto s = ack.add_list();
+                    *s = *sv.second.info.get();
+                }
+            }
+        } while (false);
+        m_net_->SendMsgPB(rpc::ACK_REGISTER, ack, sock);
     }
-
-
+    
     // 注册响应
     virtual void OnAckRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-        Guid nPlayerID;
+        Guid guid;
         rpc::AckRegisterServer ack;
-        if (!m_net_->ReceivePB(msg_id, msg, len, ack, nPlayerID)) {
+        if (!m_net_->ReceivePB(msg_id, msg, len, ack, guid)) {
             return;
         }
-        
+
+        if (ack.code() == 0) {
+            for (auto s : ack.list()) {
+                if (s.id() == pm_->GetAppID()) { // 排除自己
+                    continue;
+                }
+                auto iter = servers_.find(s.id());
+                if (iter == servers_.end()) {
+                    ServerInfo info;
+                    info.fd = 0;
+                    info.status = ServerInfo::Status::Unknowing;
+                    info.type = ServerInfo::Type::Unknowing;
+                    *info.info = s;
+                    servers_[s.id()] = info;
+                }
+                else {
+                    if (iter->second.type == ServerInfo::Type::Parrent) {
+                        iter->second.status = ServerInfo::Status::Connected;
+                    }
+                    *iter->second.info = s;
+                }
+            }
+        }
+        else {
+            dout << "注册失败!";
+        }
     }
 
     virtual void OnServerUnRegistered(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
@@ -327,69 +531,23 @@ class INodeBaseModule : public IModule {
         }
     }
 
-    // 连接socket事件
-    void OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
-        if (eEvent & SQUICK_NET_EVENT_EOF) {
-        } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
-        } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
-        } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
-            m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
-            Register(pNet);
-        }
+    virtual void OnReqManager(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    
     }
-
-    // 向连接的服务注册自己
-    void Register(INet *pNet) {
-        rpc::ReqRegisterServer req;
-
-        std::shared_ptr<ConnectData> ts = m_net_client_->GetServerNetInfo(pNet);
-        if (ts == nullptr) {
-            ostringstream msg;
-            msg << " Cannot find server info ";
-            m_log_->LogWarning(msg, __FUNCTION__, __LINE__);
-            return;
-        }
-        req.set_key("no passowrd");
-        // 取出即将连接服务器的密钥
-        std::shared_ptr<IClass> config = m_class_->GetElement(excel::Server::ThisName());
-        if (config) {
-            const std::vector<std::string>& idx_list = config->GetIDList();
-
-            for (auto &idx : idx_list) {
-                int id = m_element_->GetPropertyInt32(idx, excel::Server::ServerID());
-                if (id == ts->id) {
-                    string key = m_element_->GetPropertyString(idx, excel::Server::Key());
-                    req.set_key(key);
-                    break;
-                }
-            }
-        }
-        
-        // 将下游服务和自己全部注册到上游
-        for (auto sv : servers_) {
-            auto s = req.add_list();
-            *s = *sv.second.info_.get();
-        }
-        
-        if (ts) {
-            m_net_client_->SendToServerByPB(ts->id, rpc::ServerRPC::REQ_REGISTER, req);
-            dout << pm_->GetAppName() <<  " 请求连接 " << ts->name << "\n";
-            //m_log_->LogInfo(Guid(0, pm_->GetAppID()), s->name(), "Register");
-        }
-    }
-
+    
     struct PlayerProxyInfo {
         int proxy_id;
         int proxy_sock;
     };
 
+
+    public:
     // 玩家表
     map<Guid, PlayerProxyInfo> players_;
 
     // 服务表
     map<int, ServerInfo> servers_;
-
-    public:
+    
     IElementModule *m_element_;
     IClassModule *m_class_;
     IKernelModule *m_kernel_;

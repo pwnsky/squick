@@ -1,6 +1,6 @@
-set(ProjectName "gameplay_node")
+set(ProjectName "game_logic")
 file(GLOB soruces *.cc)
 file(GLOB headers *.h)
 add_library(${ProjectName} SHARED ${soruces} ${headers})
 LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "node/gameplay" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/gameplay "node")
+SquickOut(${ProjectName} "node/game" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/game "logic")

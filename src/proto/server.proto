@@ -50,14 +50,28 @@ message Server {
     bytes key = 12; //密钥
     bytes public_ip = 13;
     int32 update_time = 14; // 更新时间
+    repeated int32 parent_list = 15; // 父节点
+    repeated int32 child_list = 16; // 子节点
 }
 
 message ReqRegisterServer {
-    bytes key = 1;
-    repeated Server list = 2;
+    int32 id = 1;
+    bytes key = 2;
+    repeated Server list = 3;
 }
 
 message AckRegisterServer {
+    int32 code = 1;
+    int32 depth = 2; // 节点深度
+    repeated Server list = 3;
+}
+
+message ReqReport {
+    int32 id = 1;
+    repeated Server list = 2;
+}
+
+message AckReport {
     int32 code = 1;
     repeated Server list = 2;
 }
@@ -84,3 +98,23 @@ message PlayerLeave { Ident guid = 1; }
 message ServerList { repeated Server list = 1; }
 
 message ServerHeartBeat { int32 count = 1; }
+
+
+// Game command
+message ReqServerCommand {
+    enum EGameCommandType {
+        EGCT_MODIY_PROPERTY = 0; //[property_name,value]
+        EGCT_MODIY_ITEM = 1;     //[item_id,count]
+        EGCT_CREATE_OBJECT = 2;  //[object_index,count]
+        EGCT_ADD_ROLE_EXP = 3;   //
+    }
+    Ident control_id = 1;
+    EGameCommandType command_id = 2;
+    bytes command_str_value = 3;
+    int64 command_value_int = 4;
+    double command_value_float = 5;
+    bytes command_value_str = 6;
+    Ident command_value_object = 7;
+    int32 row = 8;
+    int32 col = 9;
+}

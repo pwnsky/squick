@@ -6,7 +6,7 @@
 #include <squick/plugin/config/export.h>
 #include <squick/plugin/kernel/export.h>
 #include <squick/plugin/net/export.h>
-#include <node/gameplay_manager/node/i_node_module.h>
+#include <node/game_mgr/node/i_node_module.h>
 
 namespace gameplay_manager::play {
 

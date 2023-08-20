@@ -14,17 +14,16 @@ enum ServerType {
     ST_NONE = 0,             // NONE
     ST_MASTER = 1,           //
     ST_LOGIN = 2,            //
-    ST_PROXY = 3,            //
-    ST_GAME = 4,             //
-    ST_WORLD = 5,            //
-    ST_DB_PROXY = 6,         //
-    ST_GAMEPLAY_MANAGER = 7, //
-    ST_GAMEPLAY = 8,         //
-    ST_LOBBY = 9,
-    ST_MICRO = 10, // 微服务
-    ST_CDN = 11,   // CDN
-    ST_ROBOT = 12, // 机器人: 模拟玩家
-    ST_MAX = 13,   // 最大服务类型
+    ST_WORLD = 3,            //
+    ST_DB_PROXY = 4,         //
+    ST_PROXY = 5,            //
+    ST_LOBBY = 6,
+    ST_GAME_MGR = 7, //
+    ST_GAME = 8,     //
+    ST_MICRO = 9,  // 微服务
+    ST_CDN = 10,   // CDN
+    ST_ROBOT = 11, // 机器人: 模拟玩家
+    ST_MAX = 12,   // 最大服务类型
 };
 
 enum class DbType {

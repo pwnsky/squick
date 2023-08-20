@@ -23,8 +23,8 @@ bool HttpModule::AfterStart() {
     m_http_server_->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnLogin);
     m_http_server_->AddRequestHandler("/cdn", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnGetCDN);
 
-    m_http_server_->AddRequestHandler("/area/list", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnAreaList);
-    m_http_server_->AddRequestHandler("/area/enter", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnAreaList);
+    m_http_server_->AddRequestHandler("/world/list", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnWorldList);
+    m_http_server_->AddRequestHandler("/world/enter", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnWorldEnter);
     //m_http_server_->AddNetFilter("/area/list", this, &HttpModule::OnFilter);
     //m_http_server_->AddNetFilter("/area/enter", this, &HttpModule::OnFilter);
 
@@ -121,17 +121,17 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
     return m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
 }
 
-bool HttpModule::OnAreaList(std::shared_ptr<HttpRequest> req) {
+bool HttpModule::OnWorldList(std::shared_ptr<HttpRequest> req) {
     AckWorldList ack;
     auto &servers = m_node_->GetServers();
 
     for (auto &iter : servers) {
         auto &server = iter.second;
-        if (server.type() == ServerType::ST_WORLD) {
+        if (server.info->type() == ServerType::ST_WORLD) {
             AckWorldList::World world;
-            world.id = server.id();
-            world.name = server.name();
-            world.state = server.state();
+            world.id = server.info->id();
+            world.name = server.info->name();
+            world.state = server.info->state();
             world.count = 0;
             ack.world.push_back(world);
         }
@@ -144,7 +144,7 @@ bool HttpModule::OnAreaList(std::shared_ptr<HttpRequest> req) {
     return m_http_server_->ResponseMsg(req, rep_ss.str(), WebStatus::WEB_OK);
 }
 
-bool HttpModule::OnAreaEnter(std::shared_ptr<HttpRequest> request) {
+bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
 
     ReqWorldEnter req;
     AckWorldEnter ack;
@@ -160,23 +160,27 @@ bool HttpModule::OnAreaEnter(std::shared_ptr<HttpRequest> request) {
             dout << "客户端选择world_id错误: " << req.world_id << std::endl;
             ack.code = IResponse::QEUEST_ERROR;
             break;
-        } else if (witer->second.type() != ServerType::ST_WORLD) {
+        } else if (witer->second.info->type() != ServerType::ST_WORLD) {
             dout << "客户端选择world_id错误: " << req.world_id << std::endl;
             ack.code = IResponse::QEUEST_ERROR;
             break;
         }
 
+        // 获取区服id
+        
         // 选择一个workload最小的proxy给客户端
 
         // find a server
         int min_proxy_id = -1;
-        int min_workload = 0;
+        int min_workload = 99999;
         for (auto &iter : servers) {
             auto server = iter.second;
-            if (server.type() == ServerType::ST_PROXY)
-                if (min_workload > server.workload()) {
+            if (server.info->type() == ServerType::ST_PROXY && server.info->area() == servers[req.world_id].info->area()) {
+                dout << "服务: " << server.info->id() << "  area: " << server.info->area() << "workload" << server.info->workload() << "\n";
+                if (min_workload > server.info->workload()) {
                     min_proxy_id = iter.first;
                 }
+            }
         }
 
         if (min_proxy_id == -1) {
@@ -188,8 +192,8 @@ bool HttpModule::OnAreaEnter(std::shared_ptr<HttpRequest> request) {
         auto server = servers[min_proxy_id];
         Guid key = m_kernel_->CreateGUID();
         ack.code = IResponse::SUCCESS;
-        ack.ip = server.ip();
-        ack.port = server.port();
+        ack.ip = server.info->ip();
+        ack.port = server.info->port();
         ack.world_id = req.world_id;
         ack.guid = user;
         ack.key = key.ToString();
@@ -197,8 +201,8 @@ bool HttpModule::OnAreaEnter(std::shared_ptr<HttpRequest> request) {
 
         // 缓存到redis
         m_redis_->HashSet(user, "enter_time", std::to_string(SquickGetTimeS()));
-        m_redis_->HashSet(user, "proxy_ip", server.ip());
-        m_redis_->HashSet(user, "proxy_port", std::to_string(server.port()));
+        m_redis_->HashSet(user, "proxy_ip", server.info->ip());
+        m_redis_->HashSet(user, "proxy_port", std::to_string(server.info->port()));
         m_redis_->HashSet(user, "world_id", std::to_string(req.world_id));
         m_redis_->HashSet(user, "proxy_key", key.ToString());
         m_redis_->HashSet(user, "proxy_limit_time", to_string(86400));
