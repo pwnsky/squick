@@ -179,8 +179,8 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
         return false;
     }
 
-    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
-    *pPlayerID = StructToProtobuf(Guid());
+    rpc::Ident *guid = xMsg.mutable_player_id();
+    *guid = StructToProtobuf(Guid(pm_->GetAppID(), 0));
 
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {

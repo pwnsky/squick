@@ -23,8 +23,8 @@ bool HttpModule::AfterStart() {
     m_http_server_->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnLogin);
     m_http_server_->AddRequestHandler("/cdn", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnGetCDN);
 
-    m_http_server_->AddRequestHandler("/area/list", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnAreaList);
-    m_http_server_->AddRequestHandler("/area/enter", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnAreaList);
+    m_http_server_->AddRequestHandler("/world/list", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnWorldList);
+    m_http_server_->AddRequestHandler("/world/enter", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnWorldEnter);
     //m_http_server_->AddNetFilter("/area/list", this, &HttpModule::OnFilter);
     //m_http_server_->AddNetFilter("/area/enter", this, &HttpModule::OnFilter);
 
@@ -121,7 +121,7 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
     return m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
 }
 
-bool HttpModule::OnAreaList(std::shared_ptr<HttpRequest> req) {
+bool HttpModule::OnWorldList(std::shared_ptr<HttpRequest> req) {
     AckWorldList ack;
     auto &servers = m_node_->GetServers();
 
@@ -144,7 +144,7 @@ bool HttpModule::OnAreaList(std::shared_ptr<HttpRequest> req) {
     return m_http_server_->ResponseMsg(req, rep_ss.str(), WebStatus::WEB_OK);
 }
 
-bool HttpModule::OnAreaEnter(std::shared_ptr<HttpRequest> request) {
+bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
 
     ReqWorldEnter req;
     AckWorldEnter ack;
@@ -172,10 +172,11 @@ bool HttpModule::OnAreaEnter(std::shared_ptr<HttpRequest> request) {
 
         // find a server
         int min_proxy_id = -1;
-        int min_workload = 0;
+        int min_workload = 99999;
         for (auto &iter : servers) {
             auto server = iter.second;
             if (server.info->type() == ServerType::ST_PROXY && server.info->area() == servers[req.world_id].info->area()) {
+                dout << "服务: " << server.info->id() << "  area: " << server.info->area() << "workload" << server.info->workload() << "\n";
                 if (min_workload > server.info->workload()) {
                     min_proxy_id = iter.first;
                 }

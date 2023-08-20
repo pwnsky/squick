@@ -55,16 +55,19 @@ message Server {
 }
 
 message ReqRegisterServer {
-    bytes key = 1;
-    repeated Server list = 2;
+    int32 id = 1;
+    bytes key = 2;
+    repeated Server list = 3;
 }
 
 message AckRegisterServer {
     int32 code = 1;
-    repeated Server list = 2;
+    int32 depth = 2; // 节点深度
+    repeated Server list = 3;
 }
 
 message ReqReport {
+    int32 id = 1;
     repeated Server list = 2;
 }
 

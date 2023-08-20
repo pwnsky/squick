@@ -134,27 +134,27 @@ struct IMsgHead {
 class rpcHead : public IMsgHead {
   public:
     rpcHead() {
-        munSize = 0;
-        mumsg_id = 0;
+        size_ = 0;
+        msg_id_ = 0;
+        hashcode_ = 0;
     }
 
     // Message Head[ MsgID(2) | MsgSize(4) ]
     virtual int EnCode(char *data) {
         uint32_t nOffset = 0;
 
-        uint16_t msg_id = SQUICK_HTONS(mumsg_id);
-        memcpy(data + nOffset, (void *)(&msg_id), sizeof(mumsg_id));
-        nOffset += sizeof(mumsg_id);
+        uint16_t net_msg_id = SQUICK_HTONS(msg_id_);
+        memcpy(data + nOffset, (void *)(&net_msg_id), sizeof(net_msg_id));
+        nOffset += sizeof(net_msg_id);
 
-        uint32_t nPackSize = munSize + SQUICK_HEAD_LENGTH;
-        uint32_t nSize = SQUICK_HTONL(nPackSize);
-        memcpy(data + nOffset, (void *)(&nSize), sizeof(munSize));
-        nOffset += sizeof(munSize);
+        uint32_t nPackSize = size_ + SQUICK_HEAD_LENGTH;
+        uint32_t net_size = SQUICK_HTONL(nPackSize);
+        memcpy(data + nOffset, (void *)(&net_size), sizeof(net_size));
+        nOffset += sizeof(net_size);
 
         if (nOffset != SQUICK_HEAD_LENGTH) {
             assert(0);
         }
-
         return nOffset;
     }
 
@@ -162,15 +162,15 @@ class rpcHead : public IMsgHead {
     virtual int DeCode(const char *data) {
         uint32_t nOffset = 0;
 
-        uint16_t msg_id = 0;
-        memcpy(&msg_id, data + nOffset, sizeof(mumsg_id));
-        mumsg_id = SQUICK_NTOHS(msg_id);
-        nOffset += sizeof(mumsg_id);
+        uint16_t net_msg_id = 0;
+        memcpy(&net_msg_id, data + nOffset, sizeof(net_msg_id));
+        msg_id_ = SQUICK_NTOHS(net_msg_id);
+        nOffset += sizeof(msg_id_);
 
         uint32_t nPackSize = 0;
-        memcpy(&nPackSize, data + nOffset, sizeof(munSize));
-        munSize = SQUICK_NTOHL(nPackSize) - SQUICK_HEAD_LENGTH;
-        nOffset += sizeof(munSize);
+        memcpy(&nPackSize, data + nOffset, sizeof(nPackSize));
+        size_ = SQUICK_NTOHL(nPackSize) - SQUICK_HEAD_LENGTH;
+        nOffset += sizeof(nPackSize);
 
         if (nOffset != SQUICK_HEAD_LENGTH) {
             assert(0);
@@ -179,17 +179,18 @@ class rpcHead : public IMsgHead {
         return nOffset;
     }
 
-    virtual uint16_t GetMsgID() const { return mumsg_id; }
+    virtual uint16_t GetMsgID() const { return msg_id_; }
 
-    virtual void SetMsgID(uint16_t msg_id) { mumsg_id = msg_id; }
+    virtual void SetMsgID(uint16_t msg_id) { msg_id_ = msg_id; }
 
-    virtual uint32_t GetBodyLength() const { return munSize; }
+    virtual uint32_t GetBodyLength() const { return size_; }
 
-    virtual void SetBodyLength(uint32_t length) { munSize = length; }
+    virtual void SetBodyLength(uint32_t length) { size_ = length; }
 
   protected:
-    uint32_t munSize;
-    uint16_t mumsg_id;
+    uint16_t msg_id_;
+    uint32_t size_;
+    uint16_t hashcode_;
 };
 
 class INet;
