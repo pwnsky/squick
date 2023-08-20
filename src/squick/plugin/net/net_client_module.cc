@@ -455,7 +455,7 @@ std::shared_ptr<ConnectData> NetClientModule::GetServerNetInfo(const INet *pNet)
 void NetClientModule::StartCallBacks(std::shared_ptr<ConnectData> pServerData) {
     std::ostringstream stream;
     stream << "AddServer Type: " << pServerData->type << " Server ID: " << pServerData->id << " State: " << pServerData->state
-           << " IP: " << pServerData->ip << " Port: " << pServerData->port;
+           << " IP: " << pServerData->ip << " Port: " << pServerData->port << "\n";
 
     m_log_->LogInfo(stream.str());
 

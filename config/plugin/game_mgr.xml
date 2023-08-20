@@ -5,8 +5,8 @@
 		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />
 		
-		<Plugin Name="node/gameplay_manager/node" />
-		<Plugin Name="node/gameplay_manager/logic" />
-		<Plugin Name="node/gameplay_manager/play" />
+		<Plugin Name="node/game_mgr/node" />
+		<Plugin Name="node/game_mgr/logic" />
+		<Plugin Name="node/game_mgr/play" />
     </GameplayManager>
 </XML>

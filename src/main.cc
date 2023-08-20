@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=1000")));
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=1001")));
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=gameplay_manager id=2000")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game_mgr id=2000")));
 
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=500")));
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=501")));

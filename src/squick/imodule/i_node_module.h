@@ -11,8 +11,6 @@
 #include <struct/struct.h>
 
 class INodeBaseModule : public IModule {
-
-    //////////////////////////// PUBLIC ////////////////////////////
   public:
       virtual bool Awake() final { return true; }
     virtual bool Start() override final {
@@ -71,7 +69,7 @@ class INodeBaseModule : public IModule {
                     s.info->set_port(m_element_->GetPropertyInt32(strId, excel::Server::Port()));
                     s.info->set_max_online(m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline()));
                     s.info->set_cpu_count(m_element_->GetPropertyInt32(strId, excel::Server::CpuCount()));
-                    s.info->set_name(m_element_->GetPropertyString(strId, excel::Server::Name()));
+                    s.info->set_name(m_element_->GetPropertyString(strId, excel::Server::ID()));
                     s.info->set_ip(m_element_->GetPropertyString(strId, excel::Server::IP()));
                     s.info->set_public_ip(m_element_->GetPropertyString(strId, excel::Server::PublicIP()));
                     s.info->set_area(m_element_->GetPropertyInt32(strId, excel::Server::Area()));
@@ -108,7 +106,6 @@ class INodeBaseModule : public IModule {
         if (config) {
             const std::vector<std::string>& list = config->GetIDList();
             const int cur_area = pm_->GetArea();
-            dout << "AREA: " << cur_area << "\n";
             for (auto k : list) {
                 const int server_type = m_element_->GetPropertyInt32(k, excel::Server::Type());
                 const int area = m_element_->GetPropertyInt32(k, excel::Server::Area());
@@ -122,8 +119,6 @@ class INodeBaseModule : public IModule {
                     info.info->set_name(m_element_->GetPropertyString(k, excel::Server::ID()));
                     info.info->set_ip(m_element_->GetPropertyString(k, excel::Server::IP()));
                     info.info->set_id(id);
-
-                    dout << "连接 " << id << " ip: " << info.info->ip() << ":" << info.info->port() << " 中\n";
                     servers_[id] = info;
 
                     ConnectData s;
@@ -142,7 +137,7 @@ class INodeBaseModule : public IModule {
 
 
     void OnHeartBeat(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-        dout << "收到心跳包\n";
+        
     }
 
     void InvalidMessage(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) { printf("Net || umsg_id=%d\n", msg_id); }
@@ -341,16 +336,10 @@ class INodeBaseModule : public IModule {
     }
 
     virtual void OnClientDisconnect(socket_t sock) {};
-    virtual void OnClientConnected(socket_t sock) {
-        dout << "连接成功，返回心跳\n";
-        rpc::AckHeartBeat ack;
-        ack.set_index(1234);
-        m_net_->SendMsgPB(rpc::ServerRPC::SERVER_HEARTBEAT, ack, sock);
-    };
+    virtual void OnClientConnected(socket_t sock) {};
 
     // 作为客户端连接socket事件
     void OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet) {
-        dout << "我草你妈\n";
         if (eEvent & SQUICK_NET_EVENT_EOF) {
             m_log_->LogWarning(Guid(0, sock), "SQUICK_NET_EVENT_EOF", __FUNCTION__, __LINE__);
         }
@@ -369,7 +358,6 @@ class INodeBaseModule : public IModule {
 
     // 向连接的服务注册自己
     void ReqRegister(INet* pNet) {
-        dout << "注册中\n";
         rpc::ReqRegisterServer req;
 
         std::shared_ptr<ConnectData> ts = m_net_client_->GetServerNetInfo(pNet);
@@ -405,7 +393,7 @@ class INodeBaseModule : public IModule {
 
         if (ts) {
             m_net_client_->SendToServerByPB(ts->id, rpc::ServerRPC::REQ_REGISTER, req);
-            dout << pm_->GetAppName() << " 请求连接 " << ts->name << "\n";
+            //dout << pm_->GetAppName() << " 请求连接 " << ts->name << "\n";
             //m_log_->LogInfo(Guid(0, pm_->GetAppID()), s->name(), "Register");
         }
     }
@@ -500,9 +488,10 @@ class INodeBaseModule : public IModule {
         }
     }
 
+    virtual void OnReqManager(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     
-
-
+    }
+    
     struct PlayerProxyInfo {
         int proxy_id;
         int proxy_sock;

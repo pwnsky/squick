@@ -95,3 +95,23 @@ message PlayerLeave { Ident guid = 1; }
 message ServerList { repeated Server list = 1; }
 
 message ServerHeartBeat { int32 count = 1; }
+
+
+// Game command
+message ReqServerCommand {
+    enum EGameCommandType {
+        EGCT_MODIY_PROPERTY = 0; //[property_name,value]
+        EGCT_MODIY_ITEM = 1;     //[item_id,count]
+        EGCT_CREATE_OBJECT = 2;  //[object_index,count]
+        EGCT_ADD_ROLE_EXP = 3;   //
+    }
+    Ident control_id = 1;
+    EGameCommandType command_id = 2;
+    bytes command_str_value = 3;
+    int64 command_value_int = 4;
+    double command_value_float = 5;
+    bytes command_value_str = 6;
+    Ident command_value_object = 7;
+    int32 row = 8;
+    int32 col = 9;
+}

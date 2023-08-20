@@ -1,8 +1,0 @@
-// 游戏管理RPC
-syntax = "proto3";
-package rpc;
-
-// 45000 ~ 46000
-enum GameManagerRPC {
-    GAME_MANAGER_RPC_NONE = 0;
-}

@@ -1,0 +1,6 @@
+set(ProjectName "game_mgr_play")
+file(GLOB soruces *.cc)
+file(GLOB headers *.h)
+add_library(${ProjectName} SHARED ${soruces} ${headers})
+LinkSquick(${ProjectName})
+SquickOut(${ProjectName} "node/game_mgr" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/game_mgr "play")

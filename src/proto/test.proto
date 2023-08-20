@@ -1,7 +1,6 @@
 // 各服务器之间的通信RPC
 syntax = "proto3";
 package rpc;
-import "base.proto";
 
 // Servers RPC 50000 ~ 50200
 enum TestRPC {

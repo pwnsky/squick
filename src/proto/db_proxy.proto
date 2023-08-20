@@ -2,6 +2,205 @@
 syntax = "proto3";
 package rpc;
 import "base.proto";
+
+message PropertyInt {
+    bytes property_name = 1;
+    int64 data = 2;
+    int64 reason = 3;
+}
+
+message PropertyFloat {
+    bytes property_name = 1;
+    float data = 2;
+    int64 reason = 3;
+}
+
+message PropertyString {
+    bytes property_name = 1;
+    bytes data = 2;
+    int64 reason = 3;
+}
+
+message PropertyObject {
+    bytes property_name = 1;
+    Ident data = 2;
+    int64 reason = 3;
+}
+
+message PropertyVector2 {
+    bytes property_name = 1;
+    Vector2 data = 2;
+    int64 reason = 3;
+}
+
+message PropertyVector3 {
+    bytes property_name = 1;
+    Vector3 data = 2;
+    int64 reason = 3;
+}
+
+///////////////////////////////////////////////
+
+message RecordInt {
+    int32 row = 1;
+    int32 col = 2;
+    int64 data = 3;
+}
+
+message RecordFloat {
+    int32 row = 1;
+    int32 col = 2;
+    float data = 3;
+}
+
+message RecordString {
+    int32 row = 1;
+    int32 col = 2;
+    bytes data = 3;
+}
+
+message RecordObject {
+    int32 row = 1;
+    int32 col = 2;
+    Ident data = 3;
+}
+
+message RecordVector2 {
+    int32 row = 1;
+    int32 col = 2;
+    Vector2 data = 3;
+}
+
+message RecordVector3 {
+    int32 row = 1;
+    int32 col = 2;
+    Vector3 data = 3;
+}
+
+message RecordAddRowStruct {
+    int32 row = 1;
+    repeated RecordInt record_int_list = 2;
+    repeated RecordFloat record_float_list = 3;
+    repeated RecordString record_string_list = 4;
+    repeated RecordObject record_object_list = 5;
+    repeated RecordVector2 record_vector2_list = 6;
+    repeated RecordVector3 record_vector3_list = 7;
+}
+message ObjectRecordBase {
+    bytes record_name = 1;
+    repeated RecordAddRowStruct row_struct = 2;
+}
+
+/////////////////////////////////////////////////
+
+message ObjectPropertyInt {
+    Ident player_id = 1;
+    repeated PropertyInt property_list = 2;
+}
+
+message ObjectPropertyFloat {
+    Ident player_id = 1;
+    repeated PropertyFloat property_list = 2;
+}
+
+message ObjectPropertyString {
+    Ident player_id = 1;
+    repeated PropertyString property_list = 2;
+}
+
+message ObjectPropertyObject {
+    Ident player_id = 1;
+    repeated PropertyObject property_list = 2;
+}
+
+message ObjectPropertyVector2 {
+    Ident player_id = 1;
+    repeated PropertyVector2 property_list = 2;
+}
+
+message ObjectPropertyVector3 {
+    Ident player_id = 1;
+    repeated PropertyVector3 property_list = 2;
+}
+
+message ObjectRecordInt {
+    Ident player_id = 1;
+    bytes record_name = 2;
+    repeated RecordInt property_list = 3;
+}
+
+message ObjectRecordFloat {
+    Ident player_id = 1;
+    bytes record_name = 2;
+    repeated RecordFloat property_list = 3;
+}
+
+message ObjectRecordString {
+    Ident player_id = 1;
+    bytes record_name = 2;
+    repeated RecordString property_list = 3;
+}
+
+message ObjectRecordObject {
+    Ident player_id = 1;
+    bytes record_name = 2;
+    repeated RecordObject property_list = 3;
+}
+
+message ObjectRecordVector2 {
+    Ident player_id = 1;
+    bytes record_name = 2;
+    repeated RecordVector2 property_list = 3;
+}
+
+message ObjectRecordVector3 {
+    Ident player_id = 1;
+    bytes record_name = 2;
+    repeated RecordVector3 property_list = 3;
+}
+
+message ObjectRecordSwap {
+    Ident player_id = 1;
+    bytes origin_record_name = 2;
+    bytes target_record_name = 3;
+    int32 row_origin = 4;
+    int32 row_target = 5;
+}
+
+message ObjectRecordAddRow {
+    Ident player_id = 1;
+    bytes record_name = 2;
+    repeated RecordAddRowStruct row_data = 3;
+}
+
+message ObjectRecordRemove {
+    Ident player_id = 1;
+    bytes record_name = 2;
+    repeated int32 remove_row = 3;
+}
+
+///////////////////////////////////////////////////////////////////
+// send all properties as a pack when client log in or log off
+message ObjectPropertyList {
+    Ident player_id = 1;
+    repeated PropertyInt property_int_list = 2;
+    repeated PropertyFloat property_float_list = 3;
+    repeated PropertyString property_string_list = 4;
+    repeated PropertyObject property_object_list = 5;
+    repeated PropertyVector2 property_vector2_list = 6;
+    repeated PropertyVector3 property_vector3_list = 7;
+}
+
+message MultiObjectPropertyList { repeated ObjectPropertyList multi_player_property = 1; }
+
+message ObjectRecordList {
+    Ident player_id = 1;
+    repeated ObjectRecordBase record_list = 2;
+}
+
+message MultiObjectRecordList { repeated ObjectRecordList multi_player_record = 1; }
+
+
 // 30000 ~ 35000
 enum DbProxyRPC {
     DB_RPC_NONE = 0;
@@ -17,10 +216,48 @@ enum DbProxyRPC {
     ACK_PLAYER_DATA_SAVE = 30007; //
 }
 
+enum DbType {
+    DB_TYPE_NONE = 0;
+    MYSQL = 1;
+    MONGO = 2;
+    REDIS = 3;
+}
+
 message DbPlayerData {
     Ident object = 1;
     Ident guid = 2;
     bytes account = 3;
     ObjectPropertyList property = 4;
     ObjectRecordList record = 5;
+}
+
+enum DbCMD {
+    DB_CMD_NONE = 0;
+    DB_QUERY = 1;
+    DB_INSERT = 2;
+    DB_UPDATE = 3;
+    DB_DELETE = 4;
+}
+
+message ReqDbQuery {
+    int32 query_id = 1;
+    DbCMD cmd = 2;
+    bytes db = 3;
+    bytes args = 4;
+}
+
+
+message Col {
+}
+
+message Row {
+    repeated Col d = 1;
+}
+
+
+message AckDbQuery {
+    int32 query_id = 1;
+    DbCMD cmd = 2;
+    bytes db = 3;
+    map<int32, bytes> result = 4;
 }

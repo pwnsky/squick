@@ -6,6 +6,5 @@
 		<Plugin Name="core/log" />
 		
 		<Plugin Name="node/game/node" />
-		<Plugin Name="node/game/room" />
 	</Game>
 </XML>

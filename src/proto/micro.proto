@@ -1,7 +1,6 @@
 // 微服务器RPC，包含了聊天、语音等
 syntax = "proto3";
 package rpc;
-import "base.proto";
 
 // GameLobbyRPC RPC 15000 ~ 16000
 enum MicroRPC {
