@@ -324,7 +324,7 @@ void NetClientModule::SendToAllServerByPB(const ServerType eType, const uint16_t
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
-        if (pNetModule && eType == pServer->type && pServer->type == ConnectDataState::NORMAL) {
+        if (pNetModule && eType == pServer->type && pServer->state == ConnectDataState::NORMAL) {
             if (!pNetModule->SendMsgPB(msg_id, xData, 0, id)) {
                 std::ostringstream stream;
                 stream << " SendMsgPB failed " << pServer->id;
@@ -489,7 +489,7 @@ void NetClientModule::StartCallBacks(std::shared_ptr<ConnectData> pServerData) {
 void NetClientModule::ProcessUpdate() {
     std::shared_ptr<ConnectData> pServerData = mxServerMap.First();
     while (pServerData) {
-        switch (pServerData->type) {
+        switch (pServerData->state) {
         case ConnectDataState::DISCONNECT: {
             if (NULL != pServerData->net_module) {
                 pServerData->net_module = nullptr;
