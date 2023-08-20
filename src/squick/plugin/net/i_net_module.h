@@ -48,16 +48,30 @@
 
 struct ServerInfo {
     ServerInfo() {
-        fd_ = 0;
-        info_ = std::shared_ptr<rpc::Server>(new rpc::Server());
+        fd = 0;
+        info = std::shared_ptr<rpc::Server>(new rpc::Server());
     }
     ~ServerInfo() {
-        fd_ = 0;
-        info_ = NULL;
+        fd = 0;
+        info = NULL;
     }
+    enum class Type {
+        Unknowing,
+        Child,
+        Parrent,
+        Self,
+    };
 
-    socket_t fd_;
-    std::shared_ptr<rpc::Server> info_;
+    enum class Status { 
+        Unknowing,
+        Connecting,
+        Connected,
+        Disconnected,
+    };
+    Type type = ServerInfo::Type::Child;
+    Status status = ServerInfo::Status::Unknowing;
+    socket_t fd;
+    std::shared_ptr<rpc::Server> info;
 };
 
 class INetModule : public IModule {

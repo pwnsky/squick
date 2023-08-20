@@ -50,6 +50,8 @@ message Server {
     bytes key = 12; //密钥
     bytes public_ip = 13;
     int32 update_time = 14; // 更新时间
+    repeated int32 parent_list = 15; // 父节点
+    repeated int32 child_list = 16; // 子节点
 }
 
 message ReqRegisterServer {
@@ -58,6 +60,15 @@ message ReqRegisterServer {
 }
 
 message AckRegisterServer {
+    int32 code = 1;
+    repeated Server list = 2;
+}
+
+message ReqReport {
+    repeated Server list = 2;
+}
+
+message AckReport {
     int32 code = 1;
     repeated Server list = 2;
 }

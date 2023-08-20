@@ -9,17 +9,10 @@ namespace master::node {
 bool NodeModule::Destory() { return true; }
 
 bool NodeModule::AfterStart() {
-    m_net_->AddReceiveCallBack(rpc::ServerRPC::SERVER_HEARTBEAT, this, &NodeModule::OnHeartBeat);
-    m_net_->AddReceiveCallBack(this, &NodeModule::InvalidMessage);
+    
     Listen();
     return true;
 }
-
-
-void NodeModule::OnHeartBeat(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
-
-void NodeModule::InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) { printf("Net || umsg_id=%d\n", msg_id); }
-
 
 // 获取服务状态
 std::string NodeModule::GetServersStatus() {
@@ -30,20 +23,23 @@ std::string NodeModule::GetServersStatus() {
     statusRoot["code"] = 0;
     statusRoot["msg"] = "";
     statusRoot["time"] = pm_->GetNowTime();
-    /*
-    for (auto &iter : servers_) {
-        auto &sd = iter.second.pData;
+    for (auto &s : servers_) {
+        auto& sd = s.second.info;
         json s;
+        s["area"] = sd->area();
+        s["type"] = sd->type();
         s["id"] = sd->id();
         s["name"] = sd->name().c_str();
         s["ip"] = sd->ip().c_str();
         s["port"] = sd->port();
         s["cpu_count"] = sd->cpu_count();
         s["status"] = sd->state();
-        statusRoot[sd->id()] = s;
+        s["update_time"] = sd->update_time();
+        statusRoot["node_list"][to_string(sd->id())] = s;
     }
-    */
     return statusRoot.dump();
 }
+
+map<int, ServerInfo>& NodeModule::GetServers() { return servers_; }
 
 } // namespace master::server

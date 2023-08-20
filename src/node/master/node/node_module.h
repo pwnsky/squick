@@ -14,10 +14,7 @@ class NodeModule : public INodeModule {
     virtual void LogReceive(const char *str) {}
     virtual void LogSend(const char *str) {}
     virtual std::string GetServersStatus();
-
-  protected:
-    void OnHeartBeat(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    map<int, ServerInfo>& GetServers();
 };
 
 } // namespace master::server

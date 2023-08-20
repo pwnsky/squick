@@ -5,6 +5,7 @@ class NodeModule : public INodeModule {
   public:
       NodeModule(IPluginManager *p) {
         pm_ = p;
+        is_update_ = true;
     }
 
     virtual bool Destory();

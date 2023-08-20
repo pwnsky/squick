@@ -6,7 +6,7 @@ namespace login::node {
 class NodeModule : public INodeModule {
 
   public:
-      NodeModule(IPluginManager *p) { pm_ = p; }
+      NodeModule(IPluginManager* p) { pm_ = p; is_update_ = true; }
 
     virtual bool Destory();
     virtual bool BeforeDestory();
@@ -16,9 +16,7 @@ class NodeModule : public INodeModule {
     virtual void OnClientDisconnect(const socket_t sock) override;
     virtual void OnClientConnected(const socket_t sock) override;
     void InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    map<int, rpc::Server>& GetServers() override;
-  private:
-    map<int, rpc::Server> servers_;
+    map<int, ServerInfo>& GetServers() override;
 };
 
 } // namespace login::server

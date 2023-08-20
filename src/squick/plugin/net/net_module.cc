@@ -28,6 +28,7 @@ bool NetModule::Start() {
 bool NetModule::AfterStart() { return true; }
 
 void NetModule::Startialization(const char *ip, const unsigned short nPort) {
+    dout << "沃日: 开始连接: " << ip << ": " << nPort << std::endl;
     m_pNet = new Net(this, &NetModule::OnReceiveNetPack, &NetModule::OnSocketNetEvent);
     m_pNet->ExpandBufferSize(mnBufferSize);
     m_pNet->Startialization(ip, nPort);

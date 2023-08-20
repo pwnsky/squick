@@ -127,11 +127,11 @@ bool HttpModule::OnAreaList(std::shared_ptr<HttpRequest> req) {
 
     for (auto &iter : servers) {
         auto &server = iter.second;
-        if (server.type() == ServerType::ST_WORLD) {
+        if (server.info->type() == ServerType::ST_WORLD) {
             AckWorldList::World world;
-            world.id = server.id();
-            world.name = server.name();
-            world.state = server.state();
+            world.id = server.info->id();
+            world.name = server.info->name();
+            world.state = server.info->state();
             world.count = 0;
             ack.world.push_back(world);
         }
@@ -160,12 +160,14 @@ bool HttpModule::OnAreaEnter(std::shared_ptr<HttpRequest> request) {
             dout << "客户端选择world_id错误: " << req.world_id << std::endl;
             ack.code = IResponse::QEUEST_ERROR;
             break;
-        } else if (witer->second.type() != ServerType::ST_WORLD) {
+        } else if (witer->second.info->type() != ServerType::ST_WORLD) {
             dout << "客户端选择world_id错误: " << req.world_id << std::endl;
             ack.code = IResponse::QEUEST_ERROR;
             break;
         }
 
+        // 获取区服id
+        
         // 选择一个workload最小的proxy给客户端
 
         // find a server
@@ -173,10 +175,11 @@ bool HttpModule::OnAreaEnter(std::shared_ptr<HttpRequest> request) {
         int min_workload = 0;
         for (auto &iter : servers) {
             auto server = iter.second;
-            if (server.type() == ServerType::ST_PROXY)
-                if (min_workload > server.workload()) {
+            if (server.info->type() == ServerType::ST_PROXY && server.info->area() == servers[req.world_id].info->area()) {
+                if (min_workload > server.info->workload()) {
                     min_proxy_id = iter.first;
                 }
+            }
         }
 
         if (min_proxy_id == -1) {
@@ -188,8 +191,8 @@ bool HttpModule::OnAreaEnter(std::shared_ptr<HttpRequest> request) {
         auto server = servers[min_proxy_id];
         Guid key = m_kernel_->CreateGUID();
         ack.code = IResponse::SUCCESS;
-        ack.ip = server.ip();
-        ack.port = server.port();
+        ack.ip = server.info->ip();
+        ack.port = server.info->port();
         ack.world_id = req.world_id;
         ack.guid = user;
         ack.key = key.ToString();
@@ -197,8 +200,8 @@ bool HttpModule::OnAreaEnter(std::shared_ptr<HttpRequest> request) {
 
         // 缓存到redis
         m_redis_->HashSet(user, "enter_time", std::to_string(SquickGetTimeS()));
-        m_redis_->HashSet(user, "proxy_ip", server.ip());
-        m_redis_->HashSet(user, "proxy_port", std::to_string(server.port()));
+        m_redis_->HashSet(user, "proxy_ip", server.info->ip());
+        m_redis_->HashSet(user, "proxy_port", std::to_string(server.info->port()));
         m_redis_->HashSet(user, "world_id", std::to_string(req.world_id));
         m_redis_->HashSet(user, "proxy_key", key.ToString());
         m_redis_->HashSet(user, "proxy_limit_time", to_string(86400));

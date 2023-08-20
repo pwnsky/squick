@@ -624,34 +624,34 @@ int NetClientModule::OnDisConnected(const socket_t fd, INet *pNet) {
 void NetClientModule::ProcessAddNetConnect() {
     std::list<ConnectData>::iterator it = mxTempNetList.begin();
     for (; it != mxTempNetList.end(); ++it) {
-        const ConnectData &xInfo = *it;
-        std::shared_ptr<ConnectData> xServerData = mxServerMap.GetElement(xInfo.id);
-        if (nullptr == xServerData) {
-            xServerData = std::shared_ptr<ConnectData>(new ConnectData());
+        const ConnectData &cd = *it;
+        std::shared_ptr<ConnectData> sd = mxServerMap.GetElement(cd.id);
+        if (nullptr == sd) {
+            sd = std::shared_ptr<ConnectData>(new ConnectData());
 
-            xServerData->id = xInfo.id;
-            xServerData->type = xInfo.type;
-            xServerData->ip = xInfo.ip;
-            xServerData->name = xInfo.name;
-            xServerData->state = ConnectDataState::CONNECTING;
-            xServerData->port = xInfo.port;
-            xServerData->last_time = GetPluginManager()->GetNowTime();
+            sd->id = cd.id;
+            sd->type = cd.type;
+            sd->ip = cd.ip;
+            sd->name = cd.name;
+            sd->state = ConnectDataState::CONNECTING;
+            sd->port = cd.port;
+            sd->last_time = GetPluginManager()->GetNowTime();
 
-            xServerData->net_module = std::shared_ptr<INetModule>(new NetModule(pm_));
+            sd->net_module = std::shared_ptr<INetModule>(new NetModule(pm_));
 
-            xServerData->net_module->Awake();
-            xServerData->net_module->Start();
-            xServerData->net_module->AfterStart();
-            xServerData->net_module->ReadyUpdate();
+            sd->net_module->Awake();
+            sd->net_module->Start();
+            sd->net_module->AfterStart();
+            sd->net_module->ReadyUpdate();
 
-            xServerData->net_module->Startialization(xServerData->ip.c_str(), xServerData->port);
-            xServerData->net_module->ExpandBufferSize((unsigned int)mnBufferSize);
+            sd->net_module->Startialization(sd->ip.c_str(), sd->port);
+            sd->net_module->ExpandBufferSize((unsigned int)mnBufferSize);
 
-            StartCallBacks(xServerData);
+            StartCallBacks(sd);
 
-            mxServerMap.AddElement(xInfo.id, xServerData);
+            mxServerMap.AddElement(cd.id, sd);
         } else {
-            xServerData->work_load = xInfo.work_load;
+            sd->work_load = cd.work_load;
         }
     }
 
