@@ -33,6 +33,9 @@ bool HttpServerModule::OnReceiveNetPack(std::shared_ptr<HttpRequest> req) {
     if (req == nullptr) {
         return false;
     }
+    if (middleware_) {
+        middleware_->operator()(req);
+    }
 
     Performance performance;
     auto it = mMsgCBMap.GetElement(req->type);
@@ -103,11 +106,22 @@ bool HttpServerModule::AddFilterCB(const std::string &strCommand, const HTTP_FIL
     if (it == mMsgFliterMap.end()) {
         mMsgFliterMap.insert(std::map<std::string, HTTP_FILTER_FUNCTOR_PTR>::value_type(strCommand, cb));
     }
-
     return true;
+}
+
+bool HttpServerModule::AddMiddlewareCB(const HTTP_FILTER_FUNCTOR_PTR& cb) {
+    if (middleware_ == nullptr) {
+        middleware_ = cb;
+        return true;
+    }
+    return false;
 }
 
 bool HttpServerModule::ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason) {
     dout << "\nHttp Response str: " << msg << "\n";
     return m_pHttpServer->ResponseMsg(req, msg, code, strReason);
+}
+
+bool HttpServerModule::SetHeader(std::shared_ptr<HttpRequest> req, const std::string& key, const std::string& value) {
+    return m_pHttpServer->SetHeader(req, key, value);
 }

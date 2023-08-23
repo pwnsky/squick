@@ -94,6 +94,7 @@ class IHttpServer {
     virtual int StartServer(const unsigned short nPort) = 0;
 
     virtual bool ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason = "OK") = 0;
+    virtual bool SetHeader(std::shared_ptr<HttpRequest> req, const std::string& key, const std::string& value) = 0;
 
     virtual std::shared_ptr<HttpRequest> GetHttpRequest(const int64_t index) = 0;
 };

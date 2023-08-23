@@ -271,4 +271,13 @@ bool HttpServer::ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string
     return true;
 }
 
+bool HttpServer::SetHeader(std::shared_ptr<HttpRequest> req, const std::string& key, const std::string& value) {
+    if (req == nullptr) {
+        return false;
+    }
+    evhttp_request* pHttpReq = (evhttp_request*)req->req;
+    evhttp_add_header(evhttp_request_get_output_headers(pHttpReq), key.c_str(), value.c_str());
+    return true;
+}
+
 std::shared_ptr<HttpRequest> HttpServer::GetHttpRequest(const int64_t index) { return mxHttpRequestMap.GetElement(index); }

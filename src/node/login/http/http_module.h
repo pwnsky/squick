@@ -34,15 +34,16 @@ class HttpModule : public IHttpModule {
     bool OnLogin(std::shared_ptr<HttpRequest> request);
     bool OnWorldList(std::shared_ptr<HttpRequest> request);
     bool OnWorldEnter(std::shared_ptr<HttpRequest> request);
-    WebStatus OnFilter(std::shared_ptr<HttpRequest> request);
-    std::string GetUserID(std::shared_ptr<HttpRequest> request);
-    std::string GetUserJWT(std::shared_ptr<HttpRequest> request);
+    WebStatus Middleware(std::shared_ptr<HttpRequest> request);
+    std::string GetCookie(std::shared_ptr<HttpRequest> request);
     bool CheckUserJWT(const std::string &user, const std::string &jwt);
+    
 
     bool OnGetCDN(std::shared_ptr<HttpRequest> request);
     void PrintRequest(std::shared_ptr<HttpRequest> req);
 
   private:
+    string MakeToken(string sguid);
     INetClientModule *m_net_client_;
     IKernelModule *m_kernel_;
     IHttpServerModule *m_http_server_;
