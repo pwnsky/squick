@@ -13,7 +13,7 @@
 #include <node/login/mysql/i_mysql_module.h>
 #include <node/login/redis/i_redis_module.h>
 #include <node/login/node/i_node_module.h>
-
+#include <map>
 #include <unordered_map>
 namespace login::http {
 class HttpModule : public IHttpModule {
@@ -35,8 +35,8 @@ class HttpModule : public IHttpModule {
     bool OnWorldList(std::shared_ptr<HttpRequest> request);
     bool OnWorldEnter(std::shared_ptr<HttpRequest> request);
     WebStatus Middleware(std::shared_ptr<HttpRequest> request);
-    std::string GetCookie(std::shared_ptr<HttpRequest> request);
-    bool CheckUserJWT(const std::string &user, const std::string &jwt);
+    nlohmann::json GetUser(std::shared_ptr<HttpRequest> request);
+    bool CheckAuth(const std::string &guid, const std::string &token);
     
 
     bool OnGetCDN(std::shared_ptr<HttpRequest> request);

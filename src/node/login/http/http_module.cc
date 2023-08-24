@@ -20,7 +20,6 @@ bool HttpModule::Start() {
 bool HttpModule::Destory() { return true; }
 
 bool HttpModule::AfterStart() {
-    // dout << "\n加载登录http模块\n";
     m_http_server_->AddMiddleware(this, &HttpModule::Middleware);
 
     m_http_server_->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnLogin);
@@ -122,7 +121,7 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
         j["token"] = token;
         j["login_time"] = login_time;
 
-        string cookie = "Seesion=" + base64_encode(j.dump()) + ";Path=/;Max-Age=1209600";
+        string cookie = "Session=" + base64_encode(j.dump()) + ";Path=/;Max-Age=1209600";
         m_http_server_->SetHeader(request, "Set-Cookie", cookie.c_str());
 
     } while (false);
@@ -132,6 +131,55 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
     
     return m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
 }
+
+
+WebStatus HttpModule::Middleware(std::shared_ptr<HttpRequest> req) {
+
+    // Check auth:
+    // Cookie: User= "User=" + base64( AES( json_str{'guid' : "xxxx", "token" : "xxxx"} ) );
+    m_http_server_->SetHeader(req, "Server", SERVER_NAME);
+    dout << "request path: " << req->path << std::endl;
+    // 不用授权可访问的白名单
+    vector<string> white_list = {
+        "/login",
+        "/cdn",
+    };
+
+    for (auto& w : white_list) {
+        if (w == req->path) {
+            return WebStatus::WEB_OK;
+        }
+    }
+    string guid;
+    string token;
+    auto info = GetUser(req);
+    try {
+        guid = info["guid"];
+        token = info["token"];
+    }
+    catch (exception e) {
+        return WebStatus::WEB_AUTH;
+    }
+
+    if (CheckAuth(guid, token)) {
+        return WebStatus::WEB_OK;
+    }
+    return WebStatus::WEB_AUTH;
+}
+
+bool HttpModule::CheckAuth(const std::string& guid, const std::string& user_token) {
+    string token;
+    if (guid.empty() || user_token.empty()) {
+        return false;
+    }
+    if (m_redis_->HashGet(guid, "token", token)) {
+        if (!token.empty() && token == user_token) {
+            return true;
+        }
+    }
+    return false;
+}
+
 
 string HttpModule::MakeToken(string sguid) {
     string sum = "UserID: " + sguid + std::to_string(SquickGetTimeMS()) + SQUICK_HASH_SALT;
@@ -166,8 +214,8 @@ bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
 
     ReqWorldEnter req;
     AckWorldEnter ack;
-    std::string user = "none";
-    dout << "request: " << request->body.c_str() << std::endl;
+    auto info = GetUser(request);
+    std::string user = info["guid"];
     ajson::load_from_buff(req, request->body.c_str());
     do {
 
@@ -194,7 +242,7 @@ bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
         for (auto &iter : servers) {
             auto server = iter.second;
             if (server.info->type() == ServerType::ST_PROXY && server.info->area() == servers[req.world_id].info->area()) {
-                dout << "服务: " << server.info->id() << "  area: " << server.info->area() << "workload" << server.info->workload() << "\n";
+                dout << "服务: " << server.info->id() << "  area: " << server.info->area() << "workload " << server.info->workload() << "\n";
                 if (min_workload > server.info->workload()) {
                     min_proxy_id = iter.first;
                 }
@@ -229,52 +277,39 @@ bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
 
     ajson::string_stream rep_ss;
     ajson::save_to(rep_ss, ack);
-    dout << "response: " << rep_ss.str() << std::endl;
     return m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
 }
 
-std::string HttpModule::GetCookie(std::shared_ptr<HttpRequest> req) {
+nlohmann::json HttpModule::GetUser(std::shared_ptr<HttpRequest> req) {
+    json ret;
     auto it = req->headers.find("Cookie");
-    if (it != req->headers.end()) {
-        return it->second;
-    }
-    return "";
-}
-
-bool HttpModule::CheckUserJWT(const std::string &user, const std::string &jwt) {
-    string token;
-    if (m_redis_->HashGet(user, "token", token)) {
-        if (!token.empty() && token == jwt) {
-            return true;
+    do {
+        if (it != req->headers.end()) {
+            string& cookie = it->second;
+            int start = cookie.find("Session=");
+            if (start < 0) break;
+            string value = cookie.substr(start);
+            int end = value.find(";");
+            if (end < 0) {
+                end = value.size();
+                break;
+            }
+            string encode_info = value.substr(start + 8, end - start - 8);
+            string info = base64_decode(encode_info);
+            try {
+                ret = json::parse(info);
+                break;
+            }
+            catch (exception e) {
+                break;
+            }
+            break;
         }
-    }
-    return false;
+    } while (false);
+    return ret;
 }
 
-WebStatus HttpModule::Middleware(std::shared_ptr<HttpRequest> req) {
 
-    // Check auth:
-    // Cookie: User= "User=" + base64( AES( json_str{'guid' : "xxxx", "token" : "xxxx"} ) );
-    std::string cookie = GetCookie(req);
-
-    dout << " request : cookie: " << cookie << std::endl;
-    //try {
-    //    base64_decode(cookie)
-    //    json j = json::parse(cookie);
-    //}
-    //catch (exception e) {
-    //
-    //}
-    
-    m_http_server_->SetHeader(req, "Server", SERVER_NAME);
-
-    //bool bRet = CheckUserJWT(user, jwt);
-    //if (bRet) {
-        return WebStatus::WEB_OK;
-    //}
-    //dout << "Not auth: " << user << "\n";
-    //return WebStatus::WEB_AUTH;
-}
 
 void HttpModule::PrintRequest(std::shared_ptr<HttpRequest> req) {
     std::cout << "OnFilter: " << std::endl;

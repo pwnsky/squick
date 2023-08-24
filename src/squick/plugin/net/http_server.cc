@@ -86,7 +86,6 @@ struct evhttp *httpserv = evhttp_start(addr,port);
 }
 
 void HttpServer::listener_cb(struct evhttp_request *req, void *arg) {
-    dout << "HttpServer::listener_cb" << endl;
     if (req == NULL) {
         std::cout << "req ==NULL"
                   << " " << __FUNCTION__ << " " << __LINE__;
@@ -165,8 +164,6 @@ void HttpServer::listener_cb(struct evhttp_request *req, void *arg) {
     }
 
     evhttp_uri_free(decoded);
-
-    dout << "Got a GET request:" << uri << std::endl;
     if (evhttp_request_get_command(req) == evhttp_cmd_type::EVHTTP_REQ_GET) {
         // OnGetProcess(request, );
 
