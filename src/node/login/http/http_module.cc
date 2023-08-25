@@ -132,6 +132,38 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
     return m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
 }
 
+nlohmann::json HttpModule::GetUser(std::shared_ptr<HttpRequest> req) {
+    json ret;
+    auto it = req->headers.find("Cookie");
+    do {
+        if (it != req->headers.end()) {
+            string& cookie = it->second;
+            
+            int start = cookie.find("Session=");
+            
+            if (start < 0) break;
+            string value = cookie.substr(start);
+            int end = value.find(";");
+            if (end < 0) {
+                end = value.size();
+            }
+            string encode_info = value.substr(start + 8, end - start - 8);
+            string info = base64_decode(encode_info);
+            
+            try {
+                ret = json::parse(info);
+                break;
+            }
+            catch (exception e) {
+                break;
+            }
+            break;
+        }
+    } while (false);
+    return ret;
+}
+
+
 
 WebStatus HttpModule::Middleware(std::shared_ptr<HttpRequest> req) {
 
@@ -160,7 +192,6 @@ WebStatus HttpModule::Middleware(std::shared_ptr<HttpRequest> req) {
     catch (exception e) {
         return WebStatus::WEB_AUTH;
     }
-
     if (CheckAuth(guid, token)) {
         return WebStatus::WEB_OK;
     }
@@ -280,34 +311,6 @@ bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
     return m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
 }
 
-nlohmann::json HttpModule::GetUser(std::shared_ptr<HttpRequest> req) {
-    json ret;
-    auto it = req->headers.find("Cookie");
-    do {
-        if (it != req->headers.end()) {
-            string& cookie = it->second;
-            int start = cookie.find("Session=");
-            if (start < 0) break;
-            string value = cookie.substr(start);
-            int end = value.find(";");
-            if (end < 0) {
-                end = value.size();
-                break;
-            }
-            string encode_info = value.substr(start + 8, end - start - 8);
-            string info = base64_decode(encode_info);
-            try {
-                ret = json::parse(info);
-                break;
-            }
-            catch (exception e) {
-                break;
-            }
-            break;
-        }
-    } while (false);
-    return ret;
-}
 
 
 
