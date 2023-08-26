@@ -29,6 +29,7 @@ bool NodeModule::AfterStart() {
     
     //AddServer(ServerType::ST_LOBBY);
     //AddServer(ServerType::ST_GAME_MGR);
+    AddServer(ServerType::ST_LOGIN);
     AddServer(ServerType::ST_WORLD);
     //AddServer(ServerType::ST_MICRO);
     return true;
@@ -53,16 +54,18 @@ void NodeModule::OnAckEnter(const socket_t sock, const int msg_id, const char* m
 }
 
 bool NodeModule::OnReqProxyConnectVerify(INT64 session, const std::string& guid, const std::string& key) {
-    // dout << "请求验证\n";
+    dout << "向登录服务器请求验证\n";
     rpc::ReqConnectProxyVerify req;
     req.set_session(session);
     req.set_key(key);
     req.set_guid(guid);
-    m_net_client_->SendToServerByPB(2, rpc::LoginRPC::REQ_PROXY_CONNECT_VERIFY, req); // 暂时写login_id 为死的ID
+    //m_net_client_->SendToServerByPB(2, , req); // 暂时写login_id 为死的ID
+    m_net_client_->SendToAllServerByPB(ServerType::ST_LOGIN, rpc::LoginRPC::REQ_PROXY_CONNECT_VERIFY, req, Guid(0, 0));
     return true;
 }
 
 void NodeModule::OnAckProxyConnectVerify(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    dout << "登录服务器响应\n";
     m_logic_->OnAckConnectVerify(msg_id, msg, len);
     return;
 }

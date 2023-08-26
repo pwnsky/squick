@@ -163,12 +163,10 @@ nlohmann::json HttpModule::GetUser(std::shared_ptr<HttpRequest> req) {
     return ret;
 }
 
-
-
 WebStatus HttpModule::Middleware(std::shared_ptr<HttpRequest> req) {
 
     // Check auth:
-    // Cookie: User= "User=" + base64( AES( json_str{'guid' : "xxxx", "token" : "xxxx"} ) );
+    // Cookie: Session= base64( AES( json_str{'guid' : "xxxx", "token" : "xxxx"} ) );
     m_http_server_->SetHeader(req, "Server", SERVER_NAME);
     dout << "request path: " << req->path << std::endl;
     // 不用授权可访问的白名单

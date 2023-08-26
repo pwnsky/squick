@@ -129,7 +129,6 @@ void Net::conn_readcb(struct bufferevent *bev, void *user_data) {
 
     struct evbuffer *input = bufferevent_get_input(bev);
     if (!input) {
-        // dout << "ddd\n";
         return;
     }
 
@@ -288,15 +287,14 @@ bool Net::Dismantle(NetObject *pObject) {
     bool bNeedDismantle = false;
 
     int len = pObject->GetBuffLen();
-    if (len > IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
+    if (len >= IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
         rpcHead xHead;
         int nMsgBodyLength = DeCode(pObject->GetBuff(), len, xHead); // 解析头部
-        if (nMsgBodyLength > 0 && xHead.GetMsgID() > 0) {
+        if (nMsgBodyLength >= 0 && xHead.GetMsgID() > 0) {
             if (mRecvCB) {
 #if PLATFORM != PLATFORM_WIN
                 try {
 #endif
-
                     mRecvCB(pObject->GetRealFD(), xHead.GetMsgID(), pObject->GetBuff() + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH, nMsgBodyLength);
 
 #if PLATFORM != PLATFORM_WIN
@@ -306,15 +304,12 @@ bool Net::Dismantle(NetObject *pObject) {
                     Exception::StackTrace(xHead.GetMsgID());
                 }
 #endif
-
                 mnReceiveMsgTotal++;
             }
 
             pObject->RemoveBuff(0, nMsgBodyLength + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH);
             bNeedDismantle = true;
-        } else if (0 == nMsgBodyLength) {
-            bNeedDismantle = false;
-        } else {
+        }else {
             // pObject->IncreaseError();
             bNeedDismantle = false;
         }

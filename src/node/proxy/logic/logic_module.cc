@@ -23,7 +23,6 @@ bool LogicModule::AfterStart() {
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_HEARTBEAT, this, &LogicModule::OnHeartbeat);
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnect);
     m_net_->AddReceiveCallBack(rpc::LobbyBaseRPC::REQ_ENTER, this, &LogicModule::OnReqEnterGameServer);
-
     m_net_->AddReceiveCallBack(rpc::TestRPC::REQ_TEST_PROXY, this, &LogicModule::OnReqTestProxy);
 
     return true;
@@ -139,6 +138,7 @@ int LogicModule::EnterGameSuccessEvent(const Guid account_guid, const Guid objec
 }
 
 void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    dout << " forward...\n";
     NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
     if (!pNetObject || pNetObject->GetConnectKeyState() <= 0 || pNetObject->GetGameID() <= 0) {
         // state error
@@ -191,14 +191,14 @@ void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const ch
 }
 
 void LogicModule::OnHeartbeat(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-
+    dout << " OnHeatbeat\n";
     std::string msgData(msg, len);
     NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
     if (pNetObject) {
         auto iter = clients_.find(pNetObject->GetClientID().ToString());
         if (iter != clients_.end()) {
             iter->second.last_ping = SquickGetTimeMS();
-            // dout << "heatbeat: " << iter->second.last_ping << std::endl;
+            dout << "heatbeat: " << iter->second.last_ping << std::endl;
         }
     }
 
@@ -403,7 +403,7 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
         client.world_id = data.world_id();
 
         // 增加schecdule
-        m_schedule_->AddSchedule(s.guid, "HeatbeatCheck", this, &LogicModule::OnHeatbeatCheck, 5.0f, 99999); // 每5秒check一次
+        m_schedule_->AddSchedule(s.guid, "HeatbeatCheck", this, &LogicModule::OnHeatbeatCheck, 10.0f, 99999); // 每10秒check一次
 
     } else {
         dout << "验证失败 code: " << data.code() << "\n";
