@@ -29,9 +29,9 @@ class LogicModule : public ILogicModule {
 
     void OnReqConnect(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     virtual void OnAckConnectVerify(const int msg_id, const char *msg, const uint32_t len) override;
-    void OnReqEnterGameServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    bool SelectGameServer(int sock);
-    int EnterGameSuccessEvent(const Guid xClientID, const Guid xPlayerID);
+    void OnReqEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    bool TryEnter(int sock);
+    int EnterSuccessEvent(const Guid xClientID, const Guid xPlayerID);
 
     
 
