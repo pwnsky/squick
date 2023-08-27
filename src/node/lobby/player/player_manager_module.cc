@@ -12,7 +12,6 @@ bool PlayerManagerModule::Start() {
     m_net_client_ = pm_->FindModule<INetClientModule>();
     m_schedule_ = pm_->FindModule<IScheduleModule>();
     m_data_tail_ = pm_->FindModule<IDataTailModule>();
-
     m_event_ = pm_->FindModule<IEventModule>();
 
     return true;
@@ -216,7 +215,7 @@ bool PlayerManagerModule::Update() {
 // 发送数据给客户端，用于给player.cc使用
 void PlayerManagerModule::OnSendToClient(const uint16_t msg_id, google::protobuf::Message &xMsg, const Guid &client_id) {
     dout << "发送数据给: " << client_id.ToString() << " msgID: " << msg_id << std::endl;
-    m_node_->SendPBToPlayer(msg_id, xMsg, client_id);
+    //m_node_->SendPBToPlayer(msg_id, xMsg, client_id);
 }
 
 /*

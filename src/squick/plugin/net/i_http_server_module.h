@@ -28,12 +28,20 @@ class IHttpServerModule : public IModule {
         return AddFilterCB(strPath, functorPtr);
     }
 
+    template <typename BaseType>
+    bool AddMiddleware(BaseType* pBase, WebStatus(BaseType::* handleFilter)(std::shared_ptr<HttpRequest> req)) {
+        HTTP_FILTER_FUNCTOR functor = std::bind(handleFilter, pBase, std::placeholders::_1);
+        HTTP_FILTER_FUNCTOR_PTR functorPtr(new HTTP_FILTER_FUNCTOR(functor));
+
+        return AddMiddlewareCB(functorPtr);
+    }
+
   public:
     virtual int StartServer(const unsigned short nPort) = 0;
-
     virtual bool ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string &msg, WebStatus code = WebStatus::WEB_OK,
                              const std::string &reason = "OK") = 0;
-
+    virtual bool SetHeader(std::shared_ptr<HttpRequest> req, const std::string& key, const std::string& value) = 0;
+    virtual bool AddMiddlewareCB(const HTTP_FILTER_FUNCTOR_PTR& cb) = 0;
   private:
     virtual bool AddMsgCB(const std::string &strPath, const HttpType eRequestType, const HTTP_RECEIVE_FUNCTOR_PTR &cb) = 0;
     virtual bool AddFilterCB(const std::string &strPath, const HTTP_FILTER_FUNCTOR_PTR &cb) = 0;

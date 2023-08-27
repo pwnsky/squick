@@ -11,7 +11,6 @@
 #include "excel.h"
 #include "game.pb.h"
 #include "game_mgr.pb.h"
-#include "gamebase.pb.h"
 #include "lobby_base.pb.h"
 #include "lobby_player.pb.h"
 #include "login.pb.h"

@@ -1,7 +1,0 @@
-// Author: i0gan
-// Email : l418894113@gmail.com
-// Date  : 2023-07-28
-// Description: Proxy node module
-#pragma once
-#include "i_node_module.h"
-

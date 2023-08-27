@@ -70,6 +70,7 @@ class HttpServer : public IHttpServer {
     virtual int StartServer(const unsigned short nPort);
 
     virtual bool ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason = "OK");
+    virtual bool SetHeader(std::shared_ptr<HttpRequest> req, const std::string& key, const std::string& value);
 
     virtual std::shared_ptr<HttpRequest> GetHttpRequest(const int64_t index);
 

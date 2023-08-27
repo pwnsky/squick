@@ -4,6 +4,56 @@ syntax = "proto3";
 package rpc;
 import "base.proto";
 
+// 20000 ~ 22000
+enum GameBaseRPC {
+    GAME_BASE_RPC_NONE = 0;
+
+    REQ_GAME_START = 20015; // 预留测试用
+    ACK_GAME_START = 20016; //
+    REQ_GAME_JOIN = 20017;  // 请求加入游戏,在游戏中断线重连时也请求它
+    ACK_GAME_JOIN = 20018;
+    ACK_GAME_OVER = 20019;    // 游戏结束
+    REQ_GAME_RESTART = 20020; // 重新开始游戏
+    ACK_GAME_RESTART = 20021;
+
+    // 场景对象
+    ACK_PLAYER_ENTER = 20100; // 对象在服务端上创建成功
+    ACK_PLAYER_LEAVE = 20102; //
+}
+
+// 进入游戏
+message ReqGameJoin {}
+
+message AckGameJoin { int32 code = 1; }
+
+message AckGameStart { int32 code = 1; }
+
+// 重新开局
+message ReqGameRestart {}
+
+message AckGameRestart { int32 code = 1; }
+
+message PlayerBaseInfo {
+    Ident guid = 1;
+    int32 index = 2;
+    bytes account = 3;
+    bytes name = 4;
+    int32 mask = 5;
+    int32 glove = 6;
+}
+
+message AckPlayerEnterList // 同场景同房间 玩家进入时列表
+{
+    repeated PlayerBaseInfo list = 1;
+}
+
+message AckPlayerLeaveList // 同场景同房间 离开时列表
+{
+    repeated Ident list = 1;
+}
+
+
+
 // 18000 ~ 20000 : game.proto
 enum GameRPC {
     GAME_RPC_NONE = 0;

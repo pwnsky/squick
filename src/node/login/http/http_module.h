@@ -13,7 +13,7 @@
 #include <node/login/mysql/i_mysql_module.h>
 #include <node/login/redis/i_redis_module.h>
 #include <node/login/node/i_node_module.h>
-
+#include <map>
 #include <unordered_map>
 namespace login::http {
 class HttpModule : public IHttpModule {
@@ -34,15 +34,16 @@ class HttpModule : public IHttpModule {
     bool OnLogin(std::shared_ptr<HttpRequest> request);
     bool OnWorldList(std::shared_ptr<HttpRequest> request);
     bool OnWorldEnter(std::shared_ptr<HttpRequest> request);
-    WebStatus OnFilter(std::shared_ptr<HttpRequest> request);
-    std::string GetUserID(std::shared_ptr<HttpRequest> request);
-    std::string GetUserJWT(std::shared_ptr<HttpRequest> request);
-    bool CheckUserJWT(const std::string &user, const std::string &jwt);
+    WebStatus Middleware(std::shared_ptr<HttpRequest> request);
+    nlohmann::json GetUser(std::shared_ptr<HttpRequest> request);
+    bool CheckAuth(const std::string &guid, const std::string &token);
+    
 
     bool OnGetCDN(std::shared_ptr<HttpRequest> request);
     void PrintRequest(std::shared_ptr<HttpRequest> req);
 
   private:
+    string MakeToken(string sguid);
     INetClientModule *m_net_client_;
     IKernelModule *m_kernel_;
     IHttpServerModule *m_http_server_;

@@ -88,8 +88,6 @@ bool NetModule::Update() {
         return false;
     }
 
-    KeepAlive();
-
     m_pNet->Update();
 
     return true;
@@ -309,8 +307,8 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const std::string &strData, con
 INet *NetModule::GetNet() { return m_pNet; }
 
 void NetModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    // m_log_->LogInfo(pm_->GetAppName() + std::to_string(pm_->GetAppID()) + " NetModule::OnReceiveNetPack " +
-    // std::to_string(msg_id), __FILE__, __LINE__);
+    //m_log_->LogInfo(pm_->GetAppName() + std::to_string(pm_->GetAppID()) + " NetModule::OnReceiveNetPack " +
+    //std::to_string(msg_id), __FILE__, __LINE__);
 
     Performance performance;
 
@@ -358,25 +356,4 @@ void NetModule::OnSocketNetEvent(const socket_t sock, const SQUICK_NET_EVENT eEv
         NET_EVENT_FUNCTOR *pFunc = pFunPtr.get();
         pFunc->operator()(sock, eEvent, pNet);
     }
-}
-
-void NetModule::KeepAlive() {
-    if (!m_pNet) {
-        return;
-    }
-
-    if (m_pNet->IsServer()) {
-        return;
-    }
-
-    if (nLastTime + 10 > GetPluginManager()->GetNowTime()) {
-        return;
-    }
-
-    nLastTime = GetPluginManager()->GetNowTime();
-
-    rpc::ServerHeartBeat xMsg;
-    xMsg.set_count(0);
-
-    SendMsgPB(rpc::ServerRPC::SERVER_HEARTBEAT, xMsg, 0);
 }

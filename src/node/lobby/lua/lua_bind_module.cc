@@ -46,7 +46,7 @@ void LuaBindModule::SendToPlayer(string &player_guid_str, uint16_t msg_id, std::
     std::cout << "this: " << this << "  " << m_node_ << " LuaBindModule::SendToPlayer " << msg_id << " msg: " << data << std::endl;
     // std::cout << " \n length: " << data.length() << std::endl;
     Guid guid = Guid(player_guid_str);
-    m_node_->SendToPlayer(msg_id, data, guid);
+    //m_node_->SendToPlayer(msg_id, data, guid);
 }
 
 void LuaBindModule::Test(const uint16_t msg_id, string &msg, int a) { std::cout << "LuaBindModule::Test\n" << msg_id << "   " << msg << a << std::endl; }

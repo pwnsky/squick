@@ -12,7 +12,7 @@
 
 class INodeBaseModule : public IModule {
   public:
-      virtual bool Awake() final { return true; }
+    virtual bool Awake() final { return true; }
     virtual bool Start() override final {
         m_net_ = pm_->FindModule<INetModule>();
         m_kernel_ = pm_->FindModule<IKernelModule>();
@@ -36,22 +36,12 @@ class INodeBaseModule : public IModule {
         return true;
     }
 
-    bool Listen() {
+    virtual bool Listen() {
         m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REGISTER, this, &INodeBaseModule::OnReqRegister);
         m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_UNREGISTER, this, &INodeBaseModule::OnServerUnRegistered);
         m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REPORT, this, &INodeBaseModule::OnReqServerReport);
-
-
-        // Player action
-        m_net_->AddReceiveCallBack(rpc::ServerRPC::PLAYER_ENETER, this, &INodeBaseModule::OnPlayerEnter);
-        m_net_->AddReceiveCallBack(rpc::ServerRPC::PLAYER_LEAVE, this, &INodeBaseModule::OnPlayerLeave);
-        m_net_->AddReceiveCallBack(rpc::ServerRPC::PLAYER_OFFLINE, this, &INodeBaseModule::OnPlayerOffline);
-
-
         m_net_->AddReceiveCallBack(rpc::ServerRPC::SERVER_HEARTBEAT, this, &INodeBaseModule::OnHeartBeat);
         m_net_->AddReceiveCallBack(this, &INodeBaseModule::InvalidMessage);
-        
-
         m_net_->AddEventCallBack(this, &INodeBaseModule::OnServerSocketEvent);
         m_net_->ExpandBufferSize();
 
@@ -180,28 +170,7 @@ class INodeBaseModule : public IModule {
     
     
 
-    // 发送消息给玩家
-    virtual void SendPBToPlayer(const uint16_t msg_id, google::protobuf::Message &msg, const Guid &player) {}
 
-    virtual void SendToPlayer(const uint16_t msg_id, const std::string &msg, const Guid &self) {}
-
-    // 根据服务id发消息给其他服务器，该方式通过代理服务器进行中转
-    virtual void SendPBToServer(const uint16_t msg_id, google::protobuf::Message &msg, int server_id) {}
-
-    virtual void SendToServer(const uint16_t msg_id, const std::string &msg, int server_id) {}
-
-    // 发送给玩家所连接相应类型的服务器
-    virtual void SendPBToPlayerServer(const uint16_t msg_id, google::protobuf::Message &msg, const Guid &player, ServerType type) {}
-
-    virtual void SendToPlayerServer(const uint16_t msg_id, const std::string &msg, const Guid &player, ServerType type) {}
-
-    virtual void OnPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        // players_[]
-    }
-    
-    virtual void OnPlayerLeave(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
-
-    virtual void OnPlayerOffline(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
 
     //////////////////////////// PRIVATE ////////////////////////////
   private:
@@ -535,15 +504,10 @@ class INodeBaseModule : public IModule {
     
     }
     
-    struct PlayerProxyInfo {
-        int proxy_id;
-        int proxy_sock;
-    };
+    
 
 
     public:
-    // 玩家表
-    map<Guid, PlayerProxyInfo> players_;
 
     // 服务表
     map<int, ServerInfo> servers_;

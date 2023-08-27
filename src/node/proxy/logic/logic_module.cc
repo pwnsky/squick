@@ -22,10 +22,8 @@ bool LogicModule::AfterStart() {
     m_net_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_HEARTBEAT, this, &LogicModule::OnHeartbeat);
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnect);
-    m_net_->AddReceiveCallBack(rpc::LobbyBaseRPC::REQ_ENTER, this, &LogicModule::OnReqEnterGameServer);
-
+    m_net_->AddReceiveCallBack(rpc::LobbyBaseRPC::REQ_ENTER, this, &LogicModule::OnReqEnter);
     m_net_->AddReceiveCallBack(rpc::TestRPC::REQ_TEST_PROXY, this, &LogicModule::OnReqTestProxy);
-
     return true;
 }
 
@@ -127,7 +125,7 @@ int LogicModule::ForwardToClient(const socket_t sock, const int msg_id, const ch
 
 void LogicModule::OnClientConnected(const socket_t sock) { std::cout << "Client Connected.... \n"; }
 
-int LogicModule::EnterGameSuccessEvent(const Guid account_guid, const Guid object_guid) {
+int LogicModule::EnterSuccessEvent(const Guid account_guid, const Guid object_guid) {
     auto iter = clients_.find(account_guid.ToString());
     if (iter != clients_.end()) {
         NetObject *pNetObeject = m_net_->GetNet()->GetNetObject(iter->second.sock);
@@ -139,6 +137,7 @@ int LogicModule::EnterGameSuccessEvent(const Guid account_guid, const Guid objec
 }
 
 void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    dout << " forward...\n";
     NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
     if (!pNetObject || pNetObject->GetConnectKeyState() <= 0 || pNetObject->GetGameID() <= 0) {
         // state error
@@ -170,38 +169,38 @@ void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const ch
     if (!xMsg.SerializeToString(&msgData)) {
         return;
     }
-    // 游戏服
-    if (xMsg.has_hash_ident()) {
-        // special for distributed
+
+    // 根据ID 来转发至不同服务器
+    if (msg_id >= 10000 && msg_id < 30000) {
+        // 转发到Lobby
         if (!pNetObject->GetHashIdentID().IsNull()) {
             m_net_client_->SendBySuitWithOutHead(ServerType::ST_GAME, pNetObject->GetHashIdentID().ToString(), msg_id, msgData);
-        } else {
+        }
+        else {
             Guid xHashIdent = INetModule::ProtobufToStruct(xMsg.hash_ident());
             m_net_client_->SendBySuitWithOutHead(ServerType::ST_GAME, xHashIdent.ToString(), msg_id, msgData);
         }
-    } // 大区服
-    else {
-        if (msg_id >= 50000) {
-            m_net_client_->SendBySuitWithOutHead(ServerType::ST_WORLD, pNetObject->GetUserID().ToString(), msg_id, msgData);
-        } else {
-            m_net_client_->SendByServerIDWithOutHead(pNetObject->GetGameID(), msg_id, msgData);
-        }
+
+    } else if (msg_id >= 10000 && msg_id < 32000) {
+
+    } else if (msg_id >= 30000 && msg_id < 32000) {
+
+    } else if (msg_id >= 32000 && msg_id < 35000) {
+
+    } else {
+        // 不支持转发
     }
-    // 微服
 }
 
 void LogicModule::OnHeartbeat(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-
     std::string msgData(msg, len);
     NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
     if (pNetObject) {
         auto iter = clients_.find(pNetObject->GetClientID().ToString());
         if (iter != clients_.end()) {
             iter->second.last_ping = SquickGetTimeMS();
-            // dout << "heatbeat: " << iter->second.last_ping << std::endl;
         }
     }
-
     m_net_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_HEARTBEAT, msgData, sock);
 }
 
@@ -240,7 +239,7 @@ int LogicModule::OnHeatbeatCheck(const Guid &self, const std::string &heartBeat,
 }
 
 // 选择服务器
-bool LogicModule::SelectGameServer(int sock) {
+bool LogicModule::TryEnter(int sock) {
     NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
     if (!pNetObject) {
         return false;
@@ -272,10 +271,10 @@ bool LogicModule::SelectGameServer(int sock) {
 }
 
 // 请求进入游戏
-void LogicModule::OnReqEnterGameServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnReqEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     dout << "请求进入游戏\n";
 
-    SelectGameServer(sock);
+    TryEnter(sock);
 
     NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
     if (!pNetObject) {
@@ -403,7 +402,7 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
         client.world_id = data.world_id();
 
         // 增加schecdule
-        m_schedule_->AddSchedule(s.guid, "HeatbeatCheck", this, &LogicModule::OnHeatbeatCheck, 5.0f, 99999); // 每5秒check一次
+        m_schedule_->AddSchedule(s.guid, "HeatbeatCheck", this, &LogicModule::OnHeatbeatCheck, 10.0f, 99999); // 每10秒check一次
 
     } else {
         dout << "验证失败 code: " << data.code() << "\n";

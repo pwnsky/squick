@@ -18,7 +18,7 @@ bool HttpModule::AfterStart() {
     // http://127.0.0.1/json
     m_http_server_->AddRequestHandler("/status", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnCommandQuery);
 
-    m_http_server_->AddNetFilter("/status", this, &HttpModule::OnFilter);
+    //m_http_server_->AddNetFilter("/status", this, &HttpModule::OnFilter);
 
     std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {

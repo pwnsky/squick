@@ -2,6 +2,20 @@
 syntax = "proto3";
 package rpc;
 import "base.proto";
+// 30000 ~ 35000
+enum DbProxyRPC {
+    DB_RPC_NONE = 0;
+
+    REQ_PLAYER_LIST = 30000;
+    ACK_PLAYER_LIST = 30001;
+    REQ_PLAYER_CREATE = 30002;
+    REQ_PLAYER_DELETE = 30003;
+
+    REQ_PLAYER_DATA_LOAD = 30004; // 加载玩家数据
+    ACK_PLAYER_DATA_LOAD = 30005; //
+    REQ_PLAYER_DATA_SAVE = 30006; // 请求保存玩家数据
+    ACK_PLAYER_DATA_SAVE = 30007; //
+}
 
 message PropertyInt {
     bytes property_name = 1;
@@ -179,8 +193,6 @@ message ObjectRecordRemove {
     repeated int32 remove_row = 3;
 }
 
-///////////////////////////////////////////////////////////////////
-// send all properties as a pack when client log in or log off
 message ObjectPropertyList {
     Ident player_id = 1;
     repeated PropertyInt property_int_list = 2;
@@ -199,22 +211,6 @@ message ObjectRecordList {
 }
 
 message MultiObjectRecordList { repeated ObjectRecordList multi_player_record = 1; }
-
-
-// 30000 ~ 35000
-enum DbProxyRPC {
-    DB_RPC_NONE = 0;
-
-    REQ_PLAYER_LIST = 30000;
-    ACK_PLAYER_LIST = 30001;
-    REQ_PLAYER_CREATE = 30002;
-    REQ_PLAYER_DELETE = 30003;
-
-    REQ_PLAYER_DATA_LOAD = 30004; // 加载玩家数据
-    ACK_PLAYER_DATA_LOAD = 30005; //
-    REQ_PLAYER_DATA_SAVE = 30006; // 请求保存玩家数据
-    ACK_PLAYER_DATA_SAVE = 30007; //
-}
 
 enum DbType {
     DB_TYPE_NONE = 0;
