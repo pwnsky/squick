@@ -22,7 +22,6 @@ bool LogicModule::AfterStart() {
     m_net_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_HEARTBEAT, this, &LogicModule::OnHeartbeat);
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnect);
-    m_net_->AddReceiveCallBack(rpc::LobbyBaseRPC::REQ_ENTER, this, &LogicModule::OnReqEnter);
     m_net_->AddReceiveCallBack(rpc::TestRPC::REQ_TEST_PROXY, this, &LogicModule::OnReqTestProxy);
     return true;
 }
@@ -55,7 +54,7 @@ void LogicModule::OnClientDisconnect(const socket_t sock) {
 
                     // when a net-object bind a account then tell that game-server
                     if (!pNetObject->GetUserID().IsNull()) {
-                        rpc::ReqLeave xData;
+                        rpc::PlayerLeaveEvent xData;
                         rpc::MsgBase xMsg;
 
                         // real user id
@@ -70,7 +69,7 @@ void LogicModule::OnClientDisconnect(const socket_t sock) {
                             return;
                         }
 
-                        m_net_client_->SendByServerIDWithOutHead(nGameID, rpc::LobbyBaseRPC::REQ_LEAVE, msg);
+                        m_net_client_->SendByServerIDWithOutHead(nGameID, rpc::PlayerEventRPC::PLAYER_LEAVE_EVENT, msg);
 
                         // 断开该掉连接
                         m_net_->GetNet()->CloseNetObject(sock);
@@ -137,7 +136,6 @@ int LogicModule::EnterSuccessEvent(const Guid account_guid, const Guid object_gu
 }
 
 void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    dout << " forward...\n";
     NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
     if (!pNetObject || pNetObject->GetConnectKeyState() <= 0 || pNetObject->GetGameID() <= 0) {
         // state error
@@ -171,7 +169,7 @@ void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const ch
     }
 
     // 根据ID 来转发至不同服务器
-    if (msg_id >= 10000 && msg_id < 30000) {
+    if (msg_id >= 12000 && msg_id < 30000) {
         // 转发到Lobby
         if (!pNetObject->GetHashIdentID().IsNull()) {
             m_net_client_->SendBySuitWithOutHead(ServerType::ST_GAME, pNetObject->GetHashIdentID().ToString(), msg_id, msgData);
@@ -238,84 +236,29 @@ int LogicModule::OnHeatbeatCheck(const Guid &self, const std::string &heartBeat,
     return 0;
 }
 
-// 选择服务器
-bool LogicModule::TryEnter(int sock) {
-    NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
-    if (!pNetObject) {
+// 进入游戏
+bool LogicModule::TryEnter(string guid) {
+    
+    auto client = clients_.find(guid);
+    if (client == clients_.end()) {
         return false;
     }
-
-    // 查找最小负载的服务器
-    // actually, if you want the game server working with a good performance then we need to find the game server with lowest workload
-    int work_load = 999999;
-    int id = 0;
-    MapEx<int, ConnectData> &xServerList = m_net_client_->GetServerList();
-    ConnectData *c = xServerList.FirstNude();
-    while (c) {
-        if (ConnectDataState::NORMAL == c->state && ServerType::ST_GAME == c->type) {
-            if (c->work_load < work_load) {
-                work_load = c->work_load;
-                id = c->id;
-            }
-        }
-        c = xServerList.NextNude();
+    int lobby_id = m_node_->GetLoadBanlanceNode(ServerType::ST_LOBBY);
+    if (lobby_id == -1) {
+        return false;
     }
-
-    if (id > 0) {
-        pNetObject->SetGameID(id);
-        return true;
+    rpc::PlayerEnterEvent event;
+    *event.mutable_account() = client->second.account;
+    *event.mutable_guid() = INetModule::StructToProtobuf(client->second.guid);
+    
+    std::string msg;
+    if (!event.SerializeToString(&msg)) {
+        return false;
     }
+    m_net_client_->SendByServerID(lobby_id, rpc::PlayerEventRPC::PLAYER_ENTER_EVENT, msg);
 
-    // 如果服务器比较繁忙，给客户端响应繁忙
-    return false;
-}
-
-// 请求进入游戏
-void LogicModule::OnReqEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    dout << "请求进入游戏\n";
-
-    TryEnter(sock);
-
-    NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
-    if (!pNetObject) {
-        return;
-    }
-
-    Guid nPlayerID; // no value
-    rpc::ReqEnter xData;
-    if (!m_net_->ReceivePB(msg_id, msg, len, xData, nPlayerID)) {
-        return;
-    }
-
-    // check
-    Guid guid = pNetObject->GetUserID().ToString();
-    auto iter = clients_.find(guid.ToString());
-    if (iter == clients_.end()) {
-        dout << "This player not exsisted\n";
-        return;
-    }
-
-    // Set real info
-    *xData.mutable_account() = iter->second.account;
-    *xData.mutable_guid() = INetModule::StructToProtobuf(iter->second.guid);
-
-    std::shared_ptr<ConnectData> pServerData = m_net_client_->GetServerNetInfo(pNetObject->GetGameID());
-    if (pServerData && ConnectDataState::NORMAL == pServerData->state) {
-        if (pNetObject->GetConnectKeyState() > 0) {
-            rpc::MsgBase xMsg;
-            if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
-                return;
-            }
-            // clientid
-            xMsg.mutable_player_id()->CopyFrom(INetModule::StructToProtobuf(pNetObject->GetClientID()));
-            std::string msg;
-            if (!xMsg.SerializeToString(&msg)) {
-                return;
-            }
-
-            m_net_client_->SendByServerIDWithOutHead(pNetObject->GetGameID(), rpc::LobbyBaseRPC::REQ_ENTER, msg);
-        }
-    }
+    client->second.lobby_id = lobby_id;
+    return true;
 }
 
 void LogicModule::OnReqConnect(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
@@ -324,14 +267,13 @@ void LogicModule::OnReqConnect(const socket_t sock, const int msg_id, const char
         return;
     }
 
-    Guid nPlayerID;
+    Guid h;
     rpc::ReqConnectProxy req;
-    if (!m_net_->ReceivePB(msg_id, msg, len, req, nPlayerID)) {
+    if (!m_net_->ReceivePB(msg_id, msg, len, req, h)) {
         return;
     }
 
     // 验证Token
-    // bool bRet = m_pProxyToWorldModule->VerifyConnectData(xMsg.account(), xMsg.security_code());
     Guid guid = INetModule::ProtobufToStruct(req.guid());
     Session s;
     s.guid = guid;
@@ -343,11 +285,9 @@ void LogicModule::OnReqConnect(const socket_t sock, const int msg_id, const char
 }
 
 void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const uint32_t len) {
-    dout << "验证响应\n";
     Guid tmp;
     rpc::AckConnectProxyVerify data;
     if (!m_net_->ReceivePB(msg_id, msg, len, data, tmp)) {
-        dout << "反序列化失败\n";
         return;
     }
 
@@ -363,8 +303,8 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
     // remove sessoin
     sessions_.erase(iter);
 
-    NetObject *pNetObject = m_net_->GetNet()->GetNetObject(s.sock);
-    if (!pNetObject) {
+    NetObject *net = m_net_->GetNet()->GetNetObject(s.sock);
+    if (!net) {
         dout << "No this sock: " << s.sock << std::endl;
         return;
     }
@@ -378,19 +318,14 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
             k.set_time(SquickGetTimeMS());
             m_net_->SendMsgPB(rpc::ProxyRPC::ACK_KICK_OFF, k, iter2->second.sock);
             // m_net_->GetNet()->CloseNetObject(iter2->second.sock);
+            return;
         }
 
         // bind account guid with socket
-        pNetObject->SetClientID(s.guid);
-
-        // NetObject* pNetObject = m_net_->GetNet()->GetNetObject(sock);
-        pNetObject->SetConnectKeyState(1);
-        pNetObject->SetSecurityKey(s.key);
-        // this net-object bind a user's account
-        pNetObject->SetAccount(s.guid.ToString());
-        pNetObject->SetUserID(s.guid);
+        net->SetClientID(s.guid);
+        net->SetConnectKeyState(1);
+        net->SetUserID(s.guid);
         rpc::AckConnectProxy ack;
-        dout << s.guid.ToString() << " 连接成功!\n";
         ack.set_code(0);
         m_net_->SendMsgPB(rpc::ProxyRPC::ACK_CONNECT_PROXY, ack, s.sock);
         string sguid = s.guid.ToString();
@@ -403,11 +338,10 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
 
         // 增加schecdule
         m_schedule_->AddSchedule(s.guid, "HeatbeatCheck", this, &LogicModule::OnHeatbeatCheck, 10.0f, 99999); // 每10秒check一次
-
+        TryEnter(sguid);
     } else {
-        dout << "验证失败 code: " << data.code() << "\n";
         // if verify failed then close this connect
-        m_net_->GetNet()->CloseNetObject(s.sock);
+        //m_net_->GetNet()->CloseNetObject(s.sock);
     }
 }
 

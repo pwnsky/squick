@@ -64,8 +64,11 @@ function Load()
     Require("test.init");
     local node_init = {
         [ServerType.ST_GAME ] = function()
-            Require("game.init");
+            Require("node.game.init");
         end,
+        [ServerType.ST_LOBBY] = function ()
+            Require("node.lobby.init");
+        end
     }
     if(node_init[Env.app_type]) then
         node_init[Env.app_type]()

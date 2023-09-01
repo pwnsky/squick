@@ -2,7 +2,7 @@
 -- Author: i0gan
 -- Email : l418894113@gmail.com
 -- Date  : 2022-12-03
--- Github: https://github.com/i0gan/Squick
+-- Github: https://github.com/pwnsky/squick
 -- Description: 提供面向对象的支持
 -----------------------------------------------------------------------------
 

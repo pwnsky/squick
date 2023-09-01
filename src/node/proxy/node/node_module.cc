@@ -8,30 +8,12 @@ bool NodeModule::AfterStart() {
     Listen();
 
     // Lobby
-    m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, rpc::LobbyBaseRPC::ACK_ENTER, this, &NodeModule::OnAckEnter);
     m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, this, &NodeModule::Transport);
-    
-
-    // Game
-
-    
-    // Gameplay Manager
-
-
-    // Micro
-
-
-    // Wrold
-
-
-    // Login
     m_net_client_->AddReceiveCallBack(ServerType::ST_LOGIN, rpc::LoginRPC::ACK_PROXY_CONNECT_VERIFY, this, &NodeModule::OnAckProxyConnectVerify);
     
-    //AddServer(ServerType::ST_LOBBY);
-    //AddServer(ServerType::ST_GAME_MGR);
+    AddServer(ServerType::ST_LOBBY);
     AddServer(ServerType::ST_LOGIN);
     AddServer(ServerType::ST_WORLD);
-    //AddServer(ServerType::ST_MICRO);
     return true;
 }
 
@@ -39,10 +21,10 @@ void NodeModule::Transport(const socket_t sock, const int msg_id, const char* ms
     m_logic_->ForwardToClient(sock, msg_id, msg, len);
 }
 
-void NodeModule::OnAckEnter(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+void NodeModule::PlayerBindEvent(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     dout << "进入游戏成功!\n";
     Guid nPlayerID;
-    rpc::AckEnter xData;
+    rpc::PlayerBindEvent xData;
     if (!INetModule::ReceivePB(msg_id, msg, len, xData, nPlayerID)) {
         return;
     }
@@ -50,7 +32,7 @@ void NodeModule::OnAckEnter(const socket_t sock, const int msg_id, const char* m
     const Guid& xPlayer = INetModule::ProtobufToStruct(xData.object());
 
     // m_logic_->EnterGameSuccessEvent(xClient, xPlayer);
-    m_logic_->ForwardToClient(sock, msg_id, msg, len);
+    // m_logic_->ForwardToClient(sock, msg_id, msg, len);
 }
 
 bool NodeModule::OnReqProxyConnectVerify(INT64 session, const std::string& guid, const std::string& key) {

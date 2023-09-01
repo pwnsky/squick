@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+// PlayerRPC 12000 ~ 15000
+enum PlayerRPC {
+    LOBBY_PLAYER_RPC_NONE = 0;
+    REQ_PLAYER_DATA = 12000; // 获取玩家详细全部数据
+    ACK_PLAYER_DATA = 12001; // 
+}
+

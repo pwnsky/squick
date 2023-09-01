@@ -1,0 +1,40 @@
+// 大厅RPC
+syntax = "proto3";
+package rpc;
+import "base.proto";
+
+// PlayerEventPC 10000 ~ 12000
+enum PlayerEventRPC {
+    LOBBY_BASE_RPC_NONE = 0;
+    PLAYER_ENTER_EVENT = 10000; // 进入
+    PLAYER_BIND_EVENT = 10001;  //
+    PLAYER_LEAVE_EVENT = 10002; // 退出
+    PLAYER_RECONNECT_EVENT = 10003;
+}
+
+message PlayerEnterEvent {
+    Ident object = 1;  // 游戏对象guid
+    Ident guid = 2;    // 账号guid
+    bytes account = 3; // 登录账号
+    int32 proxy_id = 4; // proxy_id
+}
+
+message PlayerBindEvent {
+    int32 code = 1;
+    Ident guid = 2;
+    Ident object = 3; // 相当于是一个Player
+}
+
+message PlayerLeaveEvent {
+    Ident object = 1;
+}
+
+message PlayerReconnectEvent {}
+
+// proxy或客户端告知lobby服务器的
+message AckPlayerOffline {
+    Ident self = 1;
+    Ident object = 2;
+    int32 game = 3;
+    int32 proxy = 4;
+}

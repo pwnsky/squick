@@ -11,9 +11,7 @@ public:
         
         auto ret = INodeBaseModule::Listen();
         // Player action
-        m_net_->AddReceiveCallBack(rpc::ServerRPC::PLAYER_ENETER, this, &IPlayerNodeModule::OnPlayerEnter);
-        m_net_->AddReceiveCallBack(rpc::ServerRPC::PLAYER_LEAVE, this, &IPlayerNodeModule::OnPlayerLeave);
-        m_net_->AddReceiveCallBack(rpc::ServerRPC::PLAYER_OFFLINE, this, &IPlayerNodeModule::OnPlayerOffline);
+        m_net_->AddReceiveCallBack(rpc::PlayerEventRPC::PLAYER_ENTER_EVENT, this, &IPlayerNodeModule::OnPlayerEnter);
         return ret;
     }
 

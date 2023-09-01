@@ -30,7 +30,7 @@ class LogicModule : public ILogicModule {
     void OnReqConnect(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     virtual void OnAckConnectVerify(const int msg_id, const char *msg, const uint32_t len) override;
     void OnReqEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    bool TryEnter(int sock);
+    bool TryEnter(string guid);
     int EnterSuccessEvent(const Guid xClientID, const Guid xPlayerID);
 
     

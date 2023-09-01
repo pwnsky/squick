@@ -844,7 +844,7 @@ bool LuaScriptModule::Register() {
         .addFunction("AppType", &LuaScriptModule::AppType)
         .addFunction("AppName", &LuaScriptModule::AppName)
 
-        .addFunction("exist_ele", &LuaScriptModule::ExistElementObject)
+        .addFunction("ExistElementObject", &LuaScriptModule::ExistElementObject)
         .addFunction("GetEleList", &LuaScriptModule::GetEleList)
         .addFunction("GetElePropertyInt", &LuaScriptModule::GetElePropertyInt)
         .addFunction("GetElePropertyFloat", &LuaScriptModule::GetElePropertyFloat)

@@ -255,11 +255,6 @@ class NetObject {
 
     INet *GetNet() { return netObject; }
 
-    //////////////////////////////////////////////////////////////////////////
-    const std::string &GetSecurityKey() const { return securityKey; }
-
-    void SetSecurityKey(const std::string &key) { securityKey = key; }
-
     int GetConnectKeyState() const { return logicState; }
 
     void SetConnectKeyState(const int state) { logicState = state; }
@@ -268,9 +263,6 @@ class NetObject {
 
     void SetNeedRemove(bool b) { bNeedRemove = b; }
 
-    const std::string &GetAccount() const { return account; }
-
-    void SetAccount(const std::string &data) { account = data; }
 
     int GetGameID() const { return gameID; }
 
@@ -295,9 +287,6 @@ class NetObject {
     void *userData;
     // ringbuff
     std::string ringBuff;
-    std::string account;
-    std::string securityKey;
-
     int32_t logicState;
     int32_t gameID;
     Guid userID;      // player id

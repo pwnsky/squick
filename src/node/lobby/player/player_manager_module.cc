@@ -23,26 +23,32 @@ bool PlayerManagerModule::AfterStart() {
 }
 
 bool PlayerManagerModule::ReadyUpdate() {
-    m_net_->AddReceiveCallBack(rpc::LobbyBaseRPC::REQ_ENTER, this, &PlayerManagerModule::OnReqPlayerEnter);
+    dout << "Bind.... \n";
+    m_net_->AddReceiveCallBack(rpc::PlayerEventRPC::PLAYER_ENTER_EVENT, this, &PlayerManagerModule::OnReqPlayerEnter);
+
+    /*
     m_net_->AddReceiveCallBack(rpc::LobbyBaseRPC::REQ_LEAVE, this, &PlayerManagerModule::OnReqPlayerLeave);
     m_net_->AddReceiveCallBack(rpc::LobbyBaseRPC::REQ_RECONNECT, this, &PlayerManagerModule::OnReqPlayerReconnect);
 
     m_net_client_->AddReceiveCallBack(ServerType::ST_DB_PROXY, rpc::DbProxyRPC::ACK_PLAYER_DATA_LOAD, this,
-                                      &PlayerManagerModule::OnAckPlayerDataLoad); // 每一次进入游戏都从数据库拉取一下
+                                    &PlayerManagerModule::OnAckPlayerDataLoad); // 每一次进入游戏都从数据库拉取一下
 
     m_net_->AddReceiveCallBack(rpc::LobbyPlayerRPC::REQ_PLAYER_EQUIPMENT, this, &PlayerManagerModule::OnReqPlayerEquipment);
     m_net_->AddReceiveCallBack(rpc::LobbyPlayerRPC::REQ_PLAYER_DATA, this, &PlayerManagerModule::OnReqPlayerData);
+    */
     return true;
 }
 
 void PlayerManagerModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    /*
+    dout << "OnReqPlayerEnter\n";
     Guid guid;
-    rpc::ReqEnter xMsg;
-    if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, guid)) {
+    rpc::PlayerEnterEvent event;
+    if (!m_net_->ReceivePB(msg_id, msg, len, event, guid)) {
         return;
     }
-    dout << "请求进入大厅 " << guid.ToString() << std::endl;
-
+    dout << "请求进入大厅 " << event.account() << std::endl;
+    
     std::string oguid = guid.ToString();
 
     // 检查是否是重连的
@@ -59,10 +65,12 @@ void PlayerManagerModule::OnReqPlayerEnter(const socket_t sock, const int msg_id
     }
 
     m_net_client_->SendBySuitWithOutHead(ServerType::ST_DB_PROXY, sock, rpc::DbProxyRPC::REQ_PLAYER_DATA_LOAD, std::string(msg, len));
+    */
 }
 
 // 返回角色数据
 void PlayerManagerModule::OnAckPlayerDataLoad(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    /*
     // dout << "返回角色数据\n";
     Guid guid;
     rpc::DbPlayerData data;
@@ -99,10 +107,12 @@ void PlayerManagerModule::OnAckPlayerDataLoad(const socket_t sock, const int msg
     *ack.mutable_guid() = INetModule::StructToProtobuf(guid);
     *ack.mutable_object() = INetModule::StructToProtobuf(objectID);
     OnSendToClient(rpc::ACK_ENTER, ack, guid);
+    */
 }
 
 // 玩家对象事件
 int PlayerManagerModule::OnPlayerObjectEvent(const Guid &self, const std::string &className, const CLASS_OBJECT_EVENT classEvent, const DataList &var) {
+    
     // 离线
     if (CLASS_OBJECT_EVENT::COE_DESTROY == classEvent) {
         // m_data_tail_->LogObjectData(self);
@@ -261,6 +271,7 @@ void PlayerManagerModule::SetPlayerGameplayID(const Guid &clientID, int groupID)
 }
 
 void PlayerManagerModule::OnReqPlayerEquipment(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    /*
     static int index = 0;
     Guid guid;
     rpc::ReqPlayerEquipment req;
@@ -287,9 +298,11 @@ void PlayerManagerModule::OnReqPlayerEquipment(const socket_t sock, const int ms
     dout << " 玩家装备 : " + target.ToString() << "  glove: " << glove << " mask: " << mask << std::endl;
     ack.set_mask(mask);
     OnSendToClient(rpc::LobbyPlayerRPC::ACK_PLAYER_EQUIPMENT, ack, guid);
+    */
 }
 
 void PlayerManagerModule::OnReqPlayerData(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    /*
     Guid guid;
     rpc::ReqPlayerEquipment req;
     rpc::AckPlayerData ack;
@@ -309,9 +322,11 @@ void PlayerManagerModule::OnReqPlayerData(const socket_t sock, const int msg_id,
         ack.set_code(0);
     } while (false);
     OnSendToClient(rpc::LobbyPlayerRPC::ACK_PLAYER_DATA, ack, guid);
+    */
 }
 
 void PlayerManagerModule::OnReqPlayerLeave(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    /*
     Guid guid;
     rpc::ReqLeave xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, guid)) {
@@ -331,9 +346,11 @@ void PlayerManagerModule::OnReqPlayerLeave(const socket_t sock, const int msg_id
     }
     p.time = SquickGetTimeS();
     offline_players_[guid.ToString()] = p;
+    */
 }
 
 void PlayerManagerModule::UpdateRemoveOfflinePlayers(time_t now_time) {
+    /*
     std::vector<std::unordered_map<string, Offline>::iterator> expired;
     if (offline_players_.size() > 0) {
         for (auto iter = offline_players_.begin(); iter != offline_players_.end(); ++iter) {
@@ -375,12 +392,13 @@ void PlayerManagerModule::UpdateRemoveOfflinePlayers(time_t now_time) {
             // m_server_->RemovePlayerProxyInfo(guid);
             offline_players_.erase(iter);
         }
-    }
+    }*/
 }
 
 void PlayerManagerModule::OnReqPlayerReconnect(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
 
 void PlayerManagerModule::OnRecv(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    /*
     rpc::MsgBase xMsg;
     if (!xMsg.ParseFromArray(msg, len)) {
         char szData[MAX_PATH] = {0};
@@ -408,6 +426,7 @@ void PlayerManagerModule::OnRecv(const socket_t sock, const int msg_id, const ch
         dout << "不存在该 player: " << clientID.ToString() << " msg_id: " << msg_id << std::endl;
         // 不存在该player，可能已销毁
     }
+    */
 }
 
 } // namespace lobby::player

@@ -11,11 +11,12 @@ class NodeModule : public INodeModule {
     virtual void OnClientConnected(socket_t sock) override;
 
     virtual bool OnReqProxyConnectVerify(INT64 session, const std::string& guid, const std::string& key) override;
+    virtual int GetLoadBanlanceNode(ServerType type) override { return INodeBaseModule::GetLoadBanlanceNode(type); }
 private:
     void OnAckProxyConnectVerify(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
     // From lobby
     void Transport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
-    void OnAckEnter(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void PlayerBindEvent(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
   protected:
     logic::ILogicModule *m_logic_;
 };

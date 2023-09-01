@@ -52,8 +52,6 @@ message AckPlayerLeaveList // 同场景同房间 离开时列表
     repeated Ident list = 1;
 }
 
-
-
 // 18000 ~ 20000 : game.proto
 enum GameRPC {
     GAME_RPC_NONE = 0;
