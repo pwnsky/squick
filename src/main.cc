@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     // std::cout << "__cplusplus:" << __cplusplus << std::endl;
 
     // 强制加载squick_struct依赖
-    void *libLoad = (void *)&rpc::_Ident_default_instance_;
+    void *libLoad = (void *)&rpc::_Vector3_default_instance_;
 
     // std::cout << libLoad << std::endl;
 
@@ -85,9 +85,15 @@ int main(int argc, char *argv[]) {
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=db_proxy id=301"))); // 区服2
 
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=login id=2"))); 
+        
+        // Lobby
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1000")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1001")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1002")));
 
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=1000")));
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=1001")));
+        // Game
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=3000")));
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=3001")));
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game_mgr id=2000")));
 
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=500")));

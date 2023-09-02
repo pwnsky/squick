@@ -20,6 +20,7 @@ class NetModule : public INetModule {
 
     virtual bool Start();
     virtual bool AfterStart();
+    virtual bool Update();
 
     // as client
     virtual void Startialization(const char *ip, const unsigned short nPort);
@@ -30,27 +31,20 @@ class NetModule : public INetModule {
     virtual unsigned int ExpandBufferSize(const unsigned int size = 1024 * 1024 * 20) override;
 
     virtual void RemoveReceiveCallBack(const int msg_id);
-
     virtual bool AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb);
-
     virtual bool AddReceiveCallBack(const NET_RECEIVE_FUNCTOR_PTR &cb);
-
     virtual bool AddEventCallBack(const NET_EVENT_FUNCTOR_PTR &cb);
-
-    virtual bool Update();
-
     virtual bool SendMsgWithOutHead(const int msg_id, const std::string &msg, const socket_t sock);
     virtual bool SendMsgToAllClientWithOutHead(const int msg_id, const std::string &msg);
 
     virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock);
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const Guid id);
-    virtual bool SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock);
-    virtual bool SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const Guid id);
+    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const string id);
+    virtual bool SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const string id);
 
     virtual bool SendMsgPBToAllClient(const uint16_t msg_id, const google::protobuf::Message &xData);
 
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const std::vector<Guid> *pClientIDList);
-    virtual bool SendMsgPB(const uint16_t msg_id, const std::string &strData, const socket_t sock, const std::vector<Guid> *pClientIDList);
+    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const std::vector<string> *pClientIDList);
+    virtual bool SendMsgPB(const uint16_t msg_id, const std::string &strData, const socket_t sock, const std::vector<string> *pClientIDList);
 
     virtual INet *GetNet();
 

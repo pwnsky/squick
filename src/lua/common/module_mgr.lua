@@ -14,27 +14,32 @@ ModuleMgr = {
 -- is_hot: 是否为热重载的文件
 function ModuleMgr:Register(pre_path, list)
     for i=1, #(list) do
+        local path = pre_path .. '.' .. list[i].name
+        local name = list[i].name
+
+        print(" Register " .. path .. "  name: " .. name)
         -- 判断是否加载过
-        if package.loaded[pre_path .. '.' .. list[i].name] and list[i].is_hot then
-            package.loaded[pre_path .. '.' .. list[i].name] = nil
-        else
+        if package.loaded[path] and list[i].is_hot == false then
             goto continue
         end
 
-        Squick:LogInfo("lua start to load " .. list[i].name);
+        package.loaded[path] = nil
+        Squick:LogInfo("lua start to load " .. name);
 
-        local old_module = ModuleMgr.modules[list[i].name]
-        local object = require(pre_path .. '.' .. list[i].name);
-        if true == object then
-            local newTbl = _G[fileList[i].tblName];
-            fileList[i].tbl = newTbl
-            if oldTbl ~= nil then
-                script_module:log_info("reload_script_file " .. fileList[i].tblName .. " succeed");
+        local old_module = ModuleMgr.modules[name]
+        local object = require(path);
+        if object then
+            
+            if old_module ~= nil then
+                Squick:LogInfo("reload " .. path.. " succeed");
+                -- 只更新函数
             else
-                script_module:log_info("load_script_file 1 " .. fileList[i].tblName .. " failed");
+                ModuleMgr.modules[name] = object -- 加载全部
+                Squick:LogInfo("load " .. path .. " succeed");
             end
         else
-            script_module:log_info("load_script_file 2" .. fileList[i].tblName .. " failed");
+            
+            Squick:LogInfo("load " .. path .. " failed");
             return false
         end
         ::continue::
@@ -44,4 +49,23 @@ end
 
 function ModuleMgr:HotReload()
 
+end
+
+function ModuleMgr:Start()
+    --PrintTable(self)
+    for key, value in pairs(self.modules) do
+        value:Start()
+    end
+end
+
+function ModuleMgr:Update()
+    for key, value in pairs(self.modules) do
+        value:Update()
+    end
+end
+
+function ModuleMgr:Destroy()
+    for key, value in pairs(self.modules) do
+        value:Destroy()
+    end
 end

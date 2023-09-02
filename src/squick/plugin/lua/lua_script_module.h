@@ -32,42 +32,10 @@ class ILuaScriptModule : public IModule {
   public:
 };
 
-/*
-void call0(lua_State* lua_state,const char* name)
-{
-        lua_getglobal(lua_state, name);
-        if (lua_isfunction(lua_state, -1))
-        {
-                lua_pcall(lua_state, 0, 0, 0);
-        }
-}
-template<typename T1>
-void call1(lua_State* lua_state,const char* name, T1 arg1)
-{
-        lua_getglobal(lua_state, name);
-        if (lua_isfunction(lua_state, -1))
-        {
-                luabridge::Stack<T1>::push(lua_state, arg1);
-                lua_pcall(lua_state, 1, 0, 0);
-        }
-}
-template<typename T1, typename T2>
-void call2(lua_State* lua_state,const char* name, T1 arg1, T2 arg2)
-{
-        lua_getglobal(lua_state, name);
-        if (lua_isfunction(lua_state, -1))
-        {
-                luabridge::Stack<T1>::push(lua_state, arg1);
-                luabridge::Stack<T2>::push(lua_state, arg2);
-                lua_pcall(lua_state, 2, 0, 0);
-        }
-}
-*/
-
 class LuaScriptModule : public ILuaScriptModule {
     struct LuaCallBack {
-        std::string funcName;
         LuaIntf::LuaRef self;
+        LuaIntf::LuaRef func;
     };
 
   public:
@@ -88,7 +56,6 @@ class LuaScriptModule : public ILuaScriptModule {
     virtual LuaIntf::LuaContext &GetLuaEnv();
 
   protected:
-    void RegisterModule(const std::string &tableName, const LuaIntf::LuaRef &luaTable);
 
     // FOR KERNEL MODULE
     Guid CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className, const std::string &objectIndex,
@@ -169,25 +136,15 @@ class LuaScriptModule : public ILuaScriptModule {
     void RemoveMsgCallBackAsClient(const ServerType serverType, const int msg_id);
     void AddMsgCallBackAsClient(const ServerType serverType, const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
 
-    /*
-            void RemoveHttpCallBack(const std::string& path);
-            void AddHttpCallBack(const std::string& path, const int httpType, const LuaIntf::LuaRef& luaTable, const LuaIntf::LuaRef& luaFunc);
-    */
-
     bool ImportProtoFile(const std::string &fileName);
     const std::string Encode(const std::string &msgTypeName, const LuaIntf::LuaRef &luaTable);
     LuaIntf::LuaRef Decode(const std::string &msgTypeName, const std::string &data);
 
     void SendToServerByServerID(const int serverID, const uint16_t msg_id, const std::string &data);
-    void SendToServerBySuit(const ServerType eType, const uint16_t msg_id, const std::string &data, const std::string &hash);
     void SendToAllServerByServerType(const ServerType eType, const uint16_t msg_id, const std::string &data);
 
     // for net module
-    void SendMsgToClientByFD(const socket_t fd, const uint16_t msg_id, const std::string &data);
-
-    void SendMsgToPlayer(const Guid &player, const uint16_t msg_id, const std::string &data);
-    void SendToAllPlayer(const uint16_t msg_id, const std::string &data);
-    void SendToGroupPlayer(const uint16_t msg_id, const std::string &data);
+    void SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, string guid);
 
     // for log
     void LogInfo(const std::string &logData);
@@ -218,13 +175,10 @@ class LuaScriptModule : public ILuaScriptModule {
     void OnScriptReload();
 
     void OnNetMsgCallBackAsServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnNetMsgCallBackAsClientForMasterServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnNetMsgCallBackAsClientForWorldServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnNetMsgCallBackAsClientForGameServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnNetMsgCallBackAsClient(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   protected:
     bool Register();
-    std::string FindFuncName(const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
 
   protected:
     IElementModule *m_element_;
@@ -241,15 +195,13 @@ class LuaScriptModule : public ILuaScriptModule {
     std::string strVersionCode;
     LuaIntf::LuaContext mLuaContext;
 
-    std::map<std::string, LuaIntf::LuaRef> mxTableName;
-
     Map<std::string, Map<Guid, List<LuaCallBack>>> mxLuaPropertyCallBackFuncMap;
     Map<std::string, Map<Guid, List<LuaCallBack>>> mxLuaRecordCallBackFuncMap;
     Map<int, Map<Guid, List<LuaCallBack>>> mxLuaEventCallBackFuncMap;
     Map<std::string, Map<Guid, List<LuaCallBack>>> mxLuaHeartBeatCallBackFuncMap;
     Map<std::string, List<LuaCallBack>> mxClassEventFuncMap;
     Map<int, List<LuaCallBack>> mxNetMsgCallBackFuncMapAsServer;
-    Map<ServerType, Map<int, List<LuaCallBack>>> mxNetMsgCallBackFuncMapAsClient;
+    Map<int, List<LuaCallBack>> mxNetMsgCallBackFuncMapAsClient;
 
     std::string scriptPath = "";
     int hotFixNotifyFd = -1;

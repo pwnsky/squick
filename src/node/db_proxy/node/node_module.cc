@@ -25,6 +25,7 @@ void NodeModule::OnClientDisconnect(const socket_t sock) {}
 void NodeModule::OnClientConnected(const socket_t sock) {}
 
 void NodeModule::OnLoadRoleDataProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    /*
     Guid guid;
     rpc::ReqEnter req;
     if (!m_net_->ReceivePB(msg_id, msg, len, req, guid)) {
@@ -43,6 +44,7 @@ void NodeModule::OnLoadRoleDataProcess(const socket_t sock, const int msg_id, co
     // pPlayerRedisModule->LoadPlayerData(roleID, xPlayerData);
 
     m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_PLAYER_DATA_LOAD, ack, sock, guid);
+    */
 }
 
 void NodeModule::OnSaveRoleDataProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {

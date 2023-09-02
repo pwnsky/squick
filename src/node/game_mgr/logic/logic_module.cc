@@ -30,25 +30,9 @@ bool LogicModule::AfterStart() {
         }
     }
 
-    // 来自客户端
-    m_net_->AddReceiveCallBack(rpc::SERVER_HEARTBEAT, this, &LogicModule::OnLagTestProcess);
-
     // 来自Game 服务器
     m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, rpc::REQ_GAMEPLAY_CREATE, this, &LogicModule::OnReqPvpInstanceCreate);
     return true;
-}
-
-void LogicModule::OnLagTestProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    std::string msgDatag(msg, len);
-    m_net_->SendMsgWithOutHead(rpc::ServerRPC::SERVER_HEARTBEAT, msgDatag, sock);
-
-    // TODO improve performance
-    NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
-    if (pNetObject) {
-        const int gameID = pNetObject->GetGameID();
-        // 避免不必要的开销，心跳包与PVP Manager进行跳动就行
-        // m_net_client_->SendByServerIDWithOutHead(gameID, msg_id, msgDatag);
-    }
 }
 
 int LogicModule::GetUnbindPort() {
@@ -60,7 +44,7 @@ int LogicModule::GetUnbindPort() {
 // Game Server请求创建PVP服务器实例
 void LogicModule::OnReqPvpInstanceCreate(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
 
-    Guid tmpID; // 服务端之间推送，ID值无效
+    string tmpID; // 服务端之间推送，ID值无效
     rpc::ReqGameplayCreate xMsg;
     if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, tmpID)) {
         return;

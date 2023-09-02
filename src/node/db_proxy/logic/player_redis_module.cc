@@ -25,7 +25,7 @@ bool PlayerRedisModule::LoadPlayerData(const Guid &self, rpc::DbPlayerData &play
     CommonRedisModule *pCommonRedisModule = (CommonRedisModule *)(m_pCommonRedisModule);
     std::shared_ptr<IPropertyManager> xPropertyManager = m_pCommonRedisModule->GetPropertyInfo(self.ToString(), excel::Player::ThisName(), false, true);
     if (xPropertyManager) {
-        *(playerData.mutable_property()->mutable_player_id()) = INetModule::StructToProtobuf(self);
+        *(playerData.mutable_property()->mutable_player_id()) = self.ToString();
         pCommonRedisModule->ConvertPropertyManagerToPB(xPropertyManager, playerData.mutable_property(), false, true);
         pCommonRedisModule->GetRecordInfo(self.ToString(), excel::Player::ThisName(), playerData.mutable_record(), false, true);
         return true;

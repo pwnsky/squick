@@ -21,7 +21,6 @@ class INodeBaseModule : public IModule {
         m_class_ = pm_->FindModule<IClassModule>();
         m_net_client_ = pm_->FindModule<INetClientModule>();
         m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
-        
         is_update_ = true;
 
         return true;
@@ -37,10 +36,10 @@ class INodeBaseModule : public IModule {
     }
 
     virtual bool Listen() {
+        
         m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REGISTER, this, &INodeBaseModule::OnReqRegister);
         m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_UNREGISTER, this, &INodeBaseModule::OnServerUnRegistered);
         m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REPORT, this, &INodeBaseModule::OnReqServerReport);
-        m_net_->AddReceiveCallBack(rpc::ServerRPC::SERVER_HEARTBEAT, this, &INodeBaseModule::OnHeartBeat);
         m_net_->AddReceiveCallBack(this, &INodeBaseModule::InvalidMessage);
         m_net_->AddEventCallBack(this, &INodeBaseModule::OnServerSocketEvent);
         m_net_->ExpandBufferSize();
@@ -73,7 +72,7 @@ class INodeBaseModule : public IModule {
                     int nRet = m_net_->Startialization(s.info->max_online(), s.info->port(), s.info->cpu_count());
 
                     std::ostringstream log;
-                    log << "Server Listen at port = " << s.info->port();
+                    log << "Node Listen at 0.0.0.0:" << s.info->port() << " Name: " << s.info->name();
                     m_log_->LogDebug(NULL_OBJECT, log, __FUNCTION__, __LINE__);
 
                     if (nRet < 0) {
@@ -96,7 +95,7 @@ class INodeBaseModule : public IModule {
         m_net_client_->AddReceiveCallBack(type, rpc::ServerRPC::ACK_REGISTER, this, &INodeBaseModule::OnAckRegister);
         m_net_client_->AddReceiveCallBack(type, rpc::ServerRPC::ACK_REPORT, this, &INodeBaseModule::OnAckServerReport);
         m_net_client_->ExpandBufferSize();
-
+        bool ret = false;
         std::shared_ptr<IClass> config = m_class_->GetElement(excel::Server::ThisName());
         if (config) {
             const std::vector<std::string>& list = config->GetIDList();
@@ -130,16 +129,12 @@ class INodeBaseModule : public IModule {
                         log << "Node Connect to " << s.name  << " host " << s.ip << ":" << s.port << " cur_area: " << cur_area << " target area:" << area << std::endl;
                         m_log_->LogDebug(NULL_OBJECT, log, __FUNCTION__, __LINE__);
                         m_net_client_->AddServer(s);
-                        return true;
+                        ret = true;
                     }
                 }
             }
         }
-        return false;
-    }
-
-    void OnHeartBeat(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-        
+        return ret;
     }
 
     void InvalidMessage(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) { printf("Net || umsg_id=%d\n", msg_id); }
@@ -149,7 +144,7 @@ class INodeBaseModule : public IModule {
 
     // Add upper server
     void OnDynamicServerAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        Guid guid;
+        string guid;
         rpc::ServerList req;
         if (!INetModule::ReceivePB(msg_id, msg, len, req, guid)) {
             return;
@@ -184,20 +179,6 @@ class INodeBaseModule : public IModule {
     }
 
     virtual void OnServerRefreshed(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        Guid nPlayerID;
-        rpc::ServerList sl;
-        if (!m_net_->ReceivePB(msg_id, msg, len, sl, nPlayerID)) {
-            return;
-        }
-        for (int i = 0; i < sl.list_size(); ++i) {
-            const rpc::Server &s = sl.list(i);
-            int id = s.id();
-            ServerInfo d;
-            d.fd = sock;
-            *d.info = s;
-            servers_[id] = d;
-            m_log_->LogInfo(Guid(0, s.id()), s.name(), " Refreshed");
-        }
     }
 
     // Report to upper server
@@ -224,8 +205,8 @@ class INodeBaseModule : public IModule {
                     sv.second.info->type() == ServerType::ST_LOGIN ||
                     sv.second.info->type() == ServerType::ST_MASTER ) {
                     ostringstream s;
-                    s << "ReqServerReport to " << sv.second.info->id() << " push: " << req.list().size();
-                    m_log_->LogWarning(s);
+                    //s << "ReqServerReport to " << sv.second.info->id() << " push: " << req.list().size();
+                    //m_log_->LogWarning(s);
                     m_net_client_->SendToServerByPB(sv.second.info->id(), rpc::REQ_REPORT, req);
                 }
             }
@@ -233,8 +214,7 @@ class INodeBaseModule : public IModule {
     }
 
     virtual void OnReqServerReport(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        
-        Guid guid;
+        string guid;
         rpc::ReqReport req;
         if (!INetModule::ReceivePB(msg_id, msg, len, req, guid)) {
             return;
@@ -282,15 +262,15 @@ class INodeBaseModule : public IModule {
 
     virtual void OnAckServerReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
         
-        Guid guid;
+        string guid;
         rpc::AckReport ack;
         if (!m_net_->ReceivePB(msg_id, msg, len, ack, guid)) {
             return;
         }
 
         ostringstream s;
-        s << "Ack ServerReport from: " << guid.ToString() << " pulled: " << ack.list().size();
-        m_log_->LogDebug(s);
+        //s << "Ack ServerReport from: " << guid.ToString() << " pulled: " << ack.list().size();
+        //m_log_->LogDebug(s);
 
         if (ack.code() == 0) {
             for (auto s : ack.list()) {
@@ -321,21 +301,21 @@ class INodeBaseModule : public IModule {
     void OnServerSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
         if (eEvent & SQUICK_NET_EVENT_EOF) {
             m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
-            OnClientDisconnect(sock);
+            OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
             m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
-            OnClientDisconnect(sock);
+            OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
             m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
-            OnClientDisconnect(sock);
+            OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
             m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
             OnClientConnected(sock);
         }
     }
 
-    virtual void OnClientDisconnect(socket_t sock) {};
     virtual void OnClientConnected(socket_t sock) {};
+    virtual void OnClientDisconnected(socket_t sock) {};
 
     // 作为客户端连接socket事件
     void OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet) {
@@ -400,7 +380,7 @@ class INodeBaseModule : public IModule {
     }
 
     virtual void OnReqRegister(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        Guid nPlayerID;
+        string nPlayerID;
         rpc::ReqRegisterServer req;
         if (!m_net_->ReceivePB(msg_id, msg, len, req, nPlayerID)) {
             return;
@@ -449,7 +429,7 @@ class INodeBaseModule : public IModule {
     
     // 注册响应
     virtual void OnAckRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-        Guid guid;
+        string guid;
         rpc::AckRegisterServer ack;
         if (!m_net_->ReceivePB(msg_id, msg, len, ack, guid)) {
             return;
@@ -483,7 +463,7 @@ class INodeBaseModule : public IModule {
     }
 
     virtual void OnServerUnRegistered(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        Guid nPlayerID;
+        string nPlayerID;
         rpc::ServerList sl;
         if (!m_net_->ReceivePB(msg_id, msg, len, sl, nPlayerID)) {
             return;
@@ -504,8 +484,23 @@ class INodeBaseModule : public IModule {
     
     }
     
-    
-
+    public:
+        virtual int GetLoadBanlanceNode(ServerType type) {
+        int node_id = -1;
+        int min_workload = 99999;
+        for (auto& iter : servers_) {
+            auto server = iter.second;
+            if (server.info->type() == type && server.info->area() == pm_->GetArea()) {
+                if (min_workload > server.info->workload()) {
+                    node_id = iter.first;
+                }
+            }
+        }
+        if (node_id == -1) {
+            return -1;
+        }
+        return node_id;
+    }
 
     public:
 

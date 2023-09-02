@@ -13,7 +13,6 @@ class NodeModule : public INodeModule {
     virtual bool AfterStart();
 
   protected:
-    virtual void OnClientDisconnect(const socket_t sock) override;
     virtual void OnClientConnected(const socket_t sock) override;
     void InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     map<int, ServerInfo>& GetServers() override;

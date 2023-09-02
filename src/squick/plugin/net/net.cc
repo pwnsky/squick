@@ -430,9 +430,9 @@ int Net::StartServerNet() {
     listener = evconnlistener_new_bind(mxBase, listener_cb, (void *)this, LEV_OPT_REUSEABLE | LEV_OPT_CLOSE_ON_FREE, -1, (struct sockaddr *)&sin, sizeof(sin));
 
     if (!listener) {
-        fprintf(stderr, "Could not create a listener!\n");
+        fprintf(stderr, "Could not create a listener! listen port: %d\n", nPort);
+        perror("Error: ");
         Final();
-
         return -1;
     }
 

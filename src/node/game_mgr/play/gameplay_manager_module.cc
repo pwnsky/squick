@@ -135,7 +135,8 @@ void GameplayManagerModule::OnRecv(const socket_t sock, const int msg_id, const 
         return;
     }
 
-    Guid clientID = m_net_->ProtobufToStruct(xMsg.player_id());
+    Guid clientID;
+    clientID.FromString(xMsg.guid());
     //int group_id = m_player_manager_->GetPlayerRoomID(clientID);
     int group_id = -1;
     if (group_id == -1)

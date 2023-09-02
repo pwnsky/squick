@@ -208,7 +208,7 @@ class NetObject {
   public:
     NetObject(INet *pNet, socket_t sock, sockaddr_in &addr, void *pBev) {
         logicState = 0;
-        gameID = 0;
+        lobbyID = 0;
         fd = sock;
         bNeedRemove = false;
 
@@ -255,11 +255,6 @@ class NetObject {
 
     INet *GetNet() { return netObject; }
 
-    //////////////////////////////////////////////////////////////////////////
-    const std::string &GetSecurityKey() const { return securityKey; }
-
-    void SetSecurityKey(const std::string &key) { securityKey = key; }
-
     int GetConnectKeyState() const { return logicState; }
 
     void SetConnectKeyState(const int state) { logicState = state; }
@@ -268,25 +263,18 @@ class NetObject {
 
     void SetNeedRemove(bool b) { bNeedRemove = b; }
 
-    const std::string &GetAccount() const { return account; }
 
-    void SetAccount(const std::string &data) { account = data; }
+    int GetLobbyID() const { return lobbyID; }
 
-    int GetGameID() const { return gameID; }
+    void SetLobbyID(const int nData) { lobbyID = nData; }
 
-    void SetGameID(const int nData) { gameID = nData; }
+    const string &GetPlayerID() { return playerID; }
 
-    const Guid &GetUserID() { return userID; }
+    void SetPlayerID(const string & playerID) { this->playerID = playerID; }
 
-    void SetUserID(const Guid &nUserID) { userID = nUserID; }
+    const string&GetAccountID() { return accountID; }
 
-    const Guid &GetClientID() { return clientID; }
-
-    void SetClientID(const Guid &xClientID) { clientID = xClientID; }
-
-    const Guid &GetHashIdentID() { return hashIdentID; }
-
-    void SetHashIdentID(const Guid &xHashIdentID) { hashIdentID = xHashIdentID; }
+    void SetAccountID(const string & accountID) { this->accountID = accountID; }
 
     socket_t GetRealFD() { return fd; }
 
@@ -295,16 +283,11 @@ class NetObject {
     void *userData;
     // ringbuff
     std::string ringBuff;
-    std::string account;
-    std::string securityKey;
-
     int32_t logicState;
-    int32_t gameID;
-    Guid userID;      // player id
-    Guid clientID;    // temporary client id
-    Guid hashIdentID; // hash ident, special for distributed
+    int32_t lobbyID;
+    string playerID;    // player id
+    string accountID;    // temporary client id
     INet *netObject;
-    //
     socket_t fd;
     bool bNeedRemove;
 };

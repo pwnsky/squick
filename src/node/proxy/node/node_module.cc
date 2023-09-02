@@ -8,30 +8,12 @@ bool NodeModule::AfterStart() {
     Listen();
 
     // Lobby
-    m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, rpc::LobbyBaseRPC::ACK_ENTER, this, &NodeModule::OnAckEnter);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, this, &NodeModule::Transport);
-    
-
-    // Game
-
-    
-    // Gameplay Manager
-
-
-    // Micro
-
-
-    // Wrold
-
-
-    // Login
+    m_net_client_->AddReceiveCallBack(ServerType::ST_LOBBY, this, &NodeModule::Transport);
     m_net_client_->AddReceiveCallBack(ServerType::ST_LOGIN, rpc::LoginRPC::ACK_PROXY_CONNECT_VERIFY, this, &NodeModule::OnAckProxyConnectVerify);
-    
-    //AddServer(ServerType::ST_LOBBY);
-    //AddServer(ServerType::ST_GAME_MGR);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_LOBBY, rpc::PlayerEventRPC::PLAYER_BIND_EVENT, this, &NodeModule::PlayerBindEvent);
+    AddServer(ServerType::ST_LOBBY);
     AddServer(ServerType::ST_LOGIN);
     AddServer(ServerType::ST_WORLD);
-    //AddServer(ServerType::ST_MICRO);
     return true;
 }
 
@@ -39,40 +21,33 @@ void NodeModule::Transport(const socket_t sock, const int msg_id, const char* ms
     m_logic_->ForwardToClient(sock, msg_id, msg, len);
 }
 
-void NodeModule::OnAckEnter(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    dout << "进入游戏成功!\n";
-    Guid nPlayerID;
-    rpc::AckEnter xData;
-    if (!INetModule::ReceivePB(msg_id, msg, len, xData, nPlayerID)) {
+void NodeModule::PlayerBindEvent(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    string guid;
+    rpc::PlayerBindEvent event;
+    if (!INetModule::ReceivePB(msg_id, msg, len, event, guid)) {
         return;
     }
-    const Guid& xClient = INetModule::ProtobufToStruct(xData.guid());
-    const Guid& xPlayer = INetModule::ProtobufToStruct(xData.object());
-
-    // m_logic_->EnterGameSuccessEvent(xClient, xPlayer);
-    m_logic_->ForwardToClient(sock, msg_id, msg, len);
+    m_logic_->EnterSuccessEvent(event.account_id(), event.player_id());
 }
 
 bool NodeModule::OnReqProxyConnectVerify(INT64 session, const std::string& guid, const std::string& key) {
-    dout << "向登录服务器请求验证\n";
     rpc::ReqConnectProxyVerify req;
     req.set_session(session);
     req.set_key(key);
     req.set_guid(guid);
-    //m_net_client_->SendToServerByPB(2, , req); // 暂时写login_id 为死的ID
-    m_net_client_->SendToAllServerByPB(ServerType::ST_LOGIN, rpc::LoginRPC::REQ_PROXY_CONNECT_VERIFY, req, Guid(0, 0));
+    m_net_client_->SendToAllServerByPB(ServerType::ST_LOGIN, rpc::LoginRPC::REQ_PROXY_CONNECT_VERIFY, req, "");
     return true;
 }
 
 void NodeModule::OnAckProxyConnectVerify(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    dout << "登录服务器响应\n";
     m_logic_->OnAckConnectVerify(msg_id, msg, len);
     return;
 }
 
 bool NodeModule::Destory() { return true; }
 
-void NodeModule::OnClientDisconnect(socket_t sock) { m_logic_->OnClientDisconnect(sock); }
-void NodeModule::OnClientConnected(socket_t sock) { m_logic_->OnClientConnected(sock); }
+void NodeModule::OnClientConnected(socket_t sock) {  }
+
+void NodeModule::OnClientDisconnected(socket_t sock) { m_logic_->OnClientDisconnected(sock); }
 
 } // namespace proxy::server

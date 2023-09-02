@@ -8,6 +8,8 @@
 
 8000 ~ 10000 : proxy.proto
 
+10000 ~ 12000 : player_base.proto
+
 10000 ~ 30000 : lobby.proto
 
 30000 ~ 32000 : micro.proto

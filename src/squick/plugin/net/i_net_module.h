@@ -17,7 +17,7 @@
 
 // only use this macro when u has entered game server
 #define CLIENT_MSG_PROCESS(msg_id, msgData, len, msg)                                                                                                          \
-    Guid nPlayerID;                                                                                                                                            \
+    string nPlayerID;                                                                                                                                            \
     msg xMsg;                                                                                                                                                  \
     if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                       \
         m_log_->LogError(Guid(), "Parse msg error " + std::to_string(msg_id).append(" in file: ").append(__FILE__), __FUNCTION__, __LINE__);                   \
@@ -32,7 +32,7 @@
     }
 
 #define CLIENT_MSG_PROCESS_NO_OBJECT(msg_id, msgData, len, msg)                                                                                                \
-    Guid nPlayerID;                                                                                                                                            \
+    string nPlayerID;                                                                                                                                            \
     msg xMsg;                                                                                                                                                  \
     if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                       \
         m_log_->LogError(nPlayerID, "Parse msg error " + std::to_string(msg_id).append(" in file: ").append(__FILE__), __FUNCTION__, __LINE__);                \
@@ -40,7 +40,7 @@
     }
 
 #define CLIENT_MSG_PROCESS_NO_LOG(msg_id, msgData, len, msg)                                                                                                   \
-    Guid nPlayerID;                                                                                                                                            \
+    string nPlayerID;                                                                                                                                            \
     msg xMsg;                                                                                                                                                  \
     if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                       \
         return 0;                                                                                                                                              \
@@ -76,14 +76,6 @@ struct ServerInfo {
 
 class INetModule : public IModule {
   public:
-    static Guid ProtobufToStruct(rpc::Ident xID) {
-        Guid xIdent;
-        xIdent.nHead64 = xID.svrid();
-        xIdent.nData64 = xID.index();
-
-        return xIdent;
-    }
-
     static Vector2 ProtobufToStruct(rpc::Vector2 value) {
         Vector2 vector;
         vector.SetX(value.x());
@@ -106,14 +98,6 @@ class INetModule : public IModule {
         vector.SetZ(value.z());
         vector.SetW(value.w());
         return vector;
-    }
-
-    static rpc::Ident StructToProtobuf(Guid xID) {
-        rpc::Ident xIdent;
-        xIdent.set_svrid(xID.nHead64);
-        xIdent.set_index(xID.nData64);
-
-        return xIdent;
     }
 
     static rpc::Vector2 StructToProtobuf(Vector2 value) {
@@ -168,26 +152,28 @@ class INetModule : public IModule {
     static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, Guid &nPlayer) {
         rpc::MsgBase xMsg;
         if (!xMsg.ParseFromArray(msg, len)) {
-            char szData[MAX_PATH] = {0};
-            NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
+            
 #ifdef DEBUG
+            char szData[MAX_PATH] = { 0 };
+            NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
             std::cout << "--------------------" << szData << __FUNCTION__ << " " << __LINE__ << std::endl;
 #endif // DEBUG
 
             return false;
         }
 
-        nPlayer = ProtobufToStruct(xMsg.player_id());
+        nPlayer.FromString(xMsg.guid());
 
         return true;
     }
 
-    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, std::string &msgData, Guid &nPlayer) {
+    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, std::string &msgData, string &nPlayer) {
         rpc::MsgBase xMsg;
         if (!xMsg.ParseFromArray(msg, len)) {
-            char szData[MAX_PATH] = {0};
-            NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
+            ostringstream str;
 #ifdef DEBUG
+            char szData[MAX_PATH] = { 0 };
+            NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
             std::cout << "--------------------" << szData << __FUNCTION__ << " " << __LINE__ << std::endl;
 #endif // DEBUG
 
@@ -196,21 +182,22 @@ class INetModule : public IModule {
 
         msgData.assign(xMsg.msg_data().data(), xMsg.msg_data().length());
 
-        nPlayer = ProtobufToStruct(xMsg.player_id());
+        nPlayer = xMsg.guid();
 
         return true;
     }
 
-    static bool ReceivePB(const int msg_id, const std::string &strMsgData, google::protobuf::Message &xData, Guid &nPlayer) {
+    static bool ReceivePB(const int msg_id, const std::string &strMsgData, google::protobuf::Message &xData, string&nPlayer) {
         return ReceivePB(msg_id, strMsgData.c_str(), (uint32_t)strMsgData.length(), xData, nPlayer);
     }
 
-    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, google::protobuf::Message &xData, Guid &nPlayer) {
+    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, google::protobuf::Message &xData, string&nPlayer) {
         rpc::MsgBase xMsg;
         if (!xMsg.ParseFromArray(msg, len)) {
-            char szData[MAX_PATH] = {0};
-            NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
+            
 #ifdef DEBUG
+            char szData[MAX_PATH] = { 0 };
+            NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
             std::cout << "--------------------" << szData << __FUNCTION__ << " " << __LINE__ << std::endl;
 #endif // DEBUG
 
@@ -218,17 +205,16 @@ class INetModule : public IModule {
         }
 
         if (!xData.ParseFromString(xMsg.msg_data())) {
-            char szData[MAX_PATH] = {0};
-            NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from MsgData to ProtocolData, MessageID: %d\n", msg_id);
+            
 #ifdef DEBUG
+            char szData[MAX_PATH] = { 0 };
+            NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from MsgData to ProtocolData, MessageID: %d\n", msg_id);
             std::cout << "--------------------" << szData << __FUNCTION__ << " " << __LINE__ << std::endl;
 #endif // DEBUG
 
             return false;
         }
-
-        nPlayer = ProtobufToStruct(xMsg.player_id());
-
+        nPlayer = xMsg.guid();
         return true;
     }
 
@@ -255,14 +241,13 @@ class INetModule : public IModule {
     virtual bool SendMsgToAllClientWithOutHead(const int msg_id, const std::string &msg) = 0;
 
     virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) = 0;
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const Guid nPlayer) = 0;
-    virtual bool SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock) = 0;
-    virtual bool SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const Guid id) = 0;
+    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const string nPlayer) = 0;
+    virtual bool SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const string guid) = 0;
 
     virtual bool SendMsgPBToAllClient(const uint16_t msg_id, const google::protobuf::Message &xData) = 0;
 
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const std::vector<Guid> *pClientIDList) = 0;
-    virtual bool SendMsgPB(const uint16_t msg_id, const std::string &strData, const socket_t sock, const std::vector<Guid> *pClientIDList) = 0;
+    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const std::vector<string> *pClientIDList) = 0;
+    virtual bool SendMsgPB(const uint16_t msg_id, const std::string &strData, const socket_t sock, const std::vector<string> *pClientIDList) = 0;
 
     virtual INet *GetNet() = 0;
 };

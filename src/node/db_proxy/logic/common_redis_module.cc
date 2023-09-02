@@ -195,7 +195,7 @@ std::shared_ptr<IRecordManager> CommonRedisModule::GetRecordInfo(const std::stri
 
 bool CommonRedisModule::GetRecordInfo(const std::string &self, const std::string &className, rpc::ObjectRecordList *pRecordDataList, const bool cache,
                                       const bool save) {
-    *(pRecordDataList->mutable_player_id()) = INetModule::StructToProtobuf(Guid(self));
+    *(pRecordDataList->mutable_player_id()) = Guid(self).ToString();
 
     std::vector<std::string> vKeyCacheList;
     std::vector<std::string> vValueCacheList;

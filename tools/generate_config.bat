@@ -35,15 +35,3 @@ xcopy /s /e /y %config_path%\struct %client_config_path%\struct
 
 xcopy /s /e /y %config_path%\excel %client_config_path%\excel
 rd /s/q %config_path%\excel
-
-rem 生成Lua文件
-mkdir ..\src\lua\proto
-python proto_enum_to_lua.py
-python proto_to_lua_str.py
-
-copy ..\src\lua\proto\enum.lua %client_config_path%\lua
-copy ..\src\lua\proto\code.lua %client_config_path%\lua
-
-rem 拷贝到client
-copy  %client_config_path%\lua\enum.lua ..\..\client\Content\Script\Proto
-copy  %client_config_path%\lua\code.lua ..\..\client\Content\Script\Proto

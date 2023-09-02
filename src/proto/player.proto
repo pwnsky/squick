@@ -1,0 +1,23 @@
+// 描述: 玩家RPC
+// 使用: 服务器,客户端
+syntax = "proto3";
+package rpc;
+
+// PlayerRPC 12000 ~ 15000
+enum PlayerRPC {
+    PLAYER_RPC_NONE = 0;
+    ACK_PLAYER_ONLINE = 12000;
+    ACK_PLAYER_OFFLINE = 12001;
+    REQ_PLAYER_DATA = 12002; // 获取玩家详细全部数据
+    ACK_PLAYER_DATA = 12003; //
+}
+
+message ReqPlayerData {
+}
+
+message AckPlayerData {
+    bytes account = 1;
+    bytes player_id = 2;
+    bytes name = 3;
+    int32 level = 4;
+}

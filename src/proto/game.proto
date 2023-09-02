@@ -1,5 +1,5 @@
-// 房间、匹配、副本
-
+// 描述: 房间、匹配、副本
+// 使用: 服务器, 客户端
 syntax = "proto3";
 package rpc;
 import "base.proto";
@@ -34,7 +34,7 @@ message ReqGameRestart {}
 message AckGameRestart { int32 code = 1; }
 
 message PlayerBaseInfo {
-    Ident guid = 1;
+    bytes guid = 1;
     int32 index = 2;
     bytes account = 3;
     bytes name = 4;
@@ -49,10 +49,8 @@ message AckPlayerEnterList // 同场景同房间 玩家进入时列表
 
 message AckPlayerLeaveList // 同场景同房间 离开时列表
 {
-    repeated Ident list = 1;
+    repeated bytes list = 1;
 }
-
-
 
 // 18000 ~ 20000 : game.proto
 enum GameRPC {
@@ -100,7 +98,7 @@ message ReqRoomJoin { int32 room_id = 1; }
 
 message AckRoomJoin {
     int32 code = 1;
-    Ident player = 2;
+    bytes player = 2;
 }
 
 // 请求退出房间
@@ -108,7 +106,7 @@ message ReqRoomQuit { int32 room_id = 1; }
 
 message AckRoomQuit {
     int32 code = 1;
-    Ident player = 2;
+    bytes player = 2;
 }
 
 enum RoomStatus {
@@ -132,7 +130,7 @@ enum RoomPlayerStatus {
 }
 
 message RoomPlayer {
-    Ident guid = 1;
+    bytes guid = 1;
     bytes name = 2;
     RoomPlayerStatus status = 3;
 }
@@ -151,7 +149,7 @@ message ReqRoomDetails { int32 room_id = 1; }
 message RoomDetails {
     int32 id = 1;                    // 房间id
     bytes name = 2;                  // 房间名称
-    Ident owner = 3;                 // 房主
+    bytes owner = 3;                 // 房主
     RoomStatus status = 4;           // 房间状态
     int32 nplayers = 5;              // 当前房间内玩家人数
     int32 max_players = 6;           // 最多人数

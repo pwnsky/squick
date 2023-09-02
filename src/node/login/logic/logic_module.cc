@@ -18,7 +18,7 @@ bool LogicModule::Destory() { return true; }
 
 void LogicModule::OnConnectProxyVerify(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     dout << "代理服务器连接验证\n";
-    Guid tmp;
+    string tmp;
     rpc::ReqConnectProxyVerify req;
     if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
         return;

@@ -15,10 +15,7 @@ bool NodeModule::AfterStart() {
     return true;
 }
 
-
 void NodeModule::OnClientConnected(const socket_t sock) {}
-
-void NodeModule::OnClientDisconnect(const socket_t sock) {}
 
 void NodeModule::InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) { printf("Net || umsg_id=%d\n", msg_id); }
 
