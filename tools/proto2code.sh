@@ -5,7 +5,7 @@
 # Github: https://github.com/i0gan/Squick
 # Description: Install development environment on linux
 
-export LD_LIBRARY_PATH=`realpath  ../third_party/build/bin`:`realpath  ../third_party/build/lib`
+export LD_LIBRARY_PATH=`realpath  ../third_party/build/bin`:`realpath  ../third_party/build/lib`:`realpath ../third_party/build/protobuf`
 echo $LD_LIBRARY_PATH
 
 proto_bin='../third_party/build/bin/protoc'

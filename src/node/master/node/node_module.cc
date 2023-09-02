@@ -25,17 +25,17 @@ std::string NodeModule::GetServersStatus() {
     statusRoot["time"] = pm_->GetNowTime();
     for (auto &s : servers_) {
         auto& sd = s.second.info;
-        json s;
-        s["area"] = sd->area();
-        s["type"] = sd->type();
-        s["id"] = sd->id();
-        s["name"] = sd->name().c_str();
-        s["ip"] = sd->ip().c_str();
-        s["port"] = sd->port();
-        s["cpu_count"] = sd->cpu_count();
-        s["status"] = sd->state();
-        s["update_time"] = sd->update_time();
-        statusRoot["node_list"][to_string(sd->id())] = s;
+        json n;
+        n["area"] = sd->area();
+        n["type"] = sd->type();
+        n["id"] = sd->id();
+        n["name"] = sd->name().c_str();
+        n["ip"] = sd->ip().c_str();
+        n["port"] = sd->port();
+        n["cpu_count"] = sd->cpu_count();
+        n["status"] = sd->state();
+        n["update_time"] = sd->update_time();
+        statusRoot["node_list"][to_string(sd->id())] = n;
     }
     return statusRoot.dump();
 }

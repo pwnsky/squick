@@ -8,6 +8,8 @@
 # 编译protobuf
 #cd protobuf-21.6
 
+git config --global --add safe.directory /mnt
+
 third_party_path=`pwd`/../third_party
 mongo_c_driver_install=$third_party_path/build/mongo-c-driver/install
 build_type=Release
