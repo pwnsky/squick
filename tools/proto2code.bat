@@ -9,8 +9,8 @@ rem Description: Generate proto code
 set proto_bin=..\third_party\build\bin\protoc
 set proto_path="..\src\proto"
 set cpp_out_path="..\src\struct"
-set csharp_out_path="..\client\csharp"
-set lua_out_path=..\client\lua
+set csharp_out_path="..\client\proto"
+set lua_out_path="..\client\lua"
 
 mkdir %csharp_out_path%
 
@@ -21,6 +21,8 @@ for %%f in (%proto_path%\*.proto) do  %proto_bin% --cpp_out=dllexport_decl="WIN_
 rem 删除多余的proto
 del /f /q /s %csharp_out_path%\Server.cs
 del /f /q /s %csharp_out_path%\DbProxy.cs
+del /f /q /s %csharp_out_path%\PlayerEvent.cs
+del /f /q /s %csharp_out_path%\GameMgr.cs
 
 rem 生成Lua文件
 mkdir ..\src\lua\proto
