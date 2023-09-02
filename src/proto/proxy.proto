@@ -21,7 +21,7 @@ enum ProxyRPC {
 ////////////////////////////////////////////////////
 
 message ReqConnectProxy {
-    bytes guid = 1; // account的guid
+    bytes account_id = 1;
     bytes key = 2;
 }
 

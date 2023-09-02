@@ -58,7 +58,7 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
     std::string res_str;
     ReqLogin req;
     AckLogin ack;
-    Guid guid;
+    string account_id;
     ajson::load_from_buff(req, request->body.c_str());
     ajson::string_stream rep_ss;
     do {
@@ -83,12 +83,12 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
             if (!m_mysql_->IsHave("account", req.account)) {
                 dout << "AccountPasswordLogin 注册账号: account: " << req.account << " " << req.password << std::endl;
                 // 注册该账号
-                guid = m_kernel_->CreatePlayerGUID();
-                m_mysql_->RegisterAccount(guid.ToString(), req.account, req.password);
+                account_id = m_kernel_->CreatePlayerGUID().ToString();
+                m_mysql_->RegisterAccount(account_id, req.account, req.password);
             } else {
-                // 获取账号guid
-                guid = m_mysql_->GetGuid(mysql::IMysqlModule::AccountType::Account, req.account);
-                if (guid == Guid()) {
+                // 获取账号id
+                account_id = m_mysql_->GetAccountID(mysql::IMysqlModule::AccountType::Account, req.account);
+                if (account_id.empty()) {
                     dout << "系统错误, 该用户不存在\n";
                     ack.code = IResponse::SERVER_ERROR;
                     ack.msg = "server error, this player is not exsited!\n";
@@ -96,28 +96,27 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
             }
         } else if (req.type == LoginType::PhonePasswordLogin) {
         }
-        string sguid = guid.ToString();
-        dout << "AccountPasswordLogin: account: " << req.account << " " << req.password << "  Guid: " << sguid << std::endl;
-        string token = MakeToken(sguid);
+        dout << "AccountPasswordLogin: account: " << req.account << " " << req.password << "  AccountID: " << account_id << std::endl;
+        string token = MakeToken(account_id);
 
 
         ack.code = IResponse::SUCCESS;
         ack.token = token;
-        ack.guid = sguid;
+        ack.account_id = account_id;
         ack.limit_time = 1209600;
 
         time_t login_time = SquickGetTimeS();
 
         // 缓存到redis
-        m_redis_->HashSet(sguid, "account", req.account);
-        m_redis_->HashSet(sguid, "token", token);
-        m_redis_->HashSet(sguid, "guid", sguid);
-        m_redis_->HashSet(sguid, "login_limit_time", std::to_string(1209600)); // 14天
-        m_redis_->HashSet(sguid, "login_time", std::to_string(login_time));
+        m_redis_->HashSet(account_id, "account", req.account);
+        m_redis_->HashSet(account_id, "token", token);
+        m_redis_->HashSet(account_id, "account_id", account_id);
+        m_redis_->HashSet(account_id, "login_limit_time", std::to_string(1209600)); // 14天
+        m_redis_->HashSet(account_id, "login_time", std::to_string(login_time));
 
         json j;
         j["account"] = req.account;
-        j["guid"] = sguid;
+        j["account_id"] = account_id;
         j["token"] = token;
         j["login_time"] = login_time;
 
@@ -180,28 +179,28 @@ WebStatus HttpModule::Middleware(std::shared_ptr<HttpRequest> req) {
             return WebStatus::WEB_OK;
         }
     }
-    string guid;
+    string account_id;
     string token;
     auto info = GetUser(req);
     try {
-        guid = info["guid"];
+        account_id = info["account_id"];
         token = info["token"];
     }
     catch (exception e) {
         return WebStatus::WEB_AUTH;
     }
-    if (CheckAuth(guid, token)) {
+    if (CheckAuth(account_id, token)) {
         return WebStatus::WEB_OK;
     }
     return WebStatus::WEB_AUTH;
 }
 
-bool HttpModule::CheckAuth(const std::string& guid, const std::string& user_token) {
+bool HttpModule::CheckAuth(const std::string& account_id, const std::string& user_token) {
     string token;
-    if (guid.empty() || user_token.empty()) {
+    if (account_id.empty() || user_token.empty()) {
         return false;
     }
-    if (m_redis_->HashGet(guid, "token", token)) {
+    if (m_redis_->HashGet(account_id, "token", token)) {
         if (!token.empty() && token == user_token) {
             return true;
         }
@@ -210,8 +209,8 @@ bool HttpModule::CheckAuth(const std::string& guid, const std::string& user_toke
 }
 
 
-string HttpModule::MakeToken(string sguid) {
-    string sum = "UserID: " + sguid + std::to_string(SquickGetTimeMS()) + SQUICK_HASH_SALT;
+string HttpModule::MakeToken(string account_id) {
+    string sum = "UserID: " + account_id + std::to_string(SquickGetTimeMS()) + SQUICK_HASH_SALT;
     SHA256 sha256;
     return sha256(sum);
 }
@@ -244,7 +243,7 @@ bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
     ReqWorldEnter req;
     AckWorldEnter ack;
     auto info = GetUser(request);
-    std::string user = info["guid"];
+    std::string account_id = info["account_id"];
     ajson::load_from_buff(req, request->body.c_str());
     do {
 
@@ -285,23 +284,23 @@ bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
         }
 
         auto server = servers[min_proxy_id];
-        string key = MakeToken(user);
+        string key = MakeToken(account_id);
         ack.code = IResponse::SUCCESS;
         ack.ip = server.info->ip();
         ack.port = server.info->port();
         ack.world_id = req.world_id;
-        ack.guid = user;
+        ack.account_id = account_id;
         ack.key = key;
         ack.limit_time = 86400; // 限制一天
 
         // 缓存到redis
-        m_redis_->HashSet(user, "enter_time", std::to_string(SquickGetTimeS()));
-        m_redis_->HashSet(user, "proxy_ip", server.info->ip());
-        m_redis_->HashSet(user, "proxy_port", std::to_string(server.info->port()));
-        m_redis_->HashSet(user, "world_id", std::to_string(req.world_id));
-        m_redis_->HashSet(user, "proxy_key", key);
-        m_redis_->HashSet(user, "proxy_limit_time", to_string(86400));
-        m_redis_->HashSet(user, "world_id", to_string(req.world_id));
+        m_redis_->HashSet(account_id, "enter_time", std::to_string(SquickGetTimeS()));
+        m_redis_->HashSet(account_id, "proxy_ip", server.info->ip());
+        m_redis_->HashSet(account_id, "proxy_port", std::to_string(server.info->port()));
+        m_redis_->HashSet(account_id, "world_id", std::to_string(req.world_id));
+        m_redis_->HashSet(account_id, "proxy_key", key);
+        m_redis_->HashSet(account_id, "proxy_limit_time", to_string(86400));
+        m_redis_->HashSet(account_id, "world_id", to_string(req.world_id));
     } while (false);
 
     ajson::string_stream rep_ss;

@@ -62,7 +62,7 @@ void TesterModule::TestProxyTransferSpeed_Req() {
 }
 
 void TesterModule::TestProxyTransferSpeed_Ack(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    Guid guid;
+    string guid;
     rpc::Test ack;
     if (!INetModule::ReceivePB(msg_id, msg, len, ack, guid)) {
         std::cout << "Error\n";

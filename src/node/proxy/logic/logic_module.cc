@@ -26,19 +26,20 @@ bool LogicModule::AfterStart() {
     return true;
 }
 
-void LogicModule::OnClientConnected(const socket_t sock) {
+void LogicModule::OnClientDisconnected(const socket_t sock) {
+    dout << sock << " client disconnected\n";
     // remove session
     auto iter = sessions_.find(sock);
     if (iter != sessions_.end()) {
         sessions_.erase(iter);
     }
-
-    dout << "client disconnected\n";
+    
     NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
     if (pNetObject) {
         if (pNetObject->GetAccountID().empty()) {
             return;
         }
+        dout << "client disconnected " << pNetObject->GetAccountID() << std::endl;
         string player_id = pNetObject->GetPlayerID();
         string account_id = pNetObject->GetAccountID();
         auto iter = clients_.find(account_id);
@@ -46,10 +47,10 @@ void LogicModule::OnClientConnected(const socket_t sock) {
             // 判断是否有新的连接
             if (iter->second.sock == sock) {
                 // 移除schedule
-                m_schedule_->RemoveSchedule(iter->second.guid);
+                m_schedule_->RemoveSchedule(iter->second.account_id);
                 clients_.erase(iter);
 
-                int nGameID = pNetObject->GetGameID();
+                int nGameID = pNetObject->GetLobbyID();
                 if (nGameID > 0) {
 
                     // when a net-object bind a account then tell that game-server
@@ -80,6 +81,7 @@ void LogicModule::OnClientConnected(const socket_t sock) {
 
 // forward to client
 int LogicModule::ForwardToClient(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    dout << " ForwardToClient: " << std::endl;
     rpc::MsgBase xMsg;
     if (!xMsg.ParseFromArray(msg, len)) {
         char szData[MAX_PATH] = {0};
@@ -100,10 +102,12 @@ int LogicModule::ForwardToClient(const socket_t sock, const int msg_id, const ch
 }
 
 bool LogicModule::SendToPlayer(string player_id, const int msg_id, const string &data) {
+    
     bool ret = false;
     try {
         string account_id = players_[player_id];
         auto& client = clients_[account_id];
+        dout << " SendToPlayer: " << player_id << " msg_id: " << msg_id << " socks: " << client.sock << std::endl;
         m_net_->SendMsgWithOutHead(msg_id, data, client.sock);
         ret = true;
     }
@@ -115,15 +119,19 @@ bool LogicModule::SendToPlayer(string player_id, const int msg_id, const string 
     return ret;
 }
 
-int LogicModule::EnterSuccessEvent(const string account_guid, const string object_guid) {
+int LogicModule::EnterSuccessEvent(const string account_id, const string player_id) {
     // 在这里创建玩家表
 
-    auto iter = clients_.find(account_guid);
+    auto iter = clients_.find(account_id);
     if (iter != clients_.end()) {
         NetObject *obj = m_net_->GetNet()->GetNetObject(iter->second.sock);
         if (obj) {
-            obj->SetPlayerID(object_guid);
-            players_[object_guid] = account_guid;
+            obj->SetPlayerID(player_id);
+            players_[player_id] = account_id;
+            obj->SetLobbyID(iter->second.lobby_id);
+            iter->second.player_id = player_id;
+
+            dout << " EnterSuccessEvent account_guid: " << account_id << " player_id: " << player_id << std::endl;
         }
         m_net_->SendMsgWithOutHead(rpc::PlayerRPC::ACK_PLAYER_ONLINE, "", obj->GetRealFD());
     }
@@ -131,12 +139,17 @@ int LogicModule::EnterSuccessEvent(const string account_guid, const string objec
 }
 
 void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
-    if (!pNetObject || pNetObject->GetConnectKeyState() <= 0 || pNetObject->GetGameID() <= 0) {
+    NetObject *obj = m_net_->GetNet()->GetNetObject(sock);
+    if (!obj) {
         return;
     }
 
-    string player_id = pNetObject->GetPlayerID();
+    int lobby_id = obj->GetLobbyID();
+    if (lobby_id <= 0) {
+        return;
+    }
+    
+    string player_id = obj->GetPlayerID();
     // check
     auto iter = players_.find(player_id);
     if (iter == players_.end()) {
@@ -148,22 +161,20 @@ void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const ch
     if (!xMsg.ParseFromString(std::string(msg, len))) {
         char szData[MAX_PATH] = {0};
         sprintf(szData, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
-
         m_log_->LogError(Guid(0, sock), szData, __FUNCTION__, __LINE__);
         return;
     }
 
-    // real user id
     xMsg.set_guid(player_id);
-    std::string msgData;
-    if (!xMsg.SerializeToString(&msgData)) {
+    *xMsg.mutable_msg_data() = string(msg, len);
+    std::string pak;
+    if (!xMsg.SerializeToString(&pak)) {
         return;
     }
-
     // 根据ID 来转发至不同服务器
     if (msg_id >= 12000 && msg_id < 30000) {
         // 转发到Lobby
-        m_net_client_->SendByServerID(ServerType::ST_GAME, msg_id, msgData);
+        m_net_client_->SendByServerID(lobby_id, msg_id, pak);
     } else if (msg_id >= 10000 && msg_id < 32000) {
 
     } else if (msg_id >= 30000 && msg_id < 32000) {
@@ -197,7 +208,7 @@ void LogicModule::OnReqTestProxy(const socket_t sock, const int msg_id, const ch
     
     if (now_time - last_time > 1000000) {
         rpc::Test req;
-        Guid guid;
+        string guid;
         INetModule::ReceivePB(msg_id, string(msg, len), req, guid);
         std::cout << "Proxy Test:\n" << "handle quests: " << request_time - last_request_times << " times/second \n req network time: " << (now_time - req.req_time()) / 1000.0f << " ms \n";
         last_time = now_time;
@@ -215,8 +226,8 @@ int LogicModule::OnHeatbeatCheck(const Guid &self, const std::string &heartBeat,
     }
     // dout << "heatbeatcheck : " << self.ToString() << "  " << iter->second.last_ping << "  now " << SquickGetTimeMS() << std::endl;
     time_t now = SquickGetTimeMS();
-    if (now - iter->second.last_ping > 10000) { // 大于10秒即断线
-        OnClientConnected(iter->second.sock);
+    if (now - iter->second.last_ping > 30000) { // 大于30秒即断线
+        OnClientDisconnected(iter->second.sock);
     }
     return 0;
 }
@@ -234,7 +245,7 @@ bool LogicModule::TryEnter(string guid) {
     }
     rpc::PlayerEnterEvent event;
     *event.mutable_account() = client->second.account;
-    *event.mutable_guid() = client->second.guid;
+    *event.mutable_account_id() = client->second.account_id;
     event.set_proxy_id(pm_->GetAppID());
     m_net_client_->SendToServerByPB(lobby_id, rpc::PlayerEventRPC::PLAYER_ENTER_EVENT, event);
     client->second.lobby_id = lobby_id;
@@ -253,16 +264,16 @@ void LogicModule::OnReqConnect(const socket_t sock, const int msg_id, const char
     }
     // 验证Token
     Session s;
-    s.guid = req.guid();
+    s.account_id = req.account_id();
     s.key = req.key();
     s.time = SquickGetTimeMS();
     s.sock = sock;
     sessions_[sock] = s;
-    m_node_->OnReqProxyConnectVerify(sock, req.guid(), req.key());
+    m_node_->OnReqProxyConnectVerify(sock, req.account_id(), req.key());
 }
 
 void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const uint32_t len) {
-    Guid tmp;
+    string tmp;
     rpc::AckConnectProxyVerify data;
     if (!m_net_->ReceivePB(msg_id, msg, len, data, tmp)) {
         return;
@@ -288,7 +299,7 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
 
     if (data.code() == 0) {
         // remove old socket
-        auto iter2 = clients_.find(s.guid);
+        auto iter2 = clients_.find(s.account_id);
         if (iter2 != clients_.end()) {
             // kick off old connection;
             rpc::AckKickOff k;
@@ -297,25 +308,22 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
             // m_net_->GetNet()->CloseNetObject(iter2->second.sock);
             return;
         }
-
-        // bind account guid with socket
-        net->SetAccountID(s.guid);
+        
+        net->SetAccountID(s.account_id);
         net->SetConnectKeyState(1);
-        //net->SetPlayerID(s.guid);
         rpc::AckConnectProxy ack;
         ack.set_code(0);
         m_net_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_CONNECT_PROXY, ack.SerializeAsString(), s.sock);
-        string sguid = s.guid;
-        auto &client = clients_[sguid];
+        auto &client = clients_[s.account_id];
         client.sock = s.sock;
         client.last_ping = SquickGetTimeMSEx();
-        client.guid = s.guid;
+        client.account_id = s.account_id;
         client.account = data.account();
         client.world_id = data.world_id();
-
+        dout << "验证成功: " << data.account() << " sock: " << s.sock << std::endl;
         // 增加schecdule
-        m_schedule_->AddSchedule(s.guid, "HeatbeatCheck", this, &LogicModule::OnHeatbeatCheck, 10.0f, 99999); // 每10秒check一次
-        TryEnter(sguid);
+        m_schedule_->AddSchedule(s.account_id, "HeatbeatCheck", this, &LogicModule::OnHeatbeatCheck, 10.0f, 99999); // 每10秒check一次
+        TryEnter(s.account_id);
     } else {
         // if verify failed then close this connect
         //m_net_->GetNet()->CloseNetObject(s.sock);

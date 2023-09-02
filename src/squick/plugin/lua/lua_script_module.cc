@@ -755,7 +755,7 @@ bool LuaScriptModule::Register() {
 }
 
 void LuaScriptModule::OnNetMsgCallBackAsServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    Guid guid;
+    string guid;
     string data;
     if (!m_net_->ReceivePB(msg_id, msg, len, data, guid)) {
         ostringstream str;
@@ -769,7 +769,7 @@ void LuaScriptModule::OnNetMsgCallBackAsServer(const socket_t sock, const int ms
         auto Ret = msgCallBack->First(callback);
         while (Ret) {
             try {
-                callback.func.call<LuaIntf::LuaRef>(callback.self, guid.ToString(), data, msg_id, sock);
+                callback.func.call<LuaIntf::LuaRef>(callback.self, guid, data, msg_id, sock);
             } catch (LuaIntf::LuaException &e) {
                 cout << e.what() << endl;
             } catch (...) {

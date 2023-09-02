@@ -17,7 +17,7 @@
 
 // only use this macro when u has entered game server
 #define CLIENT_MSG_PROCESS(msg_id, msgData, len, msg)                                                                                                          \
-    Guid nPlayerID;                                                                                                                                            \
+    string nPlayerID;                                                                                                                                            \
     msg xMsg;                                                                                                                                                  \
     if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                       \
         m_log_->LogError(Guid(), "Parse msg error " + std::to_string(msg_id).append(" in file: ").append(__FILE__), __FUNCTION__, __LINE__);                   \
@@ -32,7 +32,7 @@
     }
 
 #define CLIENT_MSG_PROCESS_NO_OBJECT(msg_id, msgData, len, msg)                                                                                                \
-    Guid nPlayerID;                                                                                                                                            \
+    string nPlayerID;                                                                                                                                            \
     msg xMsg;                                                                                                                                                  \
     if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                       \
         m_log_->LogError(nPlayerID, "Parse msg error " + std::to_string(msg_id).append(" in file: ").append(__FILE__), __FUNCTION__, __LINE__);                \
@@ -40,7 +40,7 @@
     }
 
 #define CLIENT_MSG_PROCESS_NO_LOG(msg_id, msgData, len, msg)                                                                                                   \
-    Guid nPlayerID;                                                                                                                                            \
+    string nPlayerID;                                                                                                                                            \
     msg xMsg;                                                                                                                                                  \
     if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                       \
         return 0;                                                                                                                                              \
@@ -167,7 +167,7 @@ class INetModule : public IModule {
         return true;
     }
 
-    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, std::string &msgData, Guid &nPlayer) {
+    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, std::string &msgData, string &nPlayer) {
         rpc::MsgBase xMsg;
         if (!xMsg.ParseFromArray(msg, len)) {
             ostringstream str;
@@ -182,16 +182,16 @@ class INetModule : public IModule {
 
         msgData.assign(xMsg.msg_data().data(), xMsg.msg_data().length());
 
-        nPlayer.FromString(xMsg.guid());
+        nPlayer = xMsg.guid();
 
         return true;
     }
 
-    static bool ReceivePB(const int msg_id, const std::string &strMsgData, google::protobuf::Message &xData, Guid &nPlayer) {
+    static bool ReceivePB(const int msg_id, const std::string &strMsgData, google::protobuf::Message &xData, string&nPlayer) {
         return ReceivePB(msg_id, strMsgData.c_str(), (uint32_t)strMsgData.length(), xData, nPlayer);
     }
 
-    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, google::protobuf::Message &xData, Guid &nPlayer) {
+    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, google::protobuf::Message &xData, string&nPlayer) {
         rpc::MsgBase xMsg;
         if (!xMsg.ParseFromArray(msg, len)) {
             
@@ -214,7 +214,7 @@ class INetModule : public IModule {
 
             return false;
         }
-        nPlayer.FromString(xMsg.guid());
+        nPlayer = xMsg.guid();
         return true;
     }
 

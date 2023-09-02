@@ -13,6 +13,7 @@
 #include <string>
 namespace login::mysql {
 using namespace ::mysqlx;
+using namespace std;
 class IMysqlModuleA : public IMysqlModule, public imodule::IMysqlModule {
     virtual bool Start() {
         return imodule::IMysqlModule::Start();;
@@ -37,7 +38,7 @@ class MysqlModule : public IMysqlModuleA {
     virtual void OnLoginProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     virtual bool RegisterAccount(const std::string &guid, const std::string &account, const std::string &password) override;
     virtual bool IsHave(const std::string &column_name, const std::string &value) override;
-    virtual Guid GetGuid(AccountType type, const std::string &account) override;
+    virtual std::string GetAccountID(AccountType type, const std::string &account) override;
   private:
 };
 

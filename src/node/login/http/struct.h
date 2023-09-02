@@ -58,11 +58,11 @@ AJSON(ReqLogin, type, account, password, token, signature, version, platform, de
 class AckLogin : public IResponse {
   public:
     string token;   // 该token可用于RPC或http的token
-    string guid;    // 账号Guid
+    string account_id;    // 账号ID
     int limit_time; // token过期倒计时
 };
 
-AJSON(AckLogin, code, msg, token, guid, limit_time)
+AJSON(AckLogin, code, msg, token, account_id, limit_time)
 
 class ReqWorldEnter : public IRequest {
   public:
@@ -72,14 +72,14 @@ AJSON(ReqWorldEnter, world_id)
 
 class AckWorldEnter : public IResponse {
   public:
-    string guid; // account的guid
+    string account_id;
     string key;
     string ip;
     int port;
     int world_id;
     int limit_time;
 };
-AJSON(AckWorldEnter, code, msg, guid, key, ip, port, world_id, limit_time)
+AJSON(AckWorldEnter, code, msg, account_id, key, ip, port, world_id, limit_time)
 
 class AckWorldList : public IResponse {
   public:

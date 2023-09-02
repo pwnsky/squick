@@ -208,7 +208,7 @@ class NetObject {
   public:
     NetObject(INet *pNet, socket_t sock, sockaddr_in &addr, void *pBev) {
         logicState = 0;
-        gameID = 0;
+        lobbyID = 0;
         fd = sock;
         bNeedRemove = false;
 
@@ -264,9 +264,9 @@ class NetObject {
     void SetNeedRemove(bool b) { bNeedRemove = b; }
 
 
-    int GetGameID() const { return gameID; }
+    int GetLobbyID() const { return lobbyID; }
 
-    void SetGameID(const int nData) { gameID = nData; }
+    void SetLobbyID(const int nData) { lobbyID = nData; }
 
     const string &GetPlayerID() { return playerID; }
 
@@ -284,7 +284,7 @@ class NetObject {
     // ringbuff
     std::string ringBuff;
     int32_t logicState;
-    int32_t gameID;
+    int32_t lobbyID;
     string playerID;    // player id
     string accountID;    // temporary client id
     INet *netObject;

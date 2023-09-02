@@ -12,7 +12,7 @@ class IMysqlModule : virtual public IModule {
     };
     virtual bool RegisterAccount(const std::string &guid, const std::string &account, const std::string &password) = 0;
     virtual bool IsHave(const std::string &column_name, const std::string &value) = 0;
-    virtual Guid GetGuid(AccountType type, const std::string &account) = 0;
+    virtual std::string GetAccountID(AccountType type, const std::string &account) = 0;
 };
 
 } // namespace login::mysql

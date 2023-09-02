@@ -144,7 +144,7 @@ class INodeBaseModule : public IModule {
 
     // Add upper server
     void OnDynamicServerAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        Guid guid;
+        string guid;
         rpc::ServerList req;
         if (!INetModule::ReceivePB(msg_id, msg, len, req, guid)) {
             return;
@@ -179,20 +179,6 @@ class INodeBaseModule : public IModule {
     }
 
     virtual void OnServerRefreshed(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        Guid nPlayerID;
-        rpc::ServerList sl;
-        if (!m_net_->ReceivePB(msg_id, msg, len, sl, nPlayerID)) {
-            return;
-        }
-        for (int i = 0; i < sl.list_size(); ++i) {
-            const rpc::Server &s = sl.list(i);
-            int id = s.id();
-            ServerInfo d;
-            d.fd = sock;
-            *d.info = s;
-            servers_[id] = d;
-            m_log_->LogInfo(Guid(0, s.id()), s.name(), " Refreshed");
-        }
     }
 
     // Report to upper server
@@ -228,7 +214,7 @@ class INodeBaseModule : public IModule {
     }
 
     virtual void OnReqServerReport(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        Guid guid;
+        string guid;
         rpc::ReqReport req;
         if (!INetModule::ReceivePB(msg_id, msg, len, req, guid)) {
             return;
@@ -276,7 +262,7 @@ class INodeBaseModule : public IModule {
 
     virtual void OnAckServerReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
         
-        Guid guid;
+        string guid;
         rpc::AckReport ack;
         if (!m_net_->ReceivePB(msg_id, msg, len, ack, guid)) {
             return;
@@ -315,13 +301,13 @@ class INodeBaseModule : public IModule {
     void OnServerSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
         if (eEvent & SQUICK_NET_EVENT_EOF) {
             m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
-\
+            OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
             m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
-\
+            OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
             m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
-\
+            OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
             m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
             OnClientConnected(sock);
@@ -329,6 +315,7 @@ class INodeBaseModule : public IModule {
     }
 
     virtual void OnClientConnected(socket_t sock) {};
+    virtual void OnClientDisconnected(socket_t sock) {};
 
     // 作为客户端连接socket事件
     void OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet) {
@@ -393,7 +380,7 @@ class INodeBaseModule : public IModule {
     }
 
     virtual void OnReqRegister(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        Guid nPlayerID;
+        string nPlayerID;
         rpc::ReqRegisterServer req;
         if (!m_net_->ReceivePB(msg_id, msg, len, req, nPlayerID)) {
             return;
@@ -442,7 +429,7 @@ class INodeBaseModule : public IModule {
     
     // 注册响应
     virtual void OnAckRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-        Guid guid;
+        string guid;
         rpc::AckRegisterServer ack;
         if (!m_net_->ReceivePB(msg_id, msg, len, ack, guid)) {
             return;
@@ -476,7 +463,7 @@ class INodeBaseModule : public IModule {
     }
 
     virtual void OnServerUnRegistered(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        Guid nPlayerID;
+        string nPlayerID;
         rpc::ServerList sl;
         if (!m_net_->ReceivePB(msg_id, msg, len, sl, nPlayerID)) {
             return;

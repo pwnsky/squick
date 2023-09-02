@@ -8,6 +8,7 @@ class NodeModule : public INodeModule {
     virtual bool Destory();
     virtual bool AfterStart();
     virtual void OnClientConnected(socket_t sock) override;
+    virtual void OnClientDisconnected(socket_t sock) override;
 
     virtual bool OnReqProxyConnectVerify(INT64 session, const std::string& guid, const std::string& key) override;
     virtual int GetLoadBanlanceNode(ServerType type) override { return INodeBaseModule::GetLoadBanlanceNode(type); }

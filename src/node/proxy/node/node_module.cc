@@ -8,7 +8,7 @@ bool NodeModule::AfterStart() {
     Listen();
 
     // Lobby
-    m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, this, &NodeModule::Transport);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_LOBBY, this, &NodeModule::Transport);
     m_net_client_->AddReceiveCallBack(ServerType::ST_LOGIN, rpc::LoginRPC::ACK_PROXY_CONNECT_VERIFY, this, &NodeModule::OnAckProxyConnectVerify);
     m_net_client_->AddReceiveCallBack(ServerType::ST_LOBBY, rpc::PlayerEventRPC::PLAYER_BIND_EVENT, this, &NodeModule::PlayerBindEvent);
     AddServer(ServerType::ST_LOBBY);
@@ -22,33 +22,32 @@ void NodeModule::Transport(const socket_t sock, const int msg_id, const char* ms
 }
 
 void NodeModule::PlayerBindEvent(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    Guid guid;
+    string guid;
     rpc::PlayerBindEvent event;
     if (!INetModule::ReceivePB(msg_id, msg, len, event, guid)) {
         return;
     }
-    m_logic_->EnterSuccessEvent(event.guid(), event.object());
+    m_logic_->EnterSuccessEvent(event.account_id(), event.player_id());
 }
 
 bool NodeModule::OnReqProxyConnectVerify(INT64 session, const std::string& guid, const std::string& key) {
-    dout << "向登录服务器请求验证\n";
     rpc::ReqConnectProxyVerify req;
     req.set_session(session);
     req.set_key(key);
     req.set_guid(guid);
-    //m_net_client_->SendToServerByPB(2, , req); // 暂时写login_id 为死的ID
     m_net_client_->SendToAllServerByPB(ServerType::ST_LOGIN, rpc::LoginRPC::REQ_PROXY_CONNECT_VERIFY, req, "");
     return true;
 }
 
 void NodeModule::OnAckProxyConnectVerify(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    dout << "登录服务器响应\n";
     m_logic_->OnAckConnectVerify(msg_id, msg, len);
     return;
 }
 
 bool NodeModule::Destory() { return true; }
 
-void NodeModule::OnClientConnected(socket_t sock) { m_logic_->OnClientConnected(sock); }
+void NodeModule::OnClientConnected(socket_t sock) {  }
+
+void NodeModule::OnClientDisconnected(socket_t sock) { m_logic_->OnClientDisconnected(sock); }
 
 } // namespace proxy::server

@@ -1,7 +1,7 @@
 
 #include "mysql_module.h"
 #include "plugin.h"
-
+#include <string>
 namespace login::mysql {
 
 void MysqlModule::OnLoginProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
@@ -44,7 +44,7 @@ bool MysqlModule::IsHave(const std::string &column_name, const std::string &valu
     return count != 0;
 }
 
-Guid MysqlModule::GetGuid(AccountType type, const std::string &account) {
+std::string MysqlModule::GetAccountID(AccountType type, const std::string &account) {
     std::string column_name = "account";
     switch (type) {
     case AccountType::Account:
@@ -63,25 +63,24 @@ Guid MysqlModule::GetGuid(AccountType type, const std::string &account) {
         column_name = "qq";
         break;
     }
-    Guid guid;
+    std::string account_id;
     try {
         Schema sch = session_->getSchema(database_);
         Table tab = sch.getTable("account", true);
         RowResult r = tab.select("guid").where(column_name + "='" + account + "'").limit(1).execute();
         if (r.count() < 1) {
-            return guid;
+            return account_id;
         }
         mysqlx::string xstr = r.fetchOne()[0];
-        std::string sguid = xstr;
-        guid.FromString(sguid);
+        account_id = xstr;
     } catch (const mysqlx::Error &err) {
         dout << "ERROR: " << err << endl;
-        return guid;
+        return account_id;
     } catch (std::exception &ex) {
         dout << "STD EXCEPTION: " << ex.what() << endl;
-        return guid;
+        return account_id;
     }
-    return guid;
+    return account_id;
 }
 
 } // namespace login::mysql
