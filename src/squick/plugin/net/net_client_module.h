@@ -37,48 +37,22 @@ class NetClientModule : public INetClientModule {
     virtual void RemoveReceiveCallBack(const ServerType eType, const uint16_t msg_id);
 
     ////////////////////////////////////////////////////////////////////////////////
-    virtual void SendByServerIDWithOutHead(const int serverID, const uint16_t msg_id, const std::string &strData);
 
     virtual void SendByServerID(const int serverID, const uint16_t msg_id, const std::string &strData);
-    virtual void SendByServerID(const int serverID, const uint16_t msg_id, const std::string &strData, const Guid id);
-
-    virtual void SendToAllServerWithOutHead(const uint16_t msg_id, const std::string &strData);
+    virtual void SendByServerID(const int serverID, const uint16_t msg_id, const std::string &strData, const string guid);
 
     virtual void SendToAllServer(const uint16_t msg_id, const std::string &strData);
-    virtual void SendToAllServer(const uint16_t msg_id, const std::string &strData, const Guid id);
-
-    virtual void SendToAllServerWithOutHead(const ServerType eType, const uint16_t msg_id, const std::string &strData);
+    virtual void SendToAllServer(const uint16_t msg_id, const std::string &strData, const string guid);
 
     virtual void SendToAllServer(const ServerType eType, const uint16_t msg_id, const std::string &strData);
-    virtual void SendToAllServer(const ServerType eType, const uint16_t msg_id, const std::string &strData, const Guid id);
+    virtual void SendToAllServer(const ServerType eType, const uint16_t msg_id, const std::string &strData, const string guid);
 
     virtual void SendToServerByPB(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData);
-    virtual void SendToServerByPB(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData, const Guid id);
+    virtual void SendToServerByPB(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid);
 
-    virtual void SendToAllServerByPB(const uint16_t msg_id, const google::protobuf::Message &xData, const Guid id);
+    virtual void SendToAllServerByPB(const uint16_t msg_id, const google::protobuf::Message &xData, const string id);
+    virtual void SendToAllServerByPB(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid);
 
-    virtual void SendToAllServerByPB(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const Guid id);
-
-    ////////////////////////////////////////////////////////////////////////////////
-
-    virtual void SendBySuitWithOutHead(const ServerType eType, const std::string &strHashKey, const uint16_t msg_id, const std::string &strData);
-
-    virtual void SendBySuit(const ServerType eType, const std::string &strHashKey, const uint16_t msg_id, const std::string &strData);
-    virtual void SendBySuit(const ServerType eType, const std::string &strHashKey, const uint16_t msg_id, const std::string &strData, const Guid id);
-
-    virtual void SendBySuitWithOutHead(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const std::string &strData);
-
-    virtual void SendBySuit(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const std::string &strData);
-    virtual void SendBySuit(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const std::string &strData, const Guid id);
-
-    virtual void SendSuitByPB(const ServerType eType, const std::string &strHashKey, const uint16_t msg_id, const google::protobuf::Message &xData);
-    virtual void SendSuitByPB(const ServerType eType, const std::string &strHashKey, const uint16_t msg_id, const google::protobuf::Message &xData,
-                              const Guid id);
-
-    virtual void SendSuitByPB(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const google::protobuf::Message &xData);
-    virtual void SendSuitByPB(const ServerType eType, const int nHashKey32, const uint16_t msg_id, const google::protobuf::Message &xData, const Guid id);
-
-    ////////////////////////////////////////////////////////////////////////////////
 
     virtual MapEx<int, ConnectData> &GetServerList();
 

@@ -7,6 +7,5 @@
 		<Plugin Name="core/lua" />
 		
 		<Plugin Name="node/lobby/node" />
-		<Plugin Name="node/lobby/player" />
 	</GameServer>
 </XML>

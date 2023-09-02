@@ -114,7 +114,7 @@ class CommonRedisModule : public ICommonRedisModule {
                     if (pPropertyData) {
                         pPropertyData->set_col(iCol);
                         pPropertyData->set_row(iRow);
-                        *pPropertyData->mutable_data() = INetModule::StructToProtobuf(xPropertyValue);
+                        *pPropertyData->mutable_data() = xPropertyValue.ToString();
                     }
                 } break;
                 case TDATA_VECTOR2: {
@@ -187,8 +187,8 @@ class CommonRedisModule : public ICommonRedisModule {
                 for (int i = 0; i < xAddRowStruct.record_object_list_size(); i++) {
                     const rpc::RecordObject &xPropertyData = xAddRowStruct.record_object_list(i);
                     const int col = xPropertyData.col();
-                    const Guid xPropertyValue = INetModule::ProtobufToStruct(xPropertyData.data());
-
+                    Guid xPropertyValue;
+                    xPropertyValue.FromString(xPropertyData.data());
                     initData->SetObject(col, xPropertyValue);
                 }
 
@@ -275,7 +275,7 @@ class CommonRedisModule : public ICommonRedisModule {
                     case DATA_TYPE::TDATA_OBJECT: {
                         rpc::PropertyObject *pData = pPropertyData->add_property_object_list();
                         pData->set_property_name(xPropert->GetKey());
-                        *(pData->mutable_data()) = INetModule::StructToProtobuf(xPropert->GetObject());
+                        *(pData->mutable_data()) = xPropert->GetObject().ToString();
                     } break;
 
                     case DATA_TYPE::TDATA_STRING: {
@@ -346,7 +346,7 @@ class CommonRedisModule : public ICommonRedisModule {
                     pProps->AddProperty(pProps->Self(), xData.property_name(), DATA_TYPE::TDATA_OBJECT);
                 }
 
-                pProps->SetPropertyObject(xData.property_name(), Guid(xData.data().svrid(), xData.data().index()));
+                pProps->SetPropertyObject(xData.property_name(), xData.data());
             }
 
             for (int i = 0; i < pPropertyData.property_vector2_list_size(); ++i) {

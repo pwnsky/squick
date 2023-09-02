@@ -10,8 +10,8 @@ set proto_bin=..\third_party\build\bin\protoc
 set proto_path="..\src\proto"
 set cpp_out_path="..\src\struct"
 set csharp_out_path="..\client\csharp"
+set lua_out_path=..\client\lua
 
-mkdir %csharp_out_path%
 mkdir %csharp_out_path%
 
 for %%f in (%proto_path%\*.proto) do  %proto_bin% --csharp_out=%csharp_out_path% --proto_path=%proto_path% %%f
@@ -21,3 +21,11 @@ for %%f in (%proto_path%\*.proto) do  %proto_bin% --cpp_out=dllexport_decl="WIN_
 rem 删除多余的proto
 del /f /q /s %csharp_out_path%\Server.cs
 del /f /q /s %csharp_out_path%\DbProxy.cs
+
+rem 生成Lua文件
+mkdir ..\src\lua\proto
+python proto_enum_to_lua.py
+python proto_to_lua_str.py
+
+copy ..\src\lua\proto\enum.lua %lua_out_path%
+copy ..\src\lua\proto\code.lua %lua_out_path%

@@ -268,17 +268,13 @@ class NetObject {
 
     void SetGameID(const int nData) { gameID = nData; }
 
-    const Guid &GetUserID() { return userID; }
+    const string &GetPlayerID() { return playerID; }
 
-    void SetUserID(const Guid &nUserID) { userID = nUserID; }
+    void SetPlayerID(const string & playerID) { this->playerID = playerID; }
 
-    const Guid &GetClientID() { return clientID; }
+    const string&GetAccountID() { return accountID; }
 
-    void SetClientID(const Guid &xClientID) { clientID = xClientID; }
-
-    const Guid &GetHashIdentID() { return hashIdentID; }
-
-    void SetHashIdentID(const Guid &xHashIdentID) { hashIdentID = xHashIdentID; }
+    void SetAccountID(const string & accountID) { this->accountID = accountID; }
 
     socket_t GetRealFD() { return fd; }
 
@@ -289,11 +285,9 @@ class NetObject {
     std::string ringBuff;
     int32_t logicState;
     int32_t gameID;
-    Guid userID;      // player id
-    Guid clientID;    // temporary client id
-    Guid hashIdentID; // hash ident, special for distributed
+    string playerID;    // player id
+    string accountID;    // temporary client id
     INet *netObject;
-    //
     socket_t fd;
     bool bNeedRemove;
 };

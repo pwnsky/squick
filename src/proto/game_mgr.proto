@@ -1,3 +1,5 @@
+// 描述: 游戏管理器 
+// 使用: 服务器
 syntax = "proto3";
 package rpc;
 import "game.proto";

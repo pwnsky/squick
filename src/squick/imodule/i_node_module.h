@@ -21,7 +21,6 @@ class INodeBaseModule : public IModule {
         m_class_ = pm_->FindModule<IClassModule>();
         m_net_client_ = pm_->FindModule<INetClientModule>();
         m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
-        
         is_update_ = true;
 
         return true;
@@ -316,20 +315,19 @@ class INodeBaseModule : public IModule {
     void OnServerSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
         if (eEvent & SQUICK_NET_EVENT_EOF) {
             m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
-            OnClientDisconnect(sock);
+\
         } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
             m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
-            OnClientDisconnect(sock);
+\
         } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
             m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
-            OnClientDisconnect(sock);
+\
         } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
             m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
             OnClientConnected(sock);
         }
     }
 
-    virtual void OnClientDisconnect(socket_t sock) {};
     virtual void OnClientConnected(socket_t sock) {};
 
     // 作为客户端连接socket事件

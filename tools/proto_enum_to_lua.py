@@ -2,7 +2,7 @@
 # encoding=utf-8
 import os
 import collections
-
+import time
 parser_result = {}
 
 package_list = {}
@@ -14,7 +14,6 @@ def generate_lua_file():
 ----------------------------------------------------------------------------------
 
 ''')
-
         for p, es in package_list.items():
             for e, k in es.items():
                 out.write(e + ' = {\n')

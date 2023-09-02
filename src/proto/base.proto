@@ -1,12 +1,7 @@
-// 基础定义
-
+// 描述: 基础定义
+// 使用: 服务器, 客户端
 syntax = "proto3";
 package rpc;
-
-message Ident {
-    int64 svrid = 1;
-    int64 index = 2;
-}
 
 message Vector2 {
     float x = 1;
@@ -24,13 +19,4 @@ message Vector4 {
     float y = 2;
     float z = 3;
     float w = 4;
-}
-
-///////////////////////////////////////////////////////////////////
-// only be used between proxy-server and game-server
-message MsgBase {
-    Ident player_id = 1;
-    bytes msg_data = 2;
-    repeated Ident player_client_list = 3;
-    Ident hash_ident = 4;
 }

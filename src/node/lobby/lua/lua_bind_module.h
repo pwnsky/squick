@@ -10,7 +10,6 @@
 #include <squick/plugin/net/export.h>
 #include <struct/struct.h>
 
-#include "../player/player_manager_module.h"
 namespace lobby::lua {
 class ILuaBindModule : public IModule {};
 
@@ -35,8 +34,8 @@ class LuaBindModule : public ILuaBindModule {
 
   private:
     ILuaScriptModule *m_lua_script_;
-    player::IPlayerManagerModule *m_player_manager_;
-    node::INodeModule *m_node_;
+    //player::IPlayerManagerModule *m_player_manager_;
+    //node::INodeModule *m_node_;
 };
 
 } // namespace lobby::lua

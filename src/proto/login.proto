@@ -1,3 +1,5 @@
+// 描述: 登录验证
+// 使用: 服务器, 客户端
 syntax = "proto3";
 package rpc;
 

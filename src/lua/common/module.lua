@@ -7,10 +7,6 @@
 
 Module = {}
 
-function Module:Awake()
-
-end
-
 function Module:Start()
 
 end

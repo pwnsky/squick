@@ -7,7 +7,6 @@ class NodeModule : public INodeModule {
     NodeModule(IPluginManager* p) { pm_ = p; is_update_ = true; }
     virtual bool Destory();
     virtual bool AfterStart();
-    virtual void OnClientDisconnect(socket_t sock) override;
     virtual void OnClientConnected(socket_t sock) override;
 
     virtual bool OnReqProxyConnectVerify(INT64 session, const std::string& guid, const std::string& key) override;

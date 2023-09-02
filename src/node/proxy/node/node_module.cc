@@ -10,7 +10,7 @@ bool NodeModule::AfterStart() {
     // Lobby
     m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, this, &NodeModule::Transport);
     m_net_client_->AddReceiveCallBack(ServerType::ST_LOGIN, rpc::LoginRPC::ACK_PROXY_CONNECT_VERIFY, this, &NodeModule::OnAckProxyConnectVerify);
-    
+    m_net_client_->AddReceiveCallBack(ServerType::ST_LOBBY, rpc::PlayerEventRPC::PLAYER_BIND_EVENT, this, &NodeModule::PlayerBindEvent);
     AddServer(ServerType::ST_LOBBY);
     AddServer(ServerType::ST_LOGIN);
     AddServer(ServerType::ST_WORLD);
@@ -22,17 +22,12 @@ void NodeModule::Transport(const socket_t sock, const int msg_id, const char* ms
 }
 
 void NodeModule::PlayerBindEvent(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    dout << "进入游戏成功!\n";
-    Guid nPlayerID;
-    rpc::PlayerBindEvent xData;
-    if (!INetModule::ReceivePB(msg_id, msg, len, xData, nPlayerID)) {
+    Guid guid;
+    rpc::PlayerBindEvent event;
+    if (!INetModule::ReceivePB(msg_id, msg, len, event, guid)) {
         return;
     }
-    const Guid& xClient = INetModule::ProtobufToStruct(xData.guid());
-    const Guid& xPlayer = INetModule::ProtobufToStruct(xData.object());
-
-    // m_logic_->EnterGameSuccessEvent(xClient, xPlayer);
-    // m_logic_->ForwardToClient(sock, msg_id, msg, len);
+    m_logic_->EnterSuccessEvent(event.guid(), event.object());
 }
 
 bool NodeModule::OnReqProxyConnectVerify(INT64 session, const std::string& guid, const std::string& key) {
@@ -42,7 +37,7 @@ bool NodeModule::OnReqProxyConnectVerify(INT64 session, const std::string& guid,
     req.set_key(key);
     req.set_guid(guid);
     //m_net_client_->SendToServerByPB(2, , req); // 暂时写login_id 为死的ID
-    m_net_client_->SendToAllServerByPB(ServerType::ST_LOGIN, rpc::LoginRPC::REQ_PROXY_CONNECT_VERIFY, req, Guid(0, 0));
+    m_net_client_->SendToAllServerByPB(ServerType::ST_LOGIN, rpc::LoginRPC::REQ_PROXY_CONNECT_VERIFY, req, "");
     return true;
 }
 
@@ -54,7 +49,6 @@ void NodeModule::OnAckProxyConnectVerify(const socket_t sock, const int msg_id, 
 
 bool NodeModule::Destory() { return true; }
 
-void NodeModule::OnClientDisconnect(socket_t sock) { m_logic_->OnClientDisconnect(sock); }
 void NodeModule::OnClientConnected(socket_t sock) { m_logic_->OnClientConnected(sock); }
 
 } // namespace proxy::server

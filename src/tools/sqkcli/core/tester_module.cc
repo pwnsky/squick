@@ -56,7 +56,7 @@ void TesterModule::TestProxyTransferSpeed_Req() {
     test.set_index(test_req_index_);
     test.set_data(test_req_data_);
     test.set_req_time(SquickGetTimeMSEx());
-    m_net_client_->SendToAllServerByPB(ServerType::ST_PROXY, rpc::TestRPC::REQ_TEST_PROXY, test, Guid(0, 0));
+    m_net_client_->SendToAllServerByPB(ServerType::ST_PROXY, rpc::TestRPC::REQ_TEST_PROXY, test, "");
     test_req_index_++;
     test_req_data_ = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
 }

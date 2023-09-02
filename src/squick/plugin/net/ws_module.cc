@@ -151,9 +151,6 @@ bool WSModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message 
         return false;
     }
 
-    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
-    *pPlayerID = INetModule::StructToProtobuf(Guid());
-
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
         std::ostringstream stream;

@@ -6,8 +6,8 @@
 namespace lobby::lua {
 bool LuaBindModule::Start() {
     m_lua_script_ = pm_->FindModule<ILuaScriptModule>();
-    m_player_manager_ = pm_->FindModule<player::IPlayerManagerModule>();
-    m_node_ = pm_->FindModule<node::INodeModule>();
+    //m_player_manager_ = pm_->FindModule<player::IPlayerManagerModule>();
+    //m_node_ = pm_->FindModule<node::INodeModule>();
     Bind();
     return true;
 }
@@ -43,7 +43,7 @@ bool LuaBindModule::Bind() {
 // const Guid player, const uint16_t msg_id, const std::string& data
 // 由于是跨dll进行解析，无法对已在core/lua上的Guid进行解析，所以只能传普通类型的数据。
 void LuaBindModule::SendToPlayer(string &player_guid_str, uint16_t msg_id, std::string &data) {
-    std::cout << "this: " << this << "  " << m_node_ << " LuaBindModule::SendToPlayer " << msg_id << " msg: " << data << std::endl;
+    //std::cout << "this: " << this << "  " << m_node_ << " LuaBindModule::SendToPlayer " << msg_id << " msg: " << data << std::endl;
     // std::cout << " \n length: " << data.length() << std::endl;
     Guid guid = Guid(player_guid_str);
     //m_node_->SendToPlayer(msg_id, data, guid);

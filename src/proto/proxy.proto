@@ -1,4 +1,5 @@
-// 代理服务器RPC
+// 描述: 代理服务器RPC
+// 使用: 服务器,客户端
 syntax = "proto3";
 package rpc;
 import "base.proto";
@@ -20,7 +21,7 @@ enum ProxyRPC {
 ////////////////////////////////////////////////////
 
 message ReqConnectProxy {
-    Ident guid = 1; // account的guid
+    bytes guid = 1; // account的guid
     bytes key = 2;
 }
 

@@ -125,12 +125,8 @@ class IGameplay {
         rpc::AckPlayerEnterList xPlayerEntryInfoList;
         for (auto &iter : base_players) {
             auto &player = iter.second;
-            const Guid &identOld = player.guid;
-            if (identOld.IsNull()) {
-                continue;
-            }
             rpc::PlayerBaseInfo *pEntryInfo = xPlayerEntryInfoList.add_list();
-            *(pEntryInfo->mutable_guid()) = INetModule::StructToProtobuf(identOld);
+            *(pEntryInfo->mutable_guid()) = player.guid.ToString();
             pEntryInfo->set_index(player.index);
             pEntryInfo->set_name(player.name);
             pEntryInfo->set_account(player.account);
@@ -144,7 +140,7 @@ class IGameplay {
         // 发送新玩家给其他已加入的玩家
         AckPlayerEnterList xNewPlayerEntryInfoList;
         PlayerBaseInfo *pEntryInfo = xNewPlayerEntryInfoList.add_list();
-        *(pEntryInfo->mutable_guid()) = INetModule::StructToProtobuf(player);
+        *(pEntryInfo->mutable_guid()) = player.ToString();
         pEntryInfo->set_index(pd.index);
         //pEntryInfo->set_name(p->name_);
         //pEntryInfo->set_account(p->account_);

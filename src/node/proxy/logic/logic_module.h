@@ -31,12 +31,9 @@ class LogicModule : public ILogicModule {
     virtual void OnAckConnectVerify(const int msg_id, const char *msg, const uint32_t len) override;
     void OnReqEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     bool TryEnter(string guid);
-    int EnterSuccessEvent(const Guid xClientID, const Guid xPlayerID);
-
-    
-
+    int EnterSuccessEvent(const string account_guid, const string object_guid);
+    bool SendToPlayer(string player_id, const int msg_id, const string& data);
     virtual void OnClientConnected(const socket_t sock) override;
-    virtual void OnClientDisconnect(const socket_t sock) override;
 
     int ForwardToClient(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
@@ -52,7 +49,7 @@ class LogicModule : public ILogicModule {
 
     struct KeepAlive {
         string account;
-        Guid guid = Guid(0, 0); // object guid
+        string guid;
         time_t last_ping = 0;   // ms time
         socket_t sock = -1;
 
@@ -66,11 +63,11 @@ class LogicModule : public ILogicModule {
     };
 
     unordered_map<string, KeepAlive> clients_; // string is guid.ToString
-
+    unordered_map<string, string> players_; // string is guid.ToString
     struct Session {
         socket_t sock;
         time_t time;
-        Guid guid;
+        string guid;
         string key;
     };
 

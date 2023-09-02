@@ -1,7 +1,9 @@
-// 数据库 RPC
+// 描述: 数据库 
+// 使用: 服务器
 syntax = "proto3";
-package rpc;
 import "base.proto";
+package rpc;
+
 // 30000 ~ 35000
 enum DbProxyRPC {
     DB_RPC_NONE = 0;
@@ -37,7 +39,7 @@ message PropertyString {
 
 message PropertyObject {
     bytes property_name = 1;
-    Ident data = 2;
+    bytes data = 2;
     int64 reason = 3;
 }
 
@@ -76,7 +78,7 @@ message RecordString {
 message RecordObject {
     int32 row = 1;
     int32 col = 2;
-    Ident data = 3;
+    bytes data = 3;
 }
 
 message RecordVector2 {
@@ -108,73 +110,73 @@ message ObjectRecordBase {
 /////////////////////////////////////////////////
 
 message ObjectPropertyInt {
-    Ident player_id = 1;
+    bytes player_id = 1;
     repeated PropertyInt property_list = 2;
 }
 
 message ObjectPropertyFloat {
-    Ident player_id = 1;
+    bytes player_id = 1;
     repeated PropertyFloat property_list = 2;
 }
 
 message ObjectPropertyString {
-    Ident player_id = 1;
+    bytes player_id = 1;
     repeated PropertyString property_list = 2;
 }
 
 message ObjectPropertyObject {
-    Ident player_id = 1;
+    bytes player_id = 1;
     repeated PropertyObject property_list = 2;
 }
 
 message ObjectPropertyVector2 {
-    Ident player_id = 1;
+    bytes player_id = 1;
     repeated PropertyVector2 property_list = 2;
 }
 
 message ObjectPropertyVector3 {
-    Ident player_id = 1;
+    bytes player_id = 1;
     repeated PropertyVector3 property_list = 2;
 }
 
 message ObjectRecordInt {
-    Ident player_id = 1;
+    bytes player_id = 1;
     bytes record_name = 2;
     repeated RecordInt property_list = 3;
 }
 
 message ObjectRecordFloat {
-    Ident player_id = 1;
+    bytes player_id = 1;
     bytes record_name = 2;
     repeated RecordFloat property_list = 3;
 }
 
 message ObjectRecordString {
-    Ident player_id = 1;
+    bytes player_id = 1;
     bytes record_name = 2;
     repeated RecordString property_list = 3;
 }
 
 message ObjectRecordObject {
-    Ident player_id = 1;
+    bytes player_id = 1;
     bytes record_name = 2;
     repeated RecordObject property_list = 3;
 }
 
 message ObjectRecordVector2 {
-    Ident player_id = 1;
+    bytes player_id = 1;
     bytes record_name = 2;
     repeated RecordVector2 property_list = 3;
 }
 
 message ObjectRecordVector3 {
-    Ident player_id = 1;
+    bytes player_id = 1;
     bytes record_name = 2;
     repeated RecordVector3 property_list = 3;
 }
 
 message ObjectRecordSwap {
-    Ident player_id = 1;
+    bytes player_id = 1;
     bytes origin_record_name = 2;
     bytes target_record_name = 3;
     int32 row_origin = 4;
@@ -182,19 +184,19 @@ message ObjectRecordSwap {
 }
 
 message ObjectRecordAddRow {
-    Ident player_id = 1;
+    bytes player_id = 1;
     bytes record_name = 2;
     repeated RecordAddRowStruct row_data = 3;
 }
 
 message ObjectRecordRemove {
-    Ident player_id = 1;
+    bytes player_id = 1;
     bytes record_name = 2;
     repeated int32 remove_row = 3;
 }
 
 message ObjectPropertyList {
-    Ident player_id = 1;
+    bytes player_id = 1;
     repeated PropertyInt property_int_list = 2;
     repeated PropertyFloat property_float_list = 3;
     repeated PropertyString property_string_list = 4;
@@ -206,7 +208,7 @@ message ObjectPropertyList {
 message MultiObjectPropertyList { repeated ObjectPropertyList multi_player_property = 1; }
 
 message ObjectRecordList {
-    Ident player_id = 1;
+    bytes player_id = 1;
     repeated ObjectRecordBase record_list = 2;
 }
 
@@ -220,8 +222,8 @@ enum DbType {
 }
 
 message DbPlayerData {
-    Ident object = 1;
-    Ident guid = 2;
+    bytes object = 1;
+    bytes guid = 2;
     bytes account = 3;
     ObjectPropertyList property = 4;
     ObjectRecordList record = 5;

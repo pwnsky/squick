@@ -1,7 +1,15 @@
-// 各服务器之间的通信RPC
+// 描述: 各服务器之间的通信RPC
+// 使用: 服务器,客户端
 syntax = "proto3";
 package rpc;
 import "base.proto";
+
+// only be used in inner server
+message MsgBase {
+    bytes guid = 1;
+    bytes msg_data = 2;
+    repeated bytes broadcast = 3;
+}
 
 // Servers RPC 0 ~ 500
 enum ServerRPC {

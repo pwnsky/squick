@@ -117,7 +117,7 @@ bool NetModule::SendMsgToAllClientWithOutHead(const int msg_id, const std::strin
     return bRet;
 }
 
-bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const Guid id) {
+bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const string guid) {
     rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
@@ -128,8 +128,7 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
         return false;
     }
 
-    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
-    *pPlayerID = StructToProtobuf(id);
+    xMsg.set_guid(guid);
 
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
@@ -144,15 +143,10 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
     return SendMsgWithOutHead(msg_id, msg, sock);
 }
 
-bool NetModule::SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock) { return SendMsgWithOutHead(msg_id, xData, sock); }
-
-bool NetModule::SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const Guid id) {
+bool NetModule::SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const string guid) {
     rpc::MsgBase xMsg;
     xMsg.set_msg_data(xData.data(), xData.length());
-
-    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
-    *pPlayerID = StructToProtobuf(id);
-
+    xMsg.set_guid(guid);
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
         std::ostringstream stream;
@@ -177,9 +171,7 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
         return false;
     }
 
-    rpc::Ident *guid = xMsg.mutable_player_id();
-    *guid = StructToProtobuf(Guid(pm_->GetAppID(), 0));
-
+    xMsg.set_guid(Guid(pm_->GetAppID(), 0).ToString());
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
         std::ostringstream stream;
@@ -219,7 +211,7 @@ bool NetModule::SendMsgPBToAllClient(const uint16_t msg_id, const google::protob
     return SendMsgToAllClientWithOutHead(msg_id, msg);
 }
 
-bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const std::vector<Guid> *pClientIDList) {
+bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const std::vector<string> *pClientIDList) {
     if (!m_pNet) {
         std::ostringstream stream;
         stream << " m_pNet SendMsgPB faailed fd " << sock;
@@ -238,16 +230,12 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
 
         return false;
     }
-
-    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
-    *pPlayerID = StructToProtobuf(Guid());
     if (pClientIDList) {
         for (int i = 0; i < pClientIDList->size(); ++i) {
             const Guid &ClientID = (*pClientIDList)[i];
-
-            rpc::Ident *pData = xMsg.add_player_client_list();
+            auto pData = xMsg.add_broadcast();
             if (pData) {
-                *pData = StructToProtobuf(ClientID);
+                *pData = ClientID.ToString();
             }
         }
     }
@@ -265,7 +253,7 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
     return SendMsgWithOutHead(msg_id, msg, sock);
 }
 
-bool NetModule::SendMsgPB(const uint16_t msg_id, const std::string &strData, const socket_t sock, const std::vector<Guid> *pClientIDList) {
+bool NetModule::SendMsgPB(const uint16_t msg_id, const std::string &strData, const socket_t sock, const std::vector<string> *pClientIDList) {
     if (!m_pNet) {
         std::ostringstream stream;
         stream << " SendMsgPB NULL Of Net faailed fd " << sock;
@@ -277,16 +265,13 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const std::string &strData, con
 
     rpc::MsgBase xMsg;
     xMsg.set_msg_data(strData.data(), strData.length());
-
-    rpc::Ident *pPlayerID = xMsg.mutable_player_id();
-    *pPlayerID = StructToProtobuf(Guid());
     if (pClientIDList) {
         for (int i = 0; i < pClientIDList->size(); ++i) {
             const Guid &ClientID = (*pClientIDList)[i];
 
-            rpc::Ident *pData = xMsg.add_player_client_list();
+            auto pData = xMsg.add_broadcast();
             if (pData) {
-                *pData = StructToProtobuf(ClientID);
+                *pData = ClientID.ToString();
             }
         }
     }

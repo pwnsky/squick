@@ -4,6 +4,7 @@
 -- Date  : 2023-08-19
 -- Description: protobuf测试
 -----------------------------------------------------------------------------
+Require("proto.enum")
 
 print("protobuf test")
 Squick:ImportProto("base.proto");

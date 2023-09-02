@@ -1,6 +1,0 @@
-set(ProjectName "lobby_player")
-file(GLOB soruces *.cc)
-file(GLOB headers *.h)
-add_library(${ProjectName} SHARED ${soruces} ${headers})
-LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "node/lobby" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/lobby "player")
