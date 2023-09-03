@@ -29,7 +29,6 @@ mkdir %client_config_path%\struct
 mkdir %client_config_path%\lua
 mkdir %client_config_path%\csharp
 
-copy %config_path%\excel\Excel.cs %client_config_path%\csharp
 xcopy /s /e /y %config_path%\ini %client_config_path%\ini
 xcopy /s /e /y %config_path%\struct %client_config_path%\struct
 

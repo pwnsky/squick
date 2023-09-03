@@ -54,9 +54,15 @@ function PlayerMgr:SendToPlayer(player_id, msg_id, data)
 end
 
 function PlayerMgr:OnReqPlayerData(player_id, msg_data, msg_id, fd)
+
+    local player = self.players[player_id]
+    if player == nil then
+        print("No this player " , player_id)
+    end
+
     print("OnReqPlayerData, player_id: ", player_id)
     local ack = {
-        account = '123456',
+        account = player.account,
         player_id = player_id,
         name = 'test',
         level = 0,
