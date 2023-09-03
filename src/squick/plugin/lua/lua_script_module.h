@@ -119,8 +119,9 @@ class LuaScriptModule : public ILuaScriptModule {
 
     // FOR ELEMENT MODULE
     bool ExistElementObject(const std::string &configName);
-    std::vector<std::string> GetEleList(const std::string &className);
-
+    LuaIntf::LuaRef GetConfigIDList(const string& className);
+    LuaIntf::LuaRef GetConfig(const string& className);
+    LuaIntf::LuaRef GetConfigByID(const string& id);
     INT64 GetElePropertyInt(const std::string &configName, const std::string &propertyName);
     double GetElePropertyFloat(const std::string &configName, const std::string &propertyName);
     std::string GetElePropertyString(const std::string &configName, const std::string &propertyName);
@@ -158,6 +159,8 @@ class LuaScriptModule : public ILuaScriptModule {
 
     // FOR CLASS MODULE
     bool AddClassCallBack(std::string &className, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
+
+    
 
   protected:
     template <typename T> bool AddLuaFuncToMap(Map<T, Map<Guid, List<LuaCallBack>>> &funcMap, const Guid &self, T key, const LuaCallBack &callback);

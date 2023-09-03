@@ -431,7 +431,6 @@ INT64 LuaScriptModule::AppType() {
             }
         }
     }
-
     return 0;
 }
 
@@ -441,13 +440,64 @@ string LuaScriptModule::AppName() {
 
 bool LuaScriptModule::ExistElementObject(const std::string &configName) { return m_element_->ExistElement(configName); }
 
-std::vector<std::string> LuaScriptModule::GetEleList(const std::string &className) {
-    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
+LuaIntf::LuaRef LuaScriptModule::GetConfigIDList(const string& className) {
+    LuaIntf::LuaRef tbl = LuaIntf::LuaRef::createTable(mLuaContext);
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(className);
     if (xLogicClass) {
-        return xLogicClass->GetIDList();
+        auto list = xLogicClass->GetIDList();
+        int i = 1;
+        for (auto& id : list) {
+            tbl[i] = id;
+            i++;
+        }
     }
+    return tbl;
+}
 
-    return std::vector<std::string>();
+LuaIntf::LuaRef LuaScriptModule::GetConfig(const string& className) {
+    LuaIntf::LuaRef ret = LuaIntf::LuaRef::createTable(mLuaContext);
+    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(className);
+    if (xLogicClass) {
+        auto list = xLogicClass->GetIDList();
+        for (auto& id : list) {
+            ret[id] = GetConfigByID(id);
+        }
+    }
+    return ret;
+}
+
+LuaIntf::LuaRef LuaScriptModule::GetConfigByID(const string& id) {
+	LuaIntf::LuaRef ret = LuaIntf::LuaRef::createTable(mLuaContext);
+	auto m = m_element_->GetPropertyManager(id);
+	string key;
+	auto p = m->First(key);
+	while (p) {
+		switch (p->GetType()) {
+		case TDATA_INT:
+            ret[key] = p->GetInt32();
+			break;
+		case TDATA_FLOAT:
+            ret[key] = p->GetFloat();
+			break;
+		case TDATA_STRING:
+            ret[key] = p->GetString();
+			break;
+		case TDATA_OBJECT:
+            ret[key] = p->GetString();
+			break;
+		case TDATA_VECTOR2:
+            ret[key] = p->GetVector2().ToString();
+			break;
+		case TDATA_VECTOR3:
+            ret[key] = p->GetVector3().ToString();
+			break;
+		default:
+            ret[key] = NULL_STR;
+			break;
+		}
+		p = m->Next(key);
+	}
+    return ret;
 }
 
 INT64 LuaScriptModule::GetElePropertyInt(const std::string &configName, const std::string &propertyName) {
@@ -612,6 +662,25 @@ bool LuaScriptModule::Register() {
         .addFunction("FromString", &Guid::FromString)
         .endClass();
 
+    LuaIntf::LuaBinding(mLuaContext)
+        .beginClass<Vector3>("Vector3")
+        .addConstructor(LUA_ARGS())
+        .addFunction("FromString", &Vector3::FromString)
+        .addFunction("ToString", &Vector3::ToString)
+        .addFunction("X", &Vector3::X)
+        .addFunction("Y", &Vector3::Y)
+        .addFunction("Z", &Vector3::Z)
+        .endClass();
+
+    LuaIntf::LuaBinding(mLuaContext)
+        .beginClass<Vector2>("Vector2")
+        .addConstructor(LUA_ARGS())
+        .addFunction("FromString", &Vector2::FromString)
+        .addFunction("ToString", &Vector2::ToString)
+        .addFunction("X", &Vector2::X)
+        .addFunction("Y", &Vector2::Y)
+        .endClass();
+
     LuaIntf::LuaBinding(mLuaContext).beginClass<DataList>("DataList").endClass();
 
     LuaIntf::LuaBinding(mLuaContext)
@@ -663,6 +732,8 @@ bool LuaScriptModule::Register() {
         .addFunction("SetVector2", &SquickData::SetVector2)
         .addFunction("SetVector3", &SquickData::SetVector3)
         .endClass();
+
+    
 
     // for kernel module
     LuaIntf::LuaBinding(mLuaContext)
@@ -717,8 +788,11 @@ bool LuaScriptModule::Register() {
         .addFunction("AppType", &LuaScriptModule::AppType)
         .addFunction("AppName", &LuaScriptModule::AppName)
 
+        // Config
         .addFunction("ExistElementObject", &LuaScriptModule::ExistElementObject)
-        .addFunction("GetEleList", &LuaScriptModule::GetEleList)
+        .addFunction("GetConfigIDList", &LuaScriptModule::GetConfigIDList)
+        .addFunction("GetConfig", &LuaScriptModule::GetConfig)
+        .addFunction("GetConfigByID", &LuaScriptModule::GetConfigByID)
         .addFunction("GetElePropertyInt", &LuaScriptModule::GetElePropertyInt)
         .addFunction("GetElePropertyFloat", &LuaScriptModule::GetElePropertyFloat)
         .addFunction("GetElePropertyString", &LuaScriptModule::GetElePropertyString)
@@ -733,21 +807,22 @@ bool LuaScriptModule::Register() {
 
         .addFunction("SendToServerByServerID", &LuaScriptModule::SendToServerByServerID)           // as client
         .addFunction("SendToAllServerByServerType", &LuaScriptModule::SendToAllServerByServerType) // as client
-
         .addFunction("SendByFD", &LuaScriptModule::SendByFD) // as server
 
+        // Log
         .addFunction("LogInfo", &LuaScriptModule::LogInfo)
         .addFunction("LogError", &LuaScriptModule::LogError)
         .addFunction("LogWarning", &LuaScriptModule::LogWarning)
         .addFunction("LogDebug", &LuaScriptModule::LogDebug)
 
+        // Version
         .addFunction("GetVersionCode", &LuaScriptModule::GetVersionCode)
         .addFunction("SetVersionCode", &LuaScriptModule::SetVersionCode)
 
+        // Proto
         .addFunction("ImportProto", &LuaScriptModule::ImportProtoFile)
         .addFunction("Encode", &LuaScriptModule::Encode)
         .addFunction("Decode", &LuaScriptModule::Decode)
-
         .addFunction("GetScriptPath", &LuaScriptModule::GetScriptPath)
         .endClass();
 

@@ -7,7 +7,6 @@
 Require("proto.enum")
 
 print("protobuf test")
-Squick:ImportProto("base.proto");
 
 function Test1()
     local MsgBase = {
