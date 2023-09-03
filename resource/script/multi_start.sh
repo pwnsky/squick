@@ -11,22 +11,27 @@
 squick_bin_path=./bin
 cd $squick_bin_path
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/lib
-#echo $LD_LIBRARY_PATH
 
 chmod -R 777  squick
 
-./squick plugin=master.xml server=master id=1 &
-./squick plugin=db_proxy.xml server=db_proxy id=4 &
-./squick plugin=world.xml server=world id=2 &
-./squick plugin=login.xml server=login id=3 &
-./squick plugin=gateway.xml server=gateway id=5 &
+./squick type=master id=1 &
+./squick type=world id=100 &
+./squick type=world id=101 &
+./squick type=db_proxy id=300 &
+./squick type=db_proxy id=301 &
+./squick type=login id=2 &
 
-./squick plugin=game.xml server=game id=10 &
-./squick plugin=game.xml server=game id=11 &
+./squick type=lobby id=1000 &
+./squick type=lobby id=1001 &
+./squick type=lobby id=1002 &
 
-./squick plugin=gameplay_manager.xml server=gameplay_manager id=20 &
+./squick type=game id=3000 &
+./squick type=game id=3001 &
+./squick type=game_mgr id=2001 &
 
-./squick plugin=proxy.xml server=proxy id=6 &
+./squick type=proxy id=500 &
+./squick type=proxy id=501 &
+./squick type=proxy id=502 &
 
 0.5
 ps -A|grep squick

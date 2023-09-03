@@ -12,7 +12,6 @@ client_config_path="../client"
 excel_path='../resource/excel'
 bash ./clean_config.sh
 # 生成配置文件
-bash ./proto2code.sh
 mkdir -p $config_path/excel
 mkdir -p $config_path/struct
 mkdir -p $config_path/ini

@@ -39,7 +39,8 @@
 /src/struct/excel.h
 /src/struct/*.cs
 /src/lua/config
-/src/lua/proto
+/src/lua/proto/code.lua
+/src/lua/proto/enum.lua
 # Codeblocks
 *.layout
 *.depend
