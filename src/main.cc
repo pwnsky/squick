@@ -38,11 +38,8 @@ void PrintLogo() {
 \__ \ (_| | |_| | | (__|   <
 |___/\__, |\__,_|_|\___|_|\_\
         |_|
-Version: 0.8.0
-Github : https://github.com/pwnsky/squick
-QQ Group: 739065686 
 )";
-
+    std::cout << "Version: " << SQUICK_VERSION << "\nGithub : https://github.com/pwnsky/squick\n\n";
 }
 
 int main(int argc, char *argv[]) {
