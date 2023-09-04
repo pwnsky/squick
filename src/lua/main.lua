@@ -65,8 +65,8 @@ end
 
 function Load() 
     Require("common.init");
-    Require("test.init");
     Require("proto.init");
+    Require("test.init");
     local node_init = {
         [ServerType.ST_GAME ] = function()
             Require("node.game.init");
