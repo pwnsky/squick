@@ -2,260 +2,81 @@
 // 使用: 服务器
 syntax = "proto3";
 import "base.proto";
-package rpc;
+package DbRpc;
 
 // 30000 ~ 35000
 enum DbProxyRPC {
     DB_RPC_NONE = 0;
+    
+    REQ_REDIS_QUERY = 30001;
+    ACK_REDIS_QUERY = 30002;
 
-    REQ_PLAYER_LIST = 30000;
-    ACK_PLAYER_LIST = 30001;
-    REQ_PLAYER_CREATE = 30002;
-    REQ_PLAYER_DELETE = 30003;
+    REQ_MONGO_QUERY = 30003;
+    ACK_MONGO_QUERY = 30004;
 
-    REQ_PLAYER_DATA_LOAD = 30004; // 加载玩家数据
-    ACK_PLAYER_DATA_LOAD = 30005; //
-    REQ_PLAYER_DATA_SAVE = 30006; // 请求保存玩家数据
-    ACK_PLAYER_DATA_SAVE = 30007; //
+    REQ_MYSQL_QUERY = 30005;
+    ACK_MYSQL_QUERY = 30006;
+
 }
 
-message PropertyInt {
-    bytes property_name = 1;
-    int64 data = 2;
-    int64 reason = 3;
+message Data {
+    int32 type = 1;
+    bytes value = 2;
 }
 
-message PropertyFloat {
-    bytes property_name = 1;
-    float data = 2;
-    int64 reason = 3;
+message List {
+    int32 type = 1;
+    repeated bytes values = 2;
 }
 
-message PropertyString {
-    bytes property_name = 1;
-    bytes data = 2;
-    int64 reason = 3;
+enum RedisCMD {
+    REDIS_CMD_NONE = 0;
+    REDIS_RAW = 1;
+    REDIS_SET = 10;
+    REDIS_GET = 11;
+    REDIS_HSET = 12;
+    REDIS_HGET = 13;
+    REDIS_HSETALL = 14;
+    REDIS_HGETALL = 15;
 }
 
-message PropertyObject {
-    bytes property_name = 1;
-    bytes data = 2;
-    int64 reason = 3;
-}
-
-message PropertyVector2 {
-    bytes property_name = 1;
-    Vector2 data = 2;
-    int64 reason = 3;
-}
-
-message PropertyVector3 {
-    bytes property_name = 1;
-    Vector3 data = 2;
-    int64 reason = 3;
-}
-
-///////////////////////////////////////////////
-
-message RecordInt {
-    int32 row = 1;
-    int32 col = 2;
-    int64 data = 3;
-}
-
-message RecordFloat {
-    int32 row = 1;
-    int32 col = 2;
-    float data = 3;
-}
-
-message RecordString {
-    int32 row = 1;
-    int32 col = 2;
-    bytes data = 3;
-}
-
-message RecordObject {
-    int32 row = 1;
-    int32 col = 2;
-    bytes data = 3;
-}
-
-message RecordVector2 {
-    int32 row = 1;
-    int32 col = 2;
-    Vector2 data = 3;
-}
-
-message RecordVector3 {
-    int32 row = 1;
-    int32 col = 2;
-    Vector3 data = 3;
-}
-
-message RecordAddRowStruct {
-    int32 row = 1;
-    repeated RecordInt record_int_list = 2;
-    repeated RecordFloat record_float_list = 3;
-    repeated RecordString record_string_list = 4;
-    repeated RecordObject record_object_list = 5;
-    repeated RecordVector2 record_vector2_list = 6;
-    repeated RecordVector3 record_vector3_list = 7;
-}
-message ObjectRecordBase {
-    bytes record_name = 1;
-    repeated RecordAddRowStruct row_struct = 2;
-}
-
-/////////////////////////////////////////////////
-
-message ObjectPropertyInt {
-    bytes player_id = 1;
-    repeated PropertyInt property_list = 2;
-}
-
-message ObjectPropertyFloat {
-    bytes player_id = 1;
-    repeated PropertyFloat property_list = 2;
-}
-
-message ObjectPropertyString {
-    bytes player_id = 1;
-    repeated PropertyString property_list = 2;
-}
-
-message ObjectPropertyObject {
-    bytes player_id = 1;
-    repeated PropertyObject property_list = 2;
-}
-
-message ObjectPropertyVector2 {
-    bytes player_id = 1;
-    repeated PropertyVector2 property_list = 2;
-}
-
-message ObjectPropertyVector3 {
-    bytes player_id = 1;
-    repeated PropertyVector3 property_list = 2;
-}
-
-message ObjectRecordInt {
-    bytes player_id = 1;
-    bytes record_name = 2;
-    repeated RecordInt property_list = 3;
-}
-
-message ObjectRecordFloat {
-    bytes player_id = 1;
-    bytes record_name = 2;
-    repeated RecordFloat property_list = 3;
-}
-
-message ObjectRecordString {
-    bytes player_id = 1;
-    bytes record_name = 2;
-    repeated RecordString property_list = 3;
-}
-
-message ObjectRecordObject {
-    bytes player_id = 1;
-    bytes record_name = 2;
-    repeated RecordObject property_list = 3;
-}
-
-message ObjectRecordVector2 {
-    bytes player_id = 1;
-    bytes record_name = 2;
-    repeated RecordVector2 property_list = 3;
-}
-
-message ObjectRecordVector3 {
-    bytes player_id = 1;
-    bytes record_name = 2;
-    repeated RecordVector3 property_list = 3;
-}
-
-message ObjectRecordSwap {
-    bytes player_id = 1;
-    bytes origin_record_name = 2;
-    bytes target_record_name = 3;
-    int32 row_origin = 4;
-    int32 row_target = 5;
-}
-
-message ObjectRecordAddRow {
-    bytes player_id = 1;
-    bytes record_name = 2;
-    repeated RecordAddRowStruct row_data = 3;
-}
-
-message ObjectRecordRemove {
-    bytes player_id = 1;
-    bytes record_name = 2;
-    repeated int32 remove_row = 3;
-}
-
-message ObjectPropertyList {
-    bytes player_id = 1;
-    repeated PropertyInt property_int_list = 2;
-    repeated PropertyFloat property_float_list = 3;
-    repeated PropertyString property_string_list = 4;
-    repeated PropertyObject property_object_list = 5;
-    repeated PropertyVector2 property_vector2_list = 6;
-    repeated PropertyVector3 property_vector3_list = 7;
-}
-
-message MultiObjectPropertyList { repeated ObjectPropertyList multi_player_property = 1; }
-
-message ObjectRecordList {
-    bytes player_id = 1;
-    repeated ObjectRecordBase record_list = 2;
-}
-
-message MultiObjectRecordList { repeated ObjectRecordList multi_player_record = 1; }
-
-enum DbType {
-    DB_TYPE_NONE = 0;
-    MYSQL = 1;
-    MONGO = 2;
-    REDIS = 3;
-}
-
-message DbPlayerData {
-    bytes object = 1;
-    bytes guid = 2;
-    bytes account = 3;
-    ObjectPropertyList property = 4;
-    ObjectRecordList record = 5;
-}
-
-enum DbCMD {
-    DB_CMD_NONE = 0;
-    DB_QUERY = 1;
-    DB_INSERT = 2;
-    DB_UPDATE = 3;
-    DB_DELETE = 4;
-}
-
-message ReqDbQuery {
+message ReqRedisQuery {
     int32 query_id = 1;
-    DbCMD cmd = 2;
-    bytes db = 3;
-    bytes args = 4;
+    RedisCMD cmd = 2;
+    map<string, Data> args = 3;
 }
 
-
-message Col {
+message AckRedisQuery {
+    bool code = 1;
+    int32 query_id = 2;
+    RedisCMD cmd = 3;
+    map<string, Data> args = 4;
 }
 
-message Row {
-    repeated Col d = 1;
+enum MysqlCMD {
+    MYSQL_CMD_NONE = 0;
+    MYSQL_RAW = 1;
+    MYSQL_SELECT = 10;
+    MYSQL_INSERT = 11;
+    MYSQL_DELETE = 12;
+    MYSQL_UPDATE = 13;
 }
 
-
-message AckDbQuery {
+message ReqMysqlQuery {
     int32 query_id = 1;
-    DbCMD cmd = 2;
+    bytes db_name = 2;
+    MysqlCMD cmd = 3;
+    map<string, Data> args = 4;
+}
+
+message AckMysqlQuery {
+    int32 query_id = 1;
+    ReqMysqlQuery cmd = 2;
     bytes db = 3;
-    map<int32, bytes> result = 4;
+    map<string, List> data = 4;
+}
+
+enum MongoCMD {
+    MONGO_CMD_NONE = 0;
+    MONGO_RAW = 1;
 }
