@@ -1,5 +1,5 @@
 <XML>
-    <DbProxy>
+	<DbProxy>
 		<Plugin Name="core/net" />
 		<Plugin Name="core/kernel" />
 		<Plugin Name="core/config" />
@@ -7,7 +7,6 @@
 		<Plugin Name="core/redis" />
 		
 		<Plugin Name="node/db_proxy/node" />
-		<Plugin Name="node/db_proxy/logic" />
 		<Plugin Name="node/db_proxy/mysql" />
 		<Plugin Name="node/db_proxy/mongo" />
     </DbProxy>

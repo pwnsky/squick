@@ -4,7 +4,8 @@
 |  ----  | ----  |----|
 | ajson | 0.2.0 | https://github.com/lordoffox/ajson |
 | concurrentqueue | | https://github.com/cameron314/concurrentqueue |
-| hiredis | 0.9.0 | https://github.com/redis/hiredis |
+| hiredis | 1.2.0 | https://github.com/redis/hiredis |
+| redis-plus-plus | 1.3.10 | https://github.com/sewenew/redis-plus-plus |
 | kcp | 1.7 | https://github.com/skywind3000/kcp |
 | libevent | 2.1.12-stable | https://github.com/libevent/libevent |
 | lua | 5.3.6 | https://github.com/lua/lua |

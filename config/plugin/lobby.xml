@@ -1,5 +1,5 @@
 <XML>
-	<GameServer>
+	<Lobby>
 		<Plugin Name="core/net" />
 		<Plugin Name="core/kernel" />
 		<Plugin Name="core/config" />
@@ -7,5 +7,5 @@
 		<Plugin Name="core/lua" />
 		
 		<Plugin Name="node/lobby/node" />
-	</GameServer>
+	</Lobby>
 </XML>

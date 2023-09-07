@@ -1,9 +1,9 @@
 <XML>
-	<GameServer>
+	<Test>
 		<Plugin Name="core/log" />
 		<Plugin Name="core/net" />
 		<Plugin Name="core/kernel" />
 		<Plugin Name="core/nosql" />
 		<Plugin Name="core/config" />
-	</GameServer>
+	</Test>
 </XML>

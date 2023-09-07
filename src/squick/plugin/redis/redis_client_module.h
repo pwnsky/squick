@@ -22,9 +22,6 @@ class RedisModule : public IRedisModule {
     virtual bool Enable();
     virtual bool Busy();
     virtual bool KeepLive();
-
-    virtual bool AddConnectSql(const std::string &strID, const std::string &ip);
-    virtual bool AddConnectSql(const std::string &strID, const std::string &ip, const int nPort);
     virtual bool AddConnectSql(const std::string &strID, const std::string &ip, const int nPort, const std::string &strPass);
 
     virtual List<std::string> GetDriverIdList();

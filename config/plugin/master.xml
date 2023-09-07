@@ -1,5 +1,5 @@
 <XML>    
-    <MasterServer>
+    <Master>
 		<Plugin Name="core/net" />
 		<Plugin Name="core/kernel" />
 		<Plugin Name="core/config" />
@@ -9,5 +9,5 @@
 		<Plugin Name="node/master/node" />
 		<Plugin Name="node/master/http" />
 		
-    </MasterServer>
+    </Master>
 </XML>

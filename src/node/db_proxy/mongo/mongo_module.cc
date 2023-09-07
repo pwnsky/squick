@@ -25,7 +25,7 @@ bool MongoModule::Start() {
 }
 
 bool MongoModule::AfterStart() {
-    // Connect("");
+    Connect("");
     return true;
 }
 

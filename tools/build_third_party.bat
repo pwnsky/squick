@@ -86,3 +86,5 @@ cmake --build .
 cmake --install . --prefix=./install --config Debug
 xcopy /s /e /y Debug ..\lib
 
+rem build redis
+
