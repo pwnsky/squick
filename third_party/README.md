@@ -20,3 +20,5 @@
 | easyloggingpp | v9.97.0 | https://github.com/amrayn/easyloggingpp |
 | mongo-c-driver | 1.23.2 | https://github.com/mongodb/mongo-c-driver |
 | mongo-cxx-driver | r3.7.1 | https://github.com/mongodb/mongo-cxx-driver |
+| clickhouse-cpp | 2.4.0 | https://github.com/ClickHouse/clickhouse-cpp |
+

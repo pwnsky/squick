@@ -47,11 +47,7 @@
 #include <event2/listener.h>
 #include <event2/thread.h>
 #include <event2/util.h>
-#if PLATFORM == PLATFORM_WIN
-#include <hiredis_win/hiredis.h>
-#else
 #include <hiredis/hiredis.h>
-#endif
 
 class RedisClientSocket {
   public:

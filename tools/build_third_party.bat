@@ -11,8 +11,8 @@ set third_party_path=%project_path%/third_party
 set build_path=%project_path%\third_party\build
 set boost_root=%project_path%\third_party\build\boost_1_81_0
 set mongo_c_driver_install=%project_path%\third_party\build\mongo-c-driver\install
+set hiredis_install=%project_path%\third_party\build\hiredis\install
 cd %third_party_path%
-
 
 mkdir build\include
 mkdir build\lib
@@ -24,7 +24,33 @@ mkdir build\navigation
 mkdir build\mysql-connector-cpp
 mkdir build\mongo-c-driver
 mkdir build\mongo-cxx-driver
+mkdir build\hiredis
+mkdir build\redis-plus-plus
+mkdir build\clickhouse-cpp
 
+rem build clickhouse-cpp
+cd build/clickhouse-cpp
+cmake ..\..\clickhouse-cpp -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=install
+cmake --build . 
+cmake --install . --prefix=install --config Debug
+xcopy /s /e /y install ..
+cd %third_party_path%
+
+rem build hiredis
+cd build/hiredis
+cmake ..\..\hiredis -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=install
+cmake --build . 
+cmake --install . --prefix=install --config Debug
+xcopy /s /e /y install ..
+cd %third_party_path%
+
+rem build redis-plus-plus
+cd build/redis-plus-plus
+cmake ..\..\redis-plus-plus -DCMAKE_PREFIX_PATH=%hiredis_install% -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=install
+cmake --build . 
+cmake --install . --prefix=install --config Debug
+xcopy /s /e /y install ..
+cd %third_party_path%
 
 rem build mongo-c-driver
 cd build\mongo-c-driver
@@ -62,12 +88,14 @@ xcopy /s /e /y install ..
 cd %third_party_path%
 
 
-rem build lua
-cd lua/src
-mingw32-make.exe mingw
-xcopy /s /e /y lua.dll ..\..\build\lib
-xcopy /s /e /y lua.lib ..\..\build\lib
-cd %third_party_path%
+rem build lua, not surport mingw32 to link vs project
+rem cd lua/src
+rem mingw32-make.exe mingw
+rem xcopy /s /e /y lua.dll ..\..\build\lib
+rem xcopy /s /e /y lua.lib ..\..\build\lib
+rem cd %third_party_path%
+
+rem build mysqlx
 
 
 rem  build zlib
@@ -85,6 +113,5 @@ cmake  ..\..\recastnavigation -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=
 cmake --build . 
 cmake --install . --prefix=./install --config Debug
 xcopy /s /e /y Debug ..\lib
-
-rem build redis
+cd %third_party_path%
 
