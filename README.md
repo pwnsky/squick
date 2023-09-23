@@ -53,7 +53,7 @@
 18. 数据库Lua接口提供【0%】
 19. 统一的数据库代理存取数据命令，使用简单协议能够便捷切换使用Mysql、Redis、MongoDb数据库 【10%】
 20. Unity、UnrealEngine客户端SDK完善【50%】
-21. 高可用-数据库代理服务器，支持主流的 Mysql、MongoDb、Redis 等数据库，采用proto协议进行交互【10%】
+21. 高可用-数据库代理服务器，支持主流的 Mysql、MongoDb、Redis 、Clickhouse等数据库，采用proto协议进行交互【10%】
 
 ## 测试
 
@@ -405,6 +405,25 @@ docker run -d --restart always --name squick_db_mongo_1 -p 10410:27017 -e MONGO_
 
 ```
 docker run -d --restart always --name squick_db_redis_1 -p 10420:6379 redis:7.0 --requirepass pwnsky_squick
+```
+
+
+
+### 搭建Clickhouse日志数据库
+
+负责记录服务器日志、游戏日志、埋点数据等。
+
+```
+docker run -d --restart always --name squick_db_clickhouse_1 -p 10430:8123 -p 10431:9000 -p 10432:9009 clickhouse/clickhouse-server:23.1.3.5-alpine
+```
+
+创建之后进入容器
+
+```
+vi /etc/clickhouse-server/users.xml
+
+# 找到 <password></password>
+# 在中间增加 pwnsky_squick
 ```
 
 

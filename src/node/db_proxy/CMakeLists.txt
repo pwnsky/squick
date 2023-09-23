@@ -1,3 +1,5 @@
 add_subdirectory(node)
 add_subdirectory(mysql)
 add_subdirectory(mongo)
+add_subdirectory(redis)
+add_subdirectory(clickhouse)
