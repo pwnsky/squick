@@ -7,6 +7,7 @@ namespace lobby::node {
 bool NodeModule::AfterStart() {
     Listen();
     AddServer(ServerType::ST_WORLD);
+    AddServer(ServerType::ST_DB_PROXY);
     return true;
 }
 

@@ -6,7 +6,7 @@
 namespace db_proxy::node {
 class NodeModule : public INodeModule {
   public:
-      NodeModule(IPluginManager *p) { pm_ = p; }
+      NodeModule(IPluginManager* p) { pm_ = p; is_update_ = true; }
     virtual bool Destory();
     virtual bool AfterStart();
 

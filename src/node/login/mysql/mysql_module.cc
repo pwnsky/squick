@@ -22,7 +22,6 @@ bool MysqlModule::RegisterAccount(const std::string &guid, const std::string &ac
         dout << "EXCEPTION: " << ex << endl;
         return false;
     }
-
     return true;
 }
 

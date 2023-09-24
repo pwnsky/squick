@@ -3,5 +3,4 @@
 
 class IClickhouseModule : public IModule {
   public:
-    virtual bool Connect(std::string url) = 0;
 };

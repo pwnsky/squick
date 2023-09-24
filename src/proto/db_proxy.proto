@@ -2,7 +2,7 @@
 // 使用: 服务器
 syntax = "proto3";
 import "base.proto";
-package DbRpc;
+package rpc;
 
 // 30000 ~ 35000
 enum DbProxyRPC {
@@ -10,16 +10,103 @@ enum DbProxyRPC {
     
     REQ_REDIS_QUERY = 30001;
     ACK_REDIS_QUERY = 30002;
+    REQ_REDIS_GET = 30003;
+    ACK_REDIS_GET = 30004;
+    REQ_REDIS_SET = 30005;
+    ACK_REDIS_SET = 30006;
+    REQ_REDIS_HGET = 30007;
+    ACK_REDIS_HGET = 30008;
+    REQ_REDIS_HSET = 30009;
+    ACK_REDIS_HSET = 30010;
+    REQ_REDIS_HGETALL = 30011;
+    ACK_REDIS_HGETALL = 30012;
+    REQ_REDIS_HMSET = 30013;
+    ACK_REDIS_HMSET = 30014;
 
     REQ_MONGO_QUERY = 30500;
     ACK_MONGO_QUERY = 30501;
 
     REQ_MYSQL_QUERY = 31000;
     ACK_MYSQL_QUERY = 31001;
+    REQ_MYSQL_EXECUTE = 31002;
+    ACK_MYSQL_EXECUTE = 31003;
+    REQ_MYSQL_SELECT = 31004;
+    ACK_MYSQL_SELECT = 31005;
+    REQ_MYSQL_INSERT = 31006;
+    ACK_MYSQL_INSERT = 31007;
+    REQ_MYSQL_UPDATE = 31008;
+    ACK_MYSQL_UPDATE = 31009;
+    REQ_MYSQL_DELETE = 31010;
+    ACK_MYSQL_DELETE = 31011;
+    
 
     REQ_CLICKHOUSE_QUERY = 31500;
     ACK_CLICKHOUSE_QUERY = 31501;
+    REQ_CLICKHOUSE_EXECUTE = 31502;
+    ACK_CLICKHOUSE_EXECUTE = 31503;
+    REQ_CLICKHOUSE_SELECT = 31504;
+    ACK_CLICKHOUSE_SELECT = 31505;
+    REQ_CLICKHOUSE_INSERT = 31506;
+    ACK_CLICKHOUSE_INSERT = 31507;
 
+}
+enum RedisCode {
+    REDIS_CODE_SUCCESS = 0;
+    REDIS_CODE_EXCEPTION = 1;
+    REDIS_CODE_NO_KEY = 2;
+    
+}
+
+message ReqRedisGet {
+    int32 query_id = 1;
+    bytes key = 2;
+}
+
+message AckRedisGet {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    bytes value = 4;
+}
+
+message ReqRedisSet {
+    int32 query_id = 1;
+    bytes key = 2;
+    bytes value = 3;
+    int64 ttl = 4;
+}
+
+message AckRedisSet {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+}
+
+message ReqRedisHGet {
+    int32 query_id = 1;
+    bytes key = 2;
+    bytes field = 3;
+}
+
+message AckRedisHGet {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    bytes value = 4;
+}
+
+message ReqRedisHSet {
+    int32 query_id = 1;
+    bytes key = 2;
+    bytes field = 3;
+    bytes value = 4;
+    int64 ttl = 5;
+}
+
+message AckRedisHSet {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
 }
 
 message Data {
@@ -30,30 +117,6 @@ message Data {
 message List {
     int32 type = 1;
     repeated bytes values = 2;
-}
-
-enum RedisCMD {
-    REDIS_CMD_NONE = 0;
-    REDIS_RAW = 1;
-    REDIS_SET = 10;
-    REDIS_GET = 11;
-    REDIS_HSET = 12;
-    REDIS_HGET = 13;
-    REDIS_HSETALL = 14;
-    REDIS_HGETALL = 15;
-}
-
-message ReqRedisQuery {
-    int32 query_id = 1;
-    RedisCMD cmd = 2;
-    map<string, Data> args = 3;
-}
-
-message AckRedisQuery {
-    bool code = 1;
-    int32 query_id = 2;
-    RedisCMD cmd = 3;
-    map<string, Data> args = 4;
 }
 
 enum MysqlCMD {
@@ -73,10 +136,34 @@ message ReqMysqlQuery {
 }
 
 message AckMysqlQuery {
+    int32 code = 1;
+    int32 query_id = 2;
+    ReqMysqlQuery cmd = 3;
+    bytes db = 4;
+    map<string, List> data = 5;
+}
+
+enum ClickhouseCMD {
+    CLICKHOUSE_CMD_NONE = 0;
+    CLICKHOUSE_RAW = 1;
+    CLICKHOUSE_SELECT = 2;
+    CLICKHOUSE_INSERT = 3;
+}
+
+message ReqClickhouseQuery {
     int32 query_id = 1;
-    ReqMysqlQuery cmd = 2;
-    bytes db = 3;
-    map<string, List> data = 4;
+    bytes db_name = 2;
+    ClickhouseCMD cmd = 3;
+    bytes raw_cmd = 4;
+    map<string, Data> args = 5;
+}
+
+message AckClickhouseQuery {
+    int32 code = 1;
+    int32 query_id = 2;
+    ClickhouseCMD cmd = 3;
+    bytes db = 4;
+    map<string, List> data = 5;
 }
 
 enum MongoCMD {

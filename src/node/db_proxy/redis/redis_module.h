@@ -19,7 +19,15 @@ class RedisModule : public IRedisModule {
     void Test();
     virtual bool Connect();
 
-    Redis* redis_;
+    void OnReqQuery(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnReqRedisGet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnReqRedisSet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnReqRedisHGet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnReqRedisHSet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnReqRedisHGetAll(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnReqRedisHMSet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+
+    Redis* client_;
 private:
     INetModule* m_net_;
     IClassModule *m_class_;

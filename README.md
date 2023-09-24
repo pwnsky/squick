@@ -2,15 +2,15 @@
 
 近年来,随着互联网飞速发展,元宇宙引发了全球科技产业的高度关注和投资热潮,在这个元宇宙技术的领域里,服务端技术的高低决定了元宇宙发展的成熟度,一个高度可扩展、高性能、高可用的服务端框架用以支持元宇宙应用程序的开发和部署是本次研究的方向。pwnsky团队提出了一种面向元宇宙的分布式服务器框架设计与实现方法,为构建高性能、可扩展的元宇宙系统提供了理论基础和技术支持。通过对需求和特点进行了深入分析,本文明确了分布式服务端框架的设计目标和相关技术。用 C++和 Lua 语言共同编写此框架,将框架拆分成了内核层、节点层和业务层,提升程序的拓展性和可维护性。将业务功能拆分到不同节点上运行,以实现不同功能的解耦和资源的高效利用,利用动态负载均衡算法,可以在不同节点之间有效地分配任务,确保系统的稳定性和性能。最后,采用科学的方式对框架进行测试且给相应的实验数据,并将该框架运用在某商业项目中,也对所做的内容进行了总结和展望。
 
-**Unity SDK: ** [squick-unity-sdk](https://github.com/pwnsky/squick-unity-sdk)
+**Unity SDK**:  [squick-unity-sdk](https://github.com/pwnsky/squick-unity-sdk)
 
-**Unreal SDK: **[squick-unreal-sdk](https://github.com/pwnsky/squick-unreal-sdk)
+**Unreal SDK**: [squick-unreal-sdk](https://github.com/pwnsky/squick-unreal-sdk)
 
-**后台: ** [squick-mid](https://github.com/pwnsky/squick-mid)
+**后台**:  [squick-mid](https://github.com/pwnsky/squick-mid)
 
 **讨论QQ群：739065686**
 
-**version:** 1.0.0
+**version:** 1.0.2
 
 ---
 

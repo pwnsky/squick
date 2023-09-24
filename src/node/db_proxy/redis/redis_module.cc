@@ -9,7 +9,7 @@
 
 namespace db_proxy::redis {
 	RedisModule::RedisModule(IPluginManager* p) {
-		is_update_ = true;
+		//is_update_ = true;
 		pm_ = p;
 
 		srand((unsigned)time(NULL));
@@ -17,9 +17,6 @@ namespace db_proxy::redis {
 	RedisModule::~RedisModule() {}
 
 	bool RedisModule::Start() {
-		dout << "Redis Module Started!  ---------------------------- \n";
-
-		
 		return true;
 	}
 
@@ -32,13 +29,122 @@ namespace db_proxy::redis {
 		m_log_ = pm_->FindModule<ILogModule>();
 
 		Connect();
-		//net_->AddReceiveCallBack()
+		m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_QUERY, this, &RedisModule::OnReqQuery);
+		m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_REDIS_GET, this, &RedisModule::OnReqRedisGet);
+		m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_REDIS_SET, this, &RedisModule::OnReqRedisSet);
+		m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_REDIS_HGET, this, &RedisModule::OnReqRedisHGet);
+		m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_REDIS_HSET, this, &RedisModule::OnReqRedisHGet);
+		m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_REDIS_HGETALL, this, &RedisModule::OnReqRedisHGetAll);
+		m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_REDIS_HMSET, this, &RedisModule::OnReqRedisHMSet);
 		return true;
 	}
-
+	
 	bool RedisModule::Update() { return true; }
 
 	bool RedisModule::Destory() { return true; }
+
+	void RedisModule::OnReqRedisGet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+		int code = 0;
+		rpc::ReqRedisGet req;
+		rpc::AckRedisGet ack;
+		string tmp;
+		if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
+			return;
+		}
+		try {
+			auto val = client_->get(req.key());
+			if (val) {
+				// Dereference val to get the returned value of std::string type.
+				ack.set_value(val.value());
+			}
+			else {
+				// else key doesn't exist.
+				code = rpc::RedisCode::REDIS_CODE_NO_KEY;
+			}
+		} catch (const Error& e) {
+			code = rpc::RedisCode::REDIS_CODE_EXCEPTION;
+			ack.set_msg(e.what());
+		}
+		ack.set_code(code);
+		ack.set_query_id(req.query_id());
+		m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_REDIS_GET, ack, sock);
+	}
+
+	void RedisModule::OnReqRedisSet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+		int code = 0;
+		rpc::ReqRedisSet req;
+		rpc::AckRedisSet ack;
+		string tmp;
+		if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
+			return;
+		}
+		try {
+			client_->set(req.key(), req.value(), std::chrono::milliseconds(req.ttl()));
+		}
+		catch (const Error& e) {
+			code = rpc::RedisCode::REDIS_CODE_NO_KEY;
+		}
+		ack.set_code(code);
+		ack.set_query_id(req.query_id());
+		m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_REDIS_SET, ack, sock);
+	}
+
+	void RedisModule::OnReqRedisHGet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+		int code = 0;
+		rpc::ReqRedisHGet req;
+		rpc::AckRedisHGet ack;
+		string tmp;
+		if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
+			return;
+		}
+		try {
+			auto val = client_->hget(req.key(), req.field());
+			if (val) {
+				ack.set_value(val.value());
+			}
+			else {
+				code = rpc::RedisCode::REDIS_CODE_NO_KEY;
+			}
+		}
+		catch (const Error& e) {
+			code = rpc::RedisCode::REDIS_CODE_NO_KEY;
+		}
+		
+		ack.set_code(code);
+		ack.set_query_id(req.query_id());
+		m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_REDIS_HGET, ack, sock);
+	}
+
+	void RedisModule::OnReqRedisHSet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+		int code = 0;
+		rpc::ReqRedisHSet req;
+		rpc::AckRedisHSet ack;
+		string tmp;
+		if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
+			return;
+		}
+		try {
+			client_->hset(req.key(), req.field(), req.value());
+		}
+		catch (const Error& e) {
+			code = rpc::RedisCode::REDIS_CODE_NO_KEY;
+		}
+		ack.set_code(code);
+		ack.set_query_id(req.query_id());
+		m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_REDIS_HSET, ack, sock);
+	}
+
+	void RedisModule::OnReqRedisHGetAll(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+
+	}
+
+	void RedisModule::OnReqRedisHMSet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+
+	}
+
+	void RedisModule::OnReqQuery(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+		
+	}
 
 	bool RedisModule::Connect() {
 		try {
@@ -46,28 +152,19 @@ namespace db_proxy::redis {
 			// Create an Redis object, which is movable but NOT copyable.
 			string url = "tcp://" + m_element_->GetPropertyString(id, excel::DB::IP()) + ":" + to_string(m_element_->GetPropertyInt(id, excel::DB::Port()));
 			dout << "connect to : " << url << std::endl;
-			redis_ = new Redis(url);
+			client_ = new Redis(url);
+			client_->auth(m_element_->GetPropertyString(id, excel::DB::Auth()));
 
-			redis_->auth(m_element_->GetPropertyString(id, excel::DB::Auth()));
-
-			// ***** STRING commands *****
-
-			redis_->set("key", "val");
-			auto val = redis_->get("key");    // val is of type OptionalString. See 'API Reference' section for details.
-			if (val) {
-				// Dereference val to get the returned value of std::string type.
-				std::cout << *val << std::endl;
-			}   // else key doesn't exist.
-
+			/*
 			// ***** LIST commands *****
 
 			// std::vector<std::string> to Redis LIST.
 			std::vector<std::string> vec = { "a", "b", "c" };
-			redis_->rpush("list", vec.begin(), vec.end());
+			client_->rpush("list", vec.begin(), vec.end());
 
 			// std::initializer_list to Redis LIST.
-			redis_->rpush("list", { "a", "b", "c" });
-			/*
+			client_->rpush("list", { "a", "b", "c" });
+			
 			// Redis LIST to std::vector<std::string>.
 			vec.clear();
 			redis.lrange("list", 0, -1, std::back_inserter(vec));
