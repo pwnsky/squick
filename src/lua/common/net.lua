@@ -11,9 +11,9 @@ function Net:Register(msg_id, this, func)
     Squick:AddMsgCallBackAsServer(msg_id, this, func)
 end
 
--- function func(guid, msg_data)
-function Net:ClientRegister(msg_id, this, func)
-
+-- function func(guid, msg_data, msg_id, fd)
+function Net:ClientRegister(server_type, msg_id, this, func)
+    Squick:AddMsgCallBackAsClient(server_type, msg_id, this, func)
 end
 
 function Net:SendByFD(fd, msg_id, msg_data, guid)
@@ -25,4 +25,12 @@ end
 
 function Net:SendToPlayer(msg_id)
 
+end
+
+function Net:SendToServer(server_id, msg_id, msg_data, guid)
+    Squick:SendToServerByServerID(server_id, msg_id, msg_data, guid)
+end
+
+function Net:SendToServers(server_type, msg_id, msg_data, guid)
+    Squick:SendToAllServerByServerType(server_type, msg_id, msg_data, guid)
 end

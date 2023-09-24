@@ -7,31 +7,38 @@ function PlayerMgr:Start()
 end
 
 function PlayerMgr:Update()
-    
+
 end
 
 function PlayerMgr:Destroy()
-    
+
 end
 
 function PlayerMgr:OnEnter(player_id, msg_data, msg_id, fd)
-    print("Player Enter")
-    local data =  Squick:Decode("rpc.PlayerEnterEvent", msg_data);
+    --local co = coroutine.create(function(player_id, msg_data, msg_id, fd)
+    --end)
+    --local status, err = coroutine.resume(co, player_id, msg_data, msg_id, fd)
+    --print(err)
+
+    print("Player Enter", msg_data)
+    local data = Squick:Decode("rpc.PlayerEnterEvent", msg_data);
+    --print(Squick)
     PrintTable(data)
 
     -- 查找玩家是否存在
-    
     --
-    local account_id = data.account_id   -- 账号GUID
-    local player_id = "player_" .. data.account_id-- 区服游戏数据GUID
+    local account_id = data.account_id                 -- 账号GUID
+    local player_id = "player_" .. data.account_id     -- 区服游戏数据GUID
 
+    -- 测试异步读取缓存数据
+    Redis:Get("test");
+    --coroutine.yield()
     -- 初始化玩家数据
     local ack = {
         code = 0,
         account_id = account_id,
         player_id = player_id,
     }
-
     local player_data = {
         account = data.account,
         account_id = data.account_id,
@@ -40,7 +47,6 @@ function PlayerMgr:OnEnter(player_id, msg_data, msg_id, fd)
         proxy_fd = fd,
     }
     self:UpdatePlayerData(player_id, player_data)
-
     Net:SendByFD(fd, PlayerEventRPC.PLAYER_BIND_EVENT, Squick:Encode("rpc.PlayerBindEvent", ack))
 end
 
@@ -54,10 +60,9 @@ function PlayerMgr:SendToPlayer(player_id, msg_id, data)
 end
 
 function PlayerMgr:OnReqPlayerData(player_id, msg_data, msg_id, fd)
-
     local player = self.players[player_id]
     if player == nil then
-        print("No this player " , player_id)
+        print("No this player ", player_id)
     end
 
     print("OnReqPlayerData, player_id: ", player_id)

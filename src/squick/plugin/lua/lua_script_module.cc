@@ -587,21 +587,14 @@ void LuaScriptModule::RemoveMsgCallBackAsClient(const ServerType serverType, con
 
 // 做为服务器做为客户端连接的网络 回调
 void LuaScriptModule::AddMsgCallBackAsClient(const ServerType serverType, const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
-    /*
-    auto serverMap = mxNetMsgCallBackFuncMapAsClient.GetElement(serverType);
-    if (!serverMap) {
-        serverMap = new Map<int, List<LuaCallBack>>();
-        mxNetMsgCallBackFuncMapAsClient.AddElement(serverType, serverMap);
-    }
-
-    auto callbackList = serverMap->GetElement(msg_id);
+    auto callbackList = mxNetMsgCallBackFuncMapAsClient.GetElement(msg_id);
     if (!callbackList) {
         callbackList = new List<LuaCallBack>();
-        serverMap->AddElement(msg_id, callbackList);
+        mxNetMsgCallBackFuncMapAsClient.AddElement(msg_id, callbackList);
         m_net_client_->AddReceiveCallBack(serverType, msg_id, this, &LuaScriptModule::OnNetMsgCallBackAsClient);
     }
     callbackList->Add({ luaTable, luaFunc });
-    */
+    
 }
 
 bool LuaScriptModule::ImportProtoFile(const std::string &fileName) {
@@ -623,17 +616,16 @@ void LuaScriptModule::SetScriptPath(const std::string &path) { scriptPath = path
 
 const std::string LuaScriptModule::GetScriptPath() { return scriptPath; }
 
-void LuaScriptModule::SendToServerByServerID(const int serverID, const uint16_t msg_id, const std::string &data) {
-    if (pm_->GetAppID() == serverID) {
+void LuaScriptModule::SendToServerByServerID(const int server_id, const uint16_t msg_id, const std::string &data, const std::string& guid) {
+    if (pm_->GetAppID() == server_id) {
         m_log_->LogError("you can send message to yourself");
         return;
     }
-
-    m_net_client_->SendByServerID(serverID, msg_id, data);
+    m_net_client_->SendByServerID(server_id, msg_id, data, guid);
 }
 
-void LuaScriptModule::SendToAllServerByServerType(const ServerType eType, const uint16_t msg_id, const std::string &data) {
-    m_net_client_->SendToAllServer(eType, msg_id, data);
+void LuaScriptModule::SendToAllServerByServerType(const ServerType server_type, const uint16_t msg_id, const std::string &data, const std::string& guid) {
+    m_net_client_->SendToAllServer(server_type, msg_id, data, guid);
 }
 
 void LuaScriptModule::SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, string guid) {
@@ -855,14 +847,21 @@ void LuaScriptModule::OnNetMsgCallBackAsServer(const socket_t sock, const int ms
 }
 
 void LuaScriptModule::OnNetMsgCallBackAsClient(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    string guid;
+    string data;
+    if (!m_net_->ReceivePB(msg_id, msg, len, data, guid)) {
+        ostringstream str;
+        str << "Parse Message Failed from Packet to MsgBase! MessageID: " << msg_id;
+        m_log_->LogWarning(str);
+        return;
+    }
 	auto msgCallBack = mxNetMsgCallBackFuncMapAsClient.GetElement(msg_id);
 	if (msgCallBack) {
-		std::string msgData(msg, len);
 		LuaCallBack callback;
 		auto Ret = msgCallBack->First(callback);
 		while (Ret) {
 			try {
-				callback.func.call<LuaIntf::LuaRef>(callback.self, sock, msg_id, msgData);
+				callback.func.call<LuaIntf::LuaRef>(callback.self, guid, data, msg_id, sock);
 			}
 			catch (LuaIntf::LuaException& e) {
 				cout << e.what() << endl;
