@@ -14,32 +14,69 @@ function PlayerMgr:Destroy()
 
 end
 
+function PlayerMgr:GetPlayerDataFromMongo(account_id, account)
+    local result = Mongo:FindAsync(MONGO_PLAYERS_DB, "base", '{"account_id":"' .. account_id .. '"}')
+    
+    local data = result[1]
+    local base_data = {}
+    if(data) then
+        base_data = Json.decode(data)
+    end
+    local player_id = base_data.player_id
+    local player_data = nil
+    
+    if(player_id == nil) then
+        -- Create new player
+        player_data = {
+            account = account, account_id = account_id, player_id = Env.area .. "-" .. account_id, name = "none",
+            age = 0, level = 0, proxy_id = 0, last_login_time = os.time(), created_time = os.time(),
+            online = false, platform = "none", extra = {},
+            area = Env.area, mail = {}, itmes = {},
+            node = {
+                proxy_id = 0, proxy_fd = 0,
+                lobby_id = 0, db_proxy_id = 0,
+                login_id = Env.app_id, world_id = 0,
+                master_id = 0,
+            }
+        }
+        local base_data = {
+            account_id = account_id,
+            player_id = player_data.player_id,
+        }
+        Mongo:InsertAsync(MONGO_PLAYERS_DB, "base", Json.encode(base_data))
+        Mongo:InsertAsync(MONGO_PLAYERS_DB, "detail", Json.encode(player_data))
+    else
+        local result = Mongo:FindAsync(MONGO_PLAYERS_DB, "detail", '{"player_id" : "' .. player_id ..'"}')
+        player_data = Json.decode(result[1])
+    end
+    return player_data;
+end
+
+function PlayerMgr:AsyncDataToMongo()
+    
+end
+
 function PlayerMgr:OnEnter(player_id, msg_data, msg_id, fd)
     -- This just example for async handle request
     local co = coroutine.create(function(player_id, msg_data, msg_id, fd)
-        print("Player Enter")
-        local data = Squick:Decode("rpc.PlayerEnterEvent", msg_data);
-        PrintTable(data)
-
-        -- Check player is exsited
         
-        local account_id = data.account_id -- Account GUID
-        local player_id = "player_" .. data.account_id -- Player GUID
-        
-        -- Init player data
+        local req = Squick:Decode("rpc.PlayerEnterEvent", msg_data);
+        local account_id = req.account_id
+        local account = req.account
+        local player_data = self:GetPlayerDataFromMongo(account_id, account);
+        player_id = player_data.player_id
         local ack = {
             code = 0,
             account_id = account_id,
             player_id = player_id,
         }
-        local player_data = {
-            account = data.account,
-            account_id = data.account_id,
-            proxy_id = data.proxy_id,
-            player_id = player_id,
-            proxy_fd = fd,
-        }
-        self:UpdatePlayerData(player_id, player_data)
+        print("Player Enter: ", account, player_id)
+        player_data.last_login_time = os.time()
+        player_data.node.proxy_fd = fd
+        player_data.node.proxy_id = req.proxy_id
+        player_data.online = true
+
+        self:CachePlayerData(player_id, player_data)
         Net:SendByFD(fd, PlayerEventRPC.PLAYER_BIND_EVENT, Squick:Encode("rpc.PlayerBindEvent", ack))
     end)
     local status, err = coroutine.resume(co, player_id, msg_data, msg_id, fd)
@@ -55,9 +92,7 @@ end
 function PlayerMgr:SendToPlayer(player_id, msg_id, data)
     local player = self.players[player_id]
     if player then
-        print('Send Player: ', msg_id)
-        PrintTable(player)
-        Net:SendByFD(player.proxy_fd, msg_id, data, player_id)
+        Net:SendByFD(player.node.proxy_fd, msg_id, data, player_id)
     end
 end
 
@@ -65,31 +100,22 @@ function PlayerMgr:OnReqPlayerData(player_id, msg_data, msg_id, fd)
     local player = self.players[player_id]
     if player == nil then
         print("No this player ", player_id)
+        return
     end
-
-    print("OnReqPlayerData, player_id: ", player_id)
     local ack = {
         account = player.account,
         player_id = player_id,
-        name = 'test',
+        name = player.name,
         level = 0,
     }
     self:SendToPlayer(player_id, PlayerRPC.ACK_PLAYER_DATA, Squick:Encode("rpc.AckPlayerData", ack))
 end
 
-function PlayerMgr:UpdatePlayerData(player_id, player_data)
+function PlayerMgr:CachePlayerData(player_id, player_data)
     if self.players == nil then
         self.players = {}
     end
     self.players[player_id] = player_data
-end
-
-function PlayerMgr:GetPlayerFromDB(account_id)
-
-end
-
-function PlayerMgr:PlayerDataLoaded()
-
 end
 
 return PlayerMgr

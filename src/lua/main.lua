@@ -7,6 +7,7 @@ Env = {
     app_type = '',
     app_name = '',
     start_time = 0,
+    area = 0,
 }
 
 function Require(file)
@@ -23,9 +24,10 @@ function Main(context)
     package.path = path .. '/?.lua;'
 
     Squick:LogInfo("lua module execute");
-    Env.app_id = Squick:AppID();
-    Env.app_type= Squick:AppType();
-    Env.app_name= Squick:AppName();
+    Env.app_id = Squick:AppID()
+    Env.app_type= Squick:AppType()
+    Env.app_name= Squick:AppName()
+    Env.area = Squick:Area()
 end
 
 
@@ -66,17 +68,17 @@ function HotReload()
 end
 
 function Load() 
-    Require("common.init");
-    Require("proto.init");
-    Require("lib.init");
+    Require("common.init")
+    Require("proto.init")
+    Require("lib.init")
     
     local node_init = {
         [ServerType.ST_GAME ] = function()
-            Require("node.game.init");
+            Require("node.game.init")
         end,
         [ServerType.ST_LOBBY] = function ()
-            Require("node.lobby.init");
-            --Require("test.init");
+            Require("node.lobby.init")
+            --Require("test.init")
         end
     }
     if(node_init[Env.app_type]) then

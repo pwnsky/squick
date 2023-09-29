@@ -446,6 +446,10 @@ string LuaScriptModule::AppName() {
     return pm_->GetAppName();
 }
 
+INT64 LuaScriptModule::Area() {
+    return pm_->GetArea();
+}
+
 bool LuaScriptModule::ExistElementObject(const std::string &configName) { return m_element_->ExistElement(configName); }
 
 LuaIntf::LuaRef LuaScriptModule::GetConfigIDList(const string& className) {
@@ -787,6 +791,7 @@ bool LuaScriptModule::Register() {
         .addFunction("AppID", &LuaScriptModule::AppID)
         .addFunction("AppType", &LuaScriptModule::AppType)
         .addFunction("AppName", &LuaScriptModule::AppName)
+        .addFunction("Area", &LuaScriptModule::Area)
 
         // Config
         .addFunction("ExistElementObject", &LuaScriptModule::ExistElementObject)

@@ -2,7 +2,6 @@
 -- Author: i0gan
 -- Email : l418894113@gmail.com
 -- Date  : 2022-12-04
--- Github: https://github.com/i0gan/Squick
 -- Description: 打印table
 -----------------------------------------------------------------------------
 

@@ -113,6 +113,7 @@ class LuaScriptModule : public ILuaScriptModule {
     INT64 AppID();
     INT64 AppType();
     string AppName();
+    INT64 Area();
 
     const std::string GetScriptPath();
     void SetScriptPath(const std::string &path);
