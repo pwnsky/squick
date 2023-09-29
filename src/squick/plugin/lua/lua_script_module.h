@@ -182,6 +182,8 @@ class LuaScriptModule : public ILuaScriptModule {
 
   protected:
     bool Register();
+    private:
+        INT64 last_update_time_ = 0;
 
   protected:
     IElementModule *m_element_;

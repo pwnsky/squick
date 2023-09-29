@@ -30,6 +30,7 @@ namespace db_proxy::mongo {
 
         m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_QUERY, this, &MongoModule::OnReqQuery);
         m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_INSERT, this, &MongoModule::OnReqInsert);
+        m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_FIND, this, &MongoModule::OnReqFind);
         return true;
     }
 
@@ -77,12 +78,11 @@ namespace db_proxy::mongo {
         try {
             mongocxx::database db = client_->database(req.db());
             auto collection = db[req.collection()];
-            auto doc = bsoncxx::from_json(req.json_str());
+            auto doc = bsoncxx::from_json(req.insert_json());
             auto result = collection.insert_one(doc.view());
             auto doc_id = result->inserted_id();
             assert(doc_id.type() == bsoncxx::type::k_oid);
-            //dout << "result: " << result->inserted_id().type() << std::endl;
-            std::cout << "Pinged your deployment. You successfully connected to MongoDB!" << std::endl;
+            ack.set_inserted_id(doc_id.get_oid().value.to_string());
         }
         catch (const std::exception& e) {
             std::cout << "Exception: " << e.what() << std::endl;
@@ -92,5 +92,31 @@ namespace db_proxy::mongo {
         ack.set_code(code);
         ack.set_query_id(req.query_id());
         m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_INSERT, ack, sock);
+    }
+
+    void MongoModule::OnReqFind(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+        int code = 0;
+        rpc::ReqMongoFind req;
+        rpc::AckMongoFind ack;
+        string tmp;
+        if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
+            return;
+        }
+        try {
+            mongocxx::database db = client_->database(req.db());
+            auto collection = db[req.collection()];
+            auto cond = bsoncxx::from_json(req.condition_json());
+            auto result = collection.find(cond.view());
+            for (auto doc : result) {
+                ack.add_result_json(bsoncxx::to_json(doc));
+            }
+        } catch (const std::exception& e) {
+            std::cout << "Exception: " << e.what() << std::endl;
+            code = rpc::MongoCode::MONGO_CODE_EXCEPTION;
+            ack.set_msg(e.what());
+        }
+        ack.set_code(code);
+        ack.set_query_id(req.query_id());
+        m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_FIND, ack, sock);
     }
 }

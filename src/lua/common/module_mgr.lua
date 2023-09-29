@@ -60,7 +60,7 @@ end
 
 function ModuleMgr:Update()
     for key, value in pairs(self.modules) do
-        value:Update()
+        value:Update()    
     end
 end
 

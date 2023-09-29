@@ -190,24 +190,29 @@ message ReqMongoInsert {
     int32 query_id = 1;
     string db = 2;
     string collection = 3;
-    string json_str = 4;
+    string insert_json = 4;
 }
 
 message AckMongoInsert {
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
+    string inserted_id = 4; // Inserted Object ID
 }
 
 message ReqMongoFind {
     int32 query_id = 1;
     string db = 2;
     string collection = 3;
-    string json_str = 4;
+    string condition_json = 4;
+    int32 limit = 5;
+    int32 skip = 6;
+    string sort_json = 7;
 }
 
 message AckMongoFind {
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
+    repeated string result_json = 4;
 }

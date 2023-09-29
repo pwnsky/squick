@@ -1,6 +1,5 @@
--- Lua 初始化脚本
--- 指定Lua加载的模块
+local modules = {
+    { name = "test", is_hot = true, },
+}
 
---Require("test.pb")
---Require("test.config")
---Require("test.coroutine")
+ModuleMgr:Register("test", modules)

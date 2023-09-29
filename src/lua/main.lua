@@ -6,6 +6,7 @@ Env = {
     app_id = -1,
     app_type = '',
     app_name = '',
+    start_time = 0,
 }
 
 function Require(file)
@@ -34,7 +35,7 @@ function Awake()
 end
 
 function Start()
-
+    Env.start_time = os.time()
 end
 
 function AfterStart()
@@ -47,6 +48,7 @@ function ReadyUpdate()
     ModuleMgr:Start()
 end
 
+-- Update for per second
 function Update()
     ModuleMgr:Update()
 end
@@ -66,14 +68,15 @@ end
 function Load() 
     Require("common.init");
     Require("proto.init");
-    Require("test.init");
     Require("lib.init");
+    
     local node_init = {
         [ServerType.ST_GAME ] = function()
             Require("node.game.init");
         end,
         [ServerType.ST_LOBBY] = function ()
             Require("node.lobby.init");
+            --Require("test.init");
         end
     }
     if(node_init[Env.app_type]) then

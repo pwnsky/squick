@@ -27,6 +27,7 @@ namespace db_proxy::mongo {
 
         void OnReqQuery(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
         void OnReqInsert(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+        void OnReqFind(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
     private:
         client* client_;
         INetModule* m_net_;

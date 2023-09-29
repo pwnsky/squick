@@ -25,22 +25,7 @@ function PlayerMgr:OnEnter(player_id, msg_data, msg_id, fd)
         
         local account_id = data.account_id -- Account GUID
         local player_id = "player_" .. data.account_id -- Player GUID
-        -- -- Async get data from redis
-        local code = Redis:SetStringAsync("test", "hello squick")
-        print("code: ", code)
-        local cache = Redis:GetStringAsync("test")
-        print("cache: ", cache)
-
-        local req = {
-            name = "i0gan",
-            age = 18,
-            level = 20,
-        }
-        local str = Json.encode(req)
-        print("json_str", str)
-        local code = Mongo:InsertAsync("test", "okkk", str)
-        print("code ", code)
-
+        
         -- Init player data
         local ack = {
             code = 0,

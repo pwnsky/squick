@@ -93,7 +93,15 @@ bool LuaScriptModule::ReadyUpdate() {
 
 // 这里不对lua进行Update，降低Lua不必要的循环运算
 // Lua热重载方式通过http接口来显示触发
-bool LuaScriptModule::Update() { return true; }
+bool LuaScriptModule::Update() {
+    // Update call per second
+    auto now = pm_->GetNowTime();
+    if (now - last_update_time_ > 0) {
+        last_update_time_ = now;
+        TRY_RUN_GLOBAL_SCRIPT_FUN0("Update");
+    }
+    return true;
+}
 
 bool LuaScriptModule::BeforeDestory() {
     TRY_RUN_GLOBAL_SCRIPT_FUN0("BeforeDestory");
