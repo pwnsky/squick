@@ -3,3 +3,4 @@
 
 --Require("test.pb")
 --Require("test.config")
+--Require("test.coroutine")
