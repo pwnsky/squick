@@ -28,6 +28,9 @@ function Net:SendToPlayer(msg_id)
 end
 
 function Net:SendToServer(server_id, msg_id, msg_data, guid)
+    if(guid == nil) then
+        guid = ""
+    end
     Squick:SendToServerByServerID(server_id, msg_id, msg_data, guid)
 end
 

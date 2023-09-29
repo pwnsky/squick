@@ -113,6 +113,7 @@ class LuaScriptModule : public ILuaScriptModule {
     INT64 AppID();
     INT64 AppType();
     string AppName();
+    INT64 Area();
 
     const std::string GetScriptPath();
     void SetScriptPath(const std::string &path);
@@ -182,6 +183,8 @@ class LuaScriptModule : public ILuaScriptModule {
 
   protected:
     bool Register();
+    private:
+        INT64 last_update_time_ = 0;
 
   protected:
     IElementModule *m_element_;

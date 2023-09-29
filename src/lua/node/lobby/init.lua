@@ -3,3 +3,5 @@ local modules = {
 }
 
 ModuleMgr:Register("node.lobby", modules)
+
+MONGO_PLAYERS_DB = "players_" .. Env.area
