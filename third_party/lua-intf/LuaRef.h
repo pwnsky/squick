@@ -268,13 +268,13 @@ private:
 class LuaRef
 {
 public:
-    void RegisterMainThread(lua_State* L) {
+    static void RegisterMainThread(lua_State* L) {
         if (lua_pushthread(L) == 1)
             lua_rawseti(L, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
         else
             lua_pop(L, 1);
     }
-    lua_State* GetCurrentThread(lua_State* L) {
+    static lua_State* GetMainThread(lua_State* L) {
         assert(L);
         lua_rawgeti(L, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
         lua_State* L1 = lua_tothread(L, -1);
@@ -439,7 +439,7 @@ public:
      * Create reference to Lua nil.
      */
     LuaRef(lua_State* state, std::nullptr_t)
-        : L(GetCurrentThread(state))
+        : L(state)
         , m_ref(LUA_REFNIL)
     {
         assert(L);
@@ -452,7 +452,7 @@ public:
      * @param index position on stack
      */
     LuaRef(lua_State* state, int index)
-        : L(GetCurrentThread(state))
+        : L(state)
     {
         assert(L);
         lua_pushvalue(L, index);
@@ -466,7 +466,7 @@ public:
      * @param name the global name, may contains '.' to access sub obejct
      */
     LuaRef(lua_State* state, const char* name)
-        : L(GetCurrentThread(state))
+        : L(state)
     {
         assert(L);
         Lua::pushGlobal(L, name);
@@ -1209,7 +1209,7 @@ private:
      * Special constructor for popFromStack.
      */
     explicit LuaRef(lua_State* state)
-        : L(GetCurrentThread(state))
+        : L(state)
     {
         assert(L);
         m_ref = luaL_ref(state, LUA_REGISTRYINDEX);
