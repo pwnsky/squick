@@ -3,6 +3,7 @@ local PlayerMgr = Module
 function PlayerMgr:Start()
     Net:Register(PlayerEventRPC.PLAYER_ENTER_EVENT, self, self.OnEnter)
     Net:Register(PlayerRPC.REQ_PLAYER_DATA, self, self.OnReqPlayerData)
+    Net:Register(PlayerEventRPC.PLAYER_LEAVE_EVENT, self, self.OnLeave)
 end
 
 function PlayerMgr:Update()
@@ -14,8 +15,8 @@ function PlayerMgr:Destroy()
 end
 
 function PlayerMgr:OnEnter(player_id, msg_data, msg_id, fd)
+    -- This just example for async handle request
     local co = coroutine.create(function(player_id, msg_data, msg_id, fd)
-        local co = coroutine.running();
         print("Player Enter")
         local data = Squick:Decode("rpc.PlayerEnterEvent", msg_data);
         PrintTable(data)
@@ -25,8 +26,20 @@ function PlayerMgr:OnEnter(player_id, msg_data, msg_id, fd)
         local account_id = data.account_id -- Account GUID
         local player_id = "player_" .. data.account_id -- Player GUID
         -- -- Async get data from redis
-        local cache = Redis:Get(co, "test222")
+        local code = Redis:SetStringAsync("test", "hello squick")
+        print("code: ", code)
+        local cache = Redis:GetStringAsync("test")
         print("cache: ", cache)
+
+        local req = {
+            name = "i0gan",
+            age = 18,
+            level = 20,
+        }
+        local str = Json.encode(req)
+        print("json_str", str)
+        local code = Mongo:InsertAsync("test", "okkk", str)
+        print("code ", code)
 
         -- Init player data
         local ack = {
@@ -46,9 +59,12 @@ function PlayerMgr:OnEnter(player_id, msg_data, msg_id, fd)
     end)
     local status, err = coroutine.resume(co, player_id, msg_data, msg_id, fd)
     if(err)then
-        print(err)    
+        print(err)
     end
-    
+end
+
+function PlayerMgr:OnLeave(player_id, msg_data, msg_id, fd)
+    print("Player offline: ", player_id)
 end
 
 function PlayerMgr:SendToPlayer(player_id, msg_id, data)

@@ -363,6 +363,4 @@ namespace db_proxy::redis {
 		return true;
 	}
 
-	void RedisModule::Test() {}
-
 }

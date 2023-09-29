@@ -4,4 +4,5 @@
 -- Date  : 2023-09-24
 -- Description: lib init
 -----------------------------------------------------------------------------
+Json = require "lib.json.json"
 require "lib.db.init"

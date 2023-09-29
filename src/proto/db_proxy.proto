@@ -25,6 +25,14 @@ enum DbProxyRPC {
 
     REQ_MONGO_QUERY = 30500;
     ACK_MONGO_QUERY = 30501;
+    REQ_MONGO_INSERT = 30502;
+    ACK_MONGO_INSERT = 30503;
+    REQ_MONGO_FIND = 30504;
+    ACK_MONGO_FIND = 30505;
+    REQ_MONGO_UPDATE = 30506;
+    ACK_MONGO_UPDATE = 30507;
+    REQ_MONGO_DELETE = 30508;
+    ACK_MONGO_DELETE = 30509;
 
     REQ_MYSQL_QUERY = 31000;
     ACK_MYSQL_QUERY = 31001;
@@ -59,7 +67,7 @@ enum RedisCode {
 
 message ReqRedisGet {
     int32 query_id = 1;
-    bytes key = 2;
+    string key = 2;
 }
 
 message AckRedisGet {
@@ -71,7 +79,7 @@ message AckRedisGet {
 
 message ReqRedisSet {
     int32 query_id = 1;
-    bytes key = 2;
+    string key = 2;
     bytes value = 3;
     int64 ttl = 4;
 }
@@ -84,8 +92,8 @@ message AckRedisSet {
 
 message ReqRedisHGet {
     int32 query_id = 1;
-    bytes key = 2;
-    bytes field = 3;
+    string key = 2;
+    string field = 3;
 }
 
 message AckRedisHGet {
@@ -97,8 +105,8 @@ message AckRedisHGet {
 
 message ReqRedisHSet {
     int32 query_id = 1;
-    bytes key = 2;
-    bytes field = 3;
+    string key = 2;
+    string field = 3;
     bytes value = 4;
     int64 ttl = 5;
 }
@@ -130,7 +138,7 @@ enum MysqlCMD {
 
 message ReqMysqlQuery {
     int32 query_id = 1;
-    bytes db_name = 2;
+    string db = 2;
     MysqlCMD cmd = 3;
     map<string, Data> args = 4;
 }
@@ -139,7 +147,7 @@ message AckMysqlQuery {
     int32 code = 1;
     int32 query_id = 2;
     ReqMysqlQuery cmd = 3;
-    bytes db = 4;
+    string db = 4;
     map<string, List> data = 5;
 }
 
@@ -152,7 +160,7 @@ enum ClickhouseCMD {
 
 message ReqClickhouseQuery {
     int32 query_id = 1;
-    bytes db_name = 2;
+    string db = 2;
     ClickhouseCMD cmd = 3;
     bytes raw_cmd = 4;
     map<string, Data> args = 5;
@@ -162,11 +170,44 @@ message AckClickhouseQuery {
     int32 code = 1;
     int32 query_id = 2;
     ClickhouseCMD cmd = 3;
-    bytes db = 4;
+    string db = 4;
     map<string, List> data = 5;
 }
 
 enum MongoCMD {
     MONGO_CMD_NONE = 0;
     MONGO_RAW = 1;
+}
+
+
+// Mongo db
+enum MongoCode {
+    MONGO_CODE_SUCCESS = 0;
+    MONGO_CODE_EXCEPTION = 1;
+}
+
+message ReqMongoInsert {
+    int32 query_id = 1;
+    string db = 2;
+    string collection = 3;
+    string json_str = 4;
+}
+
+message AckMongoInsert {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+}
+
+message ReqMongoFind {
+    int32 query_id = 1;
+    string db = 2;
+    string collection = 3;
+    string json_str = 4;
+}
+
+message AckMongoFind {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
 }
