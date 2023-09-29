@@ -10,7 +10,7 @@
 
 **讨论QQ群：739065686**
 
-**version:** 1.0.2
+**version:** 1.0.3
 
 ---
 
@@ -53,7 +53,7 @@
 18. 数据库Lua接口提供【0%】
 19. 统一的数据库代理存取数据命令，使用简单协议能够便捷切换使用Mysql、Redis、MongoDb数据库 【10%】
 20. Unity、UnrealEngine客户端SDK完善【50%】
-21. 高可用-数据库代理服务器，支持主流的 Mysql、MongoDb、Redis 、Clickhouse等数据库，采用proto协议进行交互【10%】
+21. 高可用-数据库代理服务器，支持主流的 Mysql、MongoDb、Redis 、Clickhouse等数据库，采用proto协议进行交互，Lua协程异步读取【30%】
 
 ## 测试
 
