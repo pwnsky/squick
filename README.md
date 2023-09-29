@@ -2,15 +2,15 @@
 
 近年来,随着互联网飞速发展,元宇宙引发了全球科技产业的高度关注和投资热潮,在这个元宇宙技术的领域里,服务端技术的高低决定了元宇宙发展的成熟度,一个高度可扩展、高性能、高可用的服务端框架用以支持元宇宙应用程序的开发和部署是本次研究的方向。pwnsky团队提出了一种面向元宇宙的分布式服务器框架设计与实现方法,为构建高性能、可扩展的元宇宙系统提供了理论基础和技术支持。通过对需求和特点进行了深入分析,本文明确了分布式服务端框架的设计目标和相关技术。用 C++和 Lua 语言共同编写此框架,将框架拆分成了内核层、节点层和业务层,提升程序的拓展性和可维护性。将业务功能拆分到不同节点上运行,以实现不同功能的解耦和资源的高效利用,利用动态负载均衡算法,可以在不同节点之间有效地分配任务,确保系统的稳定性和性能。最后,采用科学的方式对框架进行测试且给相应的实验数据,并将该框架运用在某商业项目中,也对所做的内容进行了总结和展望。
 
-**Unity SDK: ** [squick-unity-sdk](https://github.com/pwnsky/squick-unity-sdk)
+**Unity SDK**:  [squick-unity-sdk](https://github.com/pwnsky/squick-unity-sdk)
 
-**Unreal SDK: **[squick-unreal-sdk](https://github.com/pwnsky/squick-unreal-sdk)
+**Unreal SDK**: [squick-unreal-sdk](https://github.com/pwnsky/squick-unreal-sdk)
 
-**后台: ** [squick-mid](https://github.com/pwnsky/squick-mid)
+**后台**:  [squick-mid](https://github.com/pwnsky/squick-mid)
 
 **讨论QQ群：739065686**
 
-**version:** 1.0.0
+**version:** 1.0.3
 
 ---
 
@@ -43,17 +43,17 @@
 8. 日志系统,能够将日志异步写入到文件里,且在 Linux 环境下程序崩溃时,自动 Dump Stack 调用链写入崩溃文件 【100%】
 9. 分布式服务,各服务之间通过网络来进行沟通,可通过分布式+集群方式减轻服务器压力 【50%】
 10. 支持业务代码的热更新 【50%】
-11. 支持主流的 Mysql、MongoDb、Redis 等数据库 【80%】
-12. 支持跨平台,可以在 Windows、Linux 上编译和开发,在 Windows 上可以支持 VS 进行项目开发【100%】
-13. 支持 1 变 N 或 N 变 1,一个物理机上单个进程启动全部服务器,方便开发调试。不同物理机上启动单个或多个服务器 【100%】
-14. 拥有比较完整的自动化工具,如自动化代码生成、编译、打包、部署、清理等等 【80%】
-15. 支持主流的协议,如 HTTP/HTTPS、Websocket、TCP、UDP、KCP 等等 【60%】
-16. 为了保证包的正确处理与不丢失,基于 TCP 之上,自定义双向 RPC 协议 【100%】
-17. 可视化的抓协议包工具【0%】
-18. 远程调试控制台【0%】
-19. 数据库Lua接口提供【0%】
-20. 统一的数据库代理存取数据命令，使用简单协议能够便捷切换使用Mysql、Redis、MongoDb数据库 【10%】
-21. Unity、UnrealEngine客户端SDK完善【50%】
+11. 支持跨平台,可以在 Windows、Linux 上编译和开发,在 Windows 上可以支持 VS 进行项目开发【100%】
+12. 支持 1 变 N 或 N 变 1,一个物理机上单个进程启动全部服务器,方便开发调试。不同物理机上启动单个或多个服务器 【100%】
+13. 拥有比较完整的自动化工具,如自动化代码生成、编译、打包、部署、清理等等 【80%】
+14. 支持主流的协议,如 HTTP/HTTPS、Websocket、TCP、UDP、KCP 等等 【60%】
+15. 为了保证包的正确处理与不丢失,基于 TCP 之上,自定义双向 RPC 协议 【100%】
+16. 可视化的抓协议包工具【0%】
+17. 远程调试控制台【0%】
+18. 数据库Lua接口提供【0%】
+19. 统一的数据库代理存取数据命令，使用简单协议能够便捷切换使用Mysql、Redis、MongoDb数据库 【10%】
+20. Unity、UnrealEngine客户端SDK完善【50%】
+21. 高可用-数据库代理服务器，支持主流的 Mysql、MongoDb、Redis 、Clickhouse等数据库，采用proto协议进行交互，Lua协程异步读取【30%】
 
 ## 测试
 
@@ -405,6 +405,25 @@ docker run -d --restart always --name squick_db_mongo_1 -p 10410:27017 -e MONGO_
 
 ```
 docker run -d --restart always --name squick_db_redis_1 -p 10420:6379 redis:7.0 --requirepass pwnsky_squick
+```
+
+
+
+### 搭建Clickhouse日志数据库
+
+负责记录服务器日志、游戏日志、埋点数据等。
+
+```
+docker run -d --restart always --name squick_db_clickhouse_1 -p 10430:8123 -p 10431:9000 -p 10432:9009 clickhouse/clickhouse-server:23.1.3.5-alpine
+```
+
+创建之后进入容器
+
+```
+vi /etc/clickhouse-server/users.xml
+
+# 找到 <password></password>
+# 在中间增加 pwnsky_squick
 ```
 
 

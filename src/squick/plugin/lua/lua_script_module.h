@@ -141,8 +141,8 @@ class LuaScriptModule : public ILuaScriptModule {
     const std::string Encode(const std::string &msgTypeName, const LuaIntf::LuaRef &luaTable);
     LuaIntf::LuaRef Decode(const std::string &msgTypeName, const std::string &data);
 
-    void SendToServerByServerID(const int serverID, const uint16_t msg_id, const std::string &data);
-    void SendToAllServerByServerType(const ServerType eType, const uint16_t msg_id, const std::string &data);
+    void SendToServerByServerID(const int server_id, const uint16_t msg_id, const std::string &data, const std::string& guid);
+    void SendToAllServerByServerType(const ServerType server_type, const uint16_t msg_id, const std::string &data, const std::string& guid);
 
     // for net module
     void SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, string guid);

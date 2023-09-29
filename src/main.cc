@@ -76,27 +76,27 @@ int main(int argc, char *argv[]) {
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=master id=1")));
         
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=world id=100")));
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=world id=101"))); // 区服2
+        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=world id=101"))); // 区服2
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=db_proxy id=300")));
 
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=db_proxy id=301"))); // 区服2
+        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=db_proxy id=301"))); // 区服2
 
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=login id=2"))); 
         
         // Lobby
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1000")));
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1001")));
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1002")));
+        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1002")));
 
         // Game
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=3000")));
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=3001")));
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game_mgr id=2000")));
+        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=3000")));
+        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=3001")));
+        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game_mgr id=2000")));
 
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=500")));
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=501")));
+        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=501")));
 
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=502"))); // 区服2
+        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=502"))); // 区服2
     } else {
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList)));
     }

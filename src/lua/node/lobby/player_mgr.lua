@@ -1,47 +1,54 @@
 local PlayerMgr = Module
 
 function PlayerMgr:Start()
-    print("PlayerMgr Start")
     Net:Register(PlayerEventRPC.PLAYER_ENTER_EVENT, self, self.OnEnter)
     Net:Register(PlayerRPC.REQ_PLAYER_DATA, self, self.OnReqPlayerData)
 end
 
 function PlayerMgr:Update()
-    
+
 end
 
 function PlayerMgr:Destroy()
-    
+
 end
 
 function PlayerMgr:OnEnter(player_id, msg_data, msg_id, fd)
-    print("Player Enter")
-    local data =  Squick:Decode("rpc.PlayerEnterEvent", msg_data);
-    PrintTable(data)
+    local co = coroutine.create(function(player_id, msg_data, msg_id, fd)
+        local co = coroutine.running();
+        print("Player Enter")
+        local data = Squick:Decode("rpc.PlayerEnterEvent", msg_data);
+        PrintTable(data)
 
-    -- 查找玩家是否存在
+        -- Check player is exsited
+        
+        local account_id = data.account_id -- Account GUID
+        local player_id = "player_" .. data.account_id -- Player GUID
+        -- -- Async get data from redis
+        local cache = Redis:Get(co, "test222")
+        print("cache: ", cache)
+
+        -- Init player data
+        local ack = {
+            code = 0,
+            account_id = account_id,
+            player_id = player_id,
+        }
+        local player_data = {
+            account = data.account,
+            account_id = data.account_id,
+            proxy_id = data.proxy_id,
+            player_id = player_id,
+            proxy_fd = fd,
+        }
+        self:UpdatePlayerData(player_id, player_data)
+        Net:SendByFD(fd, PlayerEventRPC.PLAYER_BIND_EVENT, Squick:Encode("rpc.PlayerBindEvent", ack))
+    end)
+    local status, err = coroutine.resume(co, player_id, msg_data, msg_id, fd)
+    if(err)then
+        print(err)    
+    end
     
-    --
-    local account_id = data.account_id   -- 账号GUID
-    local player_id = "player_" .. data.account_id-- 区服游戏数据GUID
-
-    -- 初始化玩家数据
-    local ack = {
-        code = 0,
-        account_id = account_id,
-        player_id = player_id,
-    }
-
-    local player_data = {
-        account = data.account,
-        account_id = data.account_id,
-        proxy_id = data.proxy_id,
-        player_id = player_id,
-        proxy_fd = fd,
-    }
-    self:UpdatePlayerData(player_id, player_data)
-
-    Net:SendByFD(fd, PlayerEventRPC.PLAYER_BIND_EVENT, Squick:Encode("rpc.PlayerBindEvent", ack))
 end
 
 function PlayerMgr:SendToPlayer(player_id, msg_id, data)
@@ -54,10 +61,9 @@ function PlayerMgr:SendToPlayer(player_id, msg_id, data)
 end
 
 function PlayerMgr:OnReqPlayerData(player_id, msg_data, msg_id, fd)
-
     local player = self.players[player_id]
     if player == nil then
-        print("No this player " , player_id)
+        print("No this player ", player_id)
     end
 
     print("OnReqPlayerData, player_id: ", player_id)

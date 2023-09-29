@@ -106,32 +106,6 @@ std::shared_ptr<IRedisClient> RedisModule::GetDriverBySuit(const std::string &st
     return nullptr;
 }
 
-/*
-std::shared_ptr<IRedisClient> RedisModule::GetDriverBySuit(const int nHash)
-{
-return mdriver.GetElementBySuit(nHash);
-}
-*/
-bool RedisModule::AddConnectSql(const std::string &strID, const std::string &ip) {
-    if (!mdriver.ExistElement(strID)) {
-        std::shared_ptr<RedisClient> pNoSqlDriver(new RedisClient());
-        pNoSqlDriver->Connect(ip, 6379, "");
-        return mdriver.AddElement(strID, pNoSqlDriver);
-    }
-
-    return false;
-}
-
-bool RedisModule::AddConnectSql(const std::string &strID, const std::string &ip, const int nPort) {
-    if (!mdriver.ExistElement(strID)) {
-        std::shared_ptr<IRedisClient> pNoSqlDriver(new RedisClient());
-        pNoSqlDriver->Connect(ip, nPort, "");
-        return mdriver.AddElement(strID, pNoSqlDriver);
-    }
-
-    return false;
-}
-
 bool RedisModule::AddConnectSql(const std::string &strID, const std::string &ip, const int nPort, const std::string &strPass) {
     if (!mdriver.ExistElement(strID)) {
         std::shared_ptr<IRedisClient> pNoSqlDriver(new RedisClient());

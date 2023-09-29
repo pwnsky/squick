@@ -268,6 +268,25 @@ private:
 class LuaRef
 {
 public:
+    static void RegisterMainThread(lua_State* L) {
+        if (lua_pushthread(L) == 1)
+            lua_rawseti(L, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
+        else
+            lua_pop(L, 1);
+    }
+    static lua_State* GetMainThread(lua_State* L) {
+        assert(L);
+        lua_rawgeti(L, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
+        lua_State* L1 = lua_tothread(L, -1);
+        lua_pop(L, 1);
+        if (!L1) {
+            RegisterMainThread(L);
+            lua_rawgeti(L, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
+            L1 = lua_tothread(L, -1);
+            lua_pop(L, 1);
+        }
+        return L1 ? L1 : L;
+    }
     /**
      * Create new userdata with requested size.
      *
@@ -668,10 +687,15 @@ public:
     /**
      * Push value of this reference to Lua stack.
      */
-    void pushToStack() const
+    void pushToStack(lua_State* L1=nullptr) const
     {
-        assert(L);
-        lua_rawgeti(L, LUA_REGISTRYINDEX, m_ref);
+        if (L1) {
+            lua_rawgeti(L1, LUA_REGISTRYINDEX, m_ref);
+        }
+        else {
+            assert(L);
+            lua_rawgeti(L, LUA_REGISTRYINDEX, m_ref);
+        }
     }
 
     /**
@@ -1229,7 +1253,7 @@ private:
         static R invoke(lua_State* L, const LuaRef& f, P&&... args)
         {
             lua_pushcfunction(L, &LuaException::traceback);
-            f.pushToStack();
+            f.pushToStack(L);
             pushArg(L, std::forward<P>(args)...);
             if (lua_pcall(L, sizeof...(P), 1, -int(sizeof...(P) + 2)) != LUA_OK) {
                 lua_remove(L, -2);
@@ -1247,7 +1271,7 @@ private:
         static void invoke(lua_State* L, const LuaRef& f, P&&... args)
         {
             lua_pushcfunction(L, &LuaException::traceback);
-            f.pushToStack();
+            f.pushToStack(L);
             pushArg(L, std::forward<P>(args)...);
             if (lua_pcall(L, sizeof...(P), 0, -int(sizeof...(P) + 2)) != LUA_OK) {
                 lua_remove(L, -2);
@@ -1263,7 +1287,7 @@ private:
         static std::tuple<R...> invoke(lua_State* L, const LuaRef& f, P&&... args)
         {
             lua_pushcfunction(L, &LuaException::traceback);
-            f.pushToStack();
+            f.pushToStack(L);
             pushArg(L, std::forward<P>(args)...);
             if (lua_pcall(L, sizeof...(P), sizeof...(R), -int(sizeof...(P) + 2)) != LUA_OK) {
                 lua_remove(L, -2);
@@ -1321,7 +1345,7 @@ struct LuaTypeMapping <LuaRef>
     static void push(lua_State* L, const LuaRef& r)
     {
         if (r.isValid()) {
-            r.pushToStack();
+            r.pushToStack(L);
         } else {
             lua_pushnil(L);
         }

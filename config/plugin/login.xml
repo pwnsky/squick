@@ -1,5 +1,5 @@
 <XML>
-    <LoginServer>
+    <Login>
 		<Plugin Name="core/net" />
 		<Plugin Name="core/kernel" />
 		<Plugin Name="core/config" />
@@ -11,6 +11,6 @@
 		<Plugin Name="node/login/http" />
 		<Plugin Name="node/login/redis" />
 		<Plugin Name="node/login/mysql" />
-	</LoginServer>
+	</Login>
 
 </XML>

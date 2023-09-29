@@ -753,8 +753,6 @@ class IRedisClient {
 
 class IRedisModule : public IModule {
   public:
-    virtual bool AddConnectSql(const std::string &strID, const std::string &ip) = 0;
-    virtual bool AddConnectSql(const std::string &strID, const std::string &ip, const int nPort) = 0;
     virtual bool AddConnectSql(const std::string &strID, const std::string &ip, const int nPort, const std::string &strPass) = 0;
 
     virtual List<std::string> GetDriverIdList() = 0;
