@@ -91,7 +91,7 @@ class IHttpServer {
 
     virtual bool Update() = 0;
 
-    virtual int StartServer(const unsigned short nPort) = 0;
+    virtual int StartServer(const unsigned short port, bool is_ssl = false) = 0;
 
     virtual bool ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason = "OK") = 0;
     virtual bool SetHeader(std::shared_ptr<HttpRequest> req, const std::string& key, const std::string& value) = 0;

@@ -20,7 +20,7 @@
 // #define SQUICK_ENABLE_SSL 1
 #define SQUICK_DEBUG_INFO " in " << __FILE__ << " at " << __FUNCTION__ << ":" << __LINE__
 #if SQUICK_ENABLE_SSL
-#define EVENT__HAVE_OPENSSL
+//#define EVENT__HAVE_OPENSSL
 #endif
 
 #define SQUICK_ARCHITECTURE_32 1
