@@ -24,10 +24,6 @@ function Main(context)
     package.path = path .. '/?.lua;'
 
     Squick:LogInfo("lua module execute");
-    Env.app_id = Squick:AppID()
-    Env.app_type= Squick:AppType()
-    Env.app_name= Squick:AppName()
-    Env.area = Squick:Area()
 end
 
 
@@ -46,6 +42,10 @@ end
 
 -- 在 ReadyUpdate 才进行初始化 Lua 模块，目的是让C++层的所有模块已链接完毕
 function ReadyUpdate()
+    Env.app_id = Squick:AppID()
+    Env.app_type= Squick:AppType()
+    Env.app_name= Squick:AppName()
+    Env.area = Squick:Area()
     Load()
     ModuleMgr:Start()
 end

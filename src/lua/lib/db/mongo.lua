@@ -5,13 +5,14 @@
 -- Description: async mongo cli
 -----------------------------------------------------------------------------
 
-local DbProxyID = 300;
+local DbProxyID = 0;
 Mongo = Mongo and Mongo or QueryAsync
 
 
 function Mongo:Bind()
     Net:ClientRegister(ServerType.ST_DB_PROXY, DbProxyRPC.ACK_MONGO_INSERT, self, self.AckInsert)
     Net:ClientRegister(ServerType.ST_DB_PROXY, DbProxyRPC.ACK_MONGO_FIND, self, self.AckFind)
+    DbProxyID = GetDbProxyID()
 end
 
 function Mongo:InsertAsync(db, collection, insert_json)
