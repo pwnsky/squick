@@ -10,6 +10,7 @@
 #ifndef _MSC_VER
 #include <endian.h>
 #endif
+namespace crypto {
 
 //#define SHA2_224_SEED_VECTOR
 
@@ -425,4 +426,6 @@ std::string SHA256::operator()(const std::string& text)
   reset();
   add(text.c_str(), text.size());
   return getHash();
+}
+
 }

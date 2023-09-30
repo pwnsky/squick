@@ -20,7 +20,7 @@ typedef unsigned __int64 uint64_t;
 #include <stdint.h>
 #endif
 
-
+namespace crypto {
 /// compute SHA256 hash
 /** Usage:
     SHA256 sha256;
@@ -34,6 +34,8 @@ typedef unsigned __int64 uint64_t;
       sha256.add(pointer to fresh data, number of new bytes);
     std::string myHash3 = sha256.getHash();
   */
+
+
 class SHA256 //: public Hash
 {
 public:
@@ -76,3 +78,5 @@ private:
   /// hash, stored as integers
   uint32_t m_hash[HashValues];
 };
+
+ }
