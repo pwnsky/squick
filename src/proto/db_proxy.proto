@@ -58,11 +58,35 @@ enum DbProxyRPC {
     ACK_CLICKHOUSE_INSERT = 31507;
 
 }
-enum RedisCode {
-    REDIS_CODE_SUCCESS = 0;
-    REDIS_CODE_EXCEPTION = 1;
-    REDIS_CODE_NO_KEY = 2;
-    
+
+// Proxy DB code
+enum DbProxyCode {
+    DB_PROXY_CODE_REDIS_SUCCESS = 0;
+    DB_PROXY_CODE_REDIS_PROTO_ERROR = 1;
+    DB_PROXY_CODE_REDIS_EXCEPTION = 2;
+    DB_PROXY_CODE_REDIS_NO_KEY = 3;
+
+    DB_PROXY_CODE_MONGO_SUCCESS = 500;
+    DB_PROXY_CODE_MONGO_PROTO_ERROR = 501;
+    DB_PROXY_CODE_MONGO_EXCEPTION = 502;
+
+    DB_PROXY_CODE_MYSQL_SUCCESS = 1000;
+    DB_PROXY_CODE_MYSQL_PROTO_ERROR = 1001;
+    DB_PROXY_CODE_MYSQL_EXCEPTION = 1002;
+
+    DB_PROXY_CODE_CLICKHOUSE_SUCCESS = 1500;
+    DB_PROXY_CODE_CLICKHOUSE_PROTO_ERROR = 1501;
+    DB_PROXY_CODE_CLICKHOUSE_EXCEPTION = 1502;
+}
+
+message Data {
+    int32 type = 1;
+    bytes value = 2;
+}
+
+message List {
+    int32 type = 1;
+    repeated bytes values = 2;
 }
 
 message ReqRedisGet {
@@ -117,73 +141,27 @@ message AckRedisHSet {
     int32 query_id = 3;
 }
 
-message Data {
-    int32 type = 1;
-    bytes value = 2;
-}
-
-message List {
-    int32 type = 1;
-    repeated bytes values = 2;
-}
-
-enum MysqlCMD {
-    MYSQL_CMD_NONE = 0;
-    MYSQL_RAW = 1;
-    MYSQL_SELECT = 10;
-    MYSQL_INSERT = 11;
-    MYSQL_DELETE = 12;
-    MYSQL_UPDATE = 13;
-}
-
-message ReqMysqlQuery {
+message ReqClickhouseExecute {
     int32 query_id = 1;
-    string db = 2;
-    MysqlCMD cmd = 3;
-    map<string, Data> args = 4;
+    string sql = 2;
 }
 
-message AckMysqlQuery {
+message AckClickhouseExecute {
     int32 code = 1;
-    int32 query_id = 2;
-    ReqMysqlQuery cmd = 3;
-    string db = 4;
-    map<string, List> data = 5;
+    bytes msg = 2;
+    int32 query_id = 3;
 }
 
-enum ClickhouseCMD {
-    CLICKHOUSE_CMD_NONE = 0;
-    CLICKHOUSE_RAW = 1;
-    CLICKHOUSE_SELECT = 2;
-    CLICKHOUSE_INSERT = 3;
-}
-
-message ReqClickhouseQuery {
+message ReqClickhouseSelect {
     int32 query_id = 1;
-    string db = 2;
-    ClickhouseCMD cmd = 3;
-    bytes raw_cmd = 4;
-    map<string, Data> args = 5;
+    string sql = 2;
 }
 
-message AckClickhouseQuery {
+message AckClickhouseSelect {
     int32 code = 1;
-    int32 query_id = 2;
-    ClickhouseCMD cmd = 3;
-    string db = 4;
-    map<string, List> data = 5;
-}
-
-enum MongoCMD {
-    MONGO_CMD_NONE = 0;
-    MONGO_RAW = 1;
-}
-
-
-// Mongo db
-enum MongoCode {
-    MONGO_CODE_SUCCESS = 0;
-    MONGO_CODE_EXCEPTION = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    repeated List result = 4;
 }
 
 message ReqMongoInsert {

@@ -211,12 +211,11 @@ class NetObject {
         lobbyID = 0;
         fd = sock;
         bNeedRemove = false;
-
         netObject = pNet;
-
         userData = pBev;
         memset(&sin, 0, sizeof(sin));
         sin = addr;
+        ip = inet_ntoa(addr.sin_addr);
     }
 
     virtual ~NetObject() {}
@@ -278,6 +277,10 @@ class NetObject {
 
     socket_t GetRealFD() { return fd; }
 
+    string GetIP() {
+        return ip;
+    }
+
   private:
     sockaddr_in sin;
     void *userData;
@@ -290,6 +293,7 @@ class NetObject {
     INet *netObject;
     socket_t fd;
     bool bNeedRemove;
+    std::string ip;
 };
 
 class INet {

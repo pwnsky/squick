@@ -18,6 +18,7 @@ message PlayerEnterEvent {
     bytes account_id = 1;   // 账号guid
     bytes account = 2;      // 登录账号
     int32 proxy_id = 3;     // proxy_id
+    bytes ip = 4;           // 登录IP
 }
 
 message PlayerBindEvent {

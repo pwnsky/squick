@@ -232,7 +232,7 @@ int LogicModule::OnHeatbeatCheck(const Guid &self, const std::string &heartBeat,
     return 0;
 }
 
-// 进入游戏
+// Enter game
 bool LogicModule::TryEnter(string guid) {
     
     auto client = clients_.find(guid);
@@ -244,8 +244,9 @@ bool LogicModule::TryEnter(string guid) {
         return false;
     }
     rpc::PlayerEnterEvent event;
-    *event.mutable_account() = client->second.account;
-    *event.mutable_account_id() = client->second.account_id;
+    event.set_account(client->second.account);
+    event.set_account_id(client->second.account_id);
+    event.set_ip(client->second.ip);
     event.set_proxy_id(pm_->GetAppID());
     m_net_client_->SendToServerByPB(lobby_id, rpc::PlayerEventRPC::PLAYER_ENTER_EVENT, event);
     client->second.lobby_id = lobby_id;
@@ -268,6 +269,7 @@ void LogicModule::OnReqConnect(const socket_t sock, const int msg_id, const char
     s.key = req.key();
     s.time = SquickGetTimeMS();
     s.sock = sock;
+    s.ip = pNetObject->GetIP();
     sessions_[sock] = s;
     m_node_->OnReqProxyConnectVerify(sock, req.account_id(), req.key());
 }
@@ -305,7 +307,6 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
             rpc::AckKickOff k;
             k.set_time(SquickGetTimeMS());
             m_net_->SendMsgPB(rpc::ProxyRPC::ACK_KICK_OFF, k, iter2->second.sock);
-            // m_net_->GetNet()->CloseNetObject(iter2->second.sock);
             return;
         }
         
@@ -320,7 +321,8 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
         client.account_id = s.account_id;
         client.account = data.account();
         client.world_id = data.world_id();
-        dout << "验证成功: " << data.account() << " sock: " << s.sock << std::endl;
+        client.ip = s.ip;
+
         // 增加schecdule
         m_schedule_->AddSchedule(s.account_id, "HeatbeatCheck", this, &LogicModule::OnHeatbeatCheck, 10.0f, 99999); // 每10秒check一次
         TryEnter(s.account_id);

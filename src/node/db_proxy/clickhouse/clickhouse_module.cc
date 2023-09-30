@@ -25,6 +25,9 @@ bool ClickhouseModule::AfterStart() {
 	m_net_ = pm_->FindModule<INetModule>();
 	Connect();
 	m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_QUERY, this, &ClickhouseModule::OnReqQuery);
+	m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_EXECUTE, this, &ClickhouseModule::OnReqExecute);
+	m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_INSERT, this, &ClickhouseModule::OnReqInsert);
+	m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_SELECT, this, &ClickhouseModule::OnReqSelect);
 	return true;
 }
 
@@ -32,32 +35,36 @@ bool ClickhouseModule::Update() { return true; }
 
 bool ClickhouseModule::Destory() { return true; }
 
-void ClickhouseModule::OnReqQuery(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+void ClickhouseModule::OnReqQuery(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {}
+
+void ClickhouseModule::OnReqExecute(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+	int code = rpc::DbProxyCode::DB_PROXY_CODE_CLICKHOUSE_SUCCESS;
+	rpc::ReqClickhouseExecute req;
+	rpc::AckMongoInsert ack;
 	string tmp;
-	rpc::ReqClickhouseQuery req;
-	rpc::AckClickhouseQuery ack;
-	int code = 0;
 	if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
 		return;
 	}
 	try {
-		switch (req.cmd()) {
-		case rpc::ClickhouseCMD::CLICKHOUSE_RAW: {
-			client_->Execute(req.raw_cmd());
-		} break;
-		case rpc::ClickhouseCMD::CLICKHOUSE_SELECT: {
-
-		} break;
-		}
+		client_->Execute(req.sql());
 	}
-	catch (exception e) {
-		code = 1;
+	catch (const std::exception& e) {
+		std::cout << "Exception: " << e.what() << std::endl;
+		code = rpc::DbProxyCode::DB_PROXY_CODE_CLICKHOUSE_EXCEPTION;
+		ack.set_msg(e.what());
 	}
 	ack.set_code(code);
 	ack.set_query_id(req.query_id());
-	m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_CLICKHOUSE_QUERY, ack, sock);
+	m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_CLICKHOUSE_EXECUTE, ack, sock);
 }
 
+void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+
+}
+
+void ClickhouseModule::OnReqSelect(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+
+}
 bool ClickhouseModule::Connect() {
 	const string id = "ClickhouseLogDb_1";
 	string ip = m_element_->GetPropertyString(id, excel::DB::IP());
@@ -65,8 +72,6 @@ bool ClickhouseModule::Connect() {
 	string password = m_element_->GetPropertyString(id, excel::DB::Auth());
 	/// Initialize client connection.
 	client_ = new Client(ClientOptions().SetHost(ip).SetPort(port).SetPassword(password));
-
-	dout << "Test clickhouse\n";
 
 	// Create a table.
 	client_->Execute("CREATE TABLE IF NOT EXISTS default.numbers (id UInt64, name String) ENGINE = Memory");

@@ -10,6 +10,10 @@ class ClickhouseModule : public IClickhouseModule {
     virtual ~ClickhouseModule();
 
     void OnReqQuery(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnReqExecute(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnReqInsert(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnReqSelect(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+
 
     virtual bool Start();
     virtual bool AfterStart();

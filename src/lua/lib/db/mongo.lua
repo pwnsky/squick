@@ -49,8 +49,6 @@ end
 
 function Mongo:AckFind(guid, msg_data, msg_id, fd)
     local data =  Squick:Decode("rpc.AckMongoFind", msg_data);
-    print("Find ack")
-    PrintTable(data)
     self:QueryResume(data.query_id, data)
 end
 

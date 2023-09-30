@@ -50,8 +50,6 @@ namespace db_proxy::mongo {
                 + m_element_->GetPropertyString(id, excel::DB::IP()) + ":"
                 + to_string(m_element_->GetPropertyInt(id, excel::DB::Port()));
 
-            //dout << "connect to : " << url << std::endl;
-
             // Setup the connection and get a handle on the "admin" database.
             client_ = new client{ uri {url} };
 
@@ -68,14 +66,14 @@ namespace db_proxy::mongo {
     }
 
     void MongoModule::OnReqInsert(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-        int code = 0;
+        int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
         rpc::ReqMongoInsert req;
         rpc::AckMongoInsert ack;
-        string tmp;
-        if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
-            return;
-        }
+        
         try {
+            string tmp;
+            assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
+
             mongocxx::database db = client_->database(req.db());
             auto collection = db[req.collection()];
             auto doc = bsoncxx::from_json(req.insert_json());
@@ -86,7 +84,7 @@ namespace db_proxy::mongo {
         }
         catch (const std::exception& e) {
             std::cout << "Exception: " << e.what() << std::endl;
-            code = rpc::MongoCode::MONGO_CODE_EXCEPTION;
+            code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_EXCEPTION;
             ack.set_msg(e.what());
         }
         ack.set_code(code);
@@ -95,14 +93,13 @@ namespace db_proxy::mongo {
     }
     // Ref: http://mongocxx.org/mongocxx-v3/tutorial/#specify-a-query-filter
     void MongoModule::OnReqFind(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-        int code = 0;
+        int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
         rpc::ReqMongoFind req;
         rpc::AckMongoFind ack;
-        string tmp;
-        if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
-            return;
-        }
         try {
+            string tmp;
+            assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
+
             mongocxx::database db = client_->database(req.db());
             auto collection = db[req.collection()];
             auto cond = bsoncxx::from_json(req.condition_json());
@@ -112,7 +109,7 @@ namespace db_proxy::mongo {
             }
         } catch (const std::exception& e) {
             std::cout << "Exception: " << e.what() << std::endl;
-            code = rpc::MongoCode::MONGO_CODE_EXCEPTION;
+            code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_EXCEPTION;
             ack.set_msg(e.what());
         }
         ack.set_code(code);
