@@ -6,7 +6,7 @@ add_library(${ProjectName} SHARED ${soruces} ${headers})
 if (APPLE)
 	
 elseif(UNIX)
-	target_link_libraries(${ProjectName} hiredis.a)
+	target_link_libraries(${ProjectName} hiredis)
 else()
 	target_link_libraries(${ProjectName} hiredisd.lib)
 	target_link_libraries(${ProjectName} ws2_32)

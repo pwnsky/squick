@@ -9,7 +9,7 @@ include_directories( ${SolutionDir}/third_party/clickhouse-cpp/contrib/absl )
 if (APPLE)
 	
 elseif(UNIX)
-	target_link_libraries(${ProjectName} clickhouse-cpp)
+	target_link_libraries(${ProjectName} clickhouse-cpp-lib)
 else()
 	target_link_libraries(${ProjectName} clickhouse-cpp-lib)
 	target_link_libraries(${ProjectName} ws2_32)

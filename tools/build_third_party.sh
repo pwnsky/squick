@@ -12,6 +12,7 @@ git config --global --add safe.directory /mnt
 
 third_party_path=`pwd`/../third_party
 mongo_c_driver_install=$third_party_path/build/mongo-c-driver/install
+hiredis_install=$third_party_path/build/hiredis/install
 build_type=Release
 
 cd $third_party_path
@@ -27,7 +28,36 @@ mkdir -p build/navigation
 mkdir -p build/mysql-connector-cpp
 mkdir -p build/mongo-c-driver
 mkdir -p build/mongo-cxx-driver
+mkdir -p build/hiredis
+mkdir -p build/redis-plus-plus
+mkdir -p build/clickhouse-cpp
 
+# build clickhouse
+cd $third_party_path
+cd build/clickhouse-cpp
+cmake ../../clickhouse-cpp -DBUILD_SHARED_LIBS=true -DCMAKE_INSTALL_PREFIX=install
+cmake --build . -j $(nproc)
+cmake --install . 
+cp install/lib/*.so ../lib
+cp -r install/include/* ../include
+
+# build hredis
+cd $third_party_path
+cd build/hiredis
+cmake ../../hiredis -DBUILD_SHARED_LIBS=true -DCMAKE_INSTALL_PREFIX=install
+cmake --build . -j $(nproc)
+cmake --install . 
+cp install/lib/*.so ../lib
+cp -r install/include/* ../include
+
+# build redis-plus-plus
+cd $third_party_path
+cd build/redis-plus-plus
+cmake ../../redis-plus-plus -DBUILD_SHARED_LIBS=true -DCMAKE_INSTALL_PREFIX=install -DCMAKE_PREFIX_PATH=$hiredis_install
+cmake --build . -j $(nproc)
+cmake --install . 
+cp install/lib/*.so ../lib
+cp -r install/include/* ../include
 
 # build mongo-c-driver
 cd $third_party_path
@@ -83,18 +113,6 @@ cp ./src/*.h ../build/include/
 cp ./src/*.hpp ../build/include/
 cp ./src/*.a ../build/lib
 cp ./src/*.so ../build/lib
-
-
-
-# build redis connector
-cd $third_party_path
-cd hiredis
-make clean
-make
-cp *.a $third_party_path/build/lib
-cp *.so $third_party_path/build/lib
-cp *.h $third_party_path/build/include
-
 
 # build mysql connector
 cd $third_party_path

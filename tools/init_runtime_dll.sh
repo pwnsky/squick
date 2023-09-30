@@ -13,3 +13,5 @@ cp ../third_party/build/lib/libmongocxx.so ../bin/libmongocxx.so._noabi
 cp ../third_party/build/lib/libbsoncxx.so ../bin/libbsoncxx.so._noabi
 cp ../third_party/build/lib/libmongoc-1.0.so ../bin/libmongoc-1.0.so.0
 cp ../third_party/build/lib/libbson-1.0.so ../bin/libbson-1.0.so.0
+cp ../third_party/build/lib/libhiredis.so ../bin/libhiredis.so.1.1.0
+cp ../third_party/build/lib/libredis++.so ../bin/libredis++.so.1
