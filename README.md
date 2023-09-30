@@ -114,11 +114,11 @@ i0gan/squick-runtime # squick程序运行容器，版本 1.0
 
 #### 2. 源码编译第三方库（不推荐）
 
-不推荐采用源码编译第三方库，需要搭建boost环境，也需下载依赖包，并安装到Windows中。
+不推荐采用源码编译第三方库，部分依赖库，需要搭建boost环境，也需下载依赖包，并安装到Windows中。
 
 **Win64 OpenSSL v3.0.7**
 
-[EXE](http://slproweb.com/download/Win64OpenSSL-3_0_7.exe) | [MSI](http://slproweb.com/download/Win64OpenSSL-3_0_7.msi)
+https://slproweb.com/products/Win32OpenSSL.html
 
 在编译Lua库的时候，虽然MinGW能编译Lua出dll，但由于vc与gcc某些函数不兼容，导致squick程序的lua插件不能链接到该dll，需暂时借助第三方编译好的lua.lib来完成链接。
 

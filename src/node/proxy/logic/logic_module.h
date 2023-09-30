@@ -55,14 +55,13 @@ class LogicModule : public ILogicModule {
         string account_id;
         time_t last_ping = 0;   // ms time
         socket_t sock = -1;
-
+        string ip = "";
         Status status = PlayerOffline;
         string player_id;
         int world_id = 0;
         int lobby_id = 0;
         int micro_id = 0;
         int game_id = 0;
-        int gameplay_manager_id = 0;
     };
 
     unordered_map<string, KeepAlive> clients_; // key: account_id , value: info
@@ -72,6 +71,7 @@ class LogicModule : public ILogicModule {
         time_t time;
         string account_id;
         string key;
+        string ip;
     };
 
     map<INT64, Session> sessions_;

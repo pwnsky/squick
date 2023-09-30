@@ -31,11 +31,16 @@ function PlayerMgr:GetPlayerDataFromMongo(account_id, account)
             account = account, account_id = account_id, player_id = Env.area .. "-" .. account_id, name = "none",
             age = 0, level = 0, proxy_id = 0, last_login_time = os.time(), created_time = os.time(),
             online = false, platform = "none", extra = {},
-            area = Env.area, mail = {}, itmes = {},
+            area = Env.area, mail = {}, itmes = {}, ip = "", ip_address = "",
+            real = {
+                id_card = "",
+                name = "",
+                address = "",
+            },
             node = {
                 proxy_id = 0, proxy_fd = 0,
-                lobby_id = 0, db_proxy_id = 0,
-                login_id = Env.app_id, world_id = 0,
+                lobby_id = Env.app_id, db_proxy_id = 0,
+                login_id = 0, world_id = 0,
                 master_id = 0,
             }
         }
@@ -75,7 +80,9 @@ function PlayerMgr:OnEnter(player_id, msg_data, msg_id, fd)
         player_data.node.proxy_fd = fd
         player_data.node.proxy_id = req.proxy_id
         player_data.online = true
+        player_data.ip = req.ip
 
+        PrintTable(player_data)
         self:CachePlayerData(player_id, player_data)
         Net:SendByFD(fd, PlayerEventRPC.PLAYER_BIND_EVENT, Squick:Encode("rpc.PlayerBindEvent", ack))
     end)

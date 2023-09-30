@@ -96,34 +96,14 @@ else()
 	)
 endif()
 
-
-#message("Build Version:"${BUILD_VERSION} ${CMAKE_CXX_FLAGS})
 set(CMAKE_CXX_STANDARD 17)
-#if( BUILD_VERSION STREQUAL "debug" )
-#	set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fPIC")
-#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17  -g -ggdb -DDEBUG -fPIC") # -O0 -Wall -Wendif-labels
-#else()
-#	set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fPIC")
-#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wall -O3 -fPIC")# -Wendif-labels
-#endif()
-#set(LDFLAGS "$ENV{LDFLAGS} -stdlib=libc++")
-
-
-
-#if( BUILD_VERSION STREQUAL "debug" )
-#	set(ThirdPartyLibPath ${SolutionDir}/third_party/build/lib ${SolutionDir}/build/debug/lib )
-#else()
-#	set(ThirdPartyLibPath ${SolutionDir}/third_party/build/lib ${SolutionDir}/build/release/lib)
-#endif()
-
 if( MODE STREQUAL "dev" )
-	# -DDEBUG
 	add_definitions(-D_X64 -D_CONSOLE -DSQUICK_DEV )
 endif()
 
 
 link_directories(${ThirdPartyLibPath} ${SquickLibPath})
-add_definitions(-D_X64 -D_CONSOLE -DSQUICK_DYNAMIC_PLUGIN)
+add_definitions(-D_X64 -D_CONSOLE -DSQUICK_DYNAMIC_PLUGIN -DSQUICK_ENABLE_SSL)
 
 add_subdirectory(struct)
 add_subdirectory(squick)

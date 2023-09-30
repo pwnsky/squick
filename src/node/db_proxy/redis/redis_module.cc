@@ -44,14 +44,13 @@ namespace db_proxy::redis {
 	bool RedisModule::Destory() { return true; }
 
 	void RedisModule::OnReqRedisGet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-		int code = 0;
+		int code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_SUCCESS;
 		rpc::ReqRedisGet req;
 		rpc::AckRedisGet ack;
-		string tmp;
-		if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
-			return;
-		}
+		
 		try {
+			string tmp;
+			assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 			auto val = client_->get(req.key());
 			if (val) {
 				// Dereference val to get the returned value of std::string type.
@@ -59,10 +58,10 @@ namespace db_proxy::redis {
 			}
 			else {
 				// else key doesn't exist.
-				code = rpc::RedisCode::REDIS_CODE_NO_KEY;
+				code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_NO_KEY;
 			}
 		} catch (const Error& e) {
-			code = rpc::RedisCode::REDIS_CODE_EXCEPTION;
+			code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_EXCEPTION;
 			ack.set_msg(e.what());
 		}
 		ack.set_code(code);
@@ -71,18 +70,17 @@ namespace db_proxy::redis {
 	}
 
 	void RedisModule::OnReqRedisSet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-		int code = 0;
+		int code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_SUCCESS;
 		rpc::ReqRedisSet req;
 		rpc::AckRedisSet ack;
-		string tmp;
-		if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
-			return;
-		}
 		try {
+			string tmp;
+			assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 			client_->set(req.key(), req.value(), std::chrono::milliseconds(req.ttl()));
 		}
 		catch (const Error& e) {
-			code = rpc::RedisCode::REDIS_CODE_NO_KEY;
+			code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_EXCEPTION;
+			ack.set_msg(e.what());
 		}
 		ack.set_code(code);
 		ack.set_query_id(req.query_id());
@@ -90,24 +88,23 @@ namespace db_proxy::redis {
 	}
 
 	void RedisModule::OnReqRedisHGet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-		int code = 0;
+		int code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_SUCCESS;
 		rpc::ReqRedisHGet req;
 		rpc::AckRedisHGet ack;
-		string tmp;
-		if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
-			return;
-		}
 		try {
+			string tmp;
+			assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 			auto val = client_->hget(req.key(), req.field());
 			if (val) {
 				ack.set_value(val.value());
 			}
 			else {
-				code = rpc::RedisCode::REDIS_CODE_NO_KEY;
+				code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_NO_KEY;
 			}
 		}
 		catch (const Error& e) {
-			code = rpc::RedisCode::REDIS_CODE_NO_KEY;
+			code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_EXCEPTION;
+			ack.set_msg(e.what());
 		}
 		
 		ack.set_code(code);
@@ -116,18 +113,17 @@ namespace db_proxy::redis {
 	}
 
 	void RedisModule::OnReqRedisHSet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-		int code = 0;
+		int code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_SUCCESS;
 		rpc::ReqRedisHSet req;
 		rpc::AckRedisHSet ack;
-		string tmp;
-		if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
-			return;
-		}
 		try {
+			string tmp;
+			assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 			client_->hset(req.key(), req.field(), req.value());
 		}
 		catch (const Error& e) {
-			code = rpc::RedisCode::REDIS_CODE_NO_KEY;
+			code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_EXCEPTION;
+			ack.set_msg(e.what());
 		}
 		ack.set_code(code);
 		ack.set_query_id(req.query_id());

@@ -2,6 +2,10 @@
 #include "http_client.h"
 #include "net_module.h"
 
+
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 #if PLATFORM == PLATFORM_WIN
 #define snprintf _snprintf
 #endif

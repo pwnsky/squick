@@ -211,7 +211,7 @@ bool HttpModule::CheckAuth(const std::string& account_id, const std::string& use
 
 string HttpModule::MakeToken(string account_id) {
     string sum = "UserID: " + account_id + std::to_string(SquickGetTimeMS()) + SQUICK_HASH_SALT;
-    SHA256 sha256;
+    crypto::SHA256 sha256;
     return sha256(sum);
 }
 
