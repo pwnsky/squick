@@ -3,17 +3,41 @@ name: Github-CI
 on: [push, pull_request]
 
 jobs:
-  build:
+  build_third_party:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest]
+        os: [ubuntu-20.04, macOS-latest]
     steps:
       - uses: actions/checkout@v3
-      - name: Build Squick
+      - name: Building squick third party lib
         run: |
-          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            cd tools && ./build_third_party.sh && ./build_squick.sh
+          if [ "${{ matrix.os }}" = "ubuntu-20.04" ]; then
+            cd tools && ./build_third_party.sh
+          elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
+            echo "to do"
+          fi
+          
+      - name: Building squick tools
+      - run: |
+          if [ "${{ matrix.os }}" = "ubuntu-20.04" ]; then
+            cd tools && ./build_sqkctl.sh
+          elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
+            echo "to do"
+          fi
+          
+      - name: Building squick 
+      - run: |
+          if [ "${{ matrix.os }}" = "ubuntu-20.04" ]; then
+            cd tools && ./build_squick.sh
+          elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
+            echo "to do"
+          fi
+          
+      - name: Geneating deploy files
+      - run: |
+          if [ "${{ matrix.os }}" = "ubuntu-20.04" ]; then
+            cd tools && ./generate_deploy.sh
           elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
             echo "to do"
           fi
