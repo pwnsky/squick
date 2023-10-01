@@ -286,7 +286,7 @@ bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
         auto server = servers[min_proxy_id];
         string key = MakeToken(account_id);
         ack.code = IResponse::SUCCESS;
-        ack.ip = server.info->ip();
+        ack.ip = server.info->public_ip();
         ack.port = server.info->port();
         ack.world_id = req.world_id;
         ack.account_id = account_id;
