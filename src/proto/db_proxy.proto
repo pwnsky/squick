@@ -33,6 +33,8 @@ enum DbProxyRPC {
     ACK_MONGO_UPDATE = 30507;
     REQ_MONGO_DELETE = 30508;
     ACK_MONGO_DELETE = 30509;
+    REQ_MONGO_CREATE_INDEX = 30510;
+    ACK_MONGO_CREATE_INDEX = 30511;
 
     REQ_MYSQL_QUERY = 31000;
     ACK_MYSQL_QUERY = 31001;
@@ -164,6 +166,7 @@ message AckClickhouseSelect {
     repeated List result = 4;
 }
 
+// Insert one
 message ReqMongoInsert {
     int32 query_id = 1;
     string db = 2;
@@ -178,6 +181,7 @@ message AckMongoInsert {
     string inserted_id = 4; // Inserted Object ID
 }
 
+// Find many
 message ReqMongoFind {
     int32 query_id = 1;
     string db = 2;
@@ -192,5 +196,54 @@ message AckMongoFind {
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
-    repeated string result_json = 4;
+    int32 matched_count = 4;
+    repeated string result_json = 5;
+}
+
+// Default: Update many
+message ReqMongoUpdate {
+    int32 query_id = 1;
+    string db = 2;
+    string collection = 3;
+    string condition_json = 4;
+    string update_json = 5;
+}
+
+message AckMongoUpdate {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    int32 matched_count = 4;
+    int32 modified_count = 5;
+    int32 upserted_count = 6;
+}
+
+// Default: Delete many
+message ReqMongoDelete {
+    int32 query_id = 1;
+    string db = 2;
+    string collection = 3;
+    string condition_json = 4;
+}
+
+message AckMongoDelete {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    int32 deleted_count = 4;
+}
+
+// Create index
+message ReqMongoCreateIndex {
+    int32 query_id = 1;
+    string db = 2;
+    string collection = 3;
+    string condition_json = 4;
+}
+
+message AckMongoCreateIndex {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    string result_json = 4;
 }

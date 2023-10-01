@@ -16,16 +16,23 @@ end
 
 function PlayerMgr:GetPlayerDataFromMongo(account_id, account)
     local result = Mongo:FindAsync(MONGO_PLAYERS_DB, "base", '{"account_id":"' .. account_id .. '"}')
-    
-    local data = result[1]
-    local base_data = {}
-    if(data) then
-        base_data = Json.decode(data)
-    end
-    local player_id = base_data.player_id
     local player_data = nil
-    
-    if(player_id == nil) then
+    if(result.matched_count == 0) then
+        -- Find base table is have index
+        local index_result = Mongo:FindAsync(MONGO_PLAYERS_DB, "index", '{"base": true}')
+        -- Create index on base
+        if (index_result.matched_count == 0) then
+            Mongo:CreateIndexAsync(MONGO_PLAYERS_DB, "base", Json.encode({account_id = 1}))
+            Mongo:InsertAsync(MONGO_PLAYERS_DB, "index", Json.encode({ base = true }))
+        end
+
+        index_result = Mongo:FindAsync(MONGO_PLAYERS_DB, "index", '{"detail": true}')
+        -- Create index on detail
+        if (index_result.matched_count == 0) then
+            Mongo:CreateIndexAsync(MONGO_PLAYERS_DB, "detail", Json.encode({player_id = 1, account_id = 1}))
+            Mongo:InsertAsync(MONGO_PLAYERS_DB, "index", Json.encode({ detail = true }))
+        end
+
         -- Create new player
         player_data = {
             account = account, account_id = account_id, player_id = Env.area .. "-" .. account_id, name = "none",
@@ -51,8 +58,10 @@ function PlayerMgr:GetPlayerDataFromMongo(account_id, account)
         Mongo:InsertAsync(MONGO_PLAYERS_DB, "base", Json.encode(base_data))
         Mongo:InsertAsync(MONGO_PLAYERS_DB, "detail", Json.encode(player_data))
     else
+        local base_data = Json.decode(result.result_json[1])
+        local player_id = base_data.player_id
         local result = Mongo:FindAsync(MONGO_PLAYERS_DB, "detail", '{"player_id" : "' .. player_id ..'"}')
-        player_data = Json.decode(result[1])
+        player_data = Json.decode(result.result_json[1])
     end
     return player_data;
 end
@@ -75,14 +84,23 @@ function PlayerMgr:OnEnter(player_id, msg_data, msg_id, fd)
             account_id = account_id,
             player_id = player_id,
         }
-        print("Player Enter: ", account, player_id)
+
         player_data.last_login_time = os.time()
         player_data.node.proxy_fd = fd
         player_data.node.proxy_id = req.proxy_id
         player_data.online = true
         player_data.ip = req.ip
 
-        PrintTable(player_data)
+        -- Update Player data to db
+        local update = {}
+        update["last_login_time"] = player_data.last_login_time
+        update["node.proxy_fd"] = fd
+        update["node.proxy_id"] = req.proxy_id
+        update["online"] = true
+        update["ip"] = req.ip
+        local result = Mongo:UpdateAsync(MONGO_PLAYERS_DB, "detail", Json.encode({player_id = player_id}),
+        '{"$set": '..Json.encode(update)..'}')
+
         self:CachePlayerData(player_id, player_data)
         Net:SendByFD(fd, PlayerEventRPC.PLAYER_BIND_EVENT, Squick:Encode("rpc.PlayerBindEvent", ack))
     end)
