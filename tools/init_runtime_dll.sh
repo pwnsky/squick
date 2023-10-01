@@ -7,11 +7,12 @@
 
 mkdir -p ../bin
 cp ../third_party/build/lib/*.so ../bin
-cp ../third_party/build/lib/libprotobuf.so ../bin/libprotobuf.so.32
-cp ../third_party/build/lib/libmysqlcppconn8.so ../bin/libmysqlcppconn8.so.2
-cp ../third_party/build/lib/libmongocxx.so ../bin/libmongocxx.so._noabi
-cp ../third_party/build/lib/libbsoncxx.so ../bin/libbsoncxx.so._noabi
-cp ../third_party/build/lib/libmongoc-1.0.so ../bin/libmongoc-1.0.so.0
-cp ../third_party/build/lib/libbson-1.0.so ../bin/libbson-1.0.so.0
-cp ../third_party/build/lib/libhiredis.so ../bin/libhiredis.so.1.1.0
-cp ../third_party/build/lib/libredis++.so ../bin/libredis++.so.1
+cd ../bin
+ln -s libprotobuf.so libprotobuf.so.32
+ln -s libmysqlcppconn8.so libmysqlcppconn8.so.2
+ln -s libmongocxx.so libmongocxx.so._noabi
+ln -s libbsoncxx.so libbsoncxx.so._noabi
+ln -s libmongoc-1.0.so libmongoc-1.0.so.0
+ln -s libbson-1.0.so libbson-1.0.so.0
+ln -s libhiredis.so libhiredis.so.1.1.0
+ln -s libredis++.so libredis++.so.1
