@@ -10,45 +10,45 @@ jobs:
         os: [ubuntu-20.04, macOS-latest, windows-latest]
     steps:
       - uses: actions/checkout@v3
-      - name: Building squick third party lib
+      - name: Building squick third party library for linux and macos
         if: matrix.os == 'ubuntu-20.04' || matrix.os == 'macOS-latest'
         run: |
           cd tools && ./build_third_party.sh
       
-      - name: Building squick third party lib
+      - name: Building squick third party library for windows
         if: matrix.os == 'windows-latest'
         run: |
           cd tools
           .\clone_thirdparty_build.bat
           
-      - name: Building squick tools
+      - name: Building sqkctl tools for linux and macos
         if: matrix.os == 'ubuntu-20.04' || matrix.os == 'macOS-latest'
         run: |
           cd tools && ./build_sqkctl.sh
 
-      - name: Building squick tools
+      - name: Building sqkctl tools for windows
         if: matrix.os == 'windows-latest'
         run: |
           cd tools
           .\build_sqkctl.bat
           
-      - name: Building squick
+      - name: Building squick project for linux and macos
         if: matrix.os == 'ubuntu-20.04' || matrix.os == 'macOS-latest'
         run: |
           cd tools && ./build_squick.sh
           
-      - name: Building squick
+      - name: Building squick project for windows
         if: matrix.os == 'windows-latest'
         run: |
           cd tools
           .\build_squick.bat
           
-      - name: Geneating deploy files
+      - name: Geneating deploy files for linux and macos
         if: matrix.os == 'ubuntu-20.04' || matrix.os == 'macOS-latest'
         run: |
           cd tools && ./generate_deploy.sh
 
-      - name: Geneating deploy files
+      - name: Geneating deploy files for windows
         if: matrix.os == 'windows-latest'
         run: |
           cd tools
