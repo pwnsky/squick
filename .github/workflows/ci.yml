@@ -7,7 +7,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, macOS-latest]
+        os: [ubuntu-20.04, macOS-latest, windows-latest]
     steps:
       - uses: actions/checkout@v3
       - name: Building squick third party lib
@@ -16,6 +16,8 @@ jobs:
             cd tools && ./build_third_party.sh
           elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
             echo "to do"
+          elif [ "${{ matrix.os }}" = "windows-latest" ]; then
+            cd tools && ./clone_thirdparty_build.bat
           fi
           
       - name: Building squick tools
@@ -24,6 +26,8 @@ jobs:
             cd tools && ./build_sqkctl.sh
           elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
             echo "to do"
+          elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
+            
           fi
           
       - name: Building squick 
