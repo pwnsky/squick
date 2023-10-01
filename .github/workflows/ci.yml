@@ -1,0 +1,19 @@
+name: Github-CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Squick
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            cd tools && ./build_third_party.sh && ./build_squick.sh
+          elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
+            
+          fi
