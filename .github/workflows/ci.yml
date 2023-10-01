@@ -19,7 +19,7 @@ jobs:
           fi
           
       - name: Building squick tools
-      - run: |
+        run: |
           if [ "${{ matrix.os }}" = "ubuntu-20.04" ]; then
             cd tools && ./build_sqkctl.sh
           elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
@@ -27,7 +27,7 @@ jobs:
           fi
           
       - name: Building squick 
-      - run: |
+        run: |
           if [ "${{ matrix.os }}" = "ubuntu-20.04" ]; then
             cd tools && ./build_squick.sh
           elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
@@ -35,7 +35,7 @@ jobs:
           fi
           
       - name: Geneating deploy files
-      - run: |
+        run: |
           if [ "${{ matrix.os }}" = "ubuntu-20.04" ]; then
             cd tools && ./generate_deploy.sh
           elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
