@@ -5,12 +5,13 @@
 -- Description: async redis cli
 -----------------------------------------------------------------------------
 
-local DbProxyID = 300;
+local DbProxyID = 0;
 Redis = Redis and Redis or QueryAsync
 
 function Redis:Bind()
     Net:ClientRegister(ServerType.ST_DB_PROXY, DbProxyRPC.ACK_REDIS_GET, self, self.AckGetString)
     Net:ClientRegister(ServerType.ST_DB_PROXY, DbProxyRPC.ACK_REDIS_SET, self, self.AckSetString)
+    DbProxyID = GetDbProxyID()
 end
 
 function Redis:GetStringAsync(key)

@@ -9,8 +9,8 @@ rem Description: Generate proto code
 set proto_bin=..\third_party\build\bin\protoc
 set proto_path="..\src\proto"
 set cpp_out_path="..\src\struct"
-set csharp_out_path="..\client\proto"
-set lua_out_path="..\client\lua"
+set csharp_out_path="..\client\unity\proto"
+set lua_out_path="..\client\unreal\proto"
 
 mkdir %csharp_out_path%
 
@@ -29,5 +29,6 @@ mkdir ..\src\lua\proto
 python proto_enum_to_lua.py
 python proto_to_lua_str.py
 
+mkdir %lua_out_path%
 copy ..\src\lua\proto\enum.lua %lua_out_path%
 copy ..\src\lua\proto\code.lua %lua_out_path%

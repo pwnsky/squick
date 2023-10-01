@@ -31,6 +31,9 @@ namespace db_proxy::mongo {
         m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_QUERY, this, &MongoModule::OnReqQuery);
         m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_INSERT, this, &MongoModule::OnReqInsert);
         m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_FIND, this, &MongoModule::OnReqFind);
+        m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_UPDATE, this, &MongoModule::OnReqUpdate);
+        m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_DELETE, this, &MongoModule::OnReqDelete);
+        m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_CREATE_INDEX, this, &MongoModule::OnReqCreateIndex);
         return true;
     }
 
@@ -104,9 +107,12 @@ namespace db_proxy::mongo {
             auto collection = db[req.collection()];
             auto cond = bsoncxx::from_json(req.condition_json());
             auto result = collection.find(cond.view());
+            int count = 0;
             for (auto doc : result) {
+                count++;
                 ack.add_result_json(bsoncxx::to_json(doc));
             }
+            ack.set_matched_count(count);
         } catch (const std::exception& e) {
             std::cout << "Exception: " << e.what() << std::endl;
             code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_EXCEPTION;
@@ -115,5 +121,80 @@ namespace db_proxy::mongo {
         ack.set_code(code);
         ack.set_query_id(req.query_id());
         m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_FIND, ack, sock);
+    }
+
+    void MongoModule::OnReqUpdate(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+        int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
+        rpc::ReqMongoUpdate req;
+        rpc::AckMongoUpdate ack;
+        try {
+            string tmp;
+            assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
+
+            mongocxx::database db = client_->database(req.db());
+            auto collection = db[req.collection()];
+            auto cond = bsoncxx::from_json(req.condition_json());
+            auto value = bsoncxx::from_json(req.update_json());
+            auto result = collection.update_many(cond.view(), value.view());
+            ack.set_matched_count(result.value().matched_count());
+            ack.set_modified_count(result.value().modified_count());
+            ack.set_upserted_count(result.value().upserted_count());
+        }
+        catch (const std::exception& e) {
+            std::cout << "Exception: " << e.what() << std::endl;
+            code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_EXCEPTION;
+            ack.set_msg(e.what());
+        }
+        ack.set_code(code);
+        ack.set_query_id(req.query_id());
+        m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_UPDATE, ack, sock);
+    }
+
+    void MongoModule::OnReqDelete(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+        int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
+        rpc::ReqMongoDelete req;
+        rpc::AckMongoDelete ack;
+        try {
+            string tmp;
+            assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
+
+            mongocxx::database db = client_->database(req.db());
+            auto collection = db[req.collection()];
+            auto cond = bsoncxx::from_json(req.condition_json());
+            auto result = collection.delete_many(cond.view());
+            ack.set_deleted_count(result.value().deleted_count());
+        }
+        catch (const std::exception& e) {
+            std::cout << "Exception: " << e.what() << std::endl;
+            code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_EXCEPTION;
+            ack.set_msg(e.what());
+        }
+        ack.set_code(code);
+        ack.set_query_id(req.query_id());
+        m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_DELETE, ack, sock);
+    }
+
+    void MongoModule::OnReqCreateIndex(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+        int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
+        rpc::ReqMongoCreateIndex req;
+        rpc::AckMongoCreateIndex ack;
+        try {
+            string tmp;
+            assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
+
+            mongocxx::database db = client_->database(req.db());
+            auto collection = db[req.collection()];
+            auto cond = bsoncxx::from_json(req.condition_json());
+            auto result = collection.create_index(cond.view());
+            ack.set_result_json(bsoncxx::to_json(result.view()));
+        }
+        catch (const std::exception& e) {
+            std::cout << "Exception: " << e.what() << std::endl;
+            code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_EXCEPTION;
+            ack.set_msg(e.what());
+        }
+        ack.set_code(code);
+        ack.set_query_id(req.query_id());
+        m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_DELETE, ack, sock);
     }
 }

@@ -31,6 +31,7 @@ std::string NodeModule::GetServersStatus() {
         n["id"] = sd->id();
         n["name"] = sd->name().c_str();
         n["ip"] = sd->ip().c_str();
+        n["public_ip"] = sd->public_ip().c_str();
         n["port"] = sd->port();
         n["cpu_count"] = sd->cpu_count();
         n["status"] = sd->state();
