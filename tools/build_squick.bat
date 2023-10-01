@@ -11,11 +11,12 @@ set build_path=%project_path%\cache
 
 mkdir %build_path%
 
-start cmd /c "generate_config.bat"
+call "proto2code.bat"
+call "generate_config.bat"
+call "init_runtime_dll.bat"
 
 rem cmake 
 cd %build_path%\
 echo %project_path%
 cmake %project_path%\src -DMODE=dev
 cmake --build .
-pause
