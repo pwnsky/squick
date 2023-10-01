@@ -11,37 +11,46 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Building squick third party lib
+        if: matrix.os == 'ubuntu-20.04' || matrix.os == 'macOS-latest'
         run: |
-          if [ "${{ matrix.os }}" = "ubuntu-20.04" ]; then
-            cd tools && ./build_third_party.sh
-          elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
-            echo "to do"
-          elif [ "${{ matrix.os }}" = "windows-latest" ]; then
-            cd tools && ./clone_thirdparty_build.bat
-          fi
+          cd tools && ./build_third_party.sh
+      
+      - name: Building squick third party lib
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd tools
+          .\clone_thirdparty_build.bat
           
       - name: Building squick tools
+        if: matrix.os == 'ubuntu-20.04' || matrix.os == 'macOS-latest'
         run: |
-          if [ "${{ matrix.os }}" = "ubuntu-20.04" ]; then
-            cd tools && ./build_sqkctl.sh
-          elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
-            echo "to do"
-          elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
-            
-          fi
+          cd tools && ./build_sqkctl.sh
+
+      - name: Building squick tools
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd tools
+          .\build_sqkctl.bat
           
-      - name: Building squick 
+      - name: Building squick
+        if: matrix.os == 'ubuntu-20.04' || matrix.os == 'macOS-latest'
         run: |
-          if [ "${{ matrix.os }}" = "ubuntu-20.04" ]; then
-            cd tools && ./build_squick.sh
-          elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
-            echo "to do"
-          fi
+          cd tools && ./build_squick.sh
+          
+      - name: Building squick
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd tools
+          .\build_squick.bat
           
       - name: Geneating deploy files
+        if: matrix.os == 'ubuntu-20.04' || matrix.os == 'macOS-latest'
         run: |
-          if [ "${{ matrix.os }}" = "ubuntu-20.04" ]; then
-            cd tools && ./generate_deploy.sh
-          elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
-            echo "to do"
-          fi
+          cd tools && ./generate_deploy.sh
+
+      - name: Geneating deploy files
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd tools
+          .\generate_deploy.bat
+
