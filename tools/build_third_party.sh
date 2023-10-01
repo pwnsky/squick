@@ -73,7 +73,7 @@ cp install/lib/*.so ../lib
 cd $third_party_path
 cd build/mongo-cxx-driver
 cmake ../../mongo-cxx-driver -DCMAKE_CXX_STANDARD=17 -DCMAKE_PREFIX_PATH=$mongo_c_driver_install -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=$build_type
-cmake --build . -j 8
+cmake --build . -j $(nproc)
 cmake --install .
 cp -r install/include/bsoncxx/v_noabi/* ../include
 cp -r install/include/mongocxx/v_noabi/* ../include
@@ -98,7 +98,7 @@ cp *.so ../../lib
 cd $third_party_path
 cd build/protobuf
 cmake ../../protobuf -Dprotobuf_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=true
-cmake --build . -j8
+cmake --build . -j $(nproc)
 mkdir -p ./install && make install DESTDIR=./install
 cp -r install/usr/local/include/* ../include
 cp -r install/usr/local/bin/* ../bin
@@ -118,8 +118,7 @@ cp ./src/*.so ../build/lib
 cd $third_party_path
 cd ./build/mysql-connector-cpp
 cmake ../../mysql-connector-cpp
-make -j $(nproc)
-make -j $(nproc) # 再编译一次，protobuf内存不足的话会编译失败
+cmake --build . -j $(nproc)
 mkdir -p ./install && make install DESTDIR=./install
 cp -r install/usr/local/mysql/connector-c++-8.0.31/include/* ../include
 cp libmysqlcppconn8.so ../lib/
