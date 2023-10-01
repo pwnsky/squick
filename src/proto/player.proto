@@ -16,8 +16,15 @@ message ReqPlayerData {
 }
 
 message AckPlayerData {
-    bytes account = 1;
-    bytes player_id = 2;
-    bytes name = 3;
-    int32 level = 4;
+    string account = 1;
+    string account_id = 2;
+    string player_id = 3;
+    string name = 4;
+    int32 level = 5;
+    string ip = 6;
+    int32 area = 7;
+    int32 created_time = 8;
+    int32 last_login_time = 9;
+    int32 last_offline_time = 10;
+    string platform = 11;
 }

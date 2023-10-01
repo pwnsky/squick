@@ -27,16 +27,16 @@ message PlayerBindEvent {
     bytes player_id = 3;
 }
 
+enum PlayerLeaveReason {
+    PLAYER_LEAVE_REASON_NONE = 0;    // Unknown
+    PLAYER_LEAVE_REASON_QUIT = 1;    // Quit normal
+    PLAYER_LEAVE_REQSON_TIMEOUT = 2; // Heartbeat timeout
+}
+
 message PlayerLeaveEvent {
-    bytes object = 1;
+    bytes player_id = 1;
+    int32 proxy_id = 2;
+    int32 reason = 3; // Offline reason
 }
 
 message PlayerReconnectEvent {}
-
-// proxy或客户端告知lobby服务器的
-message AckPlayerOffline {
-    bytes self = 1;
-    bytes object = 2;
-    int32 game = 3;
-    int32 proxy = 4;
-}

@@ -38,7 +38,7 @@ function PlayerMgr:GetPlayerDataFromMongo(account_id, account)
             account = account, account_id = account_id, player_id = Env.area .. "-" .. account_id, name = "none",
             age = 0, level = 0, proxy_id = 0, last_login_time = os.time(), created_time = os.time(),
             online = false, platform = "none", extra = {},
-            area = Env.area, mail = {}, itmes = {}, ip = "", ip_address = "",
+            area = Env.area, mail = {}, itmes = {}, ip = "", ip_address = "", last_offline_time = 0,
             real = {
                 id_card = "",
                 name = "",
@@ -72,8 +72,7 @@ end
 
 function PlayerMgr:OnEnter(player_id, msg_data, msg_id, fd)
     -- This just example for async handle request
-    local co = coroutine.create(function(player_id, msg_data, msg_id, fd)
-        
+    self:AsyncHnalder(function(player_id, msg_data, msg_id, fd)
         local req = Squick:Decode("rpc.PlayerEnterEvent", msg_data);
         local account_id = req.account_id
         local account = req.account
@@ -103,15 +102,33 @@ function PlayerMgr:OnEnter(player_id, msg_data, msg_id, fd)
 
         self:CachePlayerData(player_id, player_data)
         Net:SendByFD(fd, PlayerEventRPC.PLAYER_BIND_EVENT, Squick:Encode("rpc.PlayerBindEvent", ack))
-    end)
-    local status, err = coroutine.resume(co, player_id, msg_data, msg_id, fd)
+    end, player_id, msg_data, msg_id, fd)
+end
+
+function PlayerMgr:OnLeave(player_id, msg_data, msg_id, fd)
+    self:AsyncHnalder(function(player_id, msg_data, msg_id, fd)
+        --local req = Squick:Decode("rpc.PlayerLeaveEvent", msg_data);
+        local update = {}
+        update["last_offline_time"] = os.time()
+        update["node.proxy_fd"] = 0
+        update["node.proxy_id"] = 0
+        update["online"] = false
+        local result = Mongo:UpdateAsync(MONGO_PLAYERS_DB, "detail", Json.encode({player_id = player_id}),
+        '{"$set": '..Json.encode(update)..'}')
+        self:CachePlayerData(player_id, nil)
+    end, player_id, msg_data, msg_id, fd)
+end
+
+function PlayerMgr:AsyncHnalder(func, ...)
+    local co = coroutine.create(func)
+    local status, err = coroutine.resume(co, ...)
     if(err)then
         print(err)
     end
 end
 
-function PlayerMgr:OnLeave(player_id, msg_data, msg_id, fd)
-    print("Player offline: ", player_id)
+function PlayerMgr:UpdatePlayerAsync(player_id, data)
+    
 end
 
 function PlayerMgr:SendToPlayer(player_id, msg_id, data)
@@ -129,9 +146,16 @@ function PlayerMgr:OnReqPlayerData(player_id, msg_data, msg_id, fd)
     end
     local ack = {
         account = player.account,
+        account_id = player.account_id,
         player_id = player_id,
         name = player.name,
         level = 0,
+        ip = player.ip,
+        area = player.area,
+        created_time = player.created_time,
+        last_login_time = player.last_login_time,
+        last_offline_time = player.last_offline_time,
+        platform = player.platform
     }
     self:SendToPlayer(player_id, PlayerRPC.ACK_PLAYER_DATA, Squick:Encode("rpc.AckPlayerData", ack))
 end
