@@ -15,5 +15,5 @@ jobs:
           if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
             cd tools && ./build_third_party.sh && ./build_squick.sh
           elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
-            
+            echo "to do"
           fi
