@@ -369,9 +369,9 @@ deploy/bin/
 
 数据库涉及三种类型的数据库，mysql、mongodb、redis，这三种数据库职责也不同。搭建数据库，推荐采用docker来创建数据库实例，如果没有安装docker，请通过你分支下的包管理命令进行安装。
 
-### 搭建Mysql玩家数据库
+### 搭建Mysql玩家账号数据库
 
-负责登录以及玩家的基本数据，本次数据库采用最新版本的mysql8。
+负责登录以及玩家的账号数据，本次数据库采用最新版本的mysql8。
 
 ```
 docker run -d --restart always --name squick_db_mysql_1 -p 10400:33060 -e MYSQL_ROOT_PASSWORD=pwnsky_squick  mysql:8.0
@@ -420,6 +420,7 @@ docker run -d --restart always --name squick_db_clickhouse_1 -p 10430:8123 -p 10
 创建之后进入容器
 
 ```
+docker exec -it squick_db_clickhouse_1 bash
 vi /etc/clickhouse-server/users.xml
 
 # 找到 <password></password>
