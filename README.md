@@ -10,7 +10,7 @@
 
 **讨论QQ群：739065686**
 
-**version:** 1.0.3
+**version:** 1.0.4
 
 ---
 
@@ -429,9 +429,19 @@ vi /etc/clickhouse-server/users.xml
 
 
 
-## 生成配置文件
+## 修改配置文件
 
-采用Office软件打开{project_path}/resource/excel/server/DB.xlsx，修改里面的IP为你搭建的数据库ip，默认为127.0.0.1。修改完毕之后，需要重新生产配置文件，需执行一个脚本进行生成。linux执行如下：
+### 修改数据库IP
+
+采用Office软件打开{project_path}/resource/excel/DB.xlsx，修改里面的IP为你搭建的数据库ip，默认为127.0.0.1。
+
+### 修改服务器公网IP,
+
+打开{project_path}/resource/excel/Server.xlsx, 修改PublicIP为服务器的公网IP。
+
+### 生成配置
+
+修改完毕之后，需要重新生产配置文件，需执行一个脚本进行生成。linux执行如下：
 
 ```
 cd {project_path}/tools
