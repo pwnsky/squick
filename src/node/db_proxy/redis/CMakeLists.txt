@@ -5,7 +5,8 @@ add_library(${ProjectName} SHARED ${soruces} ${headers})
 
 	
 if (APPLE)
-	
+	target_link_libraries(${ProjectName} hiredis)
+	target_link_libraries(${ProjectName} redis++)
 elseif(UNIX)
 	target_link_libraries(${ProjectName} hiredis)
 	target_link_libraries(${ProjectName} redis++)

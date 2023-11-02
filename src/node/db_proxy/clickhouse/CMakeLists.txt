@@ -7,7 +7,7 @@ add_library(${ProjectName} SHARED ${soruces} ${headers})
 include_directories( ${SolutionDir}/third_party/clickhouse-cpp/contrib/absl )
 	
 if (APPLE)
-	
+	target_link_libraries(${ProjectName} clickhouse-cpp-lib)
 elseif(UNIX)
 	target_link_libraries(${ProjectName} clickhouse-cpp-lib)
 else()

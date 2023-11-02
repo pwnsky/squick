@@ -5,6 +5,21 @@
 # Github: https://github.com/i0gan/Squick
 # Description: Install development environment on linux
 
+# for macos
+sys = `uname -s`
+if [ $sys == "Darwin" ];then
+    echo "MacOS env"
+    brew install cmake
+    brew install openssl
+    exit
+else
+    echo "Linux env"
+fi
+
+
+
+# for linux
+
 who=`whoami`
 if [[ $who == "root" ]];then
     sudo=""

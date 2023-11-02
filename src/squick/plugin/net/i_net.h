@@ -23,6 +23,7 @@
 #if PLATFORM == PLATFORM_APPLE
 
 #include <libkern/OSByteOrder.h>
+#include <arpa/inet.h>
 
 #endif
 

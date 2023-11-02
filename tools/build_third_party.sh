@@ -3,17 +3,19 @@
 # Email : l418894113@gmail.com
 # Date  : 2022-09-25
 # Github: https://github.com/i0gan/Squick
-# Description: Build third party library
+# Description: Build third party library, run on linux and macOS
 
 # 编译protobuf
 #cd protobuf-21.6
 
+# for docker env
 git config --global --add safe.directory /mnt
 
 third_party_path=`pwd`/../third_party
 mongo_c_driver_install=$third_party_path/build/mongo-c-driver/install
 hiredis_install=$third_party_path/build/hiredis/install
 build_type=Release
+sys=`uname -s`
 
 cd $third_party_path
 rm -rf ./build
@@ -38,7 +40,7 @@ cd build/clickhouse-cpp
 cmake ../../clickhouse-cpp -DBUILD_SHARED_LIBS=true -DCMAKE_INSTALL_PREFIX=install
 cmake --build . -j $(nproc)
 cmake --install . 
-cp install/lib/*.so ../lib
+cp install/lib/* ../lib
 cp -r install/include/* ../include
 
 # build hredis
@@ -47,7 +49,7 @@ cd build/hiredis
 cmake ../../hiredis -DBUILD_SHARED_LIBS=true -DCMAKE_INSTALL_PREFIX=install
 cmake --build . -j $(nproc)
 cmake --install . 
-cp install/lib/*.so ../lib
+cp install/lib/* ../lib
 cp -r install/include/* ../include
 
 # build redis-plus-plus
@@ -56,7 +58,7 @@ cd build/redis-plus-plus
 cmake ../../redis-plus-plus -DBUILD_SHARED_LIBS=true -DCMAKE_INSTALL_PREFIX=install -DCMAKE_PREFIX_PATH=$hiredis_install
 cmake --build . -j $(nproc)
 cmake --install . 
-cp install/lib/*.so ../lib
+cp install/lib/* ../lib
 cp -r install/include/* ../include
 
 # build mongo-c-driver
@@ -66,7 +68,7 @@ cmake ../../mongo-c-driver -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DCMAKE_INSTA
 cmake --build . -j $(nproc)
 cmake --install . 
 #cp install/* 
-cp install/lib/*.so ../lib
+cp install/lib/* ../lib
 
 
 # build mongo-cxx-driver
@@ -77,7 +79,7 @@ cmake --build . -j $(nproc)
 cmake --install .
 cp -r install/include/bsoncxx/v_noabi/* ../include
 cp -r install/include/mongocxx/v_noabi/* ../include
-cp install/lib/*.so ../lib
+cp install/lib/* ../lib
 
 
 # build libevent
@@ -88,10 +90,7 @@ cmake --build . -j $(nproc)
 mkdir -p ./install && make install DESTDIR=./install
 cp -r install/usr/local/include/* ../include
 #cp -r ./include/* ../include
-cd ./lib
-cp *.a ../../lib
-cp *.so ../../lib
-
+cp ./lib/* ../lib
 
 
 # build protobuf
@@ -102,17 +101,21 @@ cmake --build . -j $(nproc)
 mkdir -p ./install && make install DESTDIR=./install
 cp -r install/usr/local/include/* ../include
 cp -r install/usr/local/bin/* ../bin
-cp libprotobuf.so.3.21.6.0 ../lib/libprotobuf.so
-
+cp -r install/usr/local/lib/* ../lib
 
 # build lua
 cd $third_party_path
 cd lua
-make linux
+if [ $sys == "Darwin" ];then
+    make macosx
+    cp ./src/*.dylib ../build/lib
+else
+    make linux
+    cp ./src/*.so ../build/lib
+fi
 cp ./src/*.h ../build/include/
 cp ./src/*.hpp ../build/include/
 cp ./src/*.a ../build/lib
-cp ./src/*.so ../build/lib
 
 # build mysql connector
 cd $third_party_path
@@ -121,7 +124,11 @@ cmake ../../mysql-connector-cpp
 cmake --build . -j $(nproc)
 mkdir -p ./install && make install DESTDIR=./install
 cp -r install/usr/local/mysql/connector-c++-8.0.31/include/* ../include
-cp libmysqlcppconn8.so ../lib/
+if [ $sys == "Darwin" ];then
+    cp libmysqlcppconn8.dylib ../lib/
+else
+    cp libmysqlcppconn8.so ../lib/
+fi
 
 
 # build zlib
@@ -130,8 +137,12 @@ cd build/zlib
 cmake  ../../zlib
 cmake --build . -j $(nproc)
 cp *.a $third_party_path/build/lib
-cp *.so $third_party_path/build/lib
 cp *.h $third_party_path/build/include
+if [ $sys == "Darwin" ];then
+    cp *.dylib $third_party_path/build/lib
+else
+    cp *.so $third_party_path/build/lib
+fi
 
 
 # build navigation
@@ -140,10 +151,11 @@ cd build/navigation
 cmake  ../../recastnavigation
 cmake --build . -j $(nproc)
 cp *.a $third_party_path/build/lib
-cp *.so $third_party_path/build/lib
-#cp *.h $third_party_path/build/include
-
 
 cd $third_party_path
 # fix change mode
-chmod +x $third_party_path/build/lib/*.so
+if [ $sys == "Darwin" ];then
+    chmod +x $third_party_path/build/lib/*.dylib
+else
+    chmod +x $third_party_path/build/lib/*.so
+fi

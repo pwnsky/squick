@@ -3,6 +3,7 @@
 namespace login::mysql {
 class IMysqlModule : virtual public IModule {
   public:
+    
     enum class AccountType {
         Account,
         Email,

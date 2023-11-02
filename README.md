@@ -1,6 +1,6 @@
 # Squick
 
-近年来,随着互联网飞速发展,元宇宙引发了全球科技产业的高度关注和投资热潮,在这个元宇宙技术的领域里,服务端技术的高低决定了元宇宙发展的成熟度,一个高度可扩展、高性能、高可用的服务端框架用以支持元宇宙应用程序的开发和部署是本次研究的方向。pwnsky团队提出了一种面向元宇宙的分布式服务器框架设计与实现方法,为构建高性能、可扩展的元宇宙系统提供了理论基础和技术支持。通过对需求和特点进行了深入分析,本文明确了分布式服务端框架的设计目标和相关技术。用 C++和 Lua 语言共同编写此框架,将框架拆分成了内核层、节点层和业务层,提升程序的拓展性和可维护性。将业务功能拆分到不同节点上运行,以实现不同功能的解耦和资源的高效利用,利用动态负载均衡算法,可以在不同节点之间有效地分配任务,确保系统的稳定性和性能。最后,采用科学的方式对框架进行测试且给相应的实验数据,并将该框架运用在某商业项目中,也对所做的内容进行了总结和展望。
+一个高度可扩展、高性能、高可用的服务端框架。采用C++和Lua 语言共同编写此框架,将框架拆分成了内核层、节点层和业务层,提升程序的拓展性和可维护性。将业务功能拆分到不同节点上运行,以实现不同功能的解耦和资源的高效利用,利用动态负载均衡算法,可以在不同节点之间有效地分配任务,确保系统的稳定性和性能。支持Windows, Linux, MacOS 等三大主流平台的开发和编译。
 
 **Unity SDK**:  [squick-unity-sdk](https://github.com/pwnsky/squick-unity-sdk)
 
@@ -54,6 +54,7 @@
 19. 数据库代理Lua接口提供【50%】
 20. Unity、UnrealEngine客户端SDK完善【50%】
 21. 高可用-数据库代理服务器，支持主流的 MongoDb、Mysql、Redis 、Clickhouse等数据库，采用proto协议进行交互，Lua协程异步读取【40%】
+22. 支持Windows、Linux、MacOS环境上的开发和编译【90%】
 
 ## 测试
 
@@ -142,21 +143,13 @@ https://github.com/niXman/mingw-builds-binaries/releases
 
 ```
 bin
-├── event.dll
-├── event_core.dll
-├── event_extra.dll
-├── squick_core.dll
+├── core.dll
 ...
-├── libprotobufd.dll
 ├── plugin
 │   ├── core
 │   │   ├── actor.dll
 ...
-│   └── server
-│       ├── db
-│       │   ├── client.dll
-..
-│       ├── game
+│   └── node
 ...
 ├── squick.exe
 ..
@@ -191,7 +184,7 @@ verion: LLVM-16.0.0-rc4-win64
 
 
 
-## Linux上开发和编译
+## Linux或MacOS上开发和编译
 
 你可以直接任意选择你自己喜欢的开发方式，可以采用CMake生成 Qt工程，或直接采用Ridder打开CMake工程，以下提供了两种编译方式。
 
@@ -203,7 +196,7 @@ verion: LLVM-16.0.0-rc4-win64
 
 
 
-### Linux直接编译
+### 直接编译
 
 采用物理机编译是为了开发以及测试更加方便。但可能需要你们自己手动配置各种搭建环境时出现的问题，可能比较老的Linux会出现编译不了。
 
@@ -251,41 +244,6 @@ bash generate_config.sh
 ```
 bash build_squick.sh
 ```
-
-
-
-#### 安装Web后台前端代码依赖
-
-```sh
-cd {project_path}/src/www/admin
-npm install
-```
-
-如果node js 版本> 17，在安装依赖时或编译时，记得加环境变量
-
-```sh
-export NODE_OPTIONS=--openssl-legacy-provider
-```
-
-#### 编译Web代码
-
-编译后台管理vue前端代码、后台服务器代码、网站vue前端代码。
-
-```sh
-cd {project_path}/www
-bash ./build.sh
-```
-
-#### 测试运行
-
-```
-cd {project_path}/deploy && ./single.sh # 运行
-```
-
-如果运行成功，访问 http://127.0.0.1:8080/admin ，如果能够看到登录界面，那么编译没问题，运行`./stop.sh` 脚本退出。
-
-
-
 
 
 ### Linux容器编译
@@ -346,20 +304,35 @@ cd ../deploy
 
 ### 编译后的文件
 
-编译完成后，在`{project_path}/deploy/bin` 下会出现编译好的二进制文件。如下
+编译完成后，在`{project_path}/deploy/bin` 下会出现编译好的二进制文件。Linux如下
 
 ```
 deploy/bin/
-├── squick_core.so
+├── core.so
 ...
 ├── plugin
 │   ├── core
 │   │   ├── actor.so
 ...
-│   └── server
+│   └── node
 ...
 └── squick
 ```
+
+MacOS如下
+```
+deploy/bin/
+├── core.dylib
+...
+├── plugin
+│   ├── core
+│   │   ├── actor.dylib
+│   └── node
+...
+└── squick
+
+```
+
 
 
 

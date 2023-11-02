@@ -64,7 +64,6 @@ include_directories(
 set(ThirdPartyLibPath
 	${SolutionDir}/third_party/build/lib
 	${SolutionDir}/third_party/build/bin
-
 )
 
 set(SquickLibPath
@@ -74,6 +73,11 @@ set(SquickLibPath
 if (APPLE)
 	include_directories(
 		${SolutionDir}/third_party/
+		/opt/homebrew/include/
+	)
+	set(ThirdPartyLibPath
+		${ThirdPartyLibPath}
+		/opt/homebrew/lib/
 	)
 elseif(UNIX)
 	include_directories(
@@ -98,9 +102,8 @@ endif()
 
 set(CMAKE_CXX_STANDARD 17)
 if( MODE STREQUAL "dev" )
-	add_definitions(-D_X64 -D_CONSOLE -DSQUICK_DEV )
+	add_definitions(-DSQUICK_DEV )
 endif()
-
 
 link_directories(${ThirdPartyLibPath} ${SquickLibPath})
 add_definitions(-D_X64 -D_CONSOLE -DSQUICK_DYNAMIC_PLUGIN -DSQUICK_ENABLE_SSL)

@@ -8,6 +8,12 @@ add_definitions(
 )
 
 if (APPLE)
+	target_link_libraries(${ProjectName} libevent.a)
+	target_link_libraries(${ProjectName} libevent_core.a)
+	target_link_libraries(${ProjectName} libevent_extra.a)
+	target_link_libraries(${ProjectName} ssl.a)
+	target_link_libraries(${ProjectName} libevent_openssl.a)
+	target_link_libraries(${ProjectName} crypto.a)
 	
 elseif(UNIX)
 	target_link_libraries(${ProjectName} libevent.a)

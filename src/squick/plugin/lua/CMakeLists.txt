@@ -4,7 +4,7 @@ file(GLOB headers *.h)
 add_library(${ProjectName} SHARED ${soruces} ${headers})
 
 if (APPLE)
-	
+	target_link_libraries(${ProjectName} liblua.a libprotobuf.dylib)
 elseif(UNIX)
 	target_link_libraries(${ProjectName} liblua.a libprotobuf.so)
 else()

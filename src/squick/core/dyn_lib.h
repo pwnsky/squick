@@ -41,6 +41,8 @@ class DynLib {
         mstrName.append(name);
 #if PLATFORM == PLATFORM_WIN
         mstrName.append(".dll");
+#elif PLATFORM == PLATFORM_APPLE
+        mstrName.append(".dylib");
 #else
         mstrName.append(".so");
 #endif

@@ -5,7 +5,7 @@ add_library(${ProjectName} SHARED ${soruces} ${headers})
 
 	
 if (APPLE)
-	
+	target_link_libraries(${ProjectName} libmysqlcppconn8.dylib)
 elseif(UNIX)
 	target_link_libraries(${ProjectName} libmysqlcppconn8.so)
 else()

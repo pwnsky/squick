@@ -10,7 +10,10 @@
 #source /etc/profile
 squick_bin_path=./bin
 cd $squick_bin_path
+# for linux
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/lib
+# for macos
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:`pwd`
 
 chmod -R 777  squick
 

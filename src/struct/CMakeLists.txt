@@ -10,7 +10,7 @@ add_definitions(
 )
 
 if (APPLE)
-	
+	target_link_libraries(${ProjectName} libprotobuf.dylib)
 elseif(UNIX)
 	target_link_libraries(${ProjectName} libprotobuf.so)
 else()
