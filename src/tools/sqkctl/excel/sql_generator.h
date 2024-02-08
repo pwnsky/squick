@@ -116,6 +116,7 @@ class SQLGenerator : public IGenerator {
         }
 
         fwrite(strElementData.c_str(), strElementData.length(), 1, iniWriter);
+        fclose(iniWriter);
 
         return true;
     }
