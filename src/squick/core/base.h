@@ -34,6 +34,7 @@ enum class DbType {
     Mysql = 1,
     MongoDB = 2,
     Redis = 3,
+    ClickHouse = 4,
 };
 
 // 线程池 每一帧睡眠时间，单位毫秒

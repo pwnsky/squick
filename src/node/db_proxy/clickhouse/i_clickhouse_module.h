@@ -1,6 +1,5 @@
 #pragma once
-#include <squick/core/base.h>
-
-class IClickhouseModule : public IModule {
+#include <squick/imodule/i_db_module.h>
+class IClickhouseModule : public IDBModule {
   public:
 };

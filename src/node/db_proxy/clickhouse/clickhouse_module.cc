@@ -15,19 +15,15 @@ ClickhouseModule::ClickhouseModule(IPluginManager* p) {
 }
 ClickhouseModule::~ClickhouseModule() {}
 
-bool ClickhouseModule::Start() {
-	return true;
-}
-
 bool ClickhouseModule::AfterStart() {
-	m_element_ = pm_->FindModule<IElementModule>();
-	m_log_ = pm_->FindModule<ILogModule>();
-	m_net_ = pm_->FindModule<INetModule>();
+
 	Connect();
+
 	m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_QUERY, this, &ClickhouseModule::OnReqQuery);
 	m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_EXECUTE, this, &ClickhouseModule::OnReqExecute);
 	m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_INSERT, this, &ClickhouseModule::OnReqInsert);
 	m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_SELECT, this, &ClickhouseModule::OnReqSelect);
+	
 	return true;
 }
 
@@ -36,6 +32,8 @@ bool ClickhouseModule::Update() { return true; }
 bool ClickhouseModule::Destory() { return true; }
 
 void ClickhouseModule::OnReqQuery(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {}
+
+
 
 void ClickhouseModule::OnReqExecute(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
 	int code = rpc::DbProxyCode::DB_PROXY_CODE_CLICKHOUSE_SUCCESS;
@@ -65,14 +63,19 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
 void ClickhouseModule::OnReqSelect(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
 
 }
+
+
+
 bool ClickhouseModule::Connect() {
-	const string id = "ClickhouseLogDb_1";
-	string ip = m_element_->GetPropertyString(id, excel::DB::IP());
-	int port = m_element_->GetPropertyInt32(id, excel::DB::Port());
-	string password = m_element_->GetPropertyString(id, excel::DB::Auth());
+	
+	if (!InitConnectDataFromConfig(DbType::ClickHouse)) {
+		m_log_->LogError("Clickhouse database config load failed!");
+		return false;
+	}
+
 	/// Initialize client connection.
 	try {
-		client_ = new Client(ClientOptions().SetHost(ip).SetPort(port).SetPassword(password));
+		client_ = new Client(ClientOptions().SetHost(ip_).SetPort(port_).SetPassword(password_));
 	}
 	catch (const std::exception& e) {
 		std::cout << "Click connect error: " << e.what() << std::endl;

@@ -17,15 +17,7 @@ namespace db_proxy::mongo {
 
     
 
-    bool MongoModule::Start() {
-        return true;
-    }
-
     bool MongoModule::AfterStart() {
-        m_net_ = pm_->FindModule<INetModule>();
-        m_class_ = pm_->FindModule<IClassModule>();
-        m_element_ = pm_->FindModule<IElementModule>();
-        m_log_ = pm_->FindModule<ILogModule>();
         Connect();
 
         m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_QUERY, this, &MongoModule::OnReqQuery);
@@ -43,16 +35,18 @@ namespace db_proxy::mongo {
 
     bool MongoModule::Connect() {
         try {
+
+            if (!InitConnectDataFromConfig(DbType::MongoDB)) {
+                m_log_->LogError("MongoDB database config load failed!");
+                return false;
+            }
+
             // Create an instance.
             instance inst{}; // 一个线程只能有一个实例
-            string id = "MongoPlayerDb_1";
+            
             // ref: https://www.mongodb.com/docs/manual/reference/connection-string/
             // ref: https://www.kancloud.cn/noahs/linux/1425614
-            string url = "mongodb://" + m_element_->GetPropertyString(id, excel::DB::User()) + ":"
-                + m_element_->GetPropertyString(id, excel::DB::Auth()) + "@"
-                + m_element_->GetPropertyString(id, excel::DB::IP()) + ":"
-                + to_string(m_element_->GetPropertyInt(id, excel::DB::Port()));
-
+            string url = "mongodb://" + user_ + ":" + password_ + "@" + ip_ + ":" + std::to_string(port_);
             // Setup the connection and get a handle on the "admin" database.
             client_ = new client{ uri {url} };
 

@@ -10,8 +10,6 @@ class RedisModule : public IRedisModule {
   public:
     RedisModule(IPluginManager *p);
     virtual ~RedisModule();
-
-    virtual bool Start();
     virtual bool AfterStart();
     virtual bool Update();
     virtual bool Destory();
@@ -25,15 +23,9 @@ class RedisModule : public IRedisModule {
     void OnReqRedisHGetAll(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
     void OnReqRedisHMSet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
 
-    Redis* client_;
+   
 private:
-    INetModule* m_net_;
-    IClassModule *m_class_;
-    IElementModule *m_element_;
-    ILogModule *m_log_;
-    node::INodeModule* m_node_;
-
-    
+    Redis* client_;
 };
 
 }
