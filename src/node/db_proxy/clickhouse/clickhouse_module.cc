@@ -71,8 +71,14 @@ bool ClickhouseModule::Connect() {
 	int port = m_element_->GetPropertyInt32(id, excel::DB::Port());
 	string password = m_element_->GetPropertyString(id, excel::DB::Auth());
 	/// Initialize client connection.
-	client_ = new Client(ClientOptions().SetHost(ip).SetPort(port).SetPassword(password));
-
+	try {
+		client_ = new Client(ClientOptions().SetHost(ip).SetPort(port).SetPassword(password));
+	}
+	catch (const std::exception& e) {
+		std::cout << "Click connect error: " << e.what() << std::endl;
+		return false;
+	}
+	
 	// Create a table.
 	client_->Execute("CREATE TABLE IF NOT EXISTS default.numbers (id UInt64, name String) ENGINE = Memory");
 
