@@ -3,9 +3,9 @@
 #include <squick/core/i_plugin_manager.h>
 
 //////////////////////////////////////////////////////////////////////////
-class KernelPlugin : public IPlugin {
+class WorldPlugin : public IPlugin {
   public:
-    KernelPlugin(IPluginManager *p) { pm_ = p; }
+    WorldPlugin(IPluginManager *p) { pm_ = p; }
 
     virtual const int GetPluginVersion();
 

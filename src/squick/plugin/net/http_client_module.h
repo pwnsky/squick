@@ -4,7 +4,6 @@
 #include "i_http_client_module.h"
 #include <iostream>
 #include <squick/core/map_ex.h>
-#include <squick/plugin/kernel/i_kernel_module.h>
 #include <squick/plugin/log/i_log_module.h>
 
 class HttpClientModule : public IHttpClientModule {
@@ -36,8 +35,13 @@ class HttpClientModule : public IHttpClientModule {
 
     virtual bool DoPost(const std::string &strUri, const std::map<std::string, std::string> &xHeaders, const std::string &strPostData,
                         HTTP_RESP_FUNCTOR_PTR pCB, const std::string &strMemo = "");
+    Guid GenRequestGUID();
+
+  private:
+    int request_guid_ = 0;
 
   protected:
+      
     class RespData {
       public:
         RespData() {
@@ -55,7 +59,6 @@ class HttpClientModule : public IHttpClientModule {
     void CallBack(const Guid id, const int state_code, const std::string &strRespData);
 
   private:
-    IKernelModule *m_kernel_;
     IHttpClient *m_pHttpClient;
     std::map<std::string, std::string> m_xDefaultHttpHeaders;
     MapEx<Guid, RespData> mxRespDataMap;

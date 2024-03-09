@@ -3,7 +3,6 @@
 #include "squick/core/map.h"
 #include <struct/struct.h>
 #include <squick/plugin/config/export.h>
-#include <squick/plugin/kernel/export.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
 #include <squick/imodule/i_mysql_module.h>

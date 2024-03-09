@@ -2,7 +2,6 @@
 
 #include <squick/core/map.h>
 #include <squick/plugin/config/export.h>
-#include <squick/plugin/kernel/export.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
 
@@ -27,7 +26,6 @@ class LogicModule : public ILogicModule {
   protected:
     IClassModule *m_class_;
     IElementModule *m_element_;
-    IKernelModule *m_kernel_;
     INetModule *m_net_;
     INetClientModule *m_net_client_;
 

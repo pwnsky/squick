@@ -10,12 +10,10 @@ bool TesterModule::Start() {
     
 
     m_net_ = pm_->FindModule<INetModule>();
-    m_kernel_ = pm_->FindModule<IKernelModule>();
     m_log_ = pm_->FindModule<ILogModule>();
     m_element_ = pm_->FindModule<IElementModule>();
     m_class_ = pm_->FindModule<IClassModule>();
     m_net_client_ = pm_->FindModule<INetClientModule>();
-    m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
 
 
     return true;

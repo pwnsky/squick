@@ -4,7 +4,6 @@
 // #include "plugin.h"
 #include "class_module.h"
 #include "element_module.h"
-#include <squick/plugin/kernel/i_thread_pool_module.h>
 
 ElementModule::ElementModule(ElementModule *p) {
     mbLoaded = false;

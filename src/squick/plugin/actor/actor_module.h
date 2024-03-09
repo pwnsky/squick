@@ -7,8 +7,8 @@
 #include <string>
 
 #include <squick/core/queue.h>
-#include <squick/plugin/kernel/i_kernel_module.h>
-#include <squick/plugin/kernel/i_thread_pool_module.h>
+#include <squick/plugin/world/i_kernel_module.h>
+#include <squick/plugin/world/i_thread_pool_module.h>
 
 #include "actor.h"
 #include "i_actor_module.h"

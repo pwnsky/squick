@@ -1,7 +1,6 @@
 
 #include "class_module.h"
 #include "plugin.h"
-#include "squick/plugin/kernel/i_thread_pool_module.h"
 #include "third_party/rapidxml/rapidxml.hpp"
 #include "third_party/rapidxml/rapidxml_print.hpp"
 #include <algorithm>

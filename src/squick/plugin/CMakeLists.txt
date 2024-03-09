@@ -1,6 +1,6 @@
 add_subdirectory(actor)
 add_subdirectory(config)
-add_subdirectory(kernel)
+add_subdirectory(world)
 add_subdirectory(log)
 add_subdirectory(net)
 add_subdirectory(navigation)

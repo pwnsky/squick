@@ -1,7 +1,6 @@
 #pragma once
 
 #include "i_tester_module.h"
-#include <squick/plugin/kernel/export.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
 #include <squick/plugin/config/export.h>
@@ -53,11 +52,9 @@ class TesterModule : public ITesterModule {
 
       IElementModule* m_element_;
       IClassModule* m_class_;
-      IKernelModule* m_kernel_;
       ILogModule* m_log_;
       INetModule* m_net_;
       INetClientModule* m_net_client_;
-      IThreadPoolModule* m_thread_pool_;
 };
 
 } // namespace tester::core

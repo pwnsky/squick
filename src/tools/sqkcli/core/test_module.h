@@ -1,7 +1,6 @@
 #pragma once
 
 #include <squick/plugin/config/i_class_module.h>
-#include <squick/plugin/kernel/i_kernel_module.h>
 #include <squick/plugin/log/i_log_module.h>
 
 class ITestModule : public IModule {};

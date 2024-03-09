@@ -5,7 +5,6 @@
 #pragma once
 #include <squick/core/base.h>
 #include <squick/plugin/config/export.h>
-#include <squick/plugin/kernel/export.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
 #include <struct/struct.h>
@@ -15,12 +14,10 @@ class INodeBaseModule : public IModule {
     virtual bool Awake() final { return true; }
     virtual bool Start() override final {
         m_net_ = pm_->FindModule<INetModule>();
-        m_kernel_ = pm_->FindModule<IKernelModule>();
         m_log_ = pm_->FindModule<ILogModule>();
         m_element_ = pm_->FindModule<IElementModule>();
         m_class_ = pm_->FindModule<IClassModule>();
         m_net_client_ = pm_->FindModule<INetClientModule>();
-        m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
         is_update_ = true;
 
         return true;
@@ -509,11 +506,9 @@ class INodeBaseModule : public IModule {
     
     IElementModule *m_element_;
     IClassModule *m_class_;
-    IKernelModule *m_kernel_;
     ILogModule *m_log_;
     INetModule *m_net_;
     INetClientModule *m_net_client_;
-    IThreadPoolModule *m_thread_pool_;
 
   private:
     time_t last_report_time_ = 0;

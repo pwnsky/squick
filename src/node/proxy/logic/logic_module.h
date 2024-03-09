@@ -2,9 +2,9 @@
 
 #include <squick/core/map.h>
 #include <squick/plugin/config/export.h>
-#include <squick/plugin/kernel/export.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
+#include <squick/plugin/world/export.h>
 
 #include "i_logic_module.h"
 #include <node/proxy/node/i_node_module.h>
@@ -20,8 +20,6 @@ class LogicModule : public ILogicModule {
     virtual bool Update();
 
     virtual bool AfterStart();
-
-    
 
   protected:
     void OnOtherMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
@@ -79,7 +77,6 @@ class LogicModule : public ILogicModule {
   protected:
     ILogModule *m_log_;
     IClassModule *m_class_;
-    IKernelModule *m_kernel_;
     IScheduleModule *m_schedule_;
     INetModule *m_net_;
     INetClientModule *m_net_client_;

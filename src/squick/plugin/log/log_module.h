@@ -4,7 +4,6 @@
 
 #include "i_log_module.h"
 #include <squick/core/performance.h>
-#include <squick/plugin/kernel/i_kernel_module.h>
 
 class LogModule : public ILogModule {
   public:
@@ -65,8 +64,6 @@ class LogModule : public ILogModule {
     std::string GetConfigPath(const std::string &fileName);
 
   private:
-    IKernelModule *m_kernel_;
-
     std::string mstrLocalStream;
     LOG_HOOKER_FUNCTOR_PTR mLogHooker;
     static unsigned int idx;
