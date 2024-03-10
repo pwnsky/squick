@@ -53,6 +53,7 @@
 20. Unity、UnrealEngine客户端SDK完善【50%】
 21. 高可用-数据库代理服务器，支持主流的 MongoDb、Mysql、Redis 、Clickhouse等数据库，采用proto协议进行交互，Lua协程异步读取【40%】
 22. 支持Windows、Linux、MacOS环境上的开发和编译【90%】
+23. 网络库增加C++协程【5%】
 
 ## 测试
 

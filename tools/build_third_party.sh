@@ -197,6 +197,7 @@ function build_mysql_connector()
     cd ./build/mysql-connector-cpp
     cmake ../../mysql-connector-cpp
     cmake --build . -j $make_threads
+    check_err
     mkdir -p ./install && make install DESTDIR=./install
     cp -r install/usr/local/mysql/connector-c++-8.0.31/include/* ../include
     if [ $sys == "Darwin" ];then
