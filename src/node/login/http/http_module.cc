@@ -6,7 +6,6 @@
 namespace login::http {
 bool HttpModule::Start() {
     m_http_server_ = pm_->FindModule<IHttpServerModule>();
-    m_kernel_ = pm_->FindModule<IKernelModule>();
     m_node_ = pm_->FindModule<node::INodeModule>();
     m_class_ = pm_->FindModule<IClassModule>();
     m_element_ = pm_->FindModule<IElementModule>();
@@ -54,6 +53,27 @@ bool HttpModule::Update() {
     return true;
 }
 
+
+Guid HttpModule::CreatePlayerGUID() {
+    int64_t value = 0;
+    uint64_t time = SquickGetTimeMS();
+
+    // value = time << 16;
+    value = time * 1000000;
+    value += player_index ++;
+
+    // if (sequence_ == 0x7FFF)
+    if (player_index == 999999) {
+        player_index = 0;
+    }
+
+    Guid xID;
+    xID.nHead64 = (pm_->GetArea() << 32) + pm_->GetAppID();
+    xID.nData64 = value;
+
+    return xID;
+}
+
 bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
     std::string res_str;
     ReqLogin req;
@@ -83,7 +103,7 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
             if (!m_mysql_->IsHave("account", req.account)) {
                 dout << "AccountPasswordLogin 注册账号: account: " << req.account << " " << req.password << std::endl;
                 // 注册该账号
-                account_id = m_kernel_->CreatePlayerGUID().ToString();
+                account_id = CreatePlayerGUID().ToString();
                 m_mysql_->RegisterAccount(account_id, req.account, req.password);
             } else {
                 // 获取账号id

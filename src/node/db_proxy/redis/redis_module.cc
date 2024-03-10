@@ -16,17 +16,7 @@ namespace db_proxy::redis {
 	}
 	RedisModule::~RedisModule() {}
 
-	bool RedisModule::Start() {
-		return true;
-	}
-
 	bool RedisModule::AfterStart() {
-		
-		m_node_ = pm_->FindModule<node::INodeModule>();
-		m_net_ = pm_->FindModule<INetModule>();
-		m_class_ = pm_->FindModule<IClassModule>();
-		m_element_ = pm_->FindModule<IElementModule>(); 
-		m_log_ = pm_->FindModule<ILogModule>();
 
 		Connect();
 		m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_QUERY, this, &RedisModule::OnReqQuery);
@@ -61,6 +51,7 @@ namespace db_proxy::redis {
 				code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_NO_KEY;
 			}
 		} catch (const Error& e) {
+			LogError(e.what(), __func__, __LINE__);
 			code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_EXCEPTION;
 			ack.set_msg(e.what());
 		}
@@ -79,6 +70,7 @@ namespace db_proxy::redis {
 			client_->set(req.key(), req.value(), std::chrono::milliseconds(req.ttl()));
 		}
 		catch (const Error& e) {
+			LogError(e.what(), __func__, __LINE__);
 			code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_EXCEPTION;
 			ack.set_msg(e.what());
 		}
@@ -103,6 +95,7 @@ namespace db_proxy::redis {
 			}
 		}
 		catch (const Error& e) {
+			LogError(e.what(), __func__, __LINE__);
 			code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_EXCEPTION;
 			ack.set_msg(e.what());
 		}
@@ -122,6 +115,7 @@ namespace db_proxy::redis {
 			client_->hset(req.key(), req.field(), req.value());
 		}
 		catch (const Error& e) {
+			LogError(e.what(), __func__, __LINE__);
 			code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_EXCEPTION;
 			ack.set_msg(e.what());
 		}
@@ -143,13 +137,17 @@ namespace db_proxy::redis {
 	}
 
 	bool RedisModule::Connect() {
+		if (!InitConnectDataFromConfig(DbType::Redis)) {
+			LogError("Config load failed", __func__, __LINE__);
+			return false;
+		}
+
 		try {
-			const string id = "RedisGameDb_1";
 			// Create an Redis object, which is movable but NOT copyable.
-			string url = "tcp://" + m_element_->GetPropertyString(id, excel::DB::IP()) + ":" + to_string(m_element_->GetPropertyInt(id, excel::DB::Port()));
+			string url = "tcp://" + ip_ + ":" + to_string(port_);
 			dout << "connect to : " << url << std::endl;
 			client_ = new Redis(url);
-			client_->auth(m_element_->GetPropertyString(id, excel::DB::Auth()));
+			client_->auth(password_);
 
 			/*
 			// ***** LIST commands *****
@@ -354,8 +352,11 @@ namespace db_proxy::redis {
 				*/
 		}
 		catch (const Error& e) {
+			LogError(e.what(), __func__, __LINE__);
 			// Error handling.
 		}
+
+		LogInfoConnected();
 		return true;
 	}
 

@@ -95,7 +95,12 @@ template <typename T>
 struct CppArgTraits
 {
     using Type = T;
+#if _MSC_VER >= 1920 || __cplusplus >= 202002L
+    using ValueType = decltype(std::declval<LuaType<T>>().get(std::declval<lua_State*>(), std::declval<int>()));
+#else
     using ValueType = typename std::result_of<decltype(&LuaType<T>::get)(lua_State*, int)>::type;
+#endif
+
     using HolderType = CppArgHolder<ValueType>;
 
     static constexpr bool isInput = true;

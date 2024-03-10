@@ -5,7 +5,6 @@
 #include "i_http_module.h"
 #include <squick/core/platform.h>
 #include <squick/plugin/config/export.h>
-#include <squick/plugin/kernel/export.h>
 #include <squick/plugin/net/export.h>
 #include <struct/struct.h>
 #include <third_party/nlohmann/json.hpp>
@@ -44,14 +43,17 @@ class HttpModule : public IHttpModule {
 
   private:
     string MakeToken(string sguid);
+    Guid CreatePlayerGUID();
     INetClientModule *m_net_client_;
-    IKernelModule *m_kernel_;
     IHttpServerModule *m_http_server_;
     node::INodeModule *m_node_;
     IClassModule *m_class_;
     IElementModule *m_element_;
     redis::IRedisModule *m_redis_;
     mysql::IMysqlModule *m_mysql_;
+
+  private:
+    int player_index = 0;
 };
 
 } // namespace login::http

@@ -1,6 +1,6 @@
 #pragma once
-#include <squick/core/base.h>
+#include <squick/imodule/i_db_module.h>
 
-class IRedisModule : public IModule {
+class IRedisModule : public IDBModule {
   public:
 };

@@ -100,7 +100,7 @@ else()
 	)
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 if( MODE STREQUAL "dev" )
 	add_definitions(-DSQUICK_DEV )
 endif()

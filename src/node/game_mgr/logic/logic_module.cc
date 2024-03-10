@@ -9,7 +9,6 @@ bool LogicModule::Destory() { return true; }
 bool LogicModule::Update() { return true; }
 
 bool LogicModule::AfterStart() {
-    m_kernel_ = pm_->FindModule<IKernelModule>();
     m_class_ = pm_->FindModule<IClassModule>();
     m_element_ = pm_->FindModule<IElementModule>();
     m_net_ = pm_->FindModule<INetModule>();

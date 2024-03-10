@@ -5,7 +5,6 @@
 
 #include <squick/core/platform.h>
 #include <squick/plugin/config/export.h>
-#include <squick/plugin/kernel/export.h>
 #include <squick/plugin/lua/export.h>
 #include <squick/plugin/net/export.h>
 #include <struct/struct.h>

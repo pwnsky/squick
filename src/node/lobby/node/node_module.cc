@@ -1,7 +1,5 @@
 #include "node_module.h"
 #include <forward_list>
-#include <squick/plugin/kernel/i_event_module.h>
-#include <squick/plugin/kernel/scene_module.h>
 
 namespace lobby::node {
 bool NodeModule::AfterStart() {

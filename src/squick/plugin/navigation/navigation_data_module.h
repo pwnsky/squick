@@ -2,9 +2,9 @@
 #include <memory>
 #include <squick/plugin/config/i_class_module.h>
 #include <squick/plugin/config/i_element_module.h>
-#include <squick/plugin/kernel/i_event_module.h>
-#include <squick/plugin/kernel/i_kernel_module.h>
-#include <squick/plugin/kernel/i_scene_module.h>
+#include <squick/plugin/world/i_event_module.h>
+#include <squick/plugin/world/i_kernel_module.h>
+#include <squick/plugin/world/i_scene_module.h>
 #include <squick/plugin/log/i_log_module.h>
 #include <squick/plugin/net/i_net_module.h>
 // #include "squick/base/no_sql.h"

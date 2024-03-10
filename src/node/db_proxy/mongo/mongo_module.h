@@ -18,8 +18,7 @@ namespace db_proxy::mongo {
     public:
         MongoModule(IPluginManager* p);
         virtual ~MongoModule();
-
-        virtual bool Start();
+        
         virtual bool AfterStart();
         virtual bool Update();
         virtual bool Destory();
@@ -33,9 +32,5 @@ namespace db_proxy::mongo {
         void OnReqCreateIndex(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
     private:
         client* client_;
-        INetModule* m_net_;
-        IClassModule* m_class_;
-        IElementModule* m_element_;
-        ILogModule* m_log_;
     };
 }

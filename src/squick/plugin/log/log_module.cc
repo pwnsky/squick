@@ -78,7 +78,6 @@ bool LogModule::Awake() {
 }
 
 bool LogModule::Start() {
-    m_kernel_ = this->pm_->FindModule<IKernelModule>();
 
     return true;
 }
@@ -152,6 +151,7 @@ bool LogModule::Log(const SQUICK_LOG_LEVEL nll, const char *format, ...) {
 }
 
 bool LogModule::LogRecord(const SQUICK_LOG_LEVEL nll, const Guid ident, const std::string &recordName, const std::string &strDesc, const char *func, int line) {
+    /*
     std::ostringstream os;
     auto record = m_kernel_->FindRecord(ident, recordName);
     if (record) {
@@ -161,7 +161,7 @@ bool LogModule::LogRecord(const SQUICK_LOG_LEVEL nll, const Guid ident, const st
         } else {
             Log(nll, "[RECORD] Indent[%s] Record[%s] %s", ident.ToString().c_str(), recordName.c_str(), record->ToString().c_str());
         }
-    }
+    }*/
 
     return true;
 }

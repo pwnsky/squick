@@ -20,7 +20,3 @@ PrintTable(ta)
 print("GetconfigByID:")
 local t = Squick:GetConfigByID("MysqlPlayerDb_1")
 PrintTable(t)
-
-local pos = Vector3(0, 0, 0)
-pos:FromString(t.Position)
-print("Vector: Position", pos:ToString())

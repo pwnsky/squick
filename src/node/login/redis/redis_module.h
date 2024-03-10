@@ -2,7 +2,6 @@
 
 #include "squick/core/map.h"
 #include <struct/struct.h>
-#include <squick/plugin/kernel/export.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
 #include <squick/plugin/redis/export.h>

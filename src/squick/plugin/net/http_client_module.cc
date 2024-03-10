@@ -28,7 +28,6 @@ bool HttpClientModule::Start() {
 }
 
 bool HttpClientModule::AfterStart() {
-    m_kernel_ = pm_->FindModule<IKernelModule>();
     return true;
 }
 
@@ -43,6 +42,27 @@ bool HttpClientModule::Destory() {
     return true;
 }
 
+Guid HttpClientModule::GenRequestGUID() {
+    int64_t value = 0;
+    uint64_t time = SquickGetTimeMS();
+
+    // value = time << 16;
+    value = time * 1000000;
+
+    value += request_guid_++;
+
+    // if (sequence_ == 0x7FFF)
+    if (request_guid_ == 999999) {
+        request_guid_ = 0;
+    }
+
+    Guid xID;
+    xID.nHead64 = pm_->GetAppID();
+    xID.nData64 = value;
+
+    return xID;
+}
+
 int HttpClientModule::Post(const std::string &strUri, const std::string &strData, std::string &strResData) {
     return Post(strUri, m_xDefaultHttpHeaders, strData, strResData);
 }
@@ -51,7 +71,7 @@ int HttpClientModule::Post(const std::string &strUri, const std::map<std::string
     HTTP_RESP_FUNCTOR_PTR pd(
         new HTTP_RESP_FUNCTOR(std::bind(&HttpClientModule::CallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)));
 
-    Guid id = m_kernel_->CreateGUID();
+    Guid id = GenRequestGUID();
     std::string memo;
     m_pHttpClient->DoPost(strUri, strData, memo, pd, xHeaders, id);
 
@@ -73,7 +93,7 @@ int HttpClientModule::Get(const std::string &strUri, const std::map<std::string,
     HTTP_RESP_FUNCTOR_PTR pd(
         new HTTP_RESP_FUNCTOR(std::bind(&HttpClientModule::CallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)));
 
-    Guid id = m_kernel_->CreateGUID();
+    Guid id = GenRequestGUID();
     m_pHttpClient->DoGet(strUri, pd, m_xDefaultHttpHeaders, id);
 
     mxRespDataMap.AddElement(id, std::shared_ptr<RespData>(new RespData()));
@@ -93,7 +113,7 @@ bool HttpClientModule::DoGet(const std::string &strUri, const std::map<std::stri
 
 bool HttpClientModule::DoPost(const std::string &strUri, const std::map<std::string, std::string> &xHeaders, const std::string &strPostData,
                               HTTP_RESP_FUNCTOR_PTR pCB, const std::string &strMemo) {
-    Guid aid = m_kernel_->CreateGUID();
+    Guid aid = GenRequestGUID();
 
     return m_pHttpClient->DoPost(strUri, strPostData, strMemo, pCB, xHeaders.size() == 0 ? m_xDefaultHttpHeaders : xHeaders, aid);
 }

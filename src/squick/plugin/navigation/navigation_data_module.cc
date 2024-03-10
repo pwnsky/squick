@@ -1,7 +1,7 @@
 
 
 #include "navigation_data_module.h"
-#include <squick/plugin/kernel/i_event_module.h>
+#include <squick/plugin/world/i_event_module.h>
 /*
 #include "third_party/rapidjson/document.h"
 #include "third_party/rapidjson/stringbuffer.h"

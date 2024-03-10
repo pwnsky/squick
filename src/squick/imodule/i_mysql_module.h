@@ -5,7 +5,6 @@
 #pragma once
 
 #include <squick/plugin/config/export.h>
-#include <squick/plugin/kernel/export.h>
 #include <squick/plugin/log/export.h>
 #include <struct/struct.h>
 #include "i_mysql_module.h"

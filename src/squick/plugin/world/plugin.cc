@@ -9,19 +9,19 @@
 #include "schedule_module.h"
 #include "thread_pool_module.h"
 
-SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){CREATE_PLUGIN(pm, KernelPlugin)
+SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){CREATE_PLUGIN(pm, WorldPlugin)
 
 };
 
-SQUICK_EXPORT void SquickPluginUnload(IPluginManager *pm){DESTROY_PLUGIN(pm, KernelPlugin)};
+SQUICK_EXPORT void SquickPluginUnload(IPluginManager *pm){DESTROY_PLUGIN(pm, WorldPlugin)};
 
 //////////////////////////////////////////////////////////////////////////
 
-const int KernelPlugin::GetPluginVersion() { return 0; }
+const int WorldPlugin::GetPluginVersion() { return 0; }
 
-const std::string KernelPlugin::GetPluginName() { return GET_CLASS_NAME(KernelPlugin); }
+const std::string WorldPlugin::GetPluginName() { return GET_CLASS_NAME(WorldPlugin); }
 
-void KernelPlugin::Install() {
+void WorldPlugin::Install() {
     REGISTER_MODULE(pm_, ISceneModule, SceneModule)
     REGISTER_MODULE(pm_, IKernelModule, KernelModule)
     REGISTER_MODULE(pm_, IEventModule, EventModule)
@@ -32,7 +32,7 @@ void KernelPlugin::Install() {
     REGISTER_MODULE(pm_, IELOModule, ELOModule)
 }
 
-void KernelPlugin::Uninstall() {
+void WorldPlugin::Uninstall() {
 
     UNREGISTER_MODULE(pm_, IELOModule, ELOModule)
     UNREGISTER_MODULE(pm_, IThreadPoolModule, ThreadPoolModule)

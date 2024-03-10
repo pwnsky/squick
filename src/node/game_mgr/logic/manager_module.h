@@ -1,7 +1,6 @@
 #pragma once
 #include <squick/core/platform.h>
 #include <squick/plugin/config/export.h>
-#include <squick/plugin/kernel/export.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/lua/export.h>
 #include <squick/plugin/net/export.h>
@@ -30,7 +29,6 @@ class ManagerModule : public IManagerModule {
     void InstanceDestroy(const string &instanceId);
 
   private:
-    IKernelModule *m_kernel_;
     IClassModule *m_class_;
     IElementModule *m_element_;
     ILogModule *m_log_;
