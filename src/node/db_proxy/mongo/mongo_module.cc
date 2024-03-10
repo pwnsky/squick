@@ -49,6 +49,10 @@ namespace db_proxy::mongo {
             string url = "mongodb://" + user_ + ":" + password_ + "@" + ip_ + ":" + std::to_string(port_);
             // Setup the connection and get a handle on the "admin" database.
             client_ = new client{ uri {url} };
+            string log;
+            log += "MongoDB appname: ";
+            log += client_->start_session().client().uri().appname().value().data();
+            m_log_->LogInfo(log);
         }
         catch (const std::exception& e) {
             // Handle errors.

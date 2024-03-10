@@ -1,6 +1,6 @@
 # Squick
 
-一个高度可扩展、高性能、高可用的服务端框架。采用C++和Lua 语言共同编写此框架,将框架拆分成了内核层、节点层和业务层,提升程序的拓展性和可维护性。将业务功能拆分到不同节点上运行,以实现不同功能的解耦和资源的高效利用,利用动态负载均衡算法,可以在不同节点之间有效地分配任务,确保系统的稳定性和性能。支持Windows, Linux, MacOS 等三大主流平台的开发和编译。
+一个高度可扩展、高性能、高可用、跨平台(Windows,Linux,MacOS)的服务端框架。采用C++23和Lua语言共同编写此框架,将框架拆分成了内核层、节点层和业务层,提升程序的拓展性和可维护性。将业务功能拆分到不同节点上运行,以实现不同功能的解耦和资源的高效利用,利用动态负载均衡算法,可以在不同节点之间有效地分配任务,确保系统的稳定性和性能。
 
 **Unity SDK**:  [squick-unity-sdk](https://github.com/pwnsky/squick-unity-sdk)
 
@@ -17,18 +17,16 @@
 ![GitHub release](https://img.shields.io/github/release/pwnsky/Squick.svg?style=flat-square)
 ![GitHub pre-release](https://img.shields.io/github/release-pre/pwnsky/Squick.svg?label=pre-release&style=flat-square)
 [![Platform](https://img.shields.io/badge/Platform-Linux-green.svg?style=flat-square)](https://github.com/pwnsky/Squick)
-[![C++17](https://img.shields.io/badge/C++-17-4c7e9f.svg?style=flat-square)](https://github.com/pwnsky/Squick)
+[![C++23](https://img.shields.io/badge/C++-23-4c7e9f.svg?style=flat-square)](https://github.com/pwnsky/Squick)
 [![License](https://img.shields.io/github/license/pwnsky/Squick.svg?colorB=f48041&style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 ![GitHub stars](https://img.shields.io/github/stars/pwnsky/Squick.svg?style=flat-square&label=Stars&style=flat-square)
 ![GitHub issues](https://img.shields.io/github/issues-raw/pwnsky/Squick.svg?style=flat-square)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/pwnsky/Squick.svg?style=flat-square)
 
 
-
 ## 项目例子
 
 [生化密码](https://github.com/pwnsky/BiochemicalSecrets)
-
 
 
 ## 设计目标
@@ -76,7 +74,7 @@
 
 ## 开发流程建议
 
-开发推荐在Windows平台下使用 Virsual Studio + Vscode 来进行编写代码，代码调试也是采用该工具，在Windows下第三方库只有Debug版本，暂无Release。
+开发推荐在Windows平台下使用 Virsual Studio 2022 和 Vscode 来进行编写代码，代码调试也是采用该工具，在Windows下第三方库只有Debug版本，暂无Release。
 
 部署采用Linux的k8s来进行部署，部署前需要进行编译代码，以下提供了两种docker容器供给开发者使用
 
@@ -161,7 +159,7 @@ bin
 
 #### 1. 安装wsl子系统
 
-如果想在自己的Windows上实现跨平台编译Linux程序，也不想安装虚拟机来进行开发，推荐你安装WSL2，安装一个Ubuntu 20系统，之后采用linux子系统 选择[直接编译 ](#直接编译)了。
+如果想在自己的Windows上实现跨平台编译Linux程序，也不想安装虚拟机来进行开发，推荐你安装WSL2，安装一个Ubuntu 22.04系统，之后采用linux子系统 选择[直接编译 ](#直接编译)了。
 
 那么如果你想更改代码，又用不来vim，你在wsl里项目根目录下运行
 

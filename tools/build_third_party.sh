@@ -250,20 +250,21 @@ function chmod_lib()
 
 function main()
 {
-    reset_env
-    build_clickhouse
-    build_hredis
-    build_redis_plus_plus
-    build_mongo_c_driver
-    build_mongo_cxx_driver
-    build_libevent
-    build_protobuf
-    build_lua
-    build_mysql_connector
-    build_zlib
-    build_navigation
-    chmod_lib
-    log_debug "All library builded!"
+    time reset_env
+    time build_clickhouse
+    time build_hredis
+    time build_redis_plus_plus
+    time build_mongo_c_driver
+    time build_mongo_cxx_driver
+    time build_libevent
+    time build_protobuf
+    time build_lua
+    time build_mysql_connector
+    time build_zlib
+    time build_navigation
+    time chmod_lib
+    
 }
 
-main
+time main
+log_debug "All library builded!"
