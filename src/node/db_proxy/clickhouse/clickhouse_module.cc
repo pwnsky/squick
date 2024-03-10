@@ -7,7 +7,6 @@
 #include <vector>
 #include <struct/struct.h>
 
-
 ClickhouseModule::ClickhouseModule(IPluginManager* p) {
 	is_update_ = true;
 	pm_ = p;
@@ -47,7 +46,7 @@ void ClickhouseModule::OnReqExecute(const socket_t sock, const int msg_id, const
 		client_->Execute(req.sql());
 	}
 	catch (const std::exception& e) {
-		std::cout << "Exception: " << e.what() << std::endl;
+		LogError(e.what(), __func__, __LINE__);
 		code = rpc::DbProxyCode::DB_PROXY_CODE_CLICKHOUSE_EXCEPTION;
 		ack.set_msg(e.what());
 	}
@@ -69,7 +68,7 @@ void ClickhouseModule::OnReqSelect(const socket_t sock, const int msg_id, const 
 bool ClickhouseModule::Connect() {
 	
 	if (!InitConnectDataFromConfig(DbType::ClickHouse)) {
-		m_log_->LogError("Clickhouse database config load failed!");
+		LogError("Config load failed!");
 		return false;
 	}
 
@@ -78,9 +77,11 @@ bool ClickhouseModule::Connect() {
 		client_ = new Client(ClientOptions().SetHost(ip_).SetPort(port_).SetPassword(password_));
 	}
 	catch (const std::exception& e) {
-		std::cout << "Click connect error: " << e.what() << std::endl;
+		LogError(e.what(), __func__, __LINE__);
 		return false;
 	}
+
+	LogInfoConnected();
 	
 	// Create a table.
 	client_->Execute("CREATE TABLE IF NOT EXISTS default.numbers (id UInt64, name String) ENGINE = Memory");

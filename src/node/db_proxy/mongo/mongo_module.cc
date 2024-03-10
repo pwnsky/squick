@@ -37,7 +37,7 @@ namespace db_proxy::mongo {
         try {
 
             if (!InitConnectDataFromConfig(DbType::MongoDB)) {
-                m_log_->LogError("MongoDB database config load failed!");
+                LogError("Config load failed!");
                 return false;
             }
 
@@ -49,12 +49,14 @@ namespace db_proxy::mongo {
             string url = "mongodb://" + user_ + ":" + password_ + "@" + ip_ + ":" + std::to_string(port_);
             // Setup the connection and get a handle on the "admin" database.
             client_ = new client{ uri {url} };
-
         }
         catch (const std::exception& e) {
             // Handle errors.
-            std::cout << "Exception: " << e.what() << std::endl;
+            LogError(e.what(), __func__, __LINE__);
+            return false;
         }
+
+        LogInfoConnected();
         return true;
     }
 
@@ -80,7 +82,7 @@ namespace db_proxy::mongo {
             ack.set_inserted_id(doc_id.get_oid().value.to_string());
         }
         catch (const std::exception& e) {
-            std::cout << "Exception: " << e.what() << std::endl;
+            LogError(e.what(), __func__, __LINE__);
             code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_EXCEPTION;
             ack.set_msg(e.what());
         }
@@ -108,7 +110,7 @@ namespace db_proxy::mongo {
             }
             ack.set_matched_count(count);
         } catch (const std::exception& e) {
-            std::cout << "Exception: " << e.what() << std::endl;
+            LogError(e.what(), __func__, __LINE__);
             code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_EXCEPTION;
             ack.set_msg(e.what());
         }
@@ -135,7 +137,7 @@ namespace db_proxy::mongo {
             ack.set_upserted_count(result.value().upserted_count());
         }
         catch (const std::exception& e) {
-            std::cout << "Exception: " << e.what() << std::endl;
+            LogError(e.what(), __func__, __LINE__);
             code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_EXCEPTION;
             ack.set_msg(e.what());
         }
@@ -159,7 +161,7 @@ namespace db_proxy::mongo {
             ack.set_deleted_count(result.value().deleted_count());
         }
         catch (const std::exception& e) {
-            std::cout << "Exception: " << e.what() << std::endl;
+            LogError(e.what());
             code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_EXCEPTION;
             ack.set_msg(e.what());
         }
@@ -183,7 +185,7 @@ namespace db_proxy::mongo {
             ack.set_result_json(bsoncxx::to_json(result.view()));
         }
         catch (const std::exception& e) {
-            std::cout << "Exception: " << e.what() << std::endl;
+            LogError(e.what(), __func__, __LINE__);
             code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_EXCEPTION;
             ack.set_msg(e.what());
         }

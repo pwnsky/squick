@@ -51,6 +51,7 @@ namespace db_proxy::redis {
 				code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_NO_KEY;
 			}
 		} catch (const Error& e) {
+			LogError(e.what(), __func__, __LINE__);
 			code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_EXCEPTION;
 			ack.set_msg(e.what());
 		}
@@ -69,6 +70,7 @@ namespace db_proxy::redis {
 			client_->set(req.key(), req.value(), std::chrono::milliseconds(req.ttl()));
 		}
 		catch (const Error& e) {
+			LogError(e.what(), __func__, __LINE__);
 			code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_EXCEPTION;
 			ack.set_msg(e.what());
 		}
@@ -93,6 +95,7 @@ namespace db_proxy::redis {
 			}
 		}
 		catch (const Error& e) {
+			LogError(e.what(), __func__, __LINE__);
 			code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_EXCEPTION;
 			ack.set_msg(e.what());
 		}
@@ -112,6 +115,7 @@ namespace db_proxy::redis {
 			client_->hset(req.key(), req.field(), req.value());
 		}
 		catch (const Error& e) {
+			LogError(e.what(), __func__, __LINE__);
 			code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_EXCEPTION;
 			ack.set_msg(e.what());
 		}
@@ -133,12 +137,12 @@ namespace db_proxy::redis {
 	}
 
 	bool RedisModule::Connect() {
-		try {
+		if (!InitConnectDataFromConfig(DbType::Redis)) {
+			LogError("Config load failed", __func__, __LINE__);
+			return false;
+		}
 
-			if (!InitConnectDataFromConfig(DbType::Redis)) {
-				m_log_->LogError("MongoDB database config load failed!");
-				return false;
-			}
+		try {
 			// Create an Redis object, which is movable but NOT copyable.
 			string url = "tcp://" + ip_ + ":" + to_string(port_);
 			dout << "connect to : " << url << std::endl;
@@ -348,8 +352,11 @@ namespace db_proxy::redis {
 				*/
 		}
 		catch (const Error& e) {
+			LogError(e.what(), __func__, __LINE__);
 			// Error handling.
 		}
+
+		LogInfoConnected();
 		return true;
 	}
 

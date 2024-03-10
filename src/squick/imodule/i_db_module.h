@@ -16,6 +16,7 @@ public:
 	}
 
 	bool InitConnectDataFromConfig(DbType type) {
+		db_type_ = type;
 		shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::DB::ThisName());
 		string real_id;
 		vector<string> db_list;
@@ -45,10 +46,34 @@ public:
 		return true;
 	}
 
+	string DbTypeToString(DbType type) {
+		const char* str_map[] = { "None", "Mysql", "MongoDB", "Redis", "Clickhouse" };
+		if (type >= DbType::Max || type == DbType::None ||
+			(int)type >= (sizeof(str_map) / sizeof(char *))) {
+			return str_map[0];
+		}
+		return str_map[(int)type];
+	}
+
+	void LogInfoConnected() {
+		ostringstream log;
+		log << "Database: ";
+		log << DbTypeToString(db_type_) << " is connected, Host: " << ip_ << " Port: " << port_;
+		m_log_->LogInfo(log);
+	}
+
+	void LogError(const string &err_msg = "", const char *func = "", int line = 0) {
+		ostringstream log;
+		log << "Database: ";
+		log << DbTypeToString(db_type_) << "  is error, Host: " << ip_ << " Port: " << port_ << " ,Error msg: " << err_msg;
+		m_log_->LogError(log, func, 0);
+	}
+
 	string user_ = "";
 	string ip_ = "";
 	int port_ = 0;
 	string password_ = "";
+	DbType db_type_ = DbType::None;
 	
 	INetModule* m_net_;
 	IClassModule* m_class_;
