@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <helpers.hpp>
 #include <sstream>
 
 #include <bsoncxx/private/helpers.hh>
 #include <bsoncxx/stdx/make_unique.hpp>
-#include <bsoncxx/test_util/catch.hh>
+#include <bsoncxx/test/catch.hh>
 #include <mongocxx/client.hpp>
 #include <mongocxx/exception/bulk_write_exception.hpp>
 #include <mongocxx/exception/logic_error.hpp>
 #include <mongocxx/exception/server_error_code.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/private/libmongoc.hh>
-#include <mongocxx/test_util/client_helpers.hh>
+#include <mongocxx/test/client_helpers.hh>
+#include <third_party/catch/include/helpers.hpp>
 
 namespace {
 using bsoncxx::from_json;
@@ -854,6 +854,12 @@ TEST_CASE("with_transaction", "[session]") {
     // The following three tests are prose tests from the with_transaction spec.
     SECTION("prose tests for with_transaction") {
         SECTION("callback raises a custom error") {
+            // Multi-document transactions require server 4.2+.
+            if (compare_versions(get_server_version(test.client), "4.2") < 0) {
+                WARN("Skipping - MongoDB server 4.2 or newer required");
+                return;
+            }
+
             // Test an operation_exception
             REQUIRE_THROWS_MATCHES(session.with_transaction([](client_session*) {
                 throw operation_exception{{}, "The meaning of life"};

@@ -18,8 +18,9 @@
 
 #include <bsoncxx/string/to_string.hpp>
 
+#include <mongocxx/config/prelude.hpp>
+
 namespace mongocxx {
-MONGOCXX_INLINE_NAMESPACE_BEGIN
 namespace entity {
 
 template <typename Key, typename Entity, typename Map>
@@ -61,6 +62,10 @@ bool map::insert(const key_type& key, mongocxx::cursor&& value) {
     return _insert(key, std::move(value), _cursor_map);
 }
 
+bool map::insert(const key_type& key, mongocxx::client_encryption&& value) {
+    return _insert(key, std::move(value), _client_encryption_map);
+}
+
 client& map::get_client(const key_type& key) {
     return _client_map.at(key);
 }
@@ -93,7 +98,13 @@ mongocxx::cursor& map::get_cursor(const key_type& key) {
     return _cursor_map.at(key);
 }
 
+mongocxx::client_encryption& map::get_client_encryption(const key_type& key) {
+    return _client_encryption_map.at(key);
+}
+
 const std::type_info& map::type(const key_type& key) {
+    if (_client_encryption_map.find(key) != _client_encryption_map.end())
+        return typeid(mongocxx::client_encryption);
     if (_database_map.find(key) != _database_map.end())
         return typeid(mongocxx::database);
     if (_collection_map.find(key) != _collection_map.end())
@@ -131,14 +142,14 @@ void map::clear() noexcept {
     _value_map.clear();
     _client_map.clear();
     _cursor_map.clear();
+    _client_encryption_map.clear();
 }
 
 void map::erase(const key_type& key) {
     _database_map.erase(key) || _collection_map.erase(key) || _session_map.erase(key) ||
         _bucket_map.erase(key) || _stream_map.erase(key) || _value_map.erase(key) ||
-        _client_map.erase(key) || _cursor_map.erase(key);
+        _client_map.erase(key) || _cursor_map.erase(key) || _client_encryption_map.erase(key);
 }
 
 }  // namespace entity
-MONGOCXX_INLINE_NAMESPACE_END
 }  // namespace mongocxx

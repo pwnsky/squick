@@ -14,16 +14,15 @@
 
 #pragma once
 
-#include <bsoncxx/test_util/catch.hh>
+#include <bsoncxx/test/catch.hh>
 #include <mongocxx/exception/exception.hpp>
 #include <mongocxx/private/libmongoc.hh>
 
 #include <mongocxx/config/private/prelude.hh>
 
 namespace mongocxx {
-MONGOCXX_INLINE_NAMESPACE_BEGIN
-
 namespace test_util {
+
 // Check that an error message includes a substring, case-insensitively. Use like:
 // REQUIRE_THROWS_MATCHES(function(), mongocxx::exception, mongocxx_exception_matcher("substring")
 class mongocxx_exception_matcher : public Catch::MatcherBase<mongocxx::exception> {
@@ -40,9 +39,8 @@ public:
         return std::string("mongocxx::exception was expected to contain the message: \"") + expected_msg + "\"";
     }
 };
-} // namespace test_util
 
-MONGOCXX_INLINE_NAMESPACE_END
+} // namespace test_util
 } // namespace mongocxx
 
 #define CHECK_OPTIONAL_ARGUMENT(OBJECT, NAME, VALUE) \
@@ -56,16 +54,11 @@ MONGOCXX_INLINE_NAMESPACE_END
     }
 
 #define MOCK_POOL_NOSSL                                                                        \
-    auto client_pool_new = libmongoc::client_pool_new.create_instance();                       \
-    client_pool_new->interpose([](const mongoc_uri_t*) { return nullptr; }).forever();         \
+    auto client_pool_new_with_error = libmongoc::client_pool_new_with_error.create_instance(); \
     auto client_pool_destroy = libmongoc::client_pool_destroy.create_instance();               \
-    client_pool_destroy->interpose([&](::mongoc_client_pool_t*) {}).forever();                 \
     auto client_pool_pop = libmongoc::client_pool_pop.create_instance();                       \
-    client_pool_pop->interpose([](::mongoc_client_pool_t*) { return nullptr; }).forever();     \
     auto client_pool_push = libmongoc::client_pool_push.create_instance();                     \
-    client_pool_push->interpose([](::mongoc_client_pool_t*, ::mongoc_client_t*) {}).forever(); \
     auto client_pool_try_pop = libmongoc::client_pool_try_pop.create_instance();               \
-    client_pool_try_pop->interpose([](::mongoc_client_pool_t*) { return nullptr; }).forever();
 
 #if defined(MONGOCXX_ENABLE_SSL) && defined(MONGOC_ENABLE_SSL)
 #define MOCK_POOL                                                                          \

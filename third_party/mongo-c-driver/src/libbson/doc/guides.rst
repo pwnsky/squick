@@ -8,4 +8,4 @@ Guides
 
   streaming-bson
   json
-  valgrind
+  lifetimes

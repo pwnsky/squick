@@ -7,11 +7,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, macOS-latest, windows-latest]
+        os: [ubuntu-22.04, macOS-latest, windows-latest]
     steps:
       - uses: actions/checkout@v3
       - name: Building squick third party library for linux and macos
-        if: matrix.os == 'ubuntu-20.04' || matrix.os == 'macOS-latest'
+        if: matrix.os == 'ubuntu-22.04' || matrix.os == 'macOS-latest'
         run: |
           cd tools && ./build_third_party.sh
       
@@ -22,7 +22,7 @@ jobs:
           .\clone_thirdparty_build.bat
           
       - name: Building sqkctl tools for linux and macos
-        if: matrix.os == 'ubuntu-20.04' || matrix.os == 'macOS-latest'
+        if: matrix.os == 'ubuntu-22.04' || matrix.os == 'macOS-latest'
         run: |
           cd tools && ./build_sqkctl.sh
 
@@ -33,7 +33,7 @@ jobs:
           .\build_sqkctl.bat
           
       - name: Building squick project for linux and macos
-        if: matrix.os == 'ubuntu-20.04' || matrix.os == 'macOS-latest'
+        if: matrix.os == 'ubuntu-22.04' || matrix.os == 'macOS-latest'
         run: |
           cd tools && ./build_squick.sh
           
@@ -44,7 +44,7 @@ jobs:
           .\build_squick.bat
           
       - name: Geneating deploy files for linux and macos
-        if: matrix.os == 'ubuntu-20.04' || matrix.os == 'macOS-latest'
+        if: matrix.os == 'ubuntu-22.04' || matrix.os == 'macOS-latest'
         run: |
           cd tools && ./generate_deploy.sh
 

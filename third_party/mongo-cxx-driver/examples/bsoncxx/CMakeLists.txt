@@ -13,7 +13,7 @@
 # limitations under the License.
 
 include_directories(
-    ${CMAKE_INSTALL_PREFIX}/${BSONCXX_HEADER_INSTALL_DIR}
+    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/bsoncxx/v_noabi
 )
 
 set(BSONCXX_EXAMPLES
@@ -26,6 +26,12 @@ set(BSONCXX_EXAMPLES
     getting_values.cpp
     view_and_value.cpp
 )
+
+if(BSONCXX_BUILD_SHARED)
+    set(BSONCXX_LIBRARY_FOR_EXAMPLES bsoncxx_shared)
+else()
+    set(BSONCXX_LIBRARY_FOR_EXAMPLES bsoncxx_static)
+endif()
 
 foreach(EXAMPLE_SRC ${BSONCXX_EXAMPLES})
     get_filename_component(EXAMPLE_TARGET ${EXAMPLE_SRC} NAME_WE)

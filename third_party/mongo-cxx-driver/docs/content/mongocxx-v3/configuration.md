@@ -7,9 +7,9 @@ title = "Configuring the mongocxx driver"
 +++
 
 In the mongocxx driver, most configuration is done via the [connection
-URI](https://docs.mongodb.com/manual/reference/connection-string/).  Some
+URI](https://www.mongodb.com/docs/manual/reference/connection-string/).  Some
 additional connection options are possible via the
-[mongocxx::options::client] ({{< api3ref classmongocxx_1_1options_1_1client
+[mongocxx::options::client]({{< api3ref classmongocxx_1_1v__noabi_1_1options_1_1client
 >}}) class.
 
 ## Configuring TLS/SSL
@@ -21,7 +21,7 @@ To enable TLS (SSL), set `tls=true` in the URI:
 By default, mongocxx will verify server certificates against the local
 system CA list.  You can override that either by specifying different settings in
 the connection string, or by creating a
-[mongocxx::options::tls] ({{< api3ref classmongocxx_1_1options_1_1tls >}})
+[mongocxx::options::tls]({{< api3ref classmongocxx_1_1v__noabi_1_1options_1_1tls >}})
 object and passing it to `tls_opts` on mongocxx::options::client.
 
 For example, to use a custom CA or to disable certificate validation,
@@ -86,7 +86,7 @@ will use an authentication mechanism compatible with your server.
 
 ### X.509
 
-The [X.509](https://www.mongodb.org/dochub/core/x509)
+The [X.509](https://www.mongodb.com/docs/manual/core/security-x.509/)
 mechanism authenticates a user whose name is derived from the distinguished
 subject name of the X.509 certificate presented by the driver during TLS
 negotiation. This authentication method requires the use of TLS
@@ -105,17 +105,17 @@ auto client = mongocxx::client{
 ```
 
 See the MongoDB server
-[X.509 tutorial](https://www.mongodb.org/dochub/core/x509-subject-name)
+[X.509 tutorial](https://www.mongodb.com/docs/manual/tutorial/configure-x509-client-authentication/)
 for more information about determining the subject name from the
 certificate.
 
-The PEM file can also be specified using the [mongocxx::options::tls] ({{< api3ref classmongocxx_1_1options_1_1tls >}}) class, see the first "Configuring TLS/SSL" example above.
+The PEM file can also be specified using the [mongocxx::options::tls]({{< api3ref classmongocxx_1_1v__noabi_1_1options_1_1tls >}}) class, see the first "Configuring TLS/SSL" example above.
 
 ### Kerberos (GSSAPI)
 
 [MongoDB Enterprise](https://www.mongodb.com/products/mongodb-enterprise)
 supports proxy authentication through Kerberos service. To create a
-credential of type [Kerberos (GSSAPI)](https://www.mongodb.org/dochub/core/kerberos)
+credential of type [Kerberos (GSSAPI)](https://www.mongodb.com/docs/manual/core/kerberos/)
 use a connection string with the username and realm in the URI as well as
 a parameter specifying the authentication mechanism as "GSSAPI":
 
@@ -131,7 +131,7 @@ Note that the "@" symbol in the URI must be escaped to "%40" as shown in the exa
 
 ### LDAP
 
-[MongoDB Enterprise](http://www.mongodb.com/products/mongodb-enterprise)
+[MongoDB Enterprise](https://www.mongodb.com/products/mongodb-enterprise)
 supports proxy authentication through a Lightweight Directory Access
 Protocol (LDAP) service. To create a credential of type LDAP use a
 connection string specifying the user as well as parameters specifying
@@ -169,3 +169,11 @@ auto pool = mongocxx::pool{uri{"mongodb://host1/?minPoolSize=3&maxPoolSize=5"}};
 ```
  
 See [connection pool documentation](../connection-pools) for more details.
+
+## Compressing data to and from MongoDB
+
+MongoDB 3.4 added Snappy compression support, while zlib compression was added
+in 3.6, and zstd compression in 4.2.
+
+Data compression can be enabled with the appropriate URI options, as documented
+in [the C driver](https://mongoc.org/libmongoc/current/data-compression.html).

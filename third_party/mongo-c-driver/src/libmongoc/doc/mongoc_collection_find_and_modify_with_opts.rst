@@ -22,7 +22,7 @@ Parameters
 * ``collection``: A :symbol:`mongoc_collection_t`.
 * ``query``: A :symbol:`bson:bson_t` containing the query to locate target document(s).
 * ``opts``: A :symbol:`find and modify options <mongoc_find_and_modify_opts_t>`. Must not be NULL.
-* ``reply``: An optional location for a :symbol:`bson:bson_t` that will be initialized with the result or ``NULL``.
+* ``reply``: A |bson_t-opt-storage-ptr| to contain the results.
 * ``error``: An optional location for a :symbol:`bson_error_t <errors>` or ``NULL``.
 
 Description
@@ -33,6 +33,8 @@ Update and return an object.
 ``reply`` is always initialized, and must be freed with :symbol:`bson:bson_destroy()`.
 
 If an unacknowledged write concern is set (through :symbol:`mongoc_find_and_modify_opts_append`), the output ``reply`` is always an empty document.
+
+On success, the output ``reply`` contains the full server reply to the ``findAndModify`` command. See the `MongoDB Manual page for findAndModify <https://www.mongodb.com/docs/manual/reference/command/findAndModify/#output>`_ for the expected server reply.
 
 Errors
 ------

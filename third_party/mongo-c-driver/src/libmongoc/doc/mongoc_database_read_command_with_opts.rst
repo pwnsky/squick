@@ -35,12 +35,12 @@ Parameters
 * ``command``: A :symbol:`bson:bson_t` containing the command specification.
 * ``read_prefs``: An optional :symbol:`mongoc_read_prefs_t`.
 * ``opts``: A :symbol:`bson:bson_t` containing additional options.
-* ``reply``: A location for the resulting document.
+* ``reply``: A |bson_t-opt-storage-ptr| to contain the results.
 * ``error``: An optional location for a :symbol:`bson_error_t <errors>` or ``NULL``.
 
 .. include:: includes/read-opts.txt
 
-Consult `the MongoDB Manual entry on Database Commands <https://docs.mongodb.com/manual/reference/command/>`_ for each command's arguments.
+Consult `the MongoDB Manual entry on Database Commands <https://www.mongodb.com/docs/manual/reference/command/>`_ for each command's arguments.
 
 Errors
 ------

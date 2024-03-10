@@ -7,8 +7,6 @@ This guide offers a brief introduction to the MongoDB C Driver.
 
 For more information on the C API, please refer to the :doc:`api`.
 
-.. contents::
-  :depth: 2
 
 Installing
 ----------
@@ -22,9 +20,9 @@ To run the examples in this tutorial, MongoDB must be installed and running on `
 
 .. code-block:: none
 
-  $ mongo --host localhost --port 27017
-  MongoDB shell version: 3.0.6
-  connecting to: localhost:27017/test
+  $ mongosh --host localhost --port 27017 --quiet
+  Enterprise rs0 [direct: primary] test> db.version()
+  7.0.0
   >
 
 Include and link libmongoc in your C program
@@ -111,7 +109,7 @@ At the start of an application, call :symbol:`mongoc_init` before any other libm
 
 The example below establishes a connection to a standalone server on ``localhost``, registers the client application as "connect-example," and performs a simple command.
 
-More information about database operations can be found in the :ref:`CRUD Operations <tutorial_crud_operations>` and :ref:`Executing Commands <tutorial_executing_commands>` sections. Examples of connecting to replica sets and sharded clusters can be found on the :doc:`Advanced Connections <advanced-connections>` page.
+More information about database operations can be found in the :ref:`CRUD Operations <tutorial_crud_operations>` and :ref:`Executing Commands <tutorial_executing_commands>` sections. Examples of connecting to replica sets and sharded clusters can be found in the :doc:`Advanced Connections <advanced-connections>` page, while examples of data compression can be found in the :doc:`Data Compression <data-compression>` page.
 
 .. literalinclude:: ../examples/hello_mongoc.c
   :caption: hello_mongoc.c
@@ -145,96 +143,7 @@ For example, to create a document like this:
 
 Use the following code:
 
-.. code-block:: c
-
-  #include <bson/bson.h>
-
-  int
-  main (int   argc,
-        char *argv[])
-  {
-     struct tm   born = { 0 };
-     struct tm   died = { 0 };
-     const char *lang_names[] = {"MATH-MATIC", "FLOW-MATIC", "COBOL"};
-     const char *schools[] = {"Vassar", "Yale"};
-     const char *degrees[] = {"BA", "PhD"};
-     uint32_t    i;
-     char        buf[16];
-     const       char *key;
-     size_t      keylen;
-     bson_t     *document;
-     bson_t      child;
-     bson_t      child2;
-     char       *str;
-
-     document = bson_new ();
-
-     /*
-      * Append { "born" : ISODate("1906-12-09") } to the document.
-      * Passing -1 for the length argument tells libbson to calculate the string length.
-      */
-     born.tm_year = 6;  /* years are 1900-based */
-     born.tm_mon = 11;  /* months are 0-based */
-     born.tm_mday = 9;
-     bson_append_date_time (document, "born", -1, mktime (&born) * 1000);
-
-     /*
-      * Append { "died" : ISODate("1992-01-01") } to the document.
-      */
-     died.tm_year = 92;
-     died.tm_mon = 0;
-     died.tm_mday = 1;
-
-     /*
-      * For convenience, this macro passes length -1 by default.
-      */
-     BSON_APPEND_DATE_TIME (document, "died", mktime (&died) * 1000);
-
-     /*
-      * Append a subdocument.
-      */
-     BSON_APPEND_DOCUMENT_BEGIN (document, "name", &child);
-     BSON_APPEND_UTF8 (&child, "first", "Grace");
-     BSON_APPEND_UTF8 (&child, "last", "Hopper");
-     bson_append_document_end (document, &child);
-
-     /*
-      * Append array of strings. Generate keys "0", "1", "2".
-      */
-     BSON_APPEND_ARRAY_BEGIN (document, "languages", &child);
-     for (i = 0; i < sizeof lang_names / sizeof (char *); ++i) {
-        keylen = bson_uint32_to_string (i, &key, buf, sizeof buf);
-        bson_append_utf8 (&child, key, (int) keylen, lang_names[i], -1);
-     }
-     bson_append_array_end (document, &child);
-
-     /*
-      * Array of subdocuments:
-      *    degrees: [ { degree: "BA", school: "Vassar" }, ... ]
-      */
-     BSON_APPEND_ARRAY_BEGIN (document, "degrees", &child);
-     for (i = 0; i < sizeof degrees / sizeof (char *); ++i) {
-        keylen = bson_uint32_to_string (i, &key, buf, sizeof buf);
-        bson_append_document_begin (&child, key, (int) keylen, &child2);
-        BSON_APPEND_UTF8 (&child2, "degree", degrees[i]);
-        BSON_APPEND_UTF8 (&child2, "school", schools[i]);
-        bson_append_document_end (&child, &child2);
-     }
-     bson_append_array_end (document, &child);
-
-     /*
-      * Print the document as a JSON string.
-      */
-     str = bson_as_canonical_extended_json (document, NULL);
-     printf ("%s\n", str);
-     bson_free (str);
-
-     /*
-      * Clean up allocated bson documents.
-      */
-     bson_destroy (document);
-     return 0;
-  }
+.. literalinclude:: ../examples/tutorial/appending.c
 
 See the :doc:`libbson documentation <bson:bson_t>` for all of the types that can be appended to a :symbol:`bson:bson_t`.
 
@@ -782,50 +691,11 @@ On Windows:
 Executing Commands
 ------------------
 
-The driver provides helper functions for executing MongoDB commands on client, database and collection structures. These functions return :doc:`cursors <mongoc_cursor_t>`; the ``_simple`` variants return booleans indicating success or failure.
+The driver provides helper functions for executing MongoDB commands on client, database and collection structures. The ``_simple`` variants return booleans indicating success or failure.
 
-This example executes the `collStats <https://docs.mongodb.org/manual/reference/command/collStats/>`_ command against the collection "mycoll" in database "mydb".
+This example executes the `ping <https://www.mongodb.com/docs/manual/reference/command/ping/>`_ command against the database "mydb".
 
-.. code-block:: c
-
-  #include <bson/bson.h>
-  #include <mongoc/mongoc.h>
-  #include <stdio.h>
-
-  int
-  main (int argc, char *argv[])
-  {
-     mongoc_client_t *client;
-     mongoc_collection_t *collection;
-     bson_error_t error;
-     bson_t *command;
-     bson_t reply;
-     char *str;
-
-     mongoc_init ();
-
-     client = mongoc_client_new (
-        "mongodb://localhost:27017/?appname=executing-example");
-     collection = mongoc_client_get_collection (client, "mydb", "mycoll");
-
-     command = BCON_NEW ("collStats", BCON_UTF8 ("mycoll"));
-     if (mongoc_collection_command_simple (
-            collection, command, NULL, &reply, &error)) {
-        str = bson_as_canonical_extended_json (&reply, NULL);
-        printf ("%s\n", str);
-        bson_free (str);
-     } else {
-        fprintf (stderr, "Failed to run command: %s\n", error.message);
-     }
-
-     bson_destroy (command);
-     bson_destroy (&reply);
-     mongoc_collection_destroy (collection);
-     mongoc_client_destroy (client);
-     mongoc_cleanup ();
-
-     return 0;
-  }
+.. literalinclude:: ../examples/tutorial/executing.c
 
 Compile the code and run it:
 
@@ -833,9 +703,7 @@ Compile the code and run it:
 
   $ gcc -o executing executing.c $(pkg-config --cflags --libs libmongoc-1.0)
   $ ./executing
-  { "ns" : "mydb.mycoll", "count" : 1, "size" : 48, "avgObjSize" : 48, "numExtents" : 1, "storageSize" : 8192,
-  "lastExtentSize" : 8192.000000, "paddingFactor" : 1.000000, "userFlags" : 1, "capped" : false, "nindexes" : 1,
-  "indexDetails" : {  }, "totalIndexSize" : 8176, "indexSizes" : { "_id_" : 8176 }, "ok" : 1.000000 }
+  { "ok" : { "$numberDouble" : "1.0" }, "$clusterTime" : { "clusterTime" : { "$timestamp" : { "t" : 1682609211, "i" : 1 } }, "signature" : { "hash" : { "$binary" : { "base64" : "AAAAAAAAAAAAAAAAAAAAAAAAAAA=", "subType" : "00" } }, "keyId" : { "$numberLong" : "0" } } }, "operationTime" : { "$timestamp" : { "t" : 1682609211, "i" : 1 } } }
 
 On Windows:
 
@@ -843,9 +711,7 @@ On Windows:
 
   C:\> cl.exe /IC:\mongo-c-driver\include\libbson-1.0 /IC:\mongo-c-driver\include\libmongoc-1.0 executing.c
   C:\> executing
-  { "ns" : "mydb.mycoll", "count" : 1, "size" : 48, "avgObjSize" : 48, "numExtents" : 1, "storageSize" : 8192,
-  "lastExtentSize" : 8192.000000, "paddingFactor" : 1.000000, "userFlags" : 1, "capped" : false, "nindexes" : 1,
-  "indexDetails" : {  }, "totalIndexSize" : 8176, "indexSizes" : { "_id_" : 8176 }, "ok" : 1.000000 }
+  { "ok" : { "$numberDouble" : "1.0" }, "$clusterTime" : { "clusterTime" : { "$timestamp" : { "t" : 1682609211, "i" : 1 } }, "signature" : { "hash" : { "$binary" : { "base64" : "AAAAAAAAAAAAAAAAAAAAAAAAAAA=", "subType" : "00" } }, "keyId" : { "$numberLong" : "0" } } }, "operationTime" : { "$timestamp" : { "t" : 1682609211, "i" : 1 } } }
 
 Threading
 ---------
@@ -861,7 +727,7 @@ However, :symbol:`mongoc_client_pool_t` is thread-safe and is used to fetch a ``
 Next Steps
 ----------
 
-To find information on advanced topics, browse the rest of the :doc:`C driver guide <index>` or the `official MongoDB documentation <https://docs.mongodb.org>`_.
+To find information on advanced topics, browse the rest of the :doc:`C driver guide <index>` or the `official MongoDB documentation <https://www.mongodb.com/docs>`_.
 
 For help with common issues, consult the :doc:`Troubleshooting <basic-troubleshooting>` page. To report a bug or request a new feature, follow :ref:`these instructions <basic-troubleshooting_file_bug>`.
 

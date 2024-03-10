@@ -15,6 +15,7 @@
  */
 
 #include "bsonutil/bson-match.h"
+#include "mongoc-util-private.h" // hex_to_bin
 #include "test-conveniences.h"
 #include "TestSuite.h"
 #include "unified/util.h"
@@ -328,7 +329,7 @@ evaluate_special (bson_matcher_t *matcher,
 
 
 bson_matcher_t *
-bson_matcher_new ()
+bson_matcher_new (void)
 {
    bson_matcher_t *matcher = bson_malloc0 (sizeof (bson_matcher_t));
    /* Add default special functions. */
@@ -564,7 +565,9 @@ done:
 
       memcpy (&tmp_error, error, sizeof (bson_error_t));
       test_set_error (error,
-                      "BSON match failed: %s\nExpected: %s\nActual: %s",
+                      "BSON match failed: %s\n"
+                      "Expected: %s\n"
+                      "Actual:   %s",
                       tmp_error.message,
                       bson_val_to_json (expected),
                       bson_val_to_json (actual));

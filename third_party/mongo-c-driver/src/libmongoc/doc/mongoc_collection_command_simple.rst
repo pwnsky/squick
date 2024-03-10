@@ -21,7 +21,7 @@ Parameters
 * ``collection``: A :symbol:`mongoc_collection_t`.
 * ``command``: A :symbol:`bson:bson_t` containing the command to execute.
 * ``read_prefs``: An optional :symbol:`mongoc_read_prefs_t`. Otherwise, the command uses mode ``MONGOC_READ_PRIMARY``.
-* ``reply``: A location to initialize a :symbol:`bson:bson_t`. This should be on the stack.
+* ``reply``: A |bson_t-opt-storage-ptr| to contain the results.
 * ``error``: An optional location for a :symbol:`bson_error_t <errors>` or ``NULL``.
 
 Description
@@ -48,35 +48,8 @@ This function does not check the server response for a write concern error or wr
 Example
 -------
 
-The following is an example of executing the collection stats command.
+The following is an example of executing the ``ping`` command.
 
-.. code-block:: c
-
-  #include <bson/bson.h>
-  #include <mongoc/mongoc.h>
-  #include <stdio.h>
-
-  static void
-  print_collection_stats (mongoc_collection_t *collection)
-  {
-     bson_error_t error;
-     const char *name;
-     bson_t *cmd;
-     bson_t reply;
-
-     name = mongoc_collection_get_name (collection);
-     cmd = BCON_NEW ("collStats", BCON_UTF8 (name));
-
-     if (mongoc_collection_command_simple (
-            collection, cmd, NULL, &reply, &error)) {
-        str = bson_as_canonical_extended_json (&reply, NULL);
-        printf ("%s\n", str);
-        bson_free (str);
-     } else {
-        fprintf (stderr, "%s\n", error.message);
-     }
-
-     bson_destroy (&reply);
-     bson_destroy (cmd);
-  }
-
+.. literalinclude:: ../examples/example-collection-command.c
+   :start-after: BEGIN:mongoc_collection_command
+   :end-before: END:mongoc_collection_command

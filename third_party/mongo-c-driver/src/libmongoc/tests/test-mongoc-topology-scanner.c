@@ -35,8 +35,7 @@ test_topology_scanner_helper (uint32_t id,
    BSON_UNUSED (rtt_msec);
 
    if (error->code) {
-      fprintf (stderr, "scanner error: %s\n", error->message);
-      abort ();
+      test_error ("scanner error: %s", error->message);
    }
 
    /* mock servers are configured to return distinct wire versions */
@@ -189,7 +188,7 @@ test_topology_scanner_discovery (void)
 
    /* a single scan discovers *and* checks the secondary */
    request = mock_server_receives_any_hello (primary);
-   mock_server_replies_simple (request, primary_response);
+   reply_to_request_simple (request, primary_response);
    request_destroy (request);
 
    /* let client process that response */
@@ -197,7 +196,7 @@ test_topology_scanner_discovery (void)
 
    /* a check of the secondary is scheduled in this scan */
    request = mock_server_receives_any_hello (secondary);
-   mock_server_replies_simple (request, secondary_response);
+   reply_to_request_simple (request, secondary_response);
 
    /* scan completes */
    ASSERT_OR_PRINT ((sd = future_get_mongoc_server_description_ptr (future)),
@@ -269,14 +268,14 @@ test_topology_scanner_oscillate (void)
 
    /* a single scan discovers servers 0 and 1 */
    request = mock_server_receives_any_hello (server0);
-   mock_server_replies_simple (request, server0_response);
+   reply_to_request_simple (request, server0_response);
    request_destroy (request);
 
    /* let client process that response */
    _mongoc_usleep (250 * 1000);
 
    request = mock_server_receives_any_hello (server1);
-   mock_server_replies_simple (request, server1_response);
+   reply_to_request_simple (request, server1_response);
 
    /* we don't schedule another check of server0 */
    _mongoc_usleep (250 * 1000);
@@ -452,7 +451,7 @@ _mock_server_listening_on (char *server_bind_to)
       fprintf (stderr, "bad value of server_bind_to=%s\n", server_bind_to);
       ASSERT (false);
    }
-   mock_server = mock_server_with_auto_hello (WIRE_VERSION_OP_MSG);
+   mock_server = mock_server_with_auto_hello (WIRE_VERSION_MAX);
    mock_server_set_bind_opts (mock_server, &opts);
    mock_server_run (mock_server);
    return mock_server;
@@ -763,13 +762,11 @@ test_topology_scanner_install (TestSuite *suite)
                       test_topology_scanner_does_not_renegotiate_single,
                       NULL,
                       NULL,
-                      test_framework_skip_if_slow_or_live,
-                      test_framework_skip_if_valgrind);
+                      test_framework_skip_if_slow_or_live);
    TestSuite_AddFull (suite,
                       "/TOPOLOGY/scanner/renegotiate/pooled",
                       test_topology_scanner_does_not_renegotiate_pooled,
                       NULL,
                       NULL,
-                      test_framework_skip_if_slow_or_live,
-                      test_framework_skip_if_valgrind);
+                      test_framework_skip_if_slow_or_live);
 }

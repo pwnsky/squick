@@ -15,7 +15,7 @@ Description
 
 ``mongoc_uri_t`` provides an abstraction on top of the MongoDB connection URI format. It provides standardized parsing as well as convenience methods for extracting useful information such as replica hosts or authorization information.
 
-See `Connection String URI Reference <https://docs.mongodb.org/manual/reference/connection-string/>`_ on the MongoDB website for more information.
+See `Connection String URI Reference <https://www.mongodb.com/docs/manual/reference/connection-string/>`_ on the MongoDB website for more information.
 
 Format
 ------
@@ -104,7 +104,12 @@ MONGOC_URI_LOADBALANCED                    loadbalanced                      fal
 MONGOC_URI_SRVMAXHOSTS                     srvmaxhosts                       0                                 If zero, the number of hosts in DNS results is unlimited. If greater than zero, the number of hosts in DNS results is limited to being less than or equal to the given value.
 ========================================== ================================= ================================= ============================================================================================================================================================================================================================================
 
-Setting any of the \*timeoutMS options above to ``0`` will be interpreted as "use the default value".
+.. warning::
+
+  Setting any of the \*timeoutMS options above to either ``0`` or a negative value is discouraged due to unspecified and inconsistent behavior.
+  The "default value" historically specified as a fallback for ``0`` or a negative value is NOT related to the default values for the \*timeoutMS options documented above.
+  The meaning of a timeout of ``0`` or a negative value may vary depending on the operation being executed, even when specified by the same URI option.
+  To specify the documented default value for a \*timeoutMS option, use the `MONGOC_DEFAULT_*` constants defined in ``mongoc-client.h`` instead.
 
 Authentication Options
 ----------------------
@@ -228,7 +233,7 @@ Read Concern Options
 ========================================== ================================= =========================================================================================================================================================================================================================
 Constant                                   Key                               Description
 ========================================== ================================= =========================================================================================================================================================================================================================
-MONGOC_URI_READCONCERNLEVEL                readconcernlevel                  The level of isolation for read operations. If the level is left unspecified, the server default will be used. See `readConcern in the MongoDB Manual <https://docs.mongodb.org/master/reference/readConcern/>`_ for details.
+MONGOC_URI_READCONCERNLEVEL                readconcernlevel                  The level of isolation for read operations. If the level is left unspecified, the server default will be used. See `readConcern in the MongoDB Manual <https://www.mongodb.com/docs/master/reference/readConcern/>`_ for details.
 ========================================== ================================= =========================================================================================================================================================================================================================
 
 .. _mongoc_uri_t_read_prefs_options:
@@ -259,7 +264,7 @@ MONGOC_URI_MAXSTALENESSSECONDS             maxstalenessseconds               The
 
 .. note::
 
-  When connecting to more than one mongos, libmongoc's localThresholdMS applies only to the selection of mongos servers. The threshold for selecting among replica set members in shards is controlled by the `mongos's localThreshold command line option <https://docs.mongodb.com/manual/reference/program/mongos/#cmdoption-localthreshold>`_.
+  When connecting to more than one mongos, libmongoc's localThresholdMS applies only to the selection of mongos servers. The threshold for selecting among replica set members in shards is controlled by the `mongos's localThreshold command line option <https://www.mongodb.com/docs/manual/reference/program/mongos/#cmdoption-localthreshold>`_.
 
 Legacy Options
 --------------
@@ -330,4 +335,3 @@ MONGOC_URI_SAFE                            safe                              {tr
     mongoc_uri_set_username
     mongoc_uri_set_write_concern
     mongoc_uri_unescape
-

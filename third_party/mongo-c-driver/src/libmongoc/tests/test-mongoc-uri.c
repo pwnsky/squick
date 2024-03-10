@@ -545,21 +545,21 @@ test_mongoc_uri_functions (void)
       3);
    ASSERT (
       mongoc_uri_set_option_as_int32 (uri, "serverselectiontimeoutms", 18));
-   ASSERT_CMPINT (
+   ASSERT_CMPINT32 (
       mongoc_uri_get_option_as_int32 (uri, "serverselectiontimeoutms", 19),
       ==,
       18);
 
-   ASSERT_CMPINT (
+   ASSERT_CMPINT32 (
       mongoc_uri_get_option_as_int32 (uri, MONGOC_URI_WTIMEOUTMS, 18), ==, 42);
-   ASSERT_CMPINT (
+   ASSERT_CMPINT64 (
       mongoc_uri_get_option_as_int64 (uri, MONGOC_URI_WTIMEOUTMS, 18), ==, 42);
    ASSERT (mongoc_uri_set_option_as_int32 (uri, MONGOC_URI_WTIMEOUTMS, 18));
-   ASSERT_CMPINT (
+   ASSERT_CMPINT32 (
       mongoc_uri_get_option_as_int32 (uri, MONGOC_URI_WTIMEOUTMS, 19), ==, 18);
 
    ASSERT (mongoc_uri_set_option_as_int64 (uri, MONGOC_URI_WTIMEOUTMS, 20));
-   ASSERT_CMPINT (
+   ASSERT_CMPINT64 (
       mongoc_uri_get_option_as_int64 (uri, MONGOC_URI_WTIMEOUTMS, 19), ==, 20);
 
    ASSERT (mongoc_uri_set_option_as_int32 (
@@ -1623,8 +1623,8 @@ test_mongoc_uri_tls_ssl (const char *tls,
                   "mongodb://CN=client,OU=kerneluser,O=10Gen,L=New York City,"
                   "ST=New York,C=US@ldaptest.10gen.cc/?"
                   "%s=true&authMechanism=MONGODB-X509&"
-                  "%s=tests/x509gen/legacy-x509.pem&"
-                  "%s=tests/x509gen/legacy-ca.crt&"
+                  "%s=tests/x509gen/ldaptest-client-key-and-cert.pem&"
+                  "%s=tests/x509gen/ldaptest-ca-cert.crt&"
                   "%s=true",
                   tls,
                   tlsCertificateKeyFile,
@@ -1642,13 +1642,13 @@ test_mongoc_uri_tls_ssl (const char *tls,
 
    ASSERT_CMPSTR (mongoc_uri_get_option_as_utf8 (
                      uri, MONGOC_URI_TLSCERTIFICATEKEYFILE, "none"),
-                  "tests/x509gen/legacy-x509.pem");
+                  "tests/x509gen/ldaptest-client-key-and-cert.pem");
    ASSERT_CMPSTR (mongoc_uri_get_option_as_utf8 (
                      uri, MONGOC_URI_TLSCERTIFICATEKEYFILEPASSWORD, "none"),
                   "none");
    ASSERT_CMPSTR (
       mongoc_uri_get_option_as_utf8 (uri, MONGOC_URI_TLSCAFILE, "none"),
-      "tests/x509gen/legacy-ca.crt");
+      "tests/x509gen/ldaptest-ca-cert.crt");
    ASSERT (!mongoc_uri_get_option_as_bool (
       uri, MONGOC_URI_TLSALLOWINVALIDCERTIFICATES, false));
    ASSERT (mongoc_uri_get_option_as_bool (
@@ -2572,16 +2572,16 @@ test_mongoc_uri_int_options (void)
 
    /* Set an int64 option as int64 succeeds */
    ASSERT (mongoc_uri_set_option_as_int64 (uri, MONGOC_URI_WTIMEOUTMS, 10));
-   ASSERT_CMPINT (
+   ASSERT_CMPINT32 (
       mongoc_uri_get_option_as_int32 (uri, MONGOC_URI_WTIMEOUTMS, 0), ==, 10);
-   ASSERT_CMPINT (
+   ASSERT_CMPINT64 (
       mongoc_uri_get_option_as_int64 (uri, MONGOC_URI_WTIMEOUTMS, 0), ==, 10);
 
    /* Set an int64 option as int32 succeeds */
    ASSERT (mongoc_uri_set_option_as_int32 (uri, MONGOC_URI_WTIMEOUTMS, 15));
-   ASSERT_CMPINT (
+   ASSERT_CMPINT32 (
       mongoc_uri_get_option_as_int32 (uri, MONGOC_URI_WTIMEOUTMS, 0), ==, 15);
-   ASSERT_CMPINT (
+   ASSERT_CMPINT64 (
       mongoc_uri_get_option_as_int64 (uri, MONGOC_URI_WTIMEOUTMS, 0), ==, 15);
 
    /* Setting an int32 option through _as_int64 succeeds for 32-bit values but
@@ -2592,11 +2592,11 @@ test_mongoc_uri_int_options (void)
                         MONGOC_LOG_LEVEL_WARNING,
                         "Setting value for 32-bit option "
                         "\"zlibcompressionlevel\" through 64-bit method");
-   ASSERT_CMPINT (
+   ASSERT_CMPINT32 (
       mongoc_uri_get_option_as_int32 (uri, MONGOC_URI_ZLIBCOMPRESSIONLEVEL, 0),
       ==,
       9);
-   ASSERT_CMPINT (
+   ASSERT_CMPINT64 (
       mongoc_uri_get_option_as_int64 (uri, MONGOC_URI_ZLIBCOMPRESSIONLEVEL, 0),
       ==,
       9);
@@ -2610,11 +2610,11 @@ test_mongoc_uri_int_options (void)
       MONGOC_LOG_LEVEL_WARNING,
       "Unsupported value for \"connecttimeoutms\": 2147483648,"
       " \"connecttimeoutms\" is not an int64 option");
-   ASSERT_CMPINT (
+   ASSERT_CMPINT32 (
       mongoc_uri_get_option_as_int32 (uri, MONGOC_URI_CONNECTTIMEOUTMS, 0),
       ==,
       0);
-   ASSERT_CMPINT (
+   ASSERT_CMPINT64 (
       mongoc_uri_get_option_as_int64 (uri, MONGOC_URI_CONNECTTIMEOUTMS, 0),
       ==,
       0);
@@ -2624,11 +2624,11 @@ test_mongoc_uri_int_options (void)
    /* Setting an int32 option as int32 succeeds */
    ASSERT (
       mongoc_uri_set_option_as_int32 (uri, MONGOC_URI_ZLIBCOMPRESSIONLEVEL, 9));
-   ASSERT_CMPINT (
+   ASSERT_CMPINT32 (
       mongoc_uri_get_option_as_int32 (uri, MONGOC_URI_ZLIBCOMPRESSIONLEVEL, 0),
       ==,
       9);
-   ASSERT_CMPINT (
+   ASSERT_CMPINT64 (
       mongoc_uri_get_option_as_int64 (uri, MONGOC_URI_ZLIBCOMPRESSIONLEVEL, 0),
       ==,
       9);
@@ -2740,6 +2740,70 @@ test_casing_options (void)
    mongoc_uri_destroy (uri);
 }
 
+static void
+test_parses_long_ipv6 (void)
+{
+   // Test parsing long malformed IPv6 literals. This is a regression test for
+   // CDRIVER-4816.
+   bson_error_t error;
+
+   // Test the largest permitted IPv6 literal.
+   {
+      // Construct a string of repeating `:`.
+      bson_string_t *host = bson_string_new (NULL);
+      for (int i = 0; i < BSON_HOST_NAME_MAX - 2; i++) {
+         // Max IPv6 literal is two less due to including `[` and `]`.
+         bson_string_append (host, ":");
+      }
+
+      char *host_and_port = bson_strdup_printf ("[%s]:27017", host->str);
+      char *uri_string = bson_strdup_printf ("mongodb://%s", host_and_port);
+      mongoc_uri_t *uri = mongoc_uri_new_with_error (uri_string, &error);
+      ASSERT_OR_PRINT (uri, error);
+      const mongoc_host_list_t *hosts = mongoc_uri_get_hosts (uri);
+      ASSERT_CMPSTR (hosts->host, host->str);
+      ASSERT_CMPSTR (hosts->host_and_port, host_and_port);
+      ASSERT_CMPUINT16 (hosts->port, ==, 27017);
+      ASSERT (!hosts->next);
+
+      mongoc_uri_destroy (uri);
+      bson_free (uri_string);
+      bson_free (host_and_port);
+      bson_string_free (host, true /* free_segment */);
+   }
+
+   // Test one character more than the largest IPv6 literal.
+   {
+      // Construct a string of repeating `:`.
+      bson_string_t *host = bson_string_new (NULL);
+      for (int i = 0; i < BSON_HOST_NAME_MAX - 2 + 1; i++) {
+         bson_string_append (host, ":");
+      }
+
+      char *host_and_port = bson_strdup_printf ("[%s]:27017", host->str);
+      char *uri_string = bson_strdup_printf ("mongodb://%s", host_and_port);
+      capture_logs (true);
+      mongoc_uri_t *uri = mongoc_uri_new_with_error (uri_string, &error);
+      // Expect error parsing IPv6 literal is logged.
+      ASSERT_CAPTURED_LOG ("parsing IPv6",
+                           MONGOC_LOG_LEVEL_ERROR,
+                           "IPv6 literal provided in URI is too long");
+      capture_logs (false);
+
+      // Expect a generic parsing error is also returned.
+      ASSERT (!uri);
+      ASSERT_ERROR_CONTAINS (error,
+                             MONGOC_ERROR_COMMAND,
+                             MONGOC_ERROR_COMMAND_INVALID_ARG,
+                             "Invalid host string in URI");
+
+      mongoc_uri_destroy (uri);
+      bson_free (uri_string);
+      bson_free (host_and_port);
+      bson_string_free (host, true /* free_segment */);
+   }
+}
+
 void
 test_uri_install (TestSuite *suite)
 {
@@ -2774,4 +2838,5 @@ test_uri_install (TestSuite *suite)
                   "/Uri/one_tls_option_enables_tls",
                   test_one_tls_option_enables_tls);
    TestSuite_Add (suite, "/Uri/options_casing", test_casing_options);
+   TestSuite_Add (suite, "/Uri/parses_long_ipv6", test_parses_long_ipv6);
 }

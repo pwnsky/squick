@@ -72,7 +72,7 @@ test_client_cmd_w_server_id (void)
                                       " 'serverId': {'$exists': false}}"));
 
    ASSERT (mock_rs_request_is_to_secondary (rs, request));
-   mock_rs_replies_simple (request, "{'ok': 1}");
+   reply_to_request_simple (request, "{'ok': 1}");
    ASSERT_OR_PRINT (future_get_bool (future), error);
 
    bson_destroy (&reply);
@@ -115,7 +115,7 @@ test_client_cmd_w_server_id_sharded (void)
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'db', 'ping': 1, 'serverId': {'$exists': false}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
 
    bson_destroy (&reply);
@@ -278,7 +278,7 @@ test_client_cmd_write_concern (void)
    request = mock_server_receives_msg (server, MONGOC_MSG_NONE, cmd);
    BSON_ASSERT (request);
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    BSON_ASSERT (future_get_bool (future));
 
    future_destroy (future);
@@ -290,10 +290,9 @@ test_client_cmd_write_concern (void)
    request = mock_server_receives_msg (server, MONGOC_MSG_NONE, cmd);
    BSON_ASSERT (request);
 
-   mock_server_replies_simple (
-      request,
-      "{ 'ok' : 0, 'errmsg' : 'cannot use w > 1 when a "
-      "host is not replicated', 'code' : 2 }");
+   reply_to_request_simple (request,
+                            "{ 'ok' : 0, 'errmsg' : 'cannot use w > 1 when a "
+                            "host is not replicated', 'code' : 2 }");
 
    BSON_ASSERT (!future_get_bool (future));
    future_destroy (future);
@@ -304,7 +303,7 @@ test_client_cmd_write_concern (void)
    future =
       future_client_command_simple (client, "test", cmd, NULL, &reply, &error);
    request = mock_server_receives_msg (server, MONGOC_MSG_NONE, cmd);
-   mock_server_replies_simple (
+   reply_to_request_simple (
       request,
       "{ 'ok' : 1, 'n': 1, "
       "'writeConcernError': {'code': 17, 'errmsg': 'foo'}}");
@@ -348,7 +347,7 @@ test_client_cmd_write_concern_fam (void)
       tmp_bson ("{'$db': 'test', 'findAndModify': 'collection', "
                 "'writeConcern': {'w': 2}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    BSON_ASSERT (future_get_bool (future));
 
    bson_destroy (&reply);
@@ -479,8 +478,7 @@ test_mongoc_client_speculative_auth_failure (bool pooled)
    char *uri_str_auth;
    mongoc_collection_t *collection;
    mongoc_client_t *auth_client;
-   mongoc_client_pool_t *pool;
-   mongoc_uri_t *uri;
+   mongoc_client_pool_t *pool = NULL;
    mongoc_cursor_t *cursor;
    const bson_t *doc;
    bson_error_t error;
@@ -516,16 +514,21 @@ test_mongoc_client_speculative_auth_failure (bool pooled)
    uri_str_auth =
       test_framework_add_user_password (uri_str_no_auth, username, "testpass");
 
-   if (pooled) {
-      uri = mongoc_uri_new (uri_str_auth);
-      pool = test_framework_client_pool_new_from_uri (uri, NULL);
-      mongoc_uri_destroy (uri);
+   {
+      mongoc_uri_t *const uri = mongoc_uri_new (uri_str_auth);
 
-      test_framework_set_pool_ssl_opts (pool);
-      auth_client = mongoc_client_pool_pop (pool);
-   } else {
-      auth_client = test_framework_client_new (uri_str_auth, NULL);
-      test_framework_set_ssl_opts (auth_client);
+      ASSERT (
+         mongoc_uri_set_option_as_bool (uri, MONGOC_URI_RETRYREADS, false));
+
+      if (pooled) {
+         pool = test_framework_client_pool_new_from_uri (uri, NULL);
+         test_framework_set_pool_ssl_opts (pool);
+         auth_client = mongoc_client_pool_pop (pool);
+      } else {
+         auth_client = test_framework_client_new_from_uri (uri, NULL);
+         test_framework_set_ssl_opts (auth_client);
+      }
+      mongoc_uri_destroy (uri);
    }
 
    collection = mongoc_client_get_collection (auth_client, "test", "test");
@@ -631,11 +634,22 @@ test_mongoc_client_authenticate_cached (bool pooled)
    int i = 0;
    uint32_t server_id;
 
-   if (pooled) {
-      pool = test_framework_new_default_client_pool ();
-      client = mongoc_client_pool_pop (pool);
-   } else {
-      client = test_framework_new_default_client ();
+   {
+      mongoc_uri_t *const uri = test_framework_get_uri ();
+
+      // Avoid retryable handshakes from interfering with screwed-up cache.
+      mongoc_uri_set_option_as_bool (uri, MONGOC_URI_RETRYREADS, false);
+
+      if (pooled) {
+         pool = test_framework_client_pool_new_from_uri (uri, NULL);
+         test_framework_set_pool_ssl_opts (pool);
+         client = mongoc_client_pool_pop (pool);
+      } else {
+         client = test_framework_client_new_from_uri (uri, NULL);
+         test_framework_set_ssl_opts (client);
+      }
+
+      mongoc_uri_destroy (uri);
    }
 
    collection = mongoc_client_get_collection (client, "test", "test");
@@ -660,24 +674,6 @@ test_mongoc_client_authenticate_cached (bool pooled)
          scanner_node->stream = NULL;
       }
    }
-
-   /* screw up the cache */
-   memcpy (client->cluster.scram_cache->client_key, "foo", 3);
-   cursor = mongoc_collection_find_with_opts (collection, &insert, NULL, NULL);
-   capture_logs (true);
-   r = mongoc_cursor_next (cursor, &doc);
-
-   if (pooled) {
-      ASSERT_CAPTURED_LOG ("The cachekey broke",
-                           MONGOC_LOG_LEVEL_WARNING,
-                           "Failed authentication");
-   }
-   capture_logs (false);
-   ASSERT (mongoc_cursor_error (cursor, &error));
-   ASSERT_ERROR_CONTAINS (
-      error, MONGOC_ERROR_CLIENT, MONGOC_ERROR_CLIENT_AUTHENTICATE, "");
-   ASSERT (!r);
-   mongoc_cursor_destroy (cursor);
 
    mongoc_collection_destroy (collection);
    if (pooled) {
@@ -758,8 +754,8 @@ test_mongoc_client_authenticate_failure (void *context)
     * Try various commands while in the failed state to ensure we get the
     * same sort of errors.
     */
-   r = mongoc_collection_update (
-      collection, MONGOC_UPDATE_NONE, &q, &empty, NULL, &error);
+   r =
+      mongoc_collection_update_one (collection, &q, &empty, NULL, NULL, &error);
    BSON_ASSERT (!r);
    ASSERT_CMPINT (error.domain, ==, MONGOC_ERROR_CLIENT);
    ASSERT_CMPINT (error.code, ==, MONGOC_ERROR_CLIENT_AUTHENTICATE);
@@ -1063,7 +1059,7 @@ _test_command_read_prefs (bool simple, bool pooled)
       request = mock_server_receives_msg (
          server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'db', 'foo': 1}"));
 
-      mock_server_replies_ok_and_destroys (request);
+      reply_to_request_with_ok_and_destroy (request);
       ASSERT_OR_PRINT (future_get_bool (future), error);
       future_destroy (future);
 
@@ -1077,7 +1073,7 @@ _test_command_read_prefs (bool simple, bool pooled)
          tmp_bson ("{'$db': 'db',"
                    " 'foo': 1,"
                    " '$readPreference': {'mode': 'secondary'}}"));
-      mock_server_replies_ok_and_destroys (request);
+      reply_to_request_with_ok_and_destroy (request);
       ASSERT_OR_PRINT (future_get_bool (future), error);
       future_destroy (future);
    } else {
@@ -1088,7 +1084,7 @@ _test_command_read_prefs (bool simple, bool pooled)
       request = mock_server_receives_msg (
          server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'db', 'foo': 1}"));
 
-      mock_server_replies_ok_and_destroys (request);
+      reply_to_request_with_ok_and_destroy (request);
       ASSERT (future_get_bool (future));
       future_destroy (future);
       mongoc_cursor_destroy (cursor);
@@ -1104,7 +1100,7 @@ _test_command_read_prefs (bool simple, bool pooled)
                    " 'foo': 1,"
                    " '$readPreference': {'mode': 'secondary'}}"));
 
-      mock_server_replies_ok_and_destroys (request);
+      reply_to_request_with_ok_and_destroy (request);
       ASSERT (future_get_bool (future));
       future_destroy (future);
       mongoc_cursor_destroy (cursor);
@@ -1228,7 +1224,7 @@ test_command_with_opts_read_prefs (void)
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'admin', 'create': 'db'}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -1246,7 +1242,7 @@ test_command_with_opts_read_prefs (void)
                 " 'count': 'collection',"
                 " '$readPreference': {'mode': 'secondary'}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -1264,7 +1260,7 @@ test_command_with_opts_read_prefs (void)
                 " 'readConcern': {'level': 'majority'},"
                 " '$readPreference': {'$exists': false}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -1304,7 +1300,7 @@ test_read_write_cmd_with_opts (void)
       rs, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'db', 'ping': 1}"));
 
    ASSERT (mock_rs_request_is_to_primary (rs, request));
-   mock_rs_replies_simple (request, "{'ok': 1}");
+   reply_to_request_simple (request, "{'ok': 1}");
    ASSERT_OR_PRINT (future_get_bool (future), error);
 
    bson_destroy (&reply);
@@ -1347,7 +1343,7 @@ test_read_command_with_opts (void)
       tmp_bson (
          "{'$db': 'admin', 'create': 'db', 'collation': {'locale': 'en_US'}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -1362,7 +1358,7 @@ test_read_command_with_opts (void)
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'admin', 'create': 'db', 'writeConcern': {'w': 1}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -1378,7 +1374,7 @@ test_read_command_with_opts (void)
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'admin', 'create': 'db', 'writeConcern': {'w': 1}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -1396,7 +1392,7 @@ test_read_command_with_opts (void)
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'admin', 'create': 'db', 'writeConcern': {'w': 2}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -1416,7 +1412,7 @@ test_read_command_with_opts (void)
                 " 'count': 'collection',"
                 " 'readConcern': {'level': 'local'}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -1432,7 +1428,7 @@ test_read_command_with_opts (void)
                 " 'count': 'collection',"
                 " 'readConcern': {'level': 'local'}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -1487,7 +1483,7 @@ test_command_with_opts (void)
                 " 'readConcern': {'$exists': false},"
                 " 'writeConcern': {'$exists': false}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -1506,7 +1502,7 @@ test_command_with_opts (void)
                 " 'readConcern': {'level':'majority'},"
                 " '$readPreference': {'mode':'secondary'}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -1533,7 +1529,7 @@ test_command_with_opts_op_msg (void)
    request_t *request;
    bson_t opts = BSON_INITIALIZER;
 
-   server = mock_mongos_new (WIRE_VERSION_OP_MSG);
+   server = mock_mongos_new (WIRE_VERSION_MAX);
 
    mock_server_auto_endsessions (server);
 
@@ -1567,7 +1563,7 @@ test_command_with_opts_op_msg (void)
                 "   'writeConcern': {'$exists': false}"
                 "}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -1589,7 +1585,7 @@ test_command_with_opts_op_msg (void)
                 "   }"
                 "}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -1672,7 +1668,7 @@ test_command_no_errmsg (void)
 
    /* auth errors have $err, not errmsg. we'd raised "Unknown command error",
     * see CDRIVER-1928 */
-   mock_server_replies_simple (request, "{'ok': 0, 'code': 7, '$err': 'bad!'}");
+   reply_to_request_simple (request, "{'ok': 0, 'code': 7, '$err': 'bad!'}");
    ASSERT (!future_get_bool (future));
    ASSERT_ERROR_CONTAINS (error, MONGOC_ERROR_SERVER, 7, "bad!");
 
@@ -1765,7 +1761,7 @@ responder (request_t *request, void *data)
    BSON_UNUSED (data);
 
    if (!strcmp (request->command_name, "foo")) {
-      mock_server_replies_ok_and_destroys (request);
+      reply_to_request_with_ok_and_destroy (request);
       return true;
    }
 
@@ -2122,7 +2118,7 @@ test_get_database_names (void)
       server,
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'admin', 'listDatabases': 1, 'nameOnly': true}"));
-   mock_server_replies (
+   reply_to_request (
       request,
       0,
       0,
@@ -2143,7 +2139,7 @@ test_get_database_names (void)
       server,
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'admin', 'listDatabases': 1, 'nameOnly': true}"));
-   mock_server_replies (
+   reply_to_request (
       request, 0, 0, 0, 1, "{'ok': 0.0, 'code': 17, 'errmsg': 'err'}");
 
    names = future_get_char_ptr_ptr (future);
@@ -2300,7 +2296,7 @@ test_mongoc_client_mismatched_me (void)
                                mock_server_get_host_and_port (server));
 
    capture_logs (true);
-   mock_server_replies_simple (request, reply);
+   reply_to_request_simple (request, reply);
 
    BSON_ASSERT (!future_get_bool (future));
    ASSERT_ERROR_CONTAINS (error,
@@ -2579,7 +2575,6 @@ test_mongoc_client_descriptions_pooled (void *unused)
          test_error ("still have %d descriptions, not expected %d, after 1 sec",
                      (int) n,
                      (int) expected_n);
-         abort ();
       }
 
       sds = mongoc_client_get_server_descriptions (client, &n);
@@ -2588,6 +2583,36 @@ test_mongoc_client_descriptions_pooled (void *unused)
 
    mongoc_client_pool_push (pool, client);
    mongoc_client_pool_destroy (pool);
+}
+
+
+static bool
+is_standalone_or_rs_primary_or_mongos (const char *server_type)
+{
+   BSON_ASSERT_PARAM (server_type);
+   // Avoid -Woverlength-strings in ASSERT macros.
+   return strcmp (server_type, "Standalone") == 0 ||
+          strcmp (server_type, "RSPrimary") == 0 ||
+          strcmp (server_type, "Mongos") == 0;
+}
+
+static bool
+is_standalone_or_rs_secondary_or_mongos (const char *server_type)
+{
+   BSON_ASSERT_PARAM (server_type);
+   // Avoid -Woverlength-strings in ASSERT macros.
+   return strcmp (server_type, "Standalone") == 0 ||
+          strcmp (server_type, "RSSecondary") == 0 ||
+          strcmp (server_type, "Mongos") == 0;
+}
+
+static bool
+is_standalone_or_mongos (const char *server_type)
+{
+   BSON_ASSERT_PARAM (server_type);
+   // Avoid -Woverlength-strings in ASSERT macros.
+   return strcmp (server_type, "Standalone") == 0 ||
+          strcmp (server_type, "Mongos") == 0;
 }
 
 
@@ -2615,9 +2640,7 @@ _test_mongoc_client_select_server (bool pooled)
 
    ASSERT (sd);
    server_type = mongoc_server_description_type (sd);
-   ASSERT (!strcmp (server_type, "Standalone") ||
-           !strcmp (server_type, "RSPrimary") ||
-           !strcmp (server_type, "Mongos"));
+   ASSERT (is_standalone_or_rs_primary_or_mongos (server_type));
 
    /* Do not inherit read prefs from the client. */
    prefs = mongoc_read_prefs_new (MONGOC_READ_SECONDARY);
@@ -2631,9 +2654,7 @@ _test_mongoc_client_select_server (bool pooled)
 
    ASSERT (sd);
    server_type = mongoc_server_description_type (sd);
-   ASSERT (!strcmp (server_type, "Standalone") ||
-           !strcmp (server_type, "RSPrimary") ||
-           !strcmp (server_type, "Mongos"));
+   ASSERT (is_standalone_or_rs_primary_or_mongos (server_type));
 
    mongoc_server_description_destroy (sd);
    sd = mongoc_client_select_server (client,
@@ -2643,9 +2664,7 @@ _test_mongoc_client_select_server (bool pooled)
 
    ASSERT (sd);
    server_type = mongoc_server_description_type (sd);
-   ASSERT (!strcmp (server_type, "Standalone") ||
-           !strcmp (server_type, "RSPrimary") ||
-           !strcmp (server_type, "Mongos"));
+   ASSERT (is_standalone_or_rs_primary_or_mongos (server_type));
 
    mongoc_server_description_destroy (sd);
    sd = mongoc_client_select_server (client,
@@ -2655,9 +2674,7 @@ _test_mongoc_client_select_server (bool pooled)
 
    ASSERT (sd);
    server_type = mongoc_server_description_type (sd);
-   ASSERT (!strcmp (server_type, "Standalone") ||
-           !strcmp (server_type, "RSSecondary") ||
-           !strcmp (server_type, "Mongos"));
+   ASSERT (is_standalone_or_rs_secondary_or_mongos (server_type));
 
    mongoc_server_description_destroy (sd);
    mongoc_read_prefs_destroy (prefs);
@@ -2732,8 +2749,7 @@ _test_mongoc_client_select_server_error (bool pooled)
    if (tdtype == MONGOC_TOPOLOGY_SINGLE || tdtype == MONGOC_TOPOLOGY_SHARDED) {
       ASSERT (sd);
       server_type = mongoc_server_description_type (sd);
-      ASSERT (!strcmp (server_type, "Standalone") ||
-              !strcmp (server_type, "Mongos"));
+      ASSERT (is_standalone_or_mongos (server_type));
       mongoc_server_description_destroy (sd);
    } else {
       ASSERT (!sd);
@@ -2803,7 +2819,7 @@ _test_mongoc_client_select_server_retry (bool retry_succeeds)
    /* first selection succeeds */
    future = future_client_select_server (client, true, NULL, &error);
    request = mock_server_receives_any_hello (server);
-   mock_server_replies_simple (request, hello);
+   reply_to_request_simple (request, hello);
    request_destroy (request);
    sd = future_get_mongoc_server_description_ptr (future);
    ASSERT_OR_PRINT (sd, error);
@@ -2819,18 +2835,18 @@ _test_mongoc_client_select_server_retry (bool retry_succeeds)
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'admin', 'ping': 1}"));
 
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
    request_destroy (request);
 
    /* mongoc_client_select_server retries once */
    request = mock_server_receives_any_hello (server);
    if (retry_succeeds) {
-      mock_server_replies_simple (request, hello);
+      reply_to_request_simple (request, hello);
       sd = future_get_mongoc_server_description_ptr (future);
       ASSERT_OR_PRINT (sd, error);
       mongoc_server_description_destroy (sd);
    } else {
-      mock_server_hangs_up (request);
+      reply_to_request_with_hang_up (request);
       sd = future_get_mongoc_server_description_ptr (future);
       BSON_ASSERT (sd == NULL);
    }
@@ -2887,12 +2903,12 @@ _test_mongoc_client_fetch_stream_retry (bool retry_succeeds)
    future = future_client_command_simple (
       client, "db", tmp_bson ("{'cmd': 1}"), NULL, NULL, &error);
    request = mock_server_receives_any_hello (server);
-   mock_server_replies_simple (request, hello);
+   reply_to_request_simple (request, hello);
    request_destroy (request);
 
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'db', 'cmd': 1}"));
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
@@ -2907,22 +2923,22 @@ _test_mongoc_client_fetch_stream_retry (bool retry_succeeds)
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'admin', 'ping': 1}"));
 
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
    request_destroy (request);
 
    /* mongoc_client_select_server retries once */
    request = mock_server_receives_any_hello (server);
    if (retry_succeeds) {
-      mock_server_replies_simple (request, hello);
+      reply_to_request_simple (request, hello);
       request_destroy (request);
 
       request = mock_server_receives_msg (
          server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'db', 'cmd': 1}"));
 
-      mock_server_replies_simple (request, "{'ok': 1}");
+      reply_to_request_simple (request, "{'ok': 1}");
       ASSERT_OR_PRINT (future_get_bool (future), error);
    } else {
-      mock_server_hangs_up (request);
+      reply_to_request_with_hang_up (request);
       BSON_ASSERT (!future_get_bool (future));
    }
 
@@ -2960,6 +2976,8 @@ _cmd (mock_server_t *server,
    request_t *request;
    bool r;
 
+   ASSERT (client);
+
    future = future_client_command_simple (
       client, "db", tmp_bson ("{'cmd': 1}"), NULL, NULL, error);
    request = mock_server_receives_msg (
@@ -2967,7 +2985,7 @@ _cmd (mock_server_t *server,
    ASSERT (request);
 
    if (server_replies) {
-      mock_server_replies_simple (request, "{'ok': 1}");
+      reply_to_request_simple (request, "{'ok': 1}");
    }
 
    r = future_get_bool (future);
@@ -3189,6 +3207,8 @@ _force_hello_with_ping (mongoc_client_t *client, int heartbeat_ms)
 {
    future_t *future;
 
+   BSON_ASSERT_PARAM (client);
+
    /* Wait until we're overdue to send a hello */
    _mongoc_usleep (heartbeat_ms * 2 * 1000);
 
@@ -3211,7 +3231,7 @@ _respond_to_ping (future_t *future, mock_server_t *server)
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'admin', 'ping': 1}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    ASSERT (future_get_bool (future));
    future_destroy (future);
@@ -3247,7 +3267,7 @@ test_mongoc_handshake_pool (void)
    client1 = mongoc_client_pool_pop (pool);
    request1 = mock_server_receives_legacy_hello (server, NULL);
    _assert_hello_valid (request1, true);
-   mock_server_replies_simple (request1, server_reply);
+   reply_to_request_simple (request1, server_reply);
    request_destroy (request1);
 
    client2 = mongoc_client_pool_pop (pool);
@@ -3256,12 +3276,12 @@ test_mongoc_handshake_pool (void)
 
    request2 = mock_server_receives_legacy_hello (server, NULL);
    _assert_hello_valid (request2, true);
-   mock_server_replies_simple (request2, server_reply);
+   reply_to_request_simple (request2, server_reply);
    request_destroy (request2);
 
    request2 = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'test'}"));
-   mock_server_replies_ok_and_destroys (request2);
+   reply_to_request_with_ok_and_destroy (request2);
    ASSERT (future_get_bool (future));
    future_destroy (future);
 
@@ -3314,7 +3334,7 @@ _test_client_sends_handshake (bool pooled)
 
    /* Make sure the hello request has a "client" field: */
    _assert_hello_valid (request, true);
-   mock_server_replies_simple (request, server_reply);
+   reply_to_request_simple (request, server_reply);
    request_destroy (request);
 
    if (!pooled) {
@@ -3327,7 +3347,7 @@ _test_client_sends_handshake (bool pooled)
    request = mock_server_receives_any_hello (server);
    _assert_hello_valid (request, false);
 
-   mock_server_replies_simple (request, server_reply);
+   reply_to_request_simple (request, server_reply);
    request_destroy (request);
 
    if (!pooled) {
@@ -3339,13 +3359,13 @@ _test_client_sends_handshake (bool pooled)
     * time the server hangs up */
    request = mock_server_receives_any_hello (server);
    _assert_hello_valid (request, false);
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
    request_destroy (request);
 
    /* Client retries once (CDRIVER-2075) */
    request = mock_server_receives_any_hello (server);
    _assert_hello_valid (request, true);
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
    request_destroy (request);
 
    if (!pooled) {
@@ -3364,7 +3384,7 @@ _test_client_sends_handshake (bool pooled)
    request = mock_server_receives_any_hello (server);
    _assert_hello_valid (request, true);
 
-   mock_server_replies_simple (request, server_reply);
+   reply_to_request_simple (request, server_reply);
    request_destroy (request);
 
    if (!pooled) {
@@ -3447,7 +3467,7 @@ test_client_appname (bool pooled, bool use_uri)
                                                  "    'application': {"
                                                  "       'name': 'testapp'}}}");
 
-   mock_server_replies_simple (request, server_reply);
+   reply_to_request_simple (request, server_reply);
    if (!pooled) {
       _respond_to_ping (future, server);
    }
@@ -3522,7 +3542,7 @@ _test_null_error_pointer (bool pooled)
       client, "test", tmp_bson ("{'ping': 1}"), NULL, NULL, NULL);
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'test', 'ping': 1}"));
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT (future_get_bool (future));
    future_destroy (future);
 
@@ -3609,7 +3629,7 @@ test_client_reset_sessions (void)
    bson_t lsid;
    bool res;
 
-   server = mock_mongos_new (WIRE_VERSION_OP_MSG);
+   server = mock_mongos_new (WIRE_VERSION_MAX);
    mock_server_run (server);
    client =
       test_framework_client_new_from_uri (mock_server_get_uri (server), NULL);
@@ -3635,7 +3655,7 @@ test_client_reset_sessions (void)
 
    request = mock_server_receives_msg (
       server, 0, tmp_bson ("{'ping': 1, 'lsid': {'$exists': true}}"));
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    ASSERT (future_get_bool (future));
 
@@ -3696,12 +3716,12 @@ test_client_reset_cursors (void)
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'test', 'find': 'test'}"));
 
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': 4,"
-                               "    'ns': 'test.test',"
-                               "    'firstBatch': [{}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 4,"
+                            "    'ns': 'test.test',"
+                            "    'firstBatch': [{}]}}");
 
    BSON_ASSERT (future_get_bool (future));
    ASSERT (cursor->cursor_id);
@@ -3730,7 +3750,7 @@ test_client_reset_cursors (void)
 
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'admin', 'ping': 1}"));
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    ASSERT (future_get_bool (future));
 
@@ -3793,7 +3813,7 @@ test_client_reset_connections (void)
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'admin', 'ping': 1}"));
    BSON_ASSERT (request);
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    ASSERT (future_get_bool (future));
 
@@ -3919,7 +3939,7 @@ test_mongoc_client_recv_network_error (void)
    bson_error_t error;
    mongoc_server_description_t const *sd;
    int generation;
-   mongoc_rpc_t rpc;
+   mcd_rpc_message *rpc = NULL;
    mongoc_buffer_t buffer;
    mongoc_server_stream_t *stream;
    mc_shared_tpld td;
@@ -3936,7 +3956,7 @@ test_mongoc_client_recv_network_error (void)
                                           NULL /* reply */,
                                           &error);
    request = mock_server_receives_request (server);
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    future_wait (future);
    future_destroy (future);
 
@@ -3955,11 +3975,11 @@ test_mongoc_client_recv_network_error (void)
                         0 /* initial length */,
                         NULL /* realloc fn */,
                         NULL /* realloc ctx */);
-   memset (&rpc, 0, sizeof (mongoc_rpc_t));
+   rpc = mcd_rpc_message_new ();
    stream = mongoc_cluster_stream_for_server (
       &client->cluster, 1, false, NULL, NULL, &error);
    ASSERT_OR_PRINT (stream, error);
-   BSON_ASSERT (!_mongoc_client_recv (client, &rpc, &buffer, stream, &error));
+   BSON_ASSERT (!_mongoc_client_recv (client, rpc, &buffer, stream, &error));
 
    td = mc_tpld_take_ref (client->topology);
    sd = mongoc_topology_description_server_by_id_const (td.ptr, 1, &error);
@@ -3970,6 +3990,7 @@ test_mongoc_client_recv_network_error (void)
 
    mongoc_client_destroy (client);
    _mongoc_buffer_destroy (&buffer);
+   mcd_rpc_message_destroy (rpc);
    mongoc_server_stream_cleanup (stream);
    mc_tpld_drop_ref (&td);
 }
@@ -4050,7 +4071,18 @@ test_mongoc_client_get_handshake_hello_response_pooled (void)
    invalidated_sd =
       mongoc_client_get_server_description (client, monitor_sd->id);
    BSON_ASSERT (NULL != invalidated_sd);
-   ASSERT_CMPSTR ("Unknown", mongoc_server_description_type (invalidated_sd));
+
+   // Check the resulting server description.
+   // Invalidating sets the type to Unknown.
+   // A background monitor may have set the type to PossiblePrimary.
+   const char *got_description_type =
+      mongoc_server_description_type (invalidated_sd);
+   if (0 != strcmp ("Unknown", got_description_type) &&
+       0 != strcmp ("PossiblePrimary", got_description_type)) {
+      test_error ("Expected server to have type 'Unknown' or "
+                  "'PossiblePrimary', got: '%s'",
+                  got_description_type);
+   }
 
    /* The previously established connection should have a valid server
     * description. */
@@ -4142,7 +4174,7 @@ test_mongoc_client_resends_handshake_on_network_error (void)
       "': 1, 'client': {'application': {'name': 'foo'}}}",
       "{'" HANDSHAKE_CMD_LEGACY_HELLO
       "': 1, 'client': {'application': {'name': 'foo'}}}");
-   mock_server_replies_simple (
+   reply_to_request_simple (
       request,
       tmp_str ("{'ok': 1, 'minWireVersion': %d, 'maxWireVersion': %d}",
                WIRE_VERSION_MIN,
@@ -4150,7 +4182,7 @@ test_mongoc_client_resends_handshake_on_network_error (void)
    request_destroy (request);
    request = mock_server_receives_msg (
       server, MONGOC_QUERY_NONE, tmp_bson ("{'ping': 1}"));
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
    future_wait (future);
    future_destroy (future);
    ASSERT_ERROR_CONTAINS (error,
@@ -4169,7 +4201,7 @@ test_mongoc_client_resends_handshake_on_network_error (void)
       "': 1, 'client': {'application': {'name': 'foo'}}}",
       "{'" HANDSHAKE_CMD_LEGACY_HELLO
       "': 1, 'client': {'application': {'name': 'foo'}}}");
-   mock_server_replies_simple (
+   reply_to_request_simple (
       request,
       tmp_str ("{'ok': 1, 'minWireVersion': %d, 'maxWireVersion': %d }",
                WIRE_VERSION_MIN,
@@ -4178,7 +4210,7 @@ test_mongoc_client_resends_handshake_on_network_error (void)
 
    request = mock_server_receives_msg (
       server, MONGOC_QUERY_NONE, tmp_bson ("{'ping': 1}"));
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT (future_get_bool (future));
    future_destroy (future);
 
@@ -4186,6 +4218,42 @@ test_mongoc_client_resends_handshake_on_network_error (void)
    mock_server_destroy (server);
 }
 
+// test_failure_to_auth is a regression test for the leak reported in
+// CDRIVER-4699.
+static void
+test_failure_to_auth (void)
+{
+   mongoc_uri_t *uri = mongoc_uri_new_for_host_port ("localhost", 12345);
+   mongoc_uri_set_username (uri, "foo");
+   mongoc_uri_set_password (uri, "bar");
+   mongoc_uri_set_option_as_bool (
+      uri, MONGOC_URI_SERVERSELECTIONTRYONCE, false);
+   // Set a shorter serverSelectionTimeoutMS for a faster test.
+   // serverSelectionTimeoutMS must be long enough to require a second attempt
+   // of authentication. Experimentally: 100ms appears long enough to reproduce
+   // leak reported in CDRIVER-4699.
+   mongoc_uri_set_option_as_int32 (
+      uri, MONGOC_URI_SERVERSELECTIONTIMEOUTMS, 100);
+   mongoc_client_t *client = mongoc_client_new_from_uri (uri);
+
+   // Override minHeartbeatFrequencyMS to reduce the time between server checks.
+   client->topology->min_heartbeat_frequency_msec = 1;
+
+   // Disable the cooldown period to reduce the time between server checks.
+   // Single threaded clients wait for a default 5 second cooldown period after
+   // failing to connect to a server before making another attempt.
+   _mongoc_topology_bypass_cooldown (client->topology);
+
+   bool ok = mongoc_client_command_simple (client,
+                                           "admin",
+                                           tmp_bson ("{'ping': 1}"),
+                                           NULL /* read prefs */,
+                                           NULL /* reply */,
+                                           NULL /* error */);
+   ASSERT_WITH_MSG (!ok, "expected command to fail, got success");
+   mongoc_client_destroy (client);
+   mongoc_uri_destroy (uri);
+}
 void
 test_client_install (TestSuite *suite)
 {
@@ -4230,7 +4298,11 @@ test_client_install (TestSuite *suite)
                       test_mongoc_client_authenticate_cached_single,
                       NULL,
                       NULL,
-                      test_framework_skip_if_no_auth);
+                      test_framework_skip_if_no_auth,
+                      // speculativeAuthentication in single-threaded clients
+                      // does not use the scram cache. speculativeAuthentication
+                      // was introduced in server 4.4 (maxWireVersion=9)
+                      test_framework_skip_if_max_wire_version_more_than_8);
    TestSuite_AddFull (suite,
                       "/Client/authenticate_failure",
                       test_mongoc_client_authenticate_failure,
@@ -4495,4 +4567,5 @@ test_client_install (TestSuite *suite)
       suite,
       "/Client/resends_handshake_on_network_error",
       test_mongoc_client_resends_handshake_on_network_error);
+   TestSuite_Add (suite, "/Client/failure_to_auth", test_failure_to_auth);
 }

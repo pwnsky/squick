@@ -14,7 +14,7 @@ compare_write_concern (const mongoc_write_concern_t *wc_correct,
                        const mongoc_write_concern_t *wc)
 {
    ASSERT_CMPINT32 (wc_correct->w, ==, wc->w);
-   ASSERT_CMPINT32 (wc_correct->wtimeout, ==, wc->wtimeout);
+   ASSERT_CMPINT64 (wc_correct->wtimeout, ==, wc->wtimeout);
    ASSERT_CMPINT (wc_correct->journal, ==, wc->journal);
 }
 
@@ -136,9 +136,8 @@ test_rw_concern_uri (bson_t *scenario)
       valid = _mongoc_lookup_bool (&test, "valid", true);
 
       if (_mongoc_lookup_bool (&test, "warning", false)) {
-         MONGOC_ERROR ("update the \"%s\" test to handle warning: true",
-                       description);
-         abort ();
+         test_error ("update the \"%s\" test to handle warning: true",
+                     description);
       }
 
       uri = mongoc_uri_new_with_error (uri_str, NULL);

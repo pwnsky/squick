@@ -12,7 +12,6 @@ Synopsis
    mongoc_auto_encryption_opts_set_bypass_query_analysis (
       mongoc_auto_encryption_opts_t *opts, bool bypass_query_analysis);
 
-.. important:: |qenc:api-is-experimental|
 .. versionadded:: 1.22.0
 
 Parameters
@@ -31,5 +30,5 @@ Parameters
 
   | :symbol:`mongoc_client_enable_auto_encryption()`
 
-  | The guide for :doc:`Using Client-Side Field Level Encryption <using_client_side_encryption>`
+  | :doc:`in-use-encryption`
 

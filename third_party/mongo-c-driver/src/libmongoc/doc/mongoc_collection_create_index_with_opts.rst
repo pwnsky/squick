@@ -3,6 +3,11 @@
 mongoc_collection_create_index_with_opts()
 ==========================================
 
+.. warning::
+   .. deprecated:: 1.8.0
+
+      This function is deprecated and should not be used in new code. See :doc:`manage-collection-indexes`.
+
 Synopsis
 --------
 
@@ -14,12 +19,8 @@ Synopsis
                                             const mongoc_index_opt_t *index_opts,
                                             const bson_t *command_opts,
                                             bson_t *reply,
-                                            bson_error_t *error);
-
-Deprecated
-----------
-
-This function is deprecated and should not be used in new code. See :doc:`create-indexes`.
+                                            bson_error_t *error)
+     BSON_GNUC_DEPRECATED; 
 
 Parameters
 ----------
@@ -27,7 +28,7 @@ Parameters
 * ``collection``: A :symbol:`mongoc_collection_t`.
 * ``keys``: A :symbol:`bson:bson_t`.
 * ``index_opts``: A mongoc_index_opt_t.
-* ``reply``: An optional location for a :symbol:`bson:bson_t` which will store the server's reply.
+* ``reply``: A |bson_t-opt-storage-ptr| to contain the results.
 * ``error``: An optional location for a :symbol:`bson_error_t <errors>` or ``NULL``.
 
 .. |opts-source| replace:: ``collection``

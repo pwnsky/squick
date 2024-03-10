@@ -11,11 +11,12 @@ Guides
    mongoc-common-task-examples
    advanced-connections
    connection-pooling
+   data-compression
    cursors
    bulk
    aggregate
    distinct-mapreduce
    visual-studio-guide
-   create-indexes
+   manage-collection-indexes
    debugging
-   using_client_side_encryption
+   in-use-encryption

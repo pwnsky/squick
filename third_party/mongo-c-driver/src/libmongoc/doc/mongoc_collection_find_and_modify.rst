@@ -31,7 +31,7 @@ Parameters
 * ``_remove``: If the matching documents should be removed.
 * ``upsert``: If an upsert should be performed.
 * ``_new``: If the new version of the document should be returned.
-* ``reply``: Optional pointer to an *uninitialized* :symbol:`bson:bson_t` that will be initialized with the result.
+* ``reply``: A |bson_t-opt-storage-ptr| to contain the results.
 * ``error``: An optional location for a :symbol:`bson_error_t <errors>` or ``NULL``.
 
 Description
@@ -45,6 +45,8 @@ As of MongoDB 3.2, the :symbol:`mongoc_write_concern_t` specified on the :symbol
 
 ``reply`` is always initialized, and must be freed with :symbol:`bson:bson_destroy()`.
 
+On success, the output ``reply`` contains the full server reply to the ``findAndModify`` command. See the `MongoDB Manual page for findAndModify <https://www.mongodb.com/docs/manual/reference/command/findAndModify/#output>`_ for the expected server reply.
+
 Errors
 ------
 
@@ -53,8 +55,7 @@ Errors are propagated via the ``error`` parameter.
 Returns
 -------
 
-Returns either the document before or after modification based on the ``_new`` parameter.
-
+If given invalid arguments or a server/network error occurs, returns ``false`` and sets ``error``. Otherwise, succeeds and returns ``true``.
 A write concern timeout or write concern error is considered a failure.
 
 .. seealso::

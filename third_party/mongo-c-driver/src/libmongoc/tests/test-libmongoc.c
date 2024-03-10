@@ -37,256 +37,17 @@
 
 #if defined(_MSC_VER) && defined(_WIN64)
 #include <errhandlingapi.h>
+
+// warning C4091: 'typedef ': ignored on left of '' when no variable is declared
+#pragma warning(push)
+#pragma warning(disable : 4091)
 #include <DbgHelp.h>
+#pragma warning(pop)
 #endif
 
 #ifdef MONGOC_ENABLE_SSL_OPENSSL
 #include "mongoc/mongoc-openssl-private.h"
 #endif
-/* libbson */
-
-
-extern void
-test_atomic_install (TestSuite *suite);
-extern void
-test_bcon_basic_install (TestSuite *suite);
-extern void
-test_bcon_extract_install (TestSuite *suite);
-extern void
-test_bson_corpus_install (TestSuite *suite);
-extern void
-test_bson_install (TestSuite *suite);
-extern void
-test_bson_version_install (TestSuite *suite);
-extern void
-test_clock_install (TestSuite *suite);
-extern void
-test_decimal128_install (TestSuite *suite);
-extern void
-test_endian_install (TestSuite *suite);
-extern void
-test_bson_error_install (TestSuite *suite);
-extern void
-test_iso8601_install (TestSuite *suite);
-extern void
-test_iter_install (TestSuite *suite);
-extern void
-test_json_install (TestSuite *suite);
-extern void
-test_oid_install (TestSuite *suite);
-extern void
-test_reader_install (TestSuite *suite);
-extern void
-test_string_install (TestSuite *suite);
-extern void
-test_utf8_install (TestSuite *suite);
-extern void
-test_value_install (TestSuite *suite);
-extern void
-test_writer_install (TestSuite *suite);
-extern void
-test_b64_install (TestSuite *suite);
-extern void
-test_bson_cmp_install (TestSuite *suite);
-
-/* libmongoc */
-
-extern void
-test_aggregate_install (TestSuite *suite);
-extern void
-test_array_install (TestSuite *suite);
-extern void
-test_async_install (TestSuite *suite);
-extern void
-test_buffer_install (TestSuite *suite);
-extern void
-test_bulk_install (TestSuite *suite);
-extern void
-test_change_stream_install (TestSuite *suite);
-extern void
-test_client_install (TestSuite *suite);
-extern void
-test_client_max_staleness_install (TestSuite *suite);
-extern void
-test_client_hedged_reads_install (TestSuite *suite);
-extern void
-test_client_pool_install (TestSuite *suite);
-extern void
-test_client_cmd_install (TestSuite *suite);
-extern void
-test_client_versioned_api_install (TestSuite *suite);
-extern void
-test_cluster_install (TestSuite *suite);
-extern void
-test_collection_install (TestSuite *suite);
-extern void
-test_collection_find_install (TestSuite *suite);
-extern void
-test_collection_find_with_opts_install (TestSuite *suite);
-extern void
-test_connection_uri_install (TestSuite *suite);
-extern void
-test_command_monitoring_install (TestSuite *suite);
-extern void
-test_cursor_install (TestSuite *suite);
-extern void
-test_database_install (TestSuite *suite);
-extern void
-test_dns_install (TestSuite *suite);
-extern void
-test_error_install (TestSuite *suite);
-extern void
-test_exhaust_install (TestSuite *suite);
-extern void
-test_find_and_modify_install (TestSuite *suite);
-extern void
-test_gridfs_bucket_install (TestSuite *suite);
-extern void
-test_gridfs_file_page_install (TestSuite *suite);
-extern void
-test_gridfs_install (TestSuite *suite);
-extern void
-test_linux_distro_scanner_install (TestSuite *suite);
-extern void
-test_list_install (TestSuite *suite);
-extern void
-test_log_install (TestSuite *suite);
-extern void
-test_matcher_install (TestSuite *suite);
-extern void
-test_mongos_pinning_install (TestSuite *suite);
-extern void
-test_handshake_install (TestSuite *suite);
-extern void
-test_queue_install (TestSuite *suite);
-extern void
-test_primary_stepdown_install (TestSuite *suite);
-extern void
-test_read_concern_install (TestSuite *suite);
-extern void
-test_read_write_concern_install (TestSuite *suite);
-extern void
-test_read_prefs_install (TestSuite *suite);
-extern void
-test_retryable_writes_install (TestSuite *suite);
-extern void
-test_retryable_reads_install (TestSuite *suite);
-extern void
-test_rpc_install (TestSuite *suite);
-extern void
-test_samples_install (TestSuite *suite);
-extern void
-test_scram_install (TestSuite *suite);
-extern void
-test_sdam_install (TestSuite *suite);
-extern void
-test_sdam_monitoring_install (TestSuite *suite);
-extern void
-test_server_selection_install (TestSuite *suite);
-extern void
-test_session_install (TestSuite *suite);
-extern void
-test_server_selection_errors_install (TestSuite *suite);
-extern void
-test_set_install (TestSuite *suite);
-extern void
-test_opts_install (TestSuite *suite);
-extern void
-test_socket_install (TestSuite *suite);
-extern void
-test_speculative_auth_install (TestSuite *suite);
-extern void
-test_stream_install (TestSuite *suite);
-extern void
-test_thread_install (TestSuite *suite);
-extern void
-test_topology_install (TestSuite *suite);
-extern void
-test_topology_description_install (TestSuite *suite);
-extern void
-test_topology_reconcile_install (TestSuite *suite);
-extern void
-test_transactions_install (TestSuite *suite);
-extern void
-test_topology_scanner_install (TestSuite *suite);
-extern void
-test_ts_pool_install (TestSuite *suite);
-extern void
-test_uri_install (TestSuite *suite);
-extern void
-test_usleep_install (TestSuite *suite);
-extern void
-test_util_install (TestSuite *suite);
-extern void
-test_version_install (TestSuite *suite);
-extern void
-test_with_transaction_install (TestSuite *suite);
-extern void
-test_write_command_install (TestSuite *suite);
-extern void
-test_write_concern_install (TestSuite *suite);
-#ifdef MONGOC_ENABLE_SSL
-extern void
-test_stream_tls_install (TestSuite *suite);
-extern void
-test_x509_install (TestSuite *suite);
-extern void
-test_stream_tls_error_install (TestSuite *suite);
-#endif
-#ifdef MONGOC_ENABLE_SASL_CYRUS
-extern void
-test_cyrus_install (TestSuite *suite);
-#endif
-extern void
-test_happy_eyeballs_install (TestSuite *suite);
-extern void
-test_counters_install (TestSuite *suite);
-extern void
-test_crud_install (TestSuite *suite);
-extern void
-test_mongohouse_install (TestSuite *suite);
-extern void
-test_apm_install (TestSuite *suite);
-extern void
-test_client_side_encryption_install (TestSuite *suite);
-extern void
-test_long_namespace_install (TestSuite *suite);
-extern void
-test_server_description_install (TestSuite *suite);
-extern void
-test_aws_install (TestSuite *suite);
-extern void
-test_streamable_hello_install (TestSuite *suite);
-#if defined(MONGOC_ENABLE_OCSP_OPENSSL) && OPENSSL_VERSION_NUMBER >= 0x10101000L
-extern void
-test_ocsp_cache_install (TestSuite *suite);
-#endif
-extern void
-test_interrupt_install (TestSuite *suite);
-extern void
-test_monitoring_install (TestSuite *suite);
-extern void
-test_http_install (TestSuite *suite);
-extern void
-test_install_unified (TestSuite *suite);
-extern void
-test_timeout_install (TestSuite *suite);
-extern void
-test_bson_match_install (TestSuite *suite);
-extern void
-test_bson_util_install (TestSuite *suite);
-extern void
-test_result_install (TestSuite *suite);
-extern void
-test_loadbalanced_install (TestSuite *suite);
-extern void
-test_server_stream_install (TestSuite *suite);
-extern void
-test_generation_map_install (TestSuite *suite);
-extern void
-test_shared_install (TestSuite *suite);
-extern void
-test_ssl_install (TestSuite *suite);
 
 typedef struct {
    mongoc_log_level_t level;
@@ -428,7 +189,7 @@ print_captured_logs (const char *prefix)
 #define DEFAULT_FUTURE_TIMEOUT_MS 10 * 1000
 
 int64_t
-get_future_timeout_ms ()
+get_future_timeout_ms (void)
 {
    return test_framework_getenv_int64 ("MONGOC_TEST_FUTURE_TIMEOUT_MS",
                                        DEFAULT_FUTURE_TIMEOUT_MS);
@@ -445,7 +206,7 @@ log_handler (mongoc_log_level_t log_level,
 
    suite = (TestSuite *) user_data;
 
-   if (log_level < MONGOC_LOG_LEVEL_INFO) {
+   if (log_level <= MONGOC_LOG_LEVEL_INFO) {
       bson_mutex_lock (&captured_logs_mutex);
       if (capturing_logs) {
          log_entry = log_entry_create (log_level, message);
@@ -485,6 +246,7 @@ gen_collection_name (const char *str)
 mongoc_collection_t *
 get_test_collection (mongoc_client_t *client, const char *prefix)
 {
+   ASSERT (client);
    mongoc_collection_t *ret;
    char *str;
 
@@ -512,29 +274,6 @@ test_framework_getenv_required (const char *name)
    return ret;
 }
 
-/* Returns false if unable to set environment variable. Which may occur if
- * test-libmongoc lacks permissions to do so. */
-bool
-test_framework_setenv (const char *name, const char *value)
-{
-#ifdef _WIN32
-   char *envstring;
-
-   envstring = bson_strdup_printf ("%s=%s", name, value);
-   if (0 != _putenv (envstring)) {
-      return false;
-   }
-
-   return true;
-#else
-
-   if (0 != setenv (name, value, 1)) {
-      return false;
-   }
-
-   return true;
-#endif
-}
 
 /*
  *--------------------------------------------------------------------------
@@ -564,11 +303,10 @@ test_framework_getenv_bool (const char *name)
       } else if (!strcasecmp (value, "") || !strcasecmp (value, "on")) {
          ret = true;
       } else {
-         fprintf (stderr,
-                  "Unrecognized value for %s: \"%s\". Use \"on\" or \"off\".\n",
-                  name,
-                  value);
-         abort ();
+         test_error (
+            "Unrecognized value for %s: \"%s\". Use \"on\" or \"off\".",
+            name,
+            value);
       }
    }
 
@@ -604,7 +342,7 @@ test_framework_getenv_int64 (const char *name, int64_t default_value)
       ret = bson_ascii_strtoll (value, &endptr, 10);
       if (errno) {
          perror (bson_strdup_printf ("Parsing %s from environment", name));
-         abort ();
+         test_error ("Failed to parse %s as int64", name);
       }
 
       bson_free (value);
@@ -730,6 +468,9 @@ test_framework_get_host (void)
    if (env_uri) {
       /* choose first host */
       hosts = mongoc_uri_get_hosts (env_uri);
+      ASSERT_WITH_MSG (hosts,
+                       "could not obtain hosts from URI [%s]",
+                       mongoc_uri_get_string (env_uri));
       host = bson_strdup (hosts->host);
       mongoc_uri_destroy (env_uri);
       return host;
@@ -904,18 +645,14 @@ test_framework_get_user_password (char **user, char **password)
    *password = test_framework_get_admin_password ();
 
    if ((*user && !*password) || (!*user && *password)) {
-      fprintf (stderr,
-               "Specify both MONGOC_TEST_USER and"
-               " MONGOC_TEST_PASSWORD, or neither\n");
-      abort ();
+      test_error ("Specify both MONGOC_TEST_USER and"
+                  " MONGOC_TEST_PASSWORD, or neither");
    }
 
 #ifndef MONGOC_ENABLE_CRYPTO
    if (*user && *password) {
-      fprintf (stderr,
-               "You need to configure with ENABLE_SSL"
-               " when providing user+password (for SCRAM-SHA-1)\n");
-      abort ();
+      test_error ("You need to configure with ENABLE_SSL"
+                  " when providing user+password (for SCRAM-SHA-1)");
    }
 #endif
 
@@ -999,7 +736,7 @@ test_framework_add_user_password_from_env (const char *uri_str)
  *--------------------------------------------------------------------------
  */
 char *
-test_framework_get_compressors ()
+test_framework_get_compressors (void)
 {
    return test_framework_getenv ("MONGOC_TEST_COMPRESSORS");
 }
@@ -1020,7 +757,7 @@ test_framework_get_compressors ()
  *--------------------------------------------------------------------------
  */
 bool
-test_framework_has_compressors ()
+test_framework_has_compressors (void)
 {
    bool retval;
    char *compressors = test_framework_get_compressors ();
@@ -1089,7 +826,7 @@ test_framework_get_ssl (void)
  *--------------------------------------------------------------------------
  */
 char *
-test_framework_get_unix_domain_socket_uri_str ()
+test_framework_get_unix_domain_socket_uri_str (void)
 {
    char *path;
    char *test_uri_str;
@@ -1160,6 +897,10 @@ call_hello_with_host_and_port (const char *host_and_port, bson_t *reply)
       bson_free (compressors);
    }
 
+   if (test_framework_is_loadbalanced ()) {
+      mongoc_uri_set_option_as_bool (uri, MONGOC_URI_LOADBALANCED, true);
+   }
+
    client = test_framework_client_new_from_uri (uri, NULL);
 
 #ifdef MONGOC_ENABLE_SSL
@@ -1177,9 +918,10 @@ call_hello_with_host_and_port (const char *host_and_port, bson_t *reply)
              NULL,
              reply,
              &error)) {
-         fprintf (stderr, "error calling legacy hello: '%s'\n", error.message);
-         fprintf (stderr, "URI = %s\n", uri_str);
-         abort ();
+         test_error ("error calling legacy hello: '%s'\n"
+                     "URI = %s",
+                     error.message,
+                     uri_str);
       }
    }
 
@@ -1228,11 +970,26 @@ set_name (bson_t *hello_response)
 static bool
 uri_str_has_db (bson_string_t *uri_string)
 {
-   const char *after_scheme;
+   BSON_ASSERT_PARAM (uri_string);
 
-   ASSERT_STARTSWITH (uri_string->str, "mongodb://");
-   after_scheme = uri_string->str + strlen ("mongodb://");
-   return strchr (after_scheme, '/') != NULL;
+   const char *const str = uri_string->str;
+   const char *const standard = "mongodb://";
+   const char *const srv = "mongodb+srv://";
+
+   const bool is_standard = strstr (str, standard) == str;
+   const bool is_srv = strstr (str, srv) == str;
+
+   ASSERT_WITH_MSG (is_standard || is_srv,
+                    "[%s] does not start with [%s] or [%s]",
+                    uri_string->str,
+                    standard,
+                    srv);
+
+   if (is_standard) {
+      return strchr (str + strlen (standard), '/') != NULL;
+   } else {
+      return strchr (str + strlen (srv), '/') != NULL;
+   }
 }
 
 
@@ -1355,7 +1112,9 @@ test_framework_get_uri_str_no_auth (const char *database_name)
       add_option_to_uri_str (uri_string, MONGOC_URI_COMPRESSORS, compressors);
       bson_free (compressors);
    }
-   /* make tests a little more resilient to transient errors */
+
+   // Required by test-atlas-executor. Not required by normal unified test
+   // runner, but make tests a little more resilient to transient errors.
    add_option_to_uri_str (
       uri_string, MONGOC_URI_SERVERSELECTIONTRYONCE, "false");
 
@@ -1380,15 +1139,19 @@ test_framework_get_uri_str_no_auth (const char *database_name)
  *--------------------------------------------------------------------------
  */
 char *
-test_framework_get_uri_str ()
+test_framework_get_uri_str (void)
 {
    char *uri_str_no_auth;
    char *uri_str;
 
-   /* no_auth also contains compressors. */
-
-   uri_str_no_auth = test_framework_get_uri_str_no_auth (NULL);
-   uri_str = test_framework_add_user_password_from_env (uri_str_no_auth);
+   if (test_framework_getenv_bool ("MONGOC_TEST_ATLAS")) {
+      // User and password is already embedded in URI.
+      return test_framework_get_uri_str_no_auth (NULL);
+   } else {
+      /* no_auth also contains compressors. */
+      uri_str_no_auth = test_framework_get_uri_str_no_auth (NULL);
+      uri_str = test_framework_add_user_password_from_env (uri_str_no_auth);
+   }
 
    bson_free (uri_str_no_auth);
 
@@ -1413,19 +1176,21 @@ test_framework_get_uri_str ()
  *--------------------------------------------------------------------------
  */
 mongoc_uri_t *
-test_framework_get_uri ()
+test_framework_get_uri (void)
 {
-   char *test_uri_str = test_framework_get_uri_str ();
-   mongoc_uri_t *uri = mongoc_uri_new (test_uri_str);
+   bson_error_t error = {0};
 
-   BSON_ASSERT (uri);
+   char *test_uri_str = test_framework_get_uri_str ();
+   mongoc_uri_t *uri = mongoc_uri_new_with_error (test_uri_str, &error);
+
+   ASSERT_OR_PRINT (uri, error);
    bson_free (test_uri_str);
 
    return uri;
 }
 
 mongoc_uri_t *
-test_framework_get_uri_multi_mongos_loadbalanced ()
+test_framework_get_uri_multi_mongos_loadbalanced (void)
 {
    char *uri_str_no_auth;
    char *uri_str;
@@ -1530,16 +1295,17 @@ test_framework_replset_name (void)
 {
    bson_t reply;
    bson_iter_t iter;
-   char *replset_name;
+   char *replset_name = NULL;
 
    call_hello (&reply);
    if (!bson_iter_init_find (&iter, &reply, "setName")) {
-      return NULL;
+      goto cleanup;
    }
 
    replset_name = bson_strdup (bson_iter_utf8 (&iter, NULL));
-   bson_destroy (&reply);
 
+cleanup:
+   bson_destroy (&reply);
    return replset_name;
 }
 
@@ -1672,14 +1438,13 @@ test_framework_server_count (void)
 void
 test_framework_set_ssl_opts (mongoc_client_t *client)
 {
-   BSON_ASSERT (client);
+   ASSERT (client);
 
    if (test_framework_get_ssl ()) {
 #ifndef MONGOC_ENABLE_SSL
-      fprintf (stderr,
-               "SSL test config variables are specified in the environment, but"
-               " SSL isn't enabled\n");
-      abort ();
+      test_error (
+         "SSL test config variables are specified in the environment, but"
+         " SSL isn't enabled");
 #else
       mongoc_client_set_ssl_opts (client, &gSSLOptions);
 #endif
@@ -1703,7 +1468,7 @@ test_framework_set_ssl_opts (mongoc_client_t *client)
  *--------------------------------------------------------------------------
  */
 mongoc_client_t *
-test_framework_new_default_client ()
+test_framework_new_default_client (void)
 {
    char *test_uri_str = test_framework_get_uri_str ();
    mongoc_client_t *client = test_framework_client_new (test_uri_str, NULL);
@@ -1733,7 +1498,7 @@ test_framework_new_default_client ()
  *--------------------------------------------------------------------------
  */
 mongoc_client_t *
-test_framework_client_new_no_server_api ()
+test_framework_client_new_no_server_api (void)
 {
    mongoc_uri_t *uri = test_framework_get_uri ();
    mongoc_client_t *client = mongoc_client_new_from_uri (uri);
@@ -1909,10 +1674,9 @@ test_framework_set_pool_ssl_opts (mongoc_client_pool_t *pool)
 
    if (test_framework_get_ssl ()) {
 #ifndef MONGOC_ENABLE_SSL
-      fprintf (stderr,
-               "SSL test config variables are specified in the environment, but"
-               " SSL isn't enabled\n");
-      abort ();
+      test_error (
+         "SSL test config variables are specified in the environment, but"
+         " SSL isn't enabled");
 #else
       mongoc_client_pool_set_ssl_opts (pool, &gSSLOptions);
 #endif
@@ -1936,7 +1700,7 @@ test_framework_set_pool_ssl_opts (mongoc_client_pool_t *pool)
  *--------------------------------------------------------------------------
  */
 mongoc_client_pool_t *
-test_framework_new_default_client_pool ()
+test_framework_new_default_client_pool (void)
 {
    mongoc_uri_t *test_uri = test_framework_get_uri ();
    mongoc_client_pool_t *pool =
@@ -2061,6 +1825,8 @@ test_framework_server_is_secondary (mongoc_client_t *client, uint32_t server_id)
    bson_error_t error;
    bool ret;
 
+   ASSERT (client);
+
    sd = mongoc_topology_description_server_by_id_const (
       client->topology->_shared_descr_.ptr, server_id, &error);
    ASSERT_OR_PRINT (sd, error);
@@ -2086,8 +1852,7 @@ test_framework_clustertime_supported (void)
    has_cluster_time = bson_has_field (&reply, "$clusterTime");
    bson_destroy (&reply);
 
-   return has_cluster_time &&
-          test_framework_max_wire_version_at_least (WIRE_VERSION_OP_MSG);
+   return has_cluster_time;
 }
 
 
@@ -2234,31 +1999,6 @@ test_framework_skip_if_offline (void)
 
 
 int
-test_framework_skip_if_rhel8_zseries (void)
-{
-   /* CDRIVER-3923: It appears that when running on RHEL8 on zSeries the
-    * /server_discovery_and_monitoring/monitoring/heartbeat/pooled/dns test
-    * fails.  The best guess is that calling getaddrinfo() on that platform
-    * blocks for 5 seconds, while the test expects a server selection error
-    * after 3000 ms, or 3 seconds.  Skip the test when executing on RHEL8 on
-    * zSeries. */
-#ifdef __s390x__
-   char *name;
-   char *version;
-   _mongoc_linux_distro_scanner_get_distro (&name, &version);
-   bool rhel = strcmp (name, "Red Hat Enterprise Linux") == 0;
-   bool vers8 = version[0] == '8';
-   int skip = (rhel && vers8) ? 0 : 1;
-   bson_free (name);
-   bson_free (version);
-   return skip;
-#else
-   return 1;
-#endif
-}
-
-
-int
 test_framework_skip_if_slow (void)
 {
    return test_framework_getenv_bool ("MONGOC_TEST_SKIP_SLOW") ? 0 : 1;
@@ -2269,13 +2009,6 @@ int
 test_framework_skip_if_slow_or_live (void)
 {
    return test_framework_skip_if_slow () && TestSuite_CheckLive ();
-}
-
-
-int
-test_framework_skip_if_valgrind (void)
-{
-   return test_suite_valgrind () ? 0 : 1;
 }
 
 
@@ -2400,6 +2133,8 @@ test_framework_get_server_version_with_client (mongoc_client_t *client)
    bson_error_t error;
    server_version_t ret = 0;
 
+   ASSERT (client);
+
    ASSERT_OR_PRINT (
       mongoc_client_command_simple (
          client, "admin", tmp_bson ("{'buildinfo': 1}"), NULL, &reply, &error),
@@ -2505,10 +2240,16 @@ test_framework_skip_if_single (void)
    return (test_framework_is_mongos () || test_framework_is_replset ());
 }
 
+bool
+test_framework_is_mongohouse (void)
+{
+   return test_framework_getenv_bool ("RUN_MONGOHOUSE_TESTS");
+}
+
 int
 test_framework_skip_if_no_mongohouse (void)
 {
-   if (!getenv ("RUN_MONGOHOUSE_TESTS")) {
+   if (!test_framework_is_mongohouse ()) {
       return 0;
    }
    return 1;
@@ -2561,14 +2302,14 @@ test_framework_skip_if_not_replset (void)
 
 /* convenience skip functions based on the wire version. */
 #define WIRE_VERSION_CHECKS(wv)                                         \
-   int test_framework_skip_if_max_wire_version_more_than_##wv ()        \
+   int test_framework_skip_if_max_wire_version_more_than_##wv (void)    \
    {                                                                    \
       if (!TestSuite_CheckLive ()) {                                    \
          return 0;                                                      \
       }                                                                 \
       return test_framework_max_wire_version_at_least (wv + 1) ? 0 : 1; \
    }                                                                    \
-   int test_framework_skip_if_max_wire_version_less_than_##wv ()        \
+   int test_framework_skip_if_max_wire_version_less_than_##wv (void)    \
    {                                                                    \
       if (!TestSuite_CheckLive ()) {                                    \
          return 0;                                                      \
@@ -2596,7 +2337,6 @@ test_framework_skip_if_not_replset (void)
                 : 1;                                                    \
    }
 
-WIRE_VERSION_CHECKS (6)
 WIRE_VERSION_CHECKS (7)
 WIRE_VERSION_CHECKS (8)
 WIRE_VERSION_CHECKS (9)
@@ -2606,6 +2346,12 @@ WIRE_VERSION_CHECKS (13)
 WIRE_VERSION_CHECKS (14)
 /* wire version 17 begins with the 6.0 release. */
 WIRE_VERSION_CHECKS (17)
+/* wire version 19 begins with the 6.2 release. */
+WIRE_VERSION_CHECKS (19)
+/* wire version 21 begins with the 7.0 release. */
+WIRE_VERSION_CHECKS (21)
+/* wire version 22 begins with the 7.1 release. */
+WIRE_VERSION_CHECKS (22)
 
 int
 test_framework_skip_if_no_dual_ip_hostname (void)
@@ -2695,6 +2441,8 @@ test_framework_skip_if_no_client_side_encryption (void)
    const char *required_env_vars[] = {
       "MONGOC_TEST_AWS_SECRET_ACCESS_KEY",
       "MONGOC_TEST_AWS_ACCESS_KEY_ID",
+      "MONGOC_TEST_AWSNAME2_SECRET_ACCESS_KEY",
+      "MONGOC_TEST_AWSNAME2_ACCESS_KEY_ID",
       "MONGOC_TEST_AZURE_TENANT_ID",
       "MONGOC_TEST_AZURE_CLIENT_ID",
       "MONGOC_TEST_AZURE_CLIENT_SECRET",
@@ -2743,7 +2491,7 @@ int
 test_framework_skip_if_no_setenv (void)
 {
    char *value;
-   if (!test_framework_setenv ("MONGOC_TEST_CANARY", "VALUE")) {
+   if (!_mongoc_setenv ("MONGOC_TEST_CANARY", "VALUE")) {
       return 0; /* do not proceed. */
    }
    value = test_framework_getenv ("MONGOC_TEST_CANARY");
@@ -2761,18 +2509,12 @@ test_framework_is_serverless (void)
 }
 
 int
-test_framework_skip_if_time_sensitive (void)
+test_framework_skip_if_serverless (void)
 {
-   if (test_suite_valgrind ()) {
-      return 0;
+   if (test_framework_is_serverless ()) {
+      return 0; // do not proceed
    }
-
-/* Skip time sensitive tests on macOS per CDRIVER-3549. */
-#ifdef __APPLE__
-   return 0;
-#else
-   return 1;
-#endif
+   return 1; // proceed.
 }
 
 int
@@ -2845,7 +2587,7 @@ windows_exception_handler (EXCEPTION_POINTERS *pExceptionInfo)
    stack_frame.AddrStack.Mode = AddrModeFlat;
 
    SYMBOL_INFO *symbol;
-   symbol = calloc (sizeof (SYMBOL_INFO) + 256, 1);
+   symbol = bson_malloc0 (sizeof (SYMBOL_INFO) + 256);
    symbol->MaxNameLen = 255;
    symbol->SizeOfStruct = sizeof (SYMBOL_INFO);
 
@@ -2892,12 +2634,13 @@ windows_exception_handler (EXCEPTION_POINTERS *pExceptionInfo)
 }
 #endif
 
-int
-main (int argc, char *argv[])
-{
-   TestSuite suite;
-   int ret;
 
+void
+test_libmongoc_init (TestSuite *suite,
+                     BSON_MAYBE_UNUSED const char *name,
+                     int argc,
+                     char **argv)
+{
 #if defined(_MSC_VER) && defined(_WIN64)
    SetUnhandledExceptionFilter (windows_exception_handler);
 #endif
@@ -2911,157 +2654,25 @@ main (int argc, char *argv[])
 
    bson_mutex_init (&captured_logs_mutex);
    _mongoc_array_init (&captured_logs, sizeof (log_entry_t *));
-   mongoc_log_set_handler (log_handler, (void *) &suite);
+   mongoc_log_set_handler (log_handler, (void *) suite);
 
 #ifdef MONGOC_ENABLE_SSL
    test_framework_global_ssl_opts_init ();
    atexit (test_framework_global_ssl_opts_cleanup);
 #endif
 
-   TestSuite_Init (&suite, "", argc, argv);
-   TestSuite_Add (&suite, "/TestSuite/version_cmp", test_version_cmp);
+   TestSuite_Init (suite, "", argc, argv);
+   TestSuite_Add (suite, "/TestSuite/version_cmp", test_version_cmp);
+}
 
-   /* libbson */
 
-   test_atomic_install (&suite);
-   test_bcon_basic_install (&suite);
-   test_bcon_extract_install (&suite);
-   test_bson_corpus_install (&suite);
-   test_bson_error_install (&suite);
-   test_bson_install (&suite);
-   test_bson_version_install (&suite);
-   test_clock_install (&suite);
-   test_decimal128_install (&suite);
-   test_endian_install (&suite);
-   test_iso8601_install (&suite);
-   test_iter_install (&suite);
-   test_json_install (&suite);
-   test_oid_install (&suite);
-   test_reader_install (&suite);
-   test_string_install (&suite);
-   test_utf8_install (&suite);
-   test_value_install (&suite);
-   test_writer_install (&suite);
-   test_b64_install (&suite);
-   test_bson_cmp_install (&suite);
-
-   /* libmongoc */
-
-   test_aggregate_install (&suite);
-   test_array_install (&suite);
-   test_async_install (&suite);
-   test_buffer_install (&suite);
-   test_change_stream_install (&suite);
-   test_client_install (&suite);
-   test_client_max_staleness_install (&suite);
-   test_client_hedged_reads_install (&suite);
-   test_client_pool_install (&suite);
-   test_client_cmd_install (&suite);
-   test_client_versioned_api_install (&suite);
-   test_write_command_install (&suite);
-   test_bulk_install (&suite);
-   test_cluster_install (&suite);
-   test_collection_install (&suite);
-   test_collection_find_install (&suite);
-   test_collection_find_with_opts_install (&suite);
-   test_connection_uri_install (&suite);
-   test_command_monitoring_install (&suite);
-   test_cursor_install (&suite);
-   test_database_install (&suite);
-   test_error_install (&suite);
-   test_exhaust_install (&suite);
-   test_find_and_modify_install (&suite);
-   test_gridfs_install (&suite);
-   test_gridfs_bucket_install (&suite);
-   test_gridfs_file_page_install (&suite);
-   test_handshake_install (&suite);
-   test_linux_distro_scanner_install (&suite);
-   test_list_install (&suite);
-   test_log_install (&suite);
-   test_long_namespace_install (&suite);
-   test_matcher_install (&suite);
-   test_mongos_pinning_install (&suite);
-   test_queue_install (&suite);
-   test_primary_stepdown_install (&suite);
-   test_read_concern_install (&suite);
-   test_read_write_concern_install (&suite);
-   test_read_prefs_install (&suite);
-   test_retryable_writes_install (&suite);
-   test_retryable_reads_install (&suite);
-   test_rpc_install (&suite);
-   test_socket_install (&suite);
-   test_opts_install (&suite);
-   test_topology_scanner_install (&suite);
-   test_topology_reconcile_install (&suite);
-   test_transactions_install (&suite);
-   test_samples_install (&suite);
-   test_scram_install (&suite);
-   test_sdam_install (&suite);
-   test_sdam_monitoring_install (&suite);
-   test_server_selection_install (&suite);
-   test_dns_install (&suite);
-   test_server_selection_errors_install (&suite);
-   test_session_install (&suite);
-   test_set_install (&suite);
-   test_speculative_auth_install (&suite);
-   test_stream_install (&suite);
-   test_thread_install (&suite);
-   test_topology_install (&suite);
-   test_topology_description_install (&suite);
-   test_ts_pool_install (&suite);
-   test_uri_install (&suite);
-   test_usleep_install (&suite);
-   test_util_install (&suite);
-   test_version_install (&suite);
-   test_with_transaction_install (&suite);
-   test_write_concern_install (&suite);
-#ifdef MONGOC_ENABLE_SSL
-   test_stream_tls_install (&suite);
-   test_x509_install (&suite);
-   test_stream_tls_error_install (&suite);
-   test_client_side_encryption_install (&suite);
-#endif
-#ifdef MONGOC_ENABLE_SASL_CYRUS
-   test_cyrus_install (&suite);
-#endif
-   test_happy_eyeballs_install (&suite);
-   test_counters_install (&suite);
-   test_crud_install (&suite);
-   test_mongohouse_install (&suite);
-   test_apm_install (&suite);
-   test_server_description_install (&suite);
-   test_aws_install (&suite);
-   test_streamable_hello_install (&suite);
-#if defined(MONGOC_ENABLE_OCSP_OPENSSL) && OPENSSL_VERSION_NUMBER >= 0x10101000L
-   test_ocsp_cache_install (&suite);
-#endif
-   test_interrupt_install (&suite);
-   test_monitoring_install (&suite);
-   test_http_install (&suite);
-   test_install_unified (&suite);
-   test_timeout_install (&suite);
-   test_bson_match_install (&suite);
-   test_bson_util_install (&suite);
-   test_result_install (&suite);
-   test_loadbalanced_install (&suite);
-   test_server_stream_install (&suite);
-   test_generation_map_install (&suite);
-   test_shared_install (&suite);
-   test_ssl_install (&suite);
-
-   if (test_framework_is_loadbalanced ()) {
-      mongoc_global_mock_service_id = true;
-   }
-
-   ret = TestSuite_Run (&suite);
-
-   TestSuite_Destroy (&suite);
-
+void
+test_libmongoc_destroy (TestSuite *suite)
+{
+   TestSuite_Destroy (suite);
    capture_logs (false); /* clear entries */
    _mongoc_array_destroy (&captured_logs);
    mongoc_cleanup ();
-
-   return ret;
 }
 
 /*

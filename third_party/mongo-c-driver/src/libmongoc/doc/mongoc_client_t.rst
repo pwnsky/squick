@@ -32,6 +32,10 @@ Thread Safety
 
 ``mongoc_client_t`` is *NOT* thread-safe and should only be used from one thread at a time. When used in multi-threaded scenarios, it is recommended that you use the thread-safe :symbol:`mongoc_client_pool_t` to retrieve a ``mongoc_client_t`` for your thread.
 
+Fork Safety
+-----------
+A :symbol:`mongoc_client_t` is only usable in the parent process after a fork. The child process must call :symbol:`mongoc_client_reset`.
+
 Example
 -------
 
@@ -63,8 +67,6 @@ Example
     mongoc_client_get_default_database
     mongoc_client_get_gridfs
     mongoc_client_get_handshake_description
-    mongoc_client_get_max_bson_size
-    mongoc_client_get_max_message_size
     mongoc_client_get_read_concern
     mongoc_client_get_read_prefs
     mongoc_client_get_server_description

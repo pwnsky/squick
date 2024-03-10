@@ -3,6 +3,13 @@
 mongoc_apm_command_failed_get_server_connection_id()
 ====================================================
 
+.. warning::
+   .. deprecated:: 1.24.0
+
+      This function is deprecated and should not be used in new code.
+
+      Please use :symbol:`mongoc_apm_command_failed_get_server_connection_id_int64()` in new code.
+
 Synopsis
 --------
 
@@ -10,7 +17,9 @@ Synopsis
 
   int32_t
   mongoc_apm_command_failed_get_server_connection_id (
-     const mongoc_apm_command_failed_t *event);
+    const mongoc_apm_command_failed_t *event)
+    BSON_GNUC_DEPRECATED_FOR (
+        "mongoc_apm_command_failed_get_server_connection_id_int64");
 
 Returns this event's context.
 

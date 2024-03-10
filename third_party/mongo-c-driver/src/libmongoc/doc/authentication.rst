@@ -3,7 +3,7 @@
 Authentication
 ==============
 
-This guide covers the use of authentication options with the MongoDB C Driver. Ensure that the MongoDB server is also properly configured for authentication before making a connection. For more information, see the `MongoDB security documentation <https://docs.mongodb.org/manual/administration/security/>`_.
+This guide covers the use of authentication options with the MongoDB C Driver. Ensure that the MongoDB server is also properly configured for authentication before making a connection. For more information, see the `MongoDB security documentation <https://www.mongodb.com/docs/manual/administration/security/>`_.
 
 The MongoDB C driver supports several authentication mechanisms through the use of MongoDB connection URIs.
 
@@ -48,21 +48,6 @@ Alternatively, SCRAM-SHA-256 can be explicitly specified as an authMechanism.
 .. code-block:: none
 
   mongoc_client_t *client =  mongoc_client_new ("mongodb://user:password@localhost/?authMechanism=SCRAM-SHA-256&authSource=mydb");
-
-Passwords for SCRAM-SHA-256 undergo the preprocessing step known as SASLPrep
-specified in `RFC 4013 <https://tools.ietf.org/html/rfc4013>`_. SASLPrep will
-only be performed for passwords containing non-ASCII characters.  SASLPrep
-requires libicu. If libicu is not available, attempting to authenticate over
-SCRAM-SHA-256 with non-ASCII passwords will result in error.
-
-Usernames *never* undergo SASLPrep.
-
-By default, when building the C driver libicu is linked if available. This can
-be changed with the ``ENABLE_ICU`` cmake option. To specify an installation
-path of libicu, specify ``ICU_ROOT`` as a cmake option. See the
-`FindICU <https://cmake.org/cmake/help/v3.7/module/FindICU.html>`_ documentation
-for more information.
-
 
 .. _authentication_scram_sha_1:
 
@@ -198,7 +183,7 @@ The ``MONGODB-X509`` mechanism authenticates a username derived from the disting
   client = mongoc_client_new ("mongodb://x509_derived_username@localhost/?authMechanism=MONGODB-X509");
   mongoc_client_set_ssl_opts (client, &ssl_opts);
 
-``MONGODB-X509`` authenticates against the ``$external`` database, so specifying the authSource database is not required. For more information on the x509_derived_username, see the MongoDB server `x.509 tutorial <https://docs.mongodb.com/manual/tutorial/configure-x509-client-authentication/#add-x-509-certificate-subject-as-a-user>`_.
+``MONGODB-X509`` authenticates against the ``$external`` database, so specifying the authSource database is not required. For more information on the x509_derived_username, see the MongoDB server `x.509 tutorial <https://www.mongodb.com/docs/manual/tutorial/configure-x509-client-authentication/#add-x-509-certificate-subject-as-a-user>`_.
 
 .. note::
 

@@ -27,8 +27,6 @@ else
     sudo="sudo"
 fi
 
-bash ./clean.sh
-
 if grep -Eqi "CentOS" /etc/issue || grep -Eq "CentOS" /etc/*-release; then
     DISTRO='CentOS'
 elif grep -Eqi "Red Hat Enterprise Linux Server" /etc/issue || grep -Eq "Red Hat Enterprise Linux Server" /etc/*-release; then
@@ -51,7 +49,7 @@ fi
 
 if [ $DISTRO == "Debian" ] || [ $DISTRO == "Ubuntu" ] || [ $DISTRO == "Raspbian" ]; then
     $sudo apt-get update
-    $sudo apt-get -y git cmake unzip automake make g++ libtool libreadline6-dev libncurses5-dev pkg-config libssl-dev
+    $sudo apt-get -y git cmake unzip automake make g++ libtool libreadline-dev libncurses5-dev pkg-config libssl-dev
     $sudo apt-get -y install nodejs npm # nodejs for compile www admin
     $sudo apt-get -y install libjsoncpp-dev uuid-dev zlib1g-dev # drogon project 
     

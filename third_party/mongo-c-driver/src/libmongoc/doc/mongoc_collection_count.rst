@@ -3,15 +3,15 @@
 mongoc_collection_count()
 =========================
 
-Deprecated
-----------
+.. warning::
+   .. deprecated:: 1.11.0
 
-This function is deprecated and should not be used in new code.
-Use :symbol:`mongoc_collection_count_documents` or :symbol:`mongoc_collection_estimated_document_count` instead.
+      This function is deprecated and should not be used in new code.
+      Use :symbol:`mongoc_collection_count_documents` or :symbol:`mongoc_collection_estimated_document_count` instead.
 
-:symbol:`mongoc_collection_count_documents` has similar performance to calling :symbol:`mongoc_collection_count` with a non-NULL ``query``, and is guaranteed to retrieve an accurate collection count. See :ref:`migrating from deprecated count functions <migrating-from-deprecated-count>` for details.
+      :symbol:`mongoc_collection_count_documents` has similar performance to calling :symbol:`mongoc_collection_count` with a non-NULL ``query``, and is guaranteed to retrieve an accurate collection count. See :ref:`migrating from deprecated count functions <migrating-from-deprecated-count>` for details.
 
-:symbol:`mongoc_collection_estimated_document_count` has the same performance as calling :symbol:`mongoc_collection_count` with a NULL ``query``, but is not guaranteed to retrieve an accurate collection count.
+      :symbol:`mongoc_collection_estimated_document_count` has the same performance as calling :symbol:`mongoc_collection_count` with a NULL ``query``, but is not guaranteed to retrieve an accurate collection count.
 
 .. include:: includes/retryable-read.txt
 
@@ -47,7 +47,7 @@ Description
 
 This function shall execute a count query on the underlying 'collection'. The bson 'query' is not validated, simply passed along as appropriate to the server.  As such, compatibility and errors should be validated in the appropriate server documentation.
 
-For more information, see the `query reference <https://docs.mongodb.org/manual/reference/operator/query/>`_ at the MongoDB website.
+For more information, see the `query reference <https://www.mongodb.com/docs/manual/reference/operator/query/>`_ at the MongoDB website.
 
 The :symbol:`mongoc_read_concern_t` specified on the :symbol:`mongoc_collection_t` will be used, if any. If ``read_prefs`` is NULL, the collection's read preferences are used.
 

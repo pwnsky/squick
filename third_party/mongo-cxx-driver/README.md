@@ -1,6 +1,4 @@
 # MongoDB C++ Driver 
-[![Travis Build Status](https://travis-ci.org/mongodb/mongo-cxx-driver.svg?branch=master)](https://travis-ci.org/mongodb/mongo-cxx-driver)
-[![Evergreen Build Status](https://img.shields.io/badge/build-evergreen-brightgreen)](https://evergreen.mongodb.com/waterfall/cxx-driver)
 [![codecov](https://codecov.io/gh/mongodb/mongo-cxx-driver/branch/master/graph/badge.svg)](https://codecov.io/gh/mongodb/mongo-cxx-driver)
 [![Documentation](https://img.shields.io/badge/docs-doxygen-blue.svg)](https://mongocxx.org/api/mongocxx-v3/)
 [![Documentation](https://img.shields.io/badge/docs-mongocxx-green.svg)](https://mongocxx.org/)
@@ -23,10 +21,14 @@ for more details about the various versions of the driver.
 
 * [MongoDB C++ Driver Installation](https://mongocxx.org/mongocxx-v3/installation/)
 * [MongoDB C++ Driver Quickstart](https://mongocxx.org/mongocxx-v3/tutorial/)
+* [MongoDB CXX Driver Examples](https://github.com/mongodb/mongo-cxx-driver/tree/master/examples)
 * [MongoDB C++ Driver Manual](https://mongocxx.org)
+* [MongoDB C++ Driver Documentation](https://www.mongodb.com/docs/drivers/cxx/)
 * [MongoDB C++ Driver API Documentation](https://mongocxx.org/api/current/)
 * [MongoDB C++ Driver Contribution guidelines](https://mongocxx.org/contributing/)
-* [MongoDB Database Manual](https://docs.mongodb.com/manual/)
+* [MongoDB Database Manual](https://www.mongodb.com/docs/manual/)
+* [MongoDB Developer Center](https://www.mongodb.com/developer/languages/cpp/)
+* [StackOverflow](https://stackoverflow.com/questions/tagged/mongodb%20c%2b%2b)
 
 ## Driver status by family and version
 
@@ -36,7 +38,11 @@ Currently, no drivers guarantee API or ABI stability.
 | Family/version       | Stability   | Development         | Purpose                             |
 | -------------------- | ----------- | ------------------- | ----------------------------------- |
 | (repo master branch) | Unstable    | Active development  | New feature development             |
-| mongocxx 3.6.x       | Stable      | Bug fixes only      | Current stable C++ driver release   |
+| mongocxx 3.10.x      | Stable      | Bug fixes only      | Current stable C++ driver release   |
+| mongocxx 3.9.x       | Stable      | None                | Previous stable C++ driver release   |
+| mongocxx 3.8.x       | Stable      | None                | Previous stable C++ driver release  |
+| mongocxx 3.7.x       | Stable      | None                | Previous stable C++ driver release  |
+| mongocxx 3.6.x       | Stable      | None                | Previous stable C++ driver release  |
 | mongocxx 3.5.x       | Stable      | None                | Previous stable C++ driver release  |
 | mongocxx 3.4.x       | Stable      | None                | Previous stable C++ driver release  |
 | mongocxx 3.3.x       | Stable      | None                | Previous stable C++ driver release  |
@@ -46,11 +52,11 @@ Currently, no drivers guarantee API or ABI stability.
 
 ## MongoDB compatibility
 
-Compatibility of each C++ driver version with each MongoDB server is documented in the [MongoDB manual](https://docs.mongodb.com/drivers/cxx#mongodb-compatibility).
+Compatibility of each C++ driver version with each MongoDB server is documented in the [MongoDB manual](https://www.mongodb.com/docs/drivers/cxx#mongodb-compatibility).
 
 ## Bugs and issues
 
-See our [JIRA project](http://jira.mongodb.org/browse/CXX).
+See our [JIRA project](https://jira.mongodb.com/browse/CXX).
 
 ## License
 

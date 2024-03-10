@@ -41,7 +41,7 @@ test_mongohouse_cb (bson_t *scenario)
 typedef struct {
    /* Information from original cursor */
    char *cursor_ns;
-   int cursor_id;
+   int64_t cursor_id;
 
    bool parsed_cursor;
    bool parsed_cmd_started;
@@ -52,7 +52,7 @@ typedef struct {
 
 
 static bool
-cursor_in_killed_array (bson_t *cursors_killed, int cursor_id)
+cursor_in_killed_array (bson_t *cursors_killed, int64_t cursor_id)
 {
    bson_iter_t iter;
 
@@ -221,6 +221,7 @@ test_mongohouse_kill_cursors (void *ctx_unused)
    mongoc_apm_set_command_started_cb (callbacks, cmd_started_cb);
    mongoc_apm_set_command_succeeded_cb (callbacks, cmd_succeeded_cb);
    mongoc_client_set_apm_callbacks (client, callbacks, (void *) &test);
+   mongoc_apm_callbacks_destroy (callbacks);
 
    coll = mongoc_client_get_collection (client, "test", "driverdata");
 

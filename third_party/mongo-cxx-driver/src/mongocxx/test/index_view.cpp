@@ -17,7 +17,7 @@
 
 #include <bsoncxx/builder/basic/document.hpp>
 #include <bsoncxx/string/to_string.hpp>
-#include <bsoncxx/test_util/catch.hh>
+#include <bsoncxx/test/catch.hh>
 #include <mongocxx/client.hpp>
 #include <mongocxx/collection.hpp>
 #include <mongocxx/exception/logic_error.hpp>
@@ -25,7 +25,7 @@
 #include <mongocxx/index_view.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/options/index_view.hpp>
-#include <mongocxx/test_util/client_helpers.hh>
+#include <mongocxx/test/client_helpers.hh>
 
 namespace {
 using bsoncxx::builder::basic::kvp;
@@ -249,6 +249,15 @@ TEST_CASE("create_many", "[index_view]") {
 
         bsoncxx::document::value result = indexes.create_many(models);
         bsoncxx::document::view result_view = result.view();
+
+        // SERVER-78611: sharded clusters may place fields in a raw response document instead of in
+        // the top-level document.
+        if (const auto raw = result_view["raw"]) {
+            for (const auto& shard_response : raw.get_document().view()) {
+                result_view = shard_response.get_document().view();
+            }
+        }
+
         REQUIRE((result_view["numIndexesAfter"].get_int32() -
                  result_view["numIndexesBefore"].get_int32()) == 3);
 
@@ -383,6 +392,14 @@ TEST_CASE("drop_all", "[index_view]") {
         bsoncxx::document::value result = indexes.create_many(models);
         bsoncxx::document::view result_view = result.view();
 
+        // SERVER-78611: sharded clusters may place fields in a raw response document instead of
+        // in the top-level document.
+        if (const auto raw = result_view["raw"]) {
+            for (const auto& shard_response : raw.get_document().view()) {
+                result_view = shard_response.get_document().view();
+            }
+        }
+
         auto cursor1 = indexes.list();
         REQUIRE((unsigned)std::distance(cursor1.begin(), cursor1.end()) == models.size() + 1);
         REQUIRE((unsigned)(result_view["numIndexesAfter"].get_int32() -
@@ -403,6 +420,14 @@ TEST_CASE("drop_all", "[index_view]") {
 
         bsoncxx::document::value result = indexes.create_many(models);
         bsoncxx::document::view result_view = result.view();
+
+        // SERVER-78611: sharded clusters may place fields in a raw response document instead of
+        // in the top-level document.
+        if (const auto raw = result_view["raw"]) {
+            for (const auto& shard_response : raw.get_document().view()) {
+                result_view = shard_response.get_document().view();
+            }
+        }
 
         auto cursor1 = indexes.list();
         REQUIRE((unsigned)std::distance(cursor1.begin(), cursor1.end()) == models.size() + 1);

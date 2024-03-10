@@ -20,6 +20,7 @@
 Make a release of the C++ Driver, including steps associated with the CXX
 project in Jira, and with the mongodb/mongo-cxx-driver GitHub repository.
 See releasing.md for complete release instructions.
+When editing this file, consider running `test_make_release.py` to validate changes.
 """
 
 # CXX Project ID - 11980
@@ -36,17 +37,20 @@ See releasing.md for complete release instructions.
 # | Task        | 3      |
 # ------------------------
 
+import textwrap
 import re
 from distutils.version import LooseVersion
 import os
 import subprocess
 import sys
 import tempfile
+import pathlib
 
 import click # pip install Click
 from git import Repo # pip install GitPython
 from github import Github # pip install PyGithub
 from jira import JIRA # pip install jira
+import oauthlib.oauth1
 
 if sys.version_info < (3, 0, 0):
     raise RuntimeError("This script requires Python 3 or higher")
@@ -83,12 +87,8 @@ ISSUE_TYPE_ID = {'Backport': '10300',
               default='origin',
               show_default=True,
               help='The remote reference which points to the mongodb/mongo-cxx-driver repo')
-@click.option('--c-driver-install-dir',
-              default=os.getcwd() + '/../mongoc',
-              show_default=True,
-              help='When building the C driver, install to this directory')
 @click.option('--c-driver-build-ref',
-              default='master',
+              default='1.25.0',
               show_default=True,
               help='When building the C driver, build at this Git reference')
 @click.option('--with-c-driver',
@@ -115,7 +115,6 @@ def release(jira_creds_file,
             github_token_file,
             allow_open_issues,
             remote,
-            c_driver_install_dir,
             c_driver_build_ref,
             with_c_driver,
             dist_file,
@@ -127,6 +126,8 @@ def release(jira_creds_file,
     """
     Perform the steps associated with the release.
     """
+
+    check_libmongoc_version()
 
     # Read Jira credentials and GitHub token first, to check that
     # user has proper credentials before embarking on lengthy builds.
@@ -175,8 +176,7 @@ def release(jira_creds_file,
             click.echo('Specified distribution tarball does not exist...exiting!', err=True)
             sys.exit(1)
     else:
-        c_driver_dir = ensure_c_driver(c_driver_install_dir, c_driver_build_ref,
-                                       with_c_driver, quiet)
+        c_driver_dir = ensure_c_driver(c_driver_build_ref, with_c_driver, quiet)
         if not c_driver_dir:
             click.echo('C driver not built or not found...exiting!', err=True)
             sys.exit(1)
@@ -204,7 +204,9 @@ def release(jira_creds_file,
         # all_issues_closed() has already produced an error message
         sys.exit(1)
 
-    release_notes_text = generate_release_notes(issues, release_version)
+    with open ("CHANGELOG.md", "r") as changelog:
+        changelog_contents = changelog.read()
+    release_notes_text = generate_release_notes(release_version, changelog_contents)
 
     gh_repo = auth_gh.get_repo('mongodb/mongo-cxx-driver')
     gh_release_dict = get_github_releases(gh_repo)
@@ -225,6 +227,47 @@ def release(jira_creds_file,
     else:
         create_github_release_draft(gh_repo, release_tag, is_pre_release, dist_file,
                                     release_notes_text, output_file, quiet)
+
+
+def check_libmongoc_version():
+    got_LIBMONGOC_REQUIRED_VERSION = None
+    got_LIBMONGOC_DOWNLOAD_VERSION = None
+    with open("CMakeLists.txt", "r") as cmakelists:
+        for line in cmakelists:
+            match = re.match(
+                r"set\(LIBMONGOC_REQUIRED_VERSION\s+(.*?)\)", line)
+            if match:
+                if 'TODO' in line:
+                    click.echo(
+                        'Found TODO on LIBMONGOC_REQUIRED_VERSION line in CMakeLists.txt: {}'.format(line))
+                    sys.exit(1)
+                got_LIBMONGOC_REQUIRED_VERSION = match.group(1)
+                continue
+            match = re.match(
+                r"set\(LIBMONGOC_DOWNLOAD_VERSION\s+(.*?)\)", line)
+            if match:
+                if 'TODO' in line:
+                    click.echo(
+                        'Found TODO on LIBMONGOC_DOWNLOAD_VERSION line in CMakeLists.txt: {}'.format(line))
+                    sys.exit(1)
+                got_LIBMONGOC_DOWNLOAD_VERSION = match.group(1)
+                continue
+    assert got_LIBMONGOC_DOWNLOAD_VERSION
+    assert got_LIBMONGOC_REQUIRED_VERSION
+    libmongoc_version_pattern = r'[0-9]+\.[0-9]+\.[0-9]+'
+    if not re.match (libmongoc_version_pattern, got_LIBMONGOC_DOWNLOAD_VERSION):
+        click.echo("Expected LIBMONGOC_DOWNLOAD_VERSION to match: {}, got: {}".format(
+            libmongoc_version_pattern, got_LIBMONGOC_DOWNLOAD_VERSION))
+        sys.exit(1)
+    if not re.match (libmongoc_version_pattern, got_LIBMONGOC_REQUIRED_VERSION):
+        click.echo("Expected LIBMONGOC_REQUIRED_VERSION to match: {}, got: {}".format(
+            libmongoc_version_pattern, got_LIBMONGOC_REQUIRED_VERSION))
+        sys.exit(1)
+    if got_LIBMONGOC_DOWNLOAD_VERSION != got_LIBMONGOC_REQUIRED_VERSION:
+        click.echo("Expected LIBMONGOC_DOWNLOAD_VERSION ({}) to match LIBMONGOC_REQUIRED_VERSION ({})".format(
+            got_LIBMONGOC_DOWNLOAD_VERSION, got_LIBMONGOC_REQUIRED_VERSION))
+        sys.exit(1)
+
 
 # pylint: enable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 def is_valid_remote(remote):
@@ -327,14 +370,13 @@ def check_pre_release(tag_name):
 
     return not bool(release_re.match(tag_name))
 
-def ensure_c_driver(c_driver_install_dir, c_driver_build_ref, with_c_driver, quiet):
+def ensure_c_driver(c_driver_build_ref, with_c_driver, quiet):
     """
     Ensures that there is a properly installed C driver, returning the location
     of the C driver installation.  If the with_c_driver parameter is set and
     points to a proper installation of the C driver, then this function simply
     returns that directory.  Otherwise, delegates to another function to build
-    the C driver and install it to the directory specified by the
-    c_driver_install_dir parameter.
+    the C driver and install it to the mongoc directory.
     """
 
     if with_c_driver:
@@ -346,32 +388,27 @@ def ensure_c_driver(c_driver_install_dir, c_driver_build_ref, with_c_driver, qui
             click.echo('A required component of the C driver is missing!', err=True)
         return None
 
-    return build_c_driver(c_driver_install_dir, c_driver_build_ref, quiet)
+    return build_c_driver(c_driver_build_ref, quiet)
 
-def build_c_driver(c_driver_install_dir, c_driver_build_ref, quiet):
+def build_c_driver(c_driver_build_ref, quiet):
     """
-    Build the C driver and install to the specified directory.  If the build is
+    Build the C driver and install to the mongoc directory.  If the build is
     successful, then return the directory where the C driver was installed,
     otherwise return None.
     """
 
-    mongoc_prefix = os.path.abspath(c_driver_install_dir)
-
     if not quiet:
-        click.echo(f'Building C Driver at {mongoc_prefix} (this could take several minutes)')
+        click.echo(f'Building C Driver (this could take several minutes)')
         click.echo('Pass --with-c-driver to use an existing installation')
 
-    env = os.environ
-    env['PREFIX'] = mongoc_prefix
-    if not c_driver_build_ref:
-        c_driver_build_ref = 'master'
-    run_shell_script('MONGOC_VERSION=' + c_driver_build_ref + ' ./.evergreen/install_c_driver.sh', env=env)
+    env = os.environ.copy()
+    env['mongoc_version'] = c_driver_build_ref
+    run_shell_script('./.evergreen/install_c_driver.sh', env=env)
 
     if not quiet:
-        click.echo('C Driver build was successful.')
-        click.echo('Version "{}" was installed to "{}".'
-                   .format(c_driver_build_ref, mongoc_prefix))
-    return mongoc_prefix
+        click.echo('Build of C Driver version "{}" was successful.'.format(c_driver_build_ref))
+
+    return './mongoc'
 
 def build_distribution(release_tag, release_version, c_driver_dir, quiet, skip_distcheck):
     """
@@ -437,6 +474,11 @@ def read_jira_oauth_creds(jira_creds_file):
             oauth_dict['consumer_key'] = creds_match.group(3)
             # Fix the double-backslash created by the decode() call above
             oauth_dict['key_cert'] = creds_match.group(4).replace("\\n", "\n")
+            # Use signature algorithm `SIGNATURE_RSA` to override `jira` default of `SIGNATURE_HMAC_SHA1`.
+            # `jira` 3.5.1 changed the default signature algorithm to `SIGNATURE_HMAC_SHA1`.
+            # MongoDB Jira servers do not appear to support `SIGNATURE_HMAC_SHA1`. Using `SIGNATURE_HMAC_SHA1` results in `signature_method_rejected`` error.
+            # See https://github.com/pycontribs/jira/pull/1664
+            oauth_dict["signature_method"] = oauthlib.oauth1.SIGNATURE_RSA
 
     return oauth_dict
 
@@ -479,28 +521,63 @@ def all_issues_closed(issues):
 
     return True
 
-def generate_release_notes(issues, release_version):
-    """
-    Produce HTML release notes which can be used as part of the project release
-    announcement.
-    """
+def generate_release_notes(release_version: str, changelog_contents: str) -> str:
+    lines = []
+    adding_to_lines = False
+    for line in changelog_contents.splitlines(keepends=True):
+        # Check for a version title. Example: `## 3.9.0`.
+        match = re.match(r"^## (.*?)\s(.*)$".format(release_version), line)
+        if match:
+            matched_version = match.group(1)
+            if matched_version == release_version:
+                # Found matching version.
+                extra = match.group(2)
+                if extra != "":
+                    raise click.ClickException(
+                        "Unexpected extra characters in CHANGELOG: {}. Is the CHANGELOG updated?".format(extra))
+                if adding_to_lines:
+                    raise click.ClickException(
+                        "Unexpected second changelog entry matching version: {}: {}".format(release_version), line)
+                # Begin adding lines to `lines` list.
+                adding_to_lines = True
+                continue
+            # End adding lines when another title is seen.
+            else:
+                adding_to_lines = False
+                break
 
-    release_notes = '<h1>Release Notes - C++ Driver - Version {}</h1>\n'.format(release_version)
-    release_notes += '<h2>Bug</h2>\n'
-    release_notes += '<ul>\n'
-    bug_filter = lambda i: i.fields.issuetype.id == ISSUE_TYPE_ID['Bug']
-    release_notes += print_issues(list(filter(bug_filter, issues)))
-    release_notes += '</ul>\n'
-    release_notes += '<h2>New Feature</h2>\n'
-    release_notes += '<ul>\n'
-    new_feature_filter = lambda i: i.fields.issuetype.id == ISSUE_TYPE_ID['New Feature']
-    release_notes += print_issues(list(filter(new_feature_filter, issues)))
-    release_notes += '</ul>\n'
-    release_notes += '<h2>Improvement</h2>\n'
-    release_notes += '<ul>\n'
-    improvement_filter = lambda i: i.fields.issuetype.id == ISSUE_TYPE_ID['Improvement']
-    release_notes += print_issues(list(filter(improvement_filter, issues)))
-    release_notes += '</ul>\n'
+        if adding_to_lines:
+            # Reduce title by one.
+            if line.startswith("#"):
+                lines.append(line[1:])
+            else:
+                lines.append(line)
+
+    # Removing beginning empty lines.
+    while len(lines) > 0 and lines[0] == "\n":
+        lines = lines[1:]
+
+    # Remove trailing empty lines.
+    while len(lines) > 0 and lines[-1] == "\n":
+        lines = lines[0:-1]
+
+    if lines == []:
+        raise click.ClickException(
+            "Failed to find changelog contents for {}".format(release_version))
+
+    footer = textwrap.dedent("""
+    ## Feedback
+    To report a bug or request a feature, please open a ticket in the MongoDB issue management tool Jira:
+
+    - [Create an account](https://jira.mongodb.org) and login.
+    - Navigate to the [CXX project](https://jira.mongodb.org/browse/CXX)
+    - Click `Create`.
+    """).lstrip()
+
+    release_notes = "".join(lines) + "\n"
+    release_notes += "See the [full list of changes in Jira](https://jira.mongodb.org/issues/?jql=project%20%3D%20CXX%20AND%20fixVersion%20%3D%20{}).\n\n".format(
+        release_version)
+    release_notes += footer
 
     return release_notes
 

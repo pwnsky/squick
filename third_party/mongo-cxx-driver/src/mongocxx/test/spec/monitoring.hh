@@ -15,13 +15,12 @@
 #pragma once
 
 #include <mongocxx/client.hpp>
+#include <mongocxx/test/client_helpers.hh>
 #include <mongocxx/test/spec/unified_tests/entity.hh>
-#include <mongocxx/test_util/client_helpers.hh>
 
 #include <mongocxx/config/private/prelude.hh>
 
 namespace mongocxx {
-MONGOCXX_INLINE_NAMESPACE_BEGIN
 namespace spec {
 
 using namespace mongocxx;
@@ -49,7 +48,7 @@ class apm_checker {
     void clear();
     void clear_events();
 
-    std::string print_all();
+    std::string print_all() const;
 
     using event_vector = std::vector<bsoncxx::document::value>;
     using iterator = event_vector::iterator;
@@ -87,6 +86,6 @@ class apm_checker {
 };
 
 }  // namespace spec
-MONGOCXX_INLINE_NAMESPACE_END
 }  // namespace mongocxx
+
 #include <mongocxx/config/private/postlude.hh>

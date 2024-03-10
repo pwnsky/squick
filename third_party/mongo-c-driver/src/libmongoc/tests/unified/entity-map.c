@@ -23,6 +23,8 @@
 #include "utlist.h"
 #include "util.h"
 
+#include <bson-dsl.h>
+
 #include "common-b64-private.h"
 #include "mongoc-client-side-encryption-private.h"
 
@@ -43,7 +45,7 @@ static void
 entity_destroy (entity_t *entity);
 
 entity_map_t *
-entity_map_new ()
+entity_map_new (void)
 {
    return bson_malloc0 (sizeof (entity_map_t));
 }
@@ -114,7 +116,7 @@ done:
 }
 
 event_t *
-event_new (char *type)
+event_new (const char *type)
 {
    event_t *event = NULL;
 
@@ -139,11 +141,14 @@ event_destroy (event_t *event)
 }
 
 static entity_t *
-entity_new (const char *type)
+entity_new (entity_map_t *em, const char *type)
 {
    entity_t *entity = NULL;
    entity = bson_malloc0 (sizeof (entity_t));
    entity->type = bson_strdup (type);
+   entity->entity_map = em;
+   _mongoc_array_init (&entity->observe_events, sizeof (observe_event_t));
+   _mongoc_array_init (&entity->store_events, sizeof (store_event_t));
    return entity;
 }
 
@@ -173,6 +178,25 @@ should_ignore_event (entity_t *client_entity, event_t *event)
       }
    }
 
+   {
+      observe_event_t *const begin =
+         (observe_event_t *) client_entity->observe_events.data;
+      observe_event_t *const end = begin + client_entity->observe_events.len;
+
+      bool is_observed = false;
+
+      for (observe_event_t *iter = begin; iter != end; ++iter) {
+         if (bson_strcasecmp (iter->type, event->type) == 0) {
+            is_observed = true;
+            break;
+         }
+      }
+
+      if (!is_observed) {
+         return true;
+      }
+   }
+
    if (client_entity->observe_sensitive_commands &&
        *client_entity->observe_sensitive_commands) {
       return false;
@@ -182,28 +206,68 @@ should_ignore_event (entity_t *client_entity, event_t *event)
    return is_sensitive_command (event);
 }
 
+
+typedef void *(*apm_func_void_t) (const void *);
+typedef const bson_t *(*apm_func_bson_t) (const void *);
+typedef const char *(*apm_func_utf8_t) (const void *);
+typedef int64_t (*apm_func_int64_t) (const void *);
+typedef const bson_oid_t *(*apm_func_bson_oid_t) (const void *);
+typedef int32_t (*apm_func_int32_t) (const void *);
+typedef const mongoc_host_list_t *(*apm_func_host_list_t) (const void *);
+typedef void (*apm_func_serialize_t) (bson_t *, const void *);
+
+
+typedef struct command_callback_funcs_t {
+   apm_func_void_t get_context;
+   apm_func_bson_t get_command;
+   apm_func_bson_t get_reply;
+   apm_func_utf8_t get_command_name;
+   apm_func_utf8_t get_database_name;
+   apm_func_int64_t get_request_id;
+   apm_func_int64_t get_operation_id;
+   apm_func_bson_oid_t get_service_id;
+   apm_func_host_list_t get_host;
+   apm_func_int64_t get_server_connection_id;
+   apm_func_serialize_t serialize;
+} command_callback_funcs_t;
+
+
 static void
-command_started (const mongoc_apm_command_started_t *started)
+observe_event (entity_t *entity,
+               command_callback_funcs_t funcs,
+               const char *type,
+               const void *apm_command)
 {
-   entity_t *entity = NULL;
-   event_t *event = NULL;
+   BSON_ASSERT_PARAM (type);
+   BSON_ASSERT_PARAM (apm_command);
 
-   entity = (entity_t *) mongoc_apm_command_started_get_context (started);
-   event = event_new ("commandStartedEvent");
-   event->command =
-      bson_copy (mongoc_apm_command_started_get_command (started));
-   event->command_name =
-      bson_strdup (mongoc_apm_command_started_get_command_name (started));
+   BSON_ASSERT (funcs.get_context);
+   event_t *const event = event_new (type);
 
-   event->database_name =
-      bson_strdup (mongoc_apm_command_started_get_database_name (started));
-
-   if (mongoc_apm_command_started_get_service_id (started)) {
-      bson_oid_copy (mongoc_apm_command_started_get_service_id (started),
-                     &event->service_id);
+   if (funcs.get_command) {
+      event->command = bson_copy (funcs.get_command (apm_command));
    }
 
-   event->server_connection_id = started->server_connection_id;
+   if (funcs.get_reply) {
+      event->reply = bson_copy (funcs.get_reply (apm_command));
+   }
+
+   BSON_ASSERT (funcs.get_command_name);
+   event->command_name = bson_strdup (funcs.get_command_name (apm_command));
+
+   if (funcs.get_database_name) {
+      event->database_name =
+         bson_strdup (funcs.get_database_name (apm_command));
+   }
+
+   BSON_ASSERT (funcs.get_service_id);
+   const bson_oid_t *const service_id = funcs.get_service_id (apm_command);
+   if (service_id) {
+      bson_oid_copy (service_id, &event->service_id);
+   }
+
+   BSON_ASSERT (funcs.get_server_connection_id);
+   event->server_connection_id = funcs.get_server_connection_id (apm_command);
 
    if (should_ignore_event (entity, event)) {
       event_destroy (event);
@@ -211,129 +275,496 @@ command_started (const mongoc_apm_command_started_t *started)
    }
 
    LL_APPEND (entity->events, event);
+}
+
+
+static void
+store_event_serialize_started (bson_t *doc,
+                               const mongoc_apm_command_started_t *apm_command)
+{
+   // Spec: The test runner MAY omit the command field for CommandStartedEvent
+   // and reply field for CommandSucceededEvent.
+   // BSON_APPEND_DOCUMENT (
+   //    doc, "command", mongoc_apm_command_started_get_command (apm_command));
+
+   BSON_APPEND_UTF8 (
+      doc,
+      "databaseName",
+      mongoc_apm_command_started_get_database_name (apm_command));
+
+   BSON_APPEND_UTF8 (doc,
+                     "commandName",
+                     mongoc_apm_command_started_get_command_name (apm_command));
+
+   BSON_APPEND_INT64 (doc,
+                      "requestId",
+                      mongoc_apm_command_started_get_request_id (apm_command));
+
+   BSON_APPEND_INT64 (
+      doc,
+      "operationId",
+      mongoc_apm_command_started_get_operation_id (apm_command));
+
+   BSON_APPEND_UTF8 (
+      doc,
+      "connectionId",
+      mongoc_apm_command_started_get_host (apm_command)->host_and_port);
+
+   BSON_APPEND_INT64 (
+      doc,
+      "serverConnectionId",
+      mongoc_apm_command_started_get_server_connection_id_int64 (apm_command));
+
+   {
+      const bson_oid_t *const service_id =
+         mongoc_apm_command_started_get_service_id (apm_command);
+
+      if (service_id) {
+         BSON_APPEND_OID (doc, "serviceId", service_id);
+      }
+   }
+}
+
+
+static void
+store_event_serialize_failed (bson_t *doc,
+                              const mongoc_apm_command_failed_t *apm_command)
+{
+   BSON_APPEND_INT64 (
+      doc, "duration", mongoc_apm_command_failed_get_duration (apm_command));
+
+   BSON_APPEND_UTF8 (doc,
+                     "commandName",
+                     mongoc_apm_command_failed_get_command_name (apm_command));
+
+   {
+      bson_error_t error;
+      mongoc_apm_command_failed_get_error (apm_command, &error);
+      BSON_APPEND_UTF8 (doc, "failure", error.message);
+   }
+
+   BSON_APPEND_INT64 (
+      doc, "requestId", mongoc_apm_command_failed_get_request_id (apm_command));
+
+   BSON_APPEND_INT64 (doc,
+                      "operationId",
+                      mongoc_apm_command_failed_get_operation_id (apm_command));
+
+   BSON_APPEND_UTF8 (
+      doc,
+      "connectionId",
+      mongoc_apm_command_failed_get_host (apm_command)->host_and_port);
+
+   BSON_APPEND_INT64 (
+      doc,
+      "serverConnectionId",
+      mongoc_apm_command_failed_get_server_connection_id_int64 (apm_command));
+
+   {
+      const bson_oid_t *const service_id =
+         mongoc_apm_command_failed_get_service_id (apm_command);
+
+      if (service_id) {
+         BSON_APPEND_OID (doc, "serviceId", service_id);
+      }
+   }
+}
+
+
+static void
+store_event_serialize_succeeded (
+   bson_t *doc, const mongoc_apm_command_succeeded_t *apm_command)
+{
+   BSON_APPEND_INT64 (
+      doc, "duration", mongoc_apm_command_succeeded_get_duration (apm_command));
+
+   // Spec: The test runner MAY omit the command field for CommandStartedEvent
+   // and reply field for CommandSucceededEvent.
+   // BSON_APPEND_DOCUMENT (
+   //    doc, "reply", mongoc_apm_command_succeeded_get_reply (apm_command));
+
+   BSON_APPEND_UTF8 (
+      doc,
+      "commandName",
+      mongoc_apm_command_succeeded_get_command_name (apm_command));
+
+   BSON_APPEND_INT64 (
+      doc,
+      "requestId",
+      mongoc_apm_command_succeeded_get_request_id (apm_command));
+
+   BSON_APPEND_INT64 (
+      doc,
+      "operationId",
+      mongoc_apm_command_succeeded_get_operation_id (apm_command));
+
+   BSON_APPEND_UTF8 (
+      doc,
+      "connectionId",
+      mongoc_apm_command_succeeded_get_host (apm_command)->host_and_port);
+
+   BSON_APPEND_INT64 (
+      doc,
+      "serverConnectionId",
+      mongoc_apm_command_succeeded_get_server_connection_id_int64 (
+         apm_command));
+
+   {
+      const bson_oid_t *const service_id =
+         mongoc_apm_command_succeeded_get_service_id (apm_command);
+
+      if (service_id) {
+         BSON_APPEND_OID (doc, "serviceId", service_id);
+      }
+   }
+}
+
+
+static void
+store_event_to_entities (entity_t *entity,
+                         command_callback_funcs_t funcs,
+                         const char *type,
+                         const void *apm_command)
+{
+   BSON_ASSERT_PARAM (entity);
+   BSON_ASSERT_PARAM (type);
+
+   BSON_ASSERT (entity->entity_map);
+
+   entity_map_t *const em = entity->entity_map;
+
+   store_event_t *const begin = (store_event_t *) entity->store_events.data;
+   store_event_t *const end = begin + entity->store_events.len;
+
+   const int64_t usecs = usecs_since_epoch ();
+   const double secs = (double) usecs / 1000000.0;
+
+   bson_error_t error = {0};
+
+   for (store_event_t *iter = begin; iter != end; ++iter) {
+      if (bson_strcasecmp (iter->type, type) == 0) {
+         mongoc_array_t *arr =
+            entity_map_get_bson_array (em, iter->entity_id, &error);
+         ASSERT_OR_PRINT (arr, error);
+
+         bson_t *doc = bson_new ();
+
+         // Spec: the following fields MUST be stored with each event document:
+         BSON_APPEND_UTF8 (doc, "name", type);
+         BSON_APPEND_DOUBLE (doc, "observedAt", secs);
+
+         // The event subscriber MUST serialize the events it receives into a
+         // document, using the documented properties of the event as field
+         // names, and append the document to the list stored in the specified
+         // entity.
+         funcs.serialize (doc, apm_command);
+
+         _mongoc_array_append_val (arr, doc); // Transfer ownership.
+      }
+   }
+}
+
+
+static void
+apm_command_callback (command_callback_funcs_t funcs,
+                      const char *type,
+                      const void *apm_command)
+{
+   BSON_ASSERT_PARAM (type);
+   BSON_ASSERT_PARAM (apm_command);
+
+   BSON_ASSERT (funcs.get_context);
+   entity_t *const entity = (entity_t *) funcs.get_context (apm_command);
+
+   observe_event (entity, funcs, type, apm_command);
+   store_event_to_entities (entity, funcs, type, apm_command);
+}
+
+
+static void
+command_started (const mongoc_apm_command_started_t *started)
+{
+   command_callback_funcs_t funcs = {
+      .get_context = (apm_func_void_t) mongoc_apm_command_started_get_context,
+      .get_command = (apm_func_bson_t) mongoc_apm_command_started_get_command,
+      .get_reply = NULL,
+      .get_command_name =
+         (apm_func_utf8_t) mongoc_apm_command_started_get_command_name,
+      .get_database_name =
+         (apm_func_utf8_t) mongoc_apm_command_started_get_database_name,
+      .get_request_id =
+         (apm_func_int64_t) mongoc_apm_command_started_get_request_id,
+      .get_operation_id =
+         (apm_func_int64_t) mongoc_apm_command_started_get_operation_id,
+      .get_service_id =
+         (apm_func_bson_oid_t) mongoc_apm_command_started_get_service_id,
+      .get_host = (apm_func_host_list_t) mongoc_apm_command_started_get_host,
+      .get_server_connection_id = (apm_func_int64_t)
+         mongoc_apm_command_started_get_server_connection_id_int64,
+      .serialize = (apm_func_serialize_t) store_event_serialize_started,
+   };
+
+   apm_command_callback (funcs, "commandStartedEvent", started);
 }
 
 static void
 command_failed (const mongoc_apm_command_failed_t *failed)
 {
-   entity_t *entity = NULL;
-   event_t *event = NULL;
+   command_callback_funcs_t funcs = {
+      .get_context = (apm_func_void_t) mongoc_apm_command_failed_get_context,
+      .get_command = NULL,
+      .get_reply = (apm_func_bson_t) mongoc_apm_command_failed_get_reply,
+      .get_command_name =
+         (apm_func_utf8_t) mongoc_apm_command_failed_get_command_name,
+      .get_database_name = NULL,
+      .get_request_id =
+         (apm_func_int64_t) mongoc_apm_command_failed_get_request_id,
+      .get_operation_id =
+         (apm_func_int64_t) mongoc_apm_command_failed_get_operation_id,
+      .get_service_id =
+         (apm_func_bson_oid_t) mongoc_apm_command_failed_get_service_id,
+      .get_host = (apm_func_host_list_t) mongoc_apm_command_failed_get_host,
+      .get_server_connection_id = (apm_func_int64_t)
+         mongoc_apm_command_failed_get_server_connection_id_int64,
+      .serialize = (apm_func_serialize_t) store_event_serialize_failed,
+   };
 
-   entity = (entity_t *) mongoc_apm_command_failed_get_context (failed);
-   event = event_new ("commandFailedEvent");
-   event->reply = bson_copy (mongoc_apm_command_failed_get_reply (failed));
-   event->command_name =
-      bson_strdup (mongoc_apm_command_failed_get_command_name (failed));
-
-   if (mongoc_apm_command_failed_get_service_id (failed)) {
-      bson_oid_copy (mongoc_apm_command_failed_get_service_id (failed),
-                     &event->service_id);
-   }
-
-   event->server_connection_id = failed->server_connection_id;
-
-   if (should_ignore_event (entity, event)) {
-      event_destroy (event);
-      return;
-   }
-   LL_APPEND (entity->events, event);
+   apm_command_callback (funcs, "commandFailedEvent", failed);
 }
 
 static void
 command_succeeded (const mongoc_apm_command_succeeded_t *succeeded)
 {
-   entity_t *entity = NULL;
-   event_t *event = NULL;
+   command_callback_funcs_t funcs = {
+      .get_context = (apm_func_void_t) mongoc_apm_command_succeeded_get_context,
+      .get_command = NULL,
+      .get_reply = (apm_func_bson_t) mongoc_apm_command_succeeded_get_reply,
+      .get_command_name =
+         (apm_func_utf8_t) mongoc_apm_command_succeeded_get_command_name,
+      .get_database_name = NULL,
+      .get_request_id =
+         (apm_func_int64_t) mongoc_apm_command_succeeded_get_request_id,
+      .get_operation_id =
+         (apm_func_int64_t) mongoc_apm_command_succeeded_get_operation_id,
+      .get_service_id =
+         (apm_func_bson_oid_t) mongoc_apm_command_succeeded_get_service_id,
+      .get_host = (apm_func_host_list_t) mongoc_apm_command_succeeded_get_host,
+      .get_server_connection_id = (apm_func_int64_t)
+         mongoc_apm_command_succeeded_get_server_connection_id_int64,
+      .serialize = (apm_func_serialize_t) store_event_serialize_succeeded,
+   };
 
-   entity = (entity_t *) mongoc_apm_command_succeeded_get_context (succeeded);
-   event = event_new ("commandSucceededEvent");
-   event->reply =
-      bson_copy (mongoc_apm_command_succeeded_get_reply (succeeded));
-   event->command_name =
-      bson_strdup (mongoc_apm_command_succeeded_get_command_name (succeeded));
-
-   if (mongoc_apm_command_succeeded_get_service_id (succeeded)) {
-      bson_oid_copy (mongoc_apm_command_succeeded_get_service_id (succeeded),
-                     &event->service_id);
-   }
-
-   event->server_connection_id = succeeded->server_connection_id;
-
-   if (should_ignore_event (entity, event)) {
-      event_destroy (event);
-      return;
-   }
-   LL_APPEND (entity->events, event);
+   apm_command_callback (funcs, "commandSucceededEvent", succeeded);
 }
+
+// Note: multiple invocations of this function is okay, since all it does
+// is set the appropriate pointer in `callbacks`, and the callback function(s)
+// being used is always the same for a given type.
+static void
+set_command_callback (mongoc_apm_callbacks_t *callbacks, const char *type)
+{
+   typedef void (*cb_t) (const void *);
+   typedef void (*set_func_t) (mongoc_apm_callbacks_t *, cb_t);
+
+   typedef struct _command_to_cb_t {
+      const char *type;
+      set_func_t set;
+      cb_t cb;
+   } command_to_cb_t;
+
+   const command_to_cb_t commands[] = {
+      {.type = "commandStartedEvent",
+       .set = (set_func_t) mongoc_apm_set_command_started_cb,
+       .cb = (cb_t) command_started},
+      {.type = "commandFailedEvent",
+       .set = (set_func_t) mongoc_apm_set_command_failed_cb,
+       .cb = (cb_t) command_failed},
+      {.type = "commandSucceededEvent",
+       .set = (set_func_t) mongoc_apm_set_command_succeeded_cb,
+       .cb = (cb_t) command_succeeded},
+      {.type = NULL, .set = NULL, .cb = NULL},
+   };
+
+   for (const command_to_cb_t *iter = commands; iter->type; ++iter) {
+      if (bson_strcasecmp (type, iter->type) == 0) {
+         iter->set (callbacks, iter->cb);
+         return;
+      }
+   }
+}
+
+static void
+add_observe_event (entity_t *entity, const char *type)
+{
+   observe_event_t event = {.type = type};
+
+   _mongoc_array_append_val (&entity->observe_events, event);
+}
+
+static void
+add_store_event (entity_t *entity, const char *type, const char *entity_id)
+{
+   store_event_t event = {.type = type, .entity_id = entity_id};
+
+   _mongoc_array_append_val (&entity->store_events, event);
+}
+
 
 entity_t *
 entity_client_new (entity_map_t *em, bson_t *bson, bson_error_t *error)
 {
-   bson_parser_t *parser = NULL;
    entity_t *entity = NULL;
    mongoc_client_t *client = NULL;
    mongoc_uri_t *uri = NULL;
    bool ret = false;
-   bson_iter_t iter;
    mongoc_apm_callbacks_t *callbacks = NULL;
    bson_t *uri_options = NULL;
-   bool *use_multiple_mongoses = NULL;
-   bson_t *observe_events = NULL;
-   bson_t *store_events_as_entities = NULL;
-   bson_t *server_api = NULL;
+   bool use_multiple_mongoses = false;
+   bool use_multiple_mongoses_set = false;
    bool can_reduce_heartbeat = false;
    mongoc_server_api_t *api = NULL;
+   char *errpath = NULL;
+   char *err = NULL;
+   const char *store_entity_id = NULL;
 
-   entity = entity_new ("client");
-   parser = bson_parser_new ();
-   bson_parser_utf8 (parser, "id", &entity->id);
-   bson_parser_doc_optional (parser, "uriOptions", &uri_options);
-   bson_parser_bool_optional (
-      parser, "useMultipleMongoses", &use_multiple_mongoses);
-   bson_parser_array_optional (parser, "observeEvents", &observe_events);
-   bson_parser_array_optional (parser,
-                               "ignoreCommandMonitoringEvents",
-                               &entity->ignore_command_monitoring_events);
-   bson_parser_doc_optional (parser, "serverApi", &server_api);
-   bson_parser_bool_optional (
-      parser, "observeSensitiveCommands", &entity->observe_sensitive_commands);
-   bson_parser_array_optional (
-      parser, "storeEventsAsEntities", &store_events_as_entities);
+   entity = entity_new (em, "client");
+   callbacks = mongoc_apm_callbacks_new ();
 
-   if (!bson_parser_parse (parser, bson, error)) {
-      goto done;
-   }
+   bsonParse ( //
+      *bson,
+      // All clients require an ID string
+      find (keyWithType ("id", utf8), storeStrDup (entity->id)),
+      else (error ("A client 'id' string is required")),
+      // Optional 'uriOptions' for the client
+      find (key ("uriOptions"),
+            if (not(type (doc)),
+                then (error ("'uriOptions' must be a document value"))),
+            storeDocDupPtr (uri_options)),
+      // Optional 'useMultipleMongoses' bool
+      find (key ("useMultipleMongoses"),
+            if (not(type (bool)),
+                then (error ("'useMultipleMongoses' must be a bool value"))),
+            do (use_multiple_mongoses_set = true),
+            storeBool (use_multiple_mongoses)),
+      // Events to observe:
+      find (key ("observeEvents"),
+            if (not(type (array)),
+                then (error ("'observeEvents' must be an array"))),
+            visitEach (case (
+               // Ensure all elements are strings:
+               when (not(type (utf8)),
+                     error ("Every 'observeEvents' element must be a string")),
+               // Dispatch based on the event name:
+               when (anyOf (iStrEqual ("commandStartedEvent"),
+                            iStrEqual ("commandFailedEvent"),
+                            iStrEqual ("commandSucceededEvent")),
+                     do ({
+                        const char *const type =
+                           bson_iter_utf8 (&bsonVisitIter, NULL);
+                        set_command_callback (callbacks, type);
+                        add_observe_event (entity, type);
+                     })),
+               // Unsupported (but known) event names:
+               when (eval (is_unsupported_event_type (
+                        bson_iter_utf8 (&bsonVisitIter, NULL))),
+                     do (MONGOC_DEBUG ("Skipping unsupported event type '%s'",
+                                       bsonAs (cstr)))),
+               // An unknown event name is a hard-error:
+               else (do (
+                  test_error ("Unknown event type '%s'", bsonAs (cstr))))))),
+      // Command events to ignore
+      find (
+         key ("ignoreCommandMonitoringEvents"),
+         if (not(type (array)),
+             then (error ("'ignoreCommandMonitoringEvents' must be an array"))),
+         visitEach (if (not(type (utf8)),
+                        then (error ("Every 'ignoreCommandMonitoringEvents' "
+                                     "element must be a string")))),
+         storeDocDupPtr (entity->ignore_command_monitoring_events)),
+      // Parse the serverApi, if present
+      find (
+         key ("serverApi"),
+         if (not(type (doc)), then (error ("'serverApi' must be a document"))),
+         parse ( // The "version" string is required first:
+            find (keyWithType ("version", utf8), do ({
+                     mongoc_server_api_version_t ver;
+                     if (!mongoc_server_api_version_from_string (bsonAs (cstr),
+                                                                 &ver)) {
+                        bsonParseError = "Invalid serverApi.version string";
+                     } else {
+                        api = mongoc_server_api_new (ver);
+                     }
+                  })),
+            else (error ("Missing 'version' property in 'serverApi' object")),
+            // Toggle strictness:
+            find (key ("strict"),
+                  if (not(type (bool)),
+                      then (error ("'serverApi.strict' must be a bool"))),
+                  do (mongoc_server_api_strict (api, bsonAs (bool)))),
+            // Toggle deprecation errors:
+            find (
+               key ("deprecationErrors"),
+               if (not(type (bool)),
+                   then (error ("serverApi.deprecationErrors must be a bool"))),
+               do (
+                  mongoc_server_api_deprecation_errors (api, bsonAs (bool)))))),
+      // Toggle observation of sensitive commands
+      find (key ("observeSensitiveCommands"),
+            if (not(type (bool)),
+                then (error ("'observeSensitiveCommands' must be a bool"))),
+            do ({
+               bool *p = entity->observe_sensitive_commands =
+                  bson_malloc (sizeof (bool));
+               *p = bsonAs (bool);
+            })),
+      // Which events should be available as entities:
+      find (
+         key ("storeEventsAsEntities"),
+         if (not(type (array)),
+             then (error ("'storeEventsAsEntities' must be an array"))),
+         visitEach (parse (
+            find (keyWithType ("id", utf8), storeStrRef (store_entity_id), do ({
+                     if (!entity_map_add_bson_array (
+                            em, store_entity_id, error)) {
+                        test_error ("failed to create storeEventsAsEntities "
+                                    "entity '%s': %s",
+                                    store_entity_id,
+                                    error->message);
+                     }
+                  })),
+            find (keyWithType ("events", array),
+                  visitEach (case (
+                     when (not(type (utf8)),
+                           error ("Every 'storeEventsAsEntities.events' "
+                                  "element must be a string")),
+                     when (anyOf (iStrEqual ("commandStartedEvent"),
+                                  iStrEqual ("commandFailedEvent"),
+                                  iStrEqual ("commandSucceededEvent")),
+                           do ({
+                              const char *const type =
+                                 bson_iter_utf8 (&bsonVisitIter, NULL);
+                              set_command_callback (callbacks, type);
+                              add_store_event (entity, type, store_entity_id);
+                           })),
+                     when (eval (is_unsupported_event_type (
+                              bson_iter_utf8 (&bsonVisitIter, NULL))),
+                           do (MONGOC_DEBUG (
+                              "Skipping unsupported event type '%s'",
+                              bsonAs (cstr)))),
+                     else (do (test_error ("Unknown event type '%s'",
+                                           bsonAs (cstr))))))),
+            visitOthers (
+               errorf (err,
+                       "Unexpected field '%s' in storeEventsAsEntities",
+                       bson_iter_key (&bsonVisitIter)))))),
+      visitOthers (dupPath (errpath),
+                   errorf (err,
+                           "At [%s]: Unknown key '%s' given in entity options",
+                           errpath,
+                           bson_iter_key (&bsonVisitIter))));
 
-   if (server_api) {
-      bson_parser_t *sapi_parser = NULL;
-      char *version = NULL;
-      bool *strict = NULL;
-      bool *deprecation_errors = NULL;
-      mongoc_server_api_version_t api_version;
-
-      sapi_parser = bson_parser_new ();
-      bson_parser_utf8 (sapi_parser, "version", &version);
-      bson_parser_bool_optional (sapi_parser, "strict", &strict);
-      bson_parser_bool_optional (
-         sapi_parser, "deprecationErrors", &deprecation_errors);
-      if (!bson_parser_parse (sapi_parser, server_api, error)) {
-         bson_parser_destroy_with_parsed_fields (sapi_parser);
-         goto done;
-      }
-
-      BSON_ASSERT (
-         mongoc_server_api_version_from_string (version, &api_version));
-      api = mongoc_server_api_new (api_version);
-
-      if (strict) {
-         mongoc_server_api_strict (api, *strict);
-      }
-
-      if (deprecation_errors) {
-         mongoc_server_api_deprecation_errors (api, *deprecation_errors);
-      }
-
-      bson_parser_destroy_with_parsed_fields (sapi_parser);
+   if (bsonParseError) {
+      test_error ("Error while parsing entity object: %s", bsonParseError);
    }
 
    /* Build the client's URI. */
@@ -350,13 +781,13 @@ entity_client_new (entity_map_t *em, bson_t *bson, bson_error_t *error)
        * fronting multiple servers. Otherwise, the test runner MUST use the URI
        * of the load balancer fronting a single server.
        */
-      if (use_multiple_mongoses == NULL || *use_multiple_mongoses == true) {
+      if (!use_multiple_mongoses_set || use_multiple_mongoses == true) {
          mongoc_uri_destroy (uri);
          uri = test_framework_get_uri_multi_mongos_loadbalanced ();
       }
-   } else if (use_multiple_mongoses != NULL) {
+   } else if (use_multiple_mongoses_set) {
       if (!test_framework_uri_apply_multi_mongos (
-             uri, *use_multiple_mongoses, error)) {
+             uri, use_multiple_mongoses, error)) {
          goto done;
       }
    }
@@ -381,53 +812,19 @@ entity_client_new (entity_map_t *em, bson_t *bson, bson_error_t *error)
    test_framework_set_ssl_opts (client);
    mongoc_client_set_error_api (client, MONGOC_ERROR_API_VERSION_2);
    entity->value = client;
-   callbacks = mongoc_apm_callbacks_new ();
+   mongoc_client_set_apm_callbacks (client, callbacks, entity);
 
    if (can_reduce_heartbeat && em->reduced_heartbeat) {
       client->topology->min_heartbeat_frequency_msec =
          REDUCED_MIN_HEARTBEAT_FREQUENCY_MS;
    }
 
-   if (observe_events) {
-      BSON_FOREACH (observe_events, iter)
-      {
-         const char *event_type = bson_iter_utf8 (&iter, NULL);
-
-         if (0 == strcmp (event_type, "commandStartedEvent")) {
-            mongoc_apm_set_command_started_cb (callbacks, command_started);
-         } else if (0 == strcmp (event_type, "commandFailedEvent")) {
-            mongoc_apm_set_command_failed_cb (callbacks, command_failed);
-         } else if (0 == strcmp (event_type, "commandSucceededEvent")) {
-            mongoc_apm_set_command_succeeded_cb (callbacks, command_succeeded);
-         } else if (is_unsupported_event_type (event_type)) {
-            MONGOC_DEBUG ("Skipping observing unsupported event type: %s",
-                          event_type);
-            continue;
-         } else {
-            test_set_error (error, "Unexpected event type: %s", event_type);
-            goto done;
-         }
-      }
-   }
-   mongoc_client_set_apm_callbacks (client, callbacks, entity);
-
-   if (store_events_as_entities) {
-      /* TODO: CDRIVER-3867 Comprehensive Atlas Testing */
-      test_set_error (error, "storeEventsAsEntities is not supported");
-      goto done;
-   }
-
    ret = true;
 done:
    mongoc_uri_destroy (uri);
-   bson_parser_destroy (parser);
    mongoc_apm_callbacks_destroy (callbacks);
    mongoc_server_api_destroy (api);
    bson_destroy (uri_options);
-   bson_free (use_multiple_mongoses);
-   bson_destroy (observe_events);
-   bson_destroy (store_events_as_entities);
-   bson_destroy (server_api);
    if (!ret) {
       entity_destroy (entity);
       return NULL;
@@ -539,17 +936,21 @@ _parse_kms_provider_aws (bson_t *kms_providers,
       }
 
       if (strcmp (key, "accessKeyId") == 0) {
+         const char *envvar = "MONGOC_TEST_AWS_ACCESS_KEY_ID";
+         if (0 == strcmp (provider, "aws:name2")) {
+            envvar = "MONGOC_TEST_AWSNAME2_ACCESS_KEY_ID";
+         }
          if (!_append_kms_provider_value_or_getenv (
-                &child, key, value, "MONGOC_TEST_AWS_ACCESS_KEY_ID", error)) {
+                &child, key, value, envvar, error)) {
             return false;
          }
       } else if (strcmp (key, "secretAccessKey") == 0) {
+         const char *envvar = "MONGOC_TEST_AWS_SECRET_ACCESS_KEY";
+         if (0 == strcmp (provider, "aws:name2")) {
+            envvar = "MONGOC_TEST_AWSNAME2_SECRET_ACCESS_KEY";
+         }
          if (!_append_kms_provider_value_or_getenv (
-                &child,
-                key,
-                value,
-                "MONGOC_TEST_AWS_SECRET_ACCESS_KEY",
-                error)) {
+                &child, key, value, envvar, error)) {
             return false;
          }
       } else {
@@ -790,10 +1191,17 @@ _parse_and_set_kms_providers (mongoc_client_encryption_opts_t *ce_opts,
 
    const prov_map_t prov_map[] = {
       {.provider = "aws", .parse = _parse_kms_provider_aws},
+      {.provider = "aws:name1", .parse = _parse_kms_provider_aws},
+      {.provider = "aws:name2", .parse = _parse_kms_provider_aws},
       {.provider = "azure", .parse = _parse_kms_provider_azure},
+      {.provider = "azure:name1", .parse = _parse_kms_provider_azure},
       {.provider = "gcp", .parse = _parse_kms_provider_gcp},
+      {.provider = "gcp:name1", .parse = _parse_kms_provider_gcp},
       {.provider = "kmip", .parse = _parse_kms_provider_kmip},
-      {.provider = "local", .parse = _parse_kms_provider_local}};
+      {.provider = "kmip:name1", .parse = _parse_kms_provider_kmip},
+      {.provider = "local", .parse = _parse_kms_provider_local},
+      {.provider = "local:name1", .parse = _parse_kms_provider_local},
+      {.provider = "local:name2", .parse = _parse_kms_provider_local}};
 
    const size_t prov_map_size = sizeof (prov_map) / sizeof (prov_map[0]);
 
@@ -850,7 +1258,7 @@ entity_client_encryption_new (entity_map_t *entity_map,
                               bson_t *bson,
                               bson_error_t *error)
 {
-   entity_t *const entity = entity_new ("clientEncryption");
+   entity_t *const entity = entity_new (entity_map, "clientEncryption");
    bson_parser_t *const parser = bson_parser_new ();
    mongoc_client_encryption_opts_t *const ce_opts =
       mongoc_client_encryption_opts_new ();
@@ -955,7 +1363,7 @@ typedef struct {
 } coll_or_db_opts_t;
 
 static coll_or_db_opts_t *
-coll_or_db_opts_new ()
+coll_or_db_opts_new (void)
 {
    return bson_malloc0 (sizeof (coll_or_db_opts_t));
 }
@@ -1008,7 +1416,7 @@ entity_database_new (entity_map_t *entity_map,
    bson_t *database_opts = NULL;
    coll_or_db_opts_t *coll_or_db_opts = NULL;
 
-   entity = entity_new ("database");
+   entity = entity_new (entity_map, "database");
    parser = bson_parser_new ();
    bson_parser_utf8 (parser, "id", &entity->id);
    bson_parser_utf8 (parser, "client", &client_id);
@@ -1074,7 +1482,7 @@ entity_collection_new (entity_map_t *entity_map,
    bson_t *collection_opts = NULL;
    coll_or_db_opts_t *coll_or_db_opts = NULL;
 
-   entity = entity_new ("collection");
+   entity = entity_new (entity_map, "collection");
    parser = bson_parser_new ();
    bson_parser_utf8 (parser, "id", &entity->id);
    bson_parser_utf8 (parser, "database", &database_id);
@@ -1203,7 +1611,7 @@ entity_session_new (entity_map_t *entity_map, bson_t *bson, bson_error_t *error)
    bool ret = false;
    mongoc_client_session_t *session = NULL;
 
-   entity = entity_new ("session");
+   entity = entity_new (entity_map, "session");
    parser = bson_parser_new ();
    bson_parser_utf8 (parser, "id", &entity->id);
    bson_parser_utf8 (parser, "client", &client_id);
@@ -1264,7 +1672,7 @@ entity_bucket_new (entity_map_t *entity_map, bson_t *bson, bson_error_t *error)
    mongoc_write_concern_t *wc = NULL;
    bson_t *opts = NULL;
 
-   entity = entity_new ("bucket");
+   entity = entity_new (entity_map, "bucket");
    parser = bson_parser_new ();
    bson_parser_utf8 (parser, "id", &entity->id);
    bson_parser_utf8 (parser, "database", &database_id);
@@ -1447,6 +1855,21 @@ entity_destroy (entity_t *entity)
 
       mongoc_cursor_destroy (findcursor->cursor);
       bson_free (findcursor);
+   } else if (0 == strcmp ("bson_array", entity->type)) {
+      mongoc_array_t *array = entity->value;
+
+      bson_t **const begin = array->data;
+      bson_t **const end = begin + array->len;
+      for (bson_t **iter = begin; iter != end; ++iter) {
+         bson_destroy (*iter);
+      }
+
+      _mongoc_array_destroy (array);
+      bson_free (array);
+   } else if (0 == strcmp ("size_t", entity->type)) {
+      size_t *v = entity->value;
+
+      bson_free (v);
    } else {
       test_error ("Attempting to destroy unrecognized entity type: %s, id: %s",
                   entity->type,
@@ -1458,6 +1881,8 @@ entity_destroy (entity_t *entity)
       event_destroy (event);
    }
 
+   _mongoc_array_destroy (&entity->observe_events);
+   _mongoc_array_destroy (&entity->store_events);
    bson_destroy (entity->ignore_command_monitoring_events);
    bson_free (entity->type);
    bson_free (entity->id);
@@ -1608,6 +2033,31 @@ entity_map_get_bson (entity_map_t *entity_map,
    return (bson_val_t *) entity->value;
 }
 
+mongoc_array_t *
+entity_map_get_bson_array (entity_map_t *entity_map,
+                           const char *id,
+                           bson_error_t *error)
+{
+   entity_t *entity =
+      _entity_map_get_by_type (entity_map, id, "bson_array", error);
+   if (!entity) {
+      return NULL;
+   }
+   return (mongoc_array_t *) entity->value;
+}
+
+size_t *
+entity_map_get_size_t (entity_map_t *entity_map,
+                       const char *id,
+                       bson_error_t *error)
+{
+   entity_t *entity = _entity_map_get_by_type (entity_map, id, "size_t", error);
+   if (!entity) {
+      return NULL;
+   }
+   return (size_t *) entity->value;
+}
+
 mongoc_client_session_t *
 entity_map_get_session (entity_map_t *entity_map,
                         const char *id,
@@ -1674,7 +2124,7 @@ _entity_map_add (entity_map_t *em,
       return false;
    }
 
-   entity = entity_new (type);
+   entity = entity_new (em, type);
    entity->value = value;
    entity->id = bson_strdup (id);
    LL_PREPEND (em->entities, entity);
@@ -1737,6 +2187,28 @@ entity_map_add_bson (entity_map_t *em,
                      bson_error_t *error)
 {
    return _entity_map_add (em, id, "bson", (void *) bson_val_copy (val), error);
+}
+
+bool
+entity_map_add_bson_array (entity_map_t *em,
+                           const char *id,
+                           bson_error_t *error)
+{
+   // Note: the specification states we should be storing a BSON object of array
+   // type, but we use an array of BSON objects instead to make append and
+   // iteration easier.
+   mongoc_array_t *array = bson_malloc (sizeof (mongoc_array_t));
+   mongoc_array_aligned_init (array, bson_t *);
+   return _entity_map_add (em, id, "bson_array", (void *) array, error);
+}
+
+bool
+entity_map_add_size_t (entity_map_t *em,
+                       const char *id,
+                       size_t *value,
+                       bson_error_t *error)
+{
+   return _entity_map_add (em, id, "size_t", value, error);
 }
 
 /* implement $$sessionLsid */

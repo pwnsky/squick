@@ -3,15 +3,15 @@
 mongoc_collection_count_with_opts()
 ===================================
 
-Deprecated
-----------
+.. warning::
+   .. deprecated:: 1.11.0
 
-This function is deprecated and should not be used in new code.
-Use :symbol:`mongoc_collection_count_documents` or :symbol:`mongoc_collection_estimated_document_count` instead.
+      This function is deprecated and should not be used in new code.
+      Use :symbol:`mongoc_collection_count_documents` or :symbol:`mongoc_collection_estimated_document_count` instead.
 
-:symbol:`mongoc_collection_count_documents` has similar performance to calling :symbol:`mongoc_collection_count` with a non-NULL ``query``, and is guaranteed to retrieve an accurate collection count. See :ref:`migrating from deprecated count functions <migrating-from-deprecated-count>` for details.
+      :symbol:`mongoc_collection_count_documents` has similar performance to calling :symbol:`mongoc_collection_count` with a non-NULL ``query``, and is guaranteed to retrieve an accurate collection count. See :ref:`migrating from deprecated count functions <migrating-from-deprecated-count>` for details.
 
-:symbol:`mongoc_collection_estimated_document_count` has the same performance as calling :symbol:`mongoc_collection_count` with a NULL ``query``, but is not guaranteed to retrieve an accurate collection count.
+      :symbol:`mongoc_collection_estimated_document_count` has the same performance as calling :symbol:`mongoc_collection_count` with a NULL ``query``, but is not guaranteed to retrieve an accurate collection count.
 
 Synopsis
 --------
@@ -55,7 +55,7 @@ The :symbol:`mongoc_read_concern_t` specified on the :symbol:`mongoc_collection_
 
 In addition to the standard functionality available from mongoc_collection_count, this function allows the user to add arbitrary extra keys to the count.  This pass through enables features such as hinting for counts.
 
-For more information, see the `query reference <https://docs.mongodb.org/manual/reference/operator/query/>`_ at the MongoDB website.
+For more information, see the `query reference <https://www.mongodb.com/docs/manual/reference/operator/query/>`_ at the MongoDB website.
 
 .. include:: includes/retryable-read.txt
 

@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "helpers.hpp"
 #include <bsoncxx/builder/basic/document.hpp>
 #include <bsoncxx/document/view.hpp>
 #include <bsoncxx/private/suppress_deprecation_warnings.hh>
 #include <bsoncxx/string/to_string.hpp>
-#include <bsoncxx/test_util/catch.hh>
+#include <bsoncxx/test/catch.hh>
 #include <bsoncxx/types.hpp>
 #include <bsoncxx/types/bson_value/view.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/options/create_collection.hpp>
+#include <third_party/catch/include/helpers.hpp>
 
 namespace {
 using namespace bsoncxx;

@@ -118,7 +118,6 @@ _server_for_client (mongoc_stream_t *stream)
 static ssize_t
 _mock_poll (mongoc_stream_poll_t *streams, size_t nstreams, int32_t timeout)
 {
-   int i;
    ssize_t starting_nactive;
    /* call the real poll first. */
    /* TODO CDRIVER-2542: ZSeries appears to have excessive delay with repeated
@@ -130,9 +129,9 @@ _mock_poll (mongoc_stream_poll_t *streams, size_t nstreams, int32_t timeout)
    starting_nactive = nactive;
 
    /* check if any of the poll responses need to be overwritten. */
-   for (i = 0; i < nstreams; i++) {
+   for (size_t i = 0u; i < nstreams; i++) {
       mongoc_stream_t *stream =
-         mongoc_stream_get_root_stream ((streams + i)->stream);
+         mongoc_stream_get_root_stream (streams[i].stream);
       he_testcase_server_t *server = _server_for_client (stream);
 
       if (server) {
@@ -332,7 +331,7 @@ _testcase_run (he_testcase_t *testcase)
 
    duration_ms = (bson_get_monotonic_time () - testcase->state.start) / (1000);
 
-   if (!test_suite_valgrind ()) {
+   {
       bool within_expected_duration =
          duration_ms >= expected->duration_min_ms &&
          duration_ms < expected->duration_max_ms;
@@ -361,22 +360,22 @@ _testcase_run (he_testcase_t *testcase)
 
 #define CLIENT(client) \
    {                   \
-#client          \
+      #client          \
    }
 
 #define CLIENT_WITH_DNS_CACHE_TIMEOUT(type, timeout) \
    {                                                 \
-#type, timeout                                 \
+      #type, timeout                                 \
    }
 #define HANGUP true
 #define LISTEN false
 #define SERVER(type, hangup) \
    {                         \
-#type, hangup          \
+      #type, hangup          \
    }
 #define DELAYED_SERVER(type, hangup, delay) \
    {                                        \
-#type, hangup, delay                  \
+      #type, hangup, delay                  \
    }
 #define SERVERS(...) \
    {                 \
@@ -386,7 +385,7 @@ _testcase_run (he_testcase_t *testcase)
 #define DURATION_MS(min, max) (min), (max)
 #define EXPECT(type, num_acmds, duration) \
    {                                      \
-#type, num_acmds, duration          \
+      #type, num_acmds, duration          \
    }
 #define NCMDS(n) (n)
 
@@ -435,12 +434,6 @@ test_happy_eyeballs_dns_cache (void)
 
    _testcase_teardown (&testcase);
 #undef E
-}
-
-void
-test_happy_eyeballs_retirement ()
-{
-   /* test connecting to a retired node that fails to initiate a connection. */
 }
 
 void

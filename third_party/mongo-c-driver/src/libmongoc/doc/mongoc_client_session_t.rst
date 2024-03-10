@@ -4,12 +4,16 @@
 mongoc_client_session_t
 =======================
 
-Use a session for a sequence of operations, optionally with causal consistency. See `the MongoDB Manual Entry for Causal Consistency <http://dochub.mongodb.org/core/causal-consistency>`_.
+Use a session for a sequence of operations, optionally with causal consistency. See `the MongoDB Manual Entry for Causal Consistency <https://www.mongodb.com/docs/manual/core/read-isolation-consistency-recency/#causal-consistency>`_.
 
 Synopsis
 --------
 
 .. include:: includes/session-lifecycle.txt
+
+Fork Safety
+-----------
+A :symbol:`mongoc_client_session_t` is only usable in the parent process after a fork. The child process must call :symbol:`mongoc_client_reset` on the ``client`` field.
 
 Example
 -------

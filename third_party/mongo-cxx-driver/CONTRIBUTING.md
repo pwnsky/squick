@@ -43,9 +43,9 @@ General structure:
  - System Headers `<vector>` (alphabetical order)
  - Driver Headers `<path/to/header.hpp>` (alphabetical order)
  - Open Namespace mongocxx 
- - `MONGOCXX_INLINE_NAMESPACE_BEGIN`
+ - `inline namespace v_noabi {`
  -    Code
- - `MONGOCXX_INLINE_NAMESPACE_END`
+ - `}  // namespace v_noabi`
  - Close Namespace mongocxx
  - Header Postlude
 
@@ -75,17 +75,61 @@ Example:
 #include <driver/blah.hpp>
 
 namespace mongocxx {
-MONGOCXX_INLINE_NAMESPACE_BEGIN
+inline namespace v_noabi {
 
 // Declarations
 
 // Inline Implementations
 
-MONGOCXX_INLINE_NAMESPACE_END
+}  // namespace v_noabi
 }  // namespace mongocxx
 
 #include <driver/config/postlude.hpp>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+### Library Root Namespace
+
+The library root namespace declares ABI namespaces (e.g. `mongocxx::v_noabi`, `mongocxx::v1`, etc.), within which symbols are declared according to their compatibility with an ABI version.
+
+The library root namespace also redeclares ABI-specific entities without an ABI namespace qualifier (e.g. `mongocxx::v_noabi::document::view` as `mongocxx::document::view`) to allow users to automatically opt-into the latest supported ABI version of a given entity without requiring changes to source code. The root namespace redeclarations are intended to be the default method for using library entities. A user should only include the ABI namespace in a qualifier if they require compatibility with that specific ABI version.
+
+To avoid being affected by changes to root namespace redeclarations, interfaces declared within an ABI namespace must not be written in terms of a root namespace redeclaration:
+
+```cpp
+namespace mongocxx {
+namespace v_noabi {
+namespace example {
+
+struct type {}; // The type intended to be referenced below.
+
+// Problem: when `mongocxx::example::type` is changed from `v_noabi` to `v1`,
+// this parameter type will also (incorrectly) change from `v_noabi` to `v1`.
+void fn(mongocxx::example::type param);
+
+}  // namespace example
+}  // namespace v_noabi
+}  // namespace mongocxx
+```
+
+References to ABI-specific entities in ABI namespaces must always be (un)qualified such that it is not affected by changes to root namespace redeclarations:
+
+```cpp
+namespace mongocxx {
+namespace v_noabi {
+namespace example {
+
+struct type {}; // The type intended to be referenced below.
+
+// OK: always resolves to `mongocxx::v_noabi::example::type`.
+void fn(type param);
+
+// Also OK: unambiguously refers to the ABI-specific type.
+void fn(mongocxx::v_noabi::example::type param);
+
+}  // namespace example
+}  // namespace v_noabi
+}  // namespace mongocxx
+```
 
 ### Class Declarations
 

@@ -47,7 +47,7 @@ endif()
 message("== Running extrnal build at: ${BIN_DIR} (${CONFIG})")
 
 execute_process(
-  COMMAND ${CMAKE_COMMAND} --build ${BIN_DIR} --config ${CONFIG} ${OPTS}
+  COMMAND ${CMAKE_COMMAND} --build ${BIN_DIR} --config ${CONFIG} ${OPTS} -j6
   RESULT_VARIABLE res
 )
 

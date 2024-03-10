@@ -10,17 +10,85 @@ function(mongocxx_add_library TARGET OUTPUT_NAME LINK_TYPE)
         ${mongocxx_sources}
     )
 
-    set_target_properties (${TARGET} PROPERTIES
-        OUTPUT_NAME ${OUTPUT_NAME}
+    # Full ABI tag string to append to library output name.
+    # The value is determined at generator-time when using a multi-config generator.
+    # Otherwise, the value is determined at configure-time.
+    set(abi_tag "")
+
+    # ABI tag and properties.
+    if(1)
+        # Many ABI tag fields are inherited from bsoncxx (must be consistent).
+        if(BSONCXX_BUILD_SHARED)
+            set(bsoncxx_target bsoncxx_shared)
+        else()
+            set(bsoncxx_target bsoncxx_static)
+        endif()
+
+        # ABI version number. Only necessary for shared library targets.
+        if(LINK_TYPE STREQUAL "SHARED")
+            set(soversion _noabi)
+            set_target_properties(${TARGET} PROPERTIES SOVERSION ${soversion})
+            string(APPEND abi_tag "-v${soversion}")
+        endif()
+
+        # Build type (same as bsoncxx):
+        # - 'd' for debug.
+        # - 'r' for release (including RelWithDebInfo and MinSizeRel).
+        # - 'u' for unknown (e.g. to allow user-defined configurations).
+        # Compatibility is handled via CMake's IMPORTED_CONFIGURATIONS rather than interface properties.
+        string(APPEND abi_tag "-$<IF:$<CONFIG:Debug>,d,$<IF:$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>,r,u>>")
+
+        # Link type with libmongoc. Inherit from bsoncxx.
+        if(1)
+            get_target_property(mongoc_link_type ${bsoncxx_target} INTERFACE_BSONCXX_ABI_TAG_MONGOC_LINK_TYPE)
+
+            set_target_properties(${TARGET} PROPERTIES
+                BSONCXX_ABI_TAG_MONGOC_LINK_TYPE ${mongoc_link_type}
+                INTERFACE_BSONCXX_ABI_TAG_MONGOC_LINK_TYPE ${mongoc_link_type}
+            )
+
+            string(APPEND abi_tag "${mongoc_link_type}")
+        endif()
+
+        # Library used for C++17 polyfills. Inherit from bsoncxx.
+        if(1)
+            get_target_property(polyfill ${bsoncxx_target} INTERFACE_BSONCXX_ABI_TAG_POLYFILL_LIBRARY)
+
+            set_target_properties(${TARGET} PROPERTIES
+                BSONCXX_ABI_TAG_POLYFILL_LIBRARY ${polyfill}
+                INTERFACE_BSONCXX_ABI_TAG_POLYFILL_LIBRARY ${polyfill}
+            )
+
+            string(APPEND abi_tag "${polyfill}")
+        endif()
+
+        # MSVC-specific ABI tag suffixes. Inherit from bsoncxx.
+        if(MSVC)
+            get_target_property(vs_suffix ${bsoncxx_target} BSONCXX_ABI_TAG_VS_SUFFIX)
+            set_target_properties(${TARGET} PROPERTIES
+                BSONCXX_ABI_TAG_VS_SUFFIX ${vs_suffix}
+                INTERFACE_BSONCXX_ABI_TAG_VS_SUFFIX ${vs_suffix}
+            )
+
+            string(APPEND abi_tag "${vs_suffix}")
+        endif()
+    endif()
+
+    set_target_properties(${TARGET} PROPERTIES
         VERSION ${MONGOCXX_VERSION}
         DEFINE_SYMBOL MONGOCXX_EXPORTS
     )
 
+    if(ENABLE_ABI_TAG_IN_LIBRARY_FILENAMES)
+        set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME ${OUTPUT_NAME}${abi_tag})
+    else()
+        set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME ${OUTPUT_NAME})
+    endif()
+
     if(LINK_TYPE STREQUAL "SHARED")
-        set_target_properties (${TARGET} PROPERTIES
+        set_target_properties(${TARGET} PROPERTIES
             CXX_VISIBILITY_PRESET hidden
             VISIBILITY_INLINES_HIDDEN ON
-            SOVERSION ${MONGOCXX_ABI_VERSION}
         )
     endif()
 
@@ -33,83 +101,12 @@ function(mongocxx_add_library TARGET OUTPUT_NAME LINK_TYPE)
     target_include_directories(
         ${TARGET}
         PUBLIC
-            $<BUILD_INTERFACE:${source_dir}/include>
-            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/..>
-            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/..>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/mongocxx/v_noabi>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/lib/mongocxx/v_noabi>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/lib>
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/lib/mongocxx/v_noabi>
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/lib>
     )
     target_compile_definitions(${TARGET} PRIVATE ${libmongoc_definitions})
-
-    generate_export_header(${TARGET}
-        BASE_NAME MONGOCXX
-        EXPORT_MACRO_NAME MONGOCXX_API
-        NO_EXPORT_MACRO_NAME MONGOCXX_PRIVATE
-        EXPORT_FILE_NAME config/export.hpp
-        STATIC_DEFINE MONGOCXX_STATIC
-    )
 endfunction(mongocxx_add_library)
-
-# Install the specified forms of the mongocxx library (i.e., shared and/or static)
-# with associated CMake config files
-function(mongocxx_install MONGOCXX_TARGET_LIST MONGOCXX_PKG_DEP)
-    install(TARGETS
-            ${MONGOCXX_TARGET_LIST}
-        EXPORT mongocxx_targets
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT dev
-        INCLUDES DESTINATION ${MONGOCXX_HEADER_INSTALL_DIR}
-    )
-
-    write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/mongocxx-config-version.cmake"
-        VERSION ${MONGOCXX_VERSION}
-        COMPATIBILITY SameMajorVersion
-    )
-
-    configure_file(cmake/mongocxx-config.cmake.in
-        "${CMAKE_CURRENT_BINARY_DIR}/mongocxx-config.cmake"
-        @ONLY
-    )
-
-    export(EXPORT mongocxx_targets
-        NAMESPACE mongo::
-        FILE "${CMAKE_CURRENT_BINARY_DIR}/mongocxx_targets.cmake"
-    )
-
-    install(EXPORT mongocxx_targets
-        NAMESPACE mongo::
-        FILE mongocxx_targets.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mongocxx-${MONGOCXX_VERSION}
-    )
-
-    install(
-        FILES
-            "${CMAKE_CURRENT_BINARY_DIR}/mongocxx-config-version.cmake"
-            "${CMAKE_CURRENT_BINARY_DIR}/mongocxx-config.cmake"
-        DESTINATION
-            ${CMAKE_INSTALL_LIBDIR}/cmake/mongocxx-${MONGOCXX_VERSION}
-        COMPONENT
-            Devel
-    )
-endfunction(mongocxx_install)
-
-function(mongocxx_install_deprecated_cmake NAME)
-    set(PKG "lib${NAME}")
-
-    configure_package_config_file(
-      cmake/${PKG}-config.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/${PKG}-config.cmake
-      INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PKG}-${MONGOCXX_VERSION}
-      PATH_VARS PACKAGE_INCLUDE_INSTALL_DIRS PACKAGE_LIBRARY_INSTALL_DIRS
-    )
-
-    write_basic_package_version_file(
-      ${CMAKE_CURRENT_BINARY_DIR}/${PKG}-config-version.cmake
-      VERSION ${MONGOCXX_VERSION}
-      COMPATIBILITY SameMajorVersion
-    )
-
-    install(
-      FILES ${CMAKE_CURRENT_BINARY_DIR}/${PKG}-config.cmake ${CMAKE_CURRENT_BINARY_DIR}/${PKG}-config-version.cmake
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PKG}-${MONGOCXX_VERSION}
-    )
-endfunction(mongocxx_install_deprecated_cmake)

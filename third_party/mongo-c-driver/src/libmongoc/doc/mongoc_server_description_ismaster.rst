@@ -3,6 +3,13 @@
 mongoc_server_description_ismaster()
 ====================================
 
+.. warning::
+   .. deprecated:: 1.18.0
+
+      This function is deprecated and should not be used in new code.
+
+      Please use :doc:`mongoc_server_description_hello_response() <mongoc_server_description_hello_response>` in new code.
+
 Synopsis
 --------
 
@@ -12,15 +19,6 @@ Synopsis
   mongoc_server_description_ismaster (
      const mongoc_server_description_t *description);
 
-Deprecated
-----------
-
-.. warning::
-
-  This function is deprecated and should not be used in new code.
-
-Please use :doc:`mongoc_server_description_hello_response() <mongoc_server_description_hello_response>` instead.
-
 Parameters
 ----------
 
@@ -29,7 +27,7 @@ Parameters
 Description
 -----------
 
-The client or client pool periodically runs a `"hello" <https://docs.mongodb.org/manual/reference/command/hello/>`_ command on each server, to update its view of the MongoDB deployment. Use :symbol:`mongoc_client_get_server_descriptions()` and ``mongoc_server_description_hello_response()`` to get the most recent "hello" response.
+The client or client pool periodically runs a `"hello" <https://www.mongodb.com/docs/manual/reference/command/hello/>`_ command on each server, to update its view of the MongoDB deployment. Use :symbol:`mongoc_client_get_server_descriptions()` and ``mongoc_server_description_hello_response()`` to get the most recent "hello" response.
 
 Returns
 -------

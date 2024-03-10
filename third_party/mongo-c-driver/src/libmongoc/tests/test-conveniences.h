@@ -32,7 +32,7 @@
  * Safe to call repeatedly, or after calling test_conveniences_cleanup().
  */
 void
-test_conveniences_init ();
+test_conveniences_init (void);
 
 /* Tear down global test conveniences.
  * Safe to call repeatedly.
@@ -65,12 +65,12 @@ bson_iter_bson (const bson_iter_t *iter, bson_t *bson);
  * returned bson_t does not need to be freed. This corresponds to the same
  * document in json_with_all_types. */
 bson_t *
-bson_with_all_types ();
+bson_with_all_types (void);
 
 /* returns a json string with all types of values, and an empty key. This
  * corresponds to the same document in bson_with_all_types. */
 const char *
-json_with_all_types ();
+json_with_all_types (void);
 
 
 #ifndef PATH_MAX
@@ -175,8 +175,19 @@ typedef struct _match_ctx_t {
    bool is_command;
 } match_ctx_t;
 
-void
-assert_match_bson (const bson_t *doc, const bson_t *pattern, bool is_command);
+#define assert_match_bson(doc, pattern, _is_command)                  \
+   if (1) {                                                           \
+      match_ctx_t _ctx = {.strict_numeric_types = true,               \
+                          .is_command = _is_command};                 \
+                                                                      \
+      if (!match_bson_with_ctx (doc, pattern, &_ctx)) {               \
+         test_error ("Expected: %s\n, Got: %s\n, %s\n",               \
+                     bson_as_canonical_extended_json (pattern, NULL), \
+                     bson_as_canonical_extended_json (doc, NULL),     \
+                     _ctx.errmsg);                                    \
+      }                                                               \
+   } else                                                             \
+      (void) 0
 
 bool
 match_bson (const bson_t *doc, const bson_t *pattern, bool is_command);
@@ -222,7 +233,7 @@ size_t
 huge_string_length (mongoc_client_t *client);
 
 const char *
-four_mb_string ();
+four_mb_string (void);
 
 void
 assert_no_duplicate_keys (const bson_t *doc);

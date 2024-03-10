@@ -19,12 +19,11 @@
 
 #include <bsoncxx/types/bson_value/value.hpp>
 #include <mongocxx/client.hpp>
+#include <mongocxx/client_encryption.hpp>
 
 #include <mongocxx/config/private/prelude.hh>
 
 namespace mongocxx {
-MONGOCXX_INLINE_NAMESPACE_BEGIN
-
 namespace entity {
 
 class map {
@@ -49,6 +48,7 @@ class map {
     bool insert(const key_type& key, mongocxx::change_stream&&);
     bool insert(const key_type& key, bsoncxx::types::bson_value::value&&);
     bool insert(const key_type& key, mongocxx::cursor&&);
+    bool insert(const key_type& key, mongocxx::client_encryption&&);
 
     client& get_client(const key_type& key);
     database& get_database(const key_type& key);
@@ -58,6 +58,7 @@ class map {
     gridfs::bucket& get_bucket(const key_type& key);
     bsoncxx::types::bson_value::value& get_value(const key_type& key);
     cursor& get_cursor(const key_type& key);
+    mongocxx::client_encryption& get_client_encryption(const key_type& key);
 
     database& get_database_by_name(stdx::string_view name);
 
@@ -71,7 +72,7 @@ class map {
     // client must outlive the objects created from it, the client objects are held in a separate
     // map and declared first.
     //
-    // @see: http://mongoc.org/libmongoc/current/lifecycle.html#object-lifecycle
+    // @see: https://mongoc.org/libmongoc/current/lifecycle.html#object-lifecycle
     // @see: https://isocpp.org/wiki/faq/dtors#order-dtors-for-members
     std::unordered_map<key_type, client> _client_map;
     std::unordered_map<key_type, mongocxx::database> _database_map;
@@ -81,9 +82,10 @@ class map {
     std::unordered_map<key_type, mongocxx::change_stream> _stream_map;
     std::unordered_map<key_type, bsoncxx::types::bson_value::value> _value_map;
     std::unordered_map<key_type, mongocxx::cursor> _cursor_map;
+    std::unordered_map<key_type, mongocxx::client_encryption> _client_encryption_map;
 };
+
 }  // namespace entity
-MONGOCXX_INLINE_NAMESPACE_END
 }  // namespace mongocxx
 
 #include <mongocxx/config/private/postlude.hh>

@@ -18,7 +18,7 @@
 #include <bsoncxx/builder/basic/document.hpp>
 #include <bsoncxx/json.hpp>
 #include <bsoncxx/string/to_string.hpp>
-#include <bsoncxx/test_util/catch.hh>
+#include <bsoncxx/test/catch.hh>
 #include <bsoncxx/types.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/collection.hpp>
@@ -45,7 +45,6 @@
 #include <mongocxx/config/private/prelude.hh>
 
 namespace mongocxx {
-MONGOCXX_INLINE_NAMESPACE_BEGIN
 namespace spec {
 
 using namespace mongocxx;
@@ -125,7 +124,9 @@ bsoncxx::stdx::optional<read_preference> lookup_read_preference(document::view d
 client_session* operation_runner::_lookup_session(stdx::string_view key) {
     if (key.compare("session0") == 0) {
         return _session0;
-    } else {
+    }
+
+    if (key.compare("session1") == 0) {
         return _session1;
     }
 
@@ -134,8 +135,7 @@ client_session* operation_runner::_lookup_session(stdx::string_view key) {
 
 client_session* operation_runner::_lookup_session(document::view doc) {
     if (doc["session"]) {
-        stdx::string_view session_name = doc["session"].get_string().value;
-        return _lookup_session(session_name);
+        return _lookup_session(doc["session"].get_string().value);
     }
     return nullptr;
 }
@@ -317,7 +317,7 @@ document::value operation_runner::_run_delete_many(document::view operation) {
     }
 
     if (arguments["hint"]) {
-        if (arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+        if (arguments["hint"].type() == bsoncxx::type::k_string)
             options.hint(hint{arguments["hint"].get_string().value});
         else
             options.hint(hint{arguments["hint"].get_document().value});
@@ -354,7 +354,7 @@ document::value operation_runner::_run_delete_one(document::view operation) {
     }
 
     if (arguments["hint"]) {
-        if (arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+        if (arguments["hint"].type() == bsoncxx::type::k_string)
             options.hint(hint{arguments["hint"].get_string().value});
         else
             options.hint(hint{arguments["hint"].get_document().value});
@@ -391,14 +391,14 @@ document::value operation_runner::_run_find_one_and_delete(document::view operat
     }
 
     if (arguments["hint"]) {
-        if (arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+        if (arguments["hint"].type() == bsoncxx::type::k_string)
             options.hint(hint{arguments["hint"].get_string().value});
         else
             options.hint(hint{arguments["hint"].get_document().value});
     }
 
     if (arguments["hint"]) {
-        if (arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+        if (arguments["hint"].type() == bsoncxx::type::k_string)
             options.hint(hint{arguments["hint"].get_string().value});
         else
             options.hint(hint{arguments["hint"].get_document().value});
@@ -460,7 +460,7 @@ document::value operation_runner::_run_find_one_and_replace(document::view opera
     }
 
     if (arguments["hint"]) {
-        if (arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+        if (arguments["hint"].type() == bsoncxx::type::k_string)
             options.hint(hint{arguments["hint"].get_string().value});
         else
             options.hint(hint{arguments["hint"].get_document().value});
@@ -520,7 +520,7 @@ document::value operation_runner::_run_find_one_and_update(document::view operat
     }
 
     if (arguments["hint"]) {
-        if (arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+        if (arguments["hint"].type() == bsoncxx::type::k_string)
             options.hint(hint{arguments["hint"].get_string().value});
         else
             options.hint(hint{arguments["hint"].get_document().value});
@@ -676,7 +676,7 @@ document::value operation_runner::_run_replace_one(document::view operation) {
     }
 
     if (arguments["hint"]) {
-        if (arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+        if (arguments["hint"].type() == bsoncxx::type::k_string)
             options.hint(hint{arguments["hint"].get_string().value});
         else
             options.hint(hint{arguments["hint"].get_document().value});
@@ -744,7 +744,7 @@ document::value operation_runner::_run_update_many(document::view operation) {
     }
 
     if (arguments["hint"]) {
-        if (arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+        if (arguments["hint"].type() == bsoncxx::type::k_string)
             options.hint(hint{arguments["hint"].get_string().value});
         else
             options.hint(hint{arguments["hint"].get_document().value});
@@ -836,7 +836,7 @@ document::value operation_runner::_run_update_one(document::view operation) {
     }
 
     if (arguments["hint"]) {
-        if (arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+        if (arguments["hint"].type() == bsoncxx::type::k_string)
             options.hint(hint{arguments["hint"].get_string().value});
         else
             options.hint(hint{arguments["hint"].get_document().value});
@@ -995,7 +995,7 @@ document::value operation_runner::_run_bulk_write(document::view operation) {
             auto update_one = _build_update_model<model::update_one>(request_arguments);
 
             if (request_arguments["hint"]) {
-                if (request_arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+                if (request_arguments["hint"].type() == bsoncxx::type::k_string)
                     update_one.hint(hint{request_arguments["hint"].get_string().value});
                 else
                     update_one.hint(hint{request_arguments["hint"].get_document().value});
@@ -1018,7 +1018,7 @@ document::value operation_runner::_run_bulk_write(document::view operation) {
             auto update_many = _build_update_model<model::update_many>(request_arguments);
 
             if (request_arguments["hint"]) {
-                if (request_arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+                if (request_arguments["hint"].type() == bsoncxx::type::k_string)
                     update_many.hint(hint{request_arguments["hint"].get_string().value});
                 else
                     update_many.hint(hint{request_arguments["hint"].get_document().value});
@@ -1042,7 +1042,7 @@ document::value operation_runner::_run_bulk_write(document::view operation) {
             document::view replacement = request_arguments["replacement"].get_document().value;
             model::replace_one replace_one(filter, replacement);
             if (request_arguments["hint"]) {
-                if (request_arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+                if (request_arguments["hint"].type() == bsoncxx::type::k_string)
                     replace_one.hint(hint{request_arguments["hint"].get_string().value});
                 else
                     replace_one.hint(hint{request_arguments["hint"].get_document().value});
@@ -1065,7 +1065,7 @@ document::value operation_runner::_run_bulk_write(document::view operation) {
             document::view filter = request_arguments["filter"].get_document().value;
             model::delete_one delete_one(filter);
             if (request_arguments["hint"]) {
-                if (request_arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+                if (request_arguments["hint"].type() == bsoncxx::type::k_string)
                     delete_one.hint(hint{request_arguments["hint"].get_string().value});
                 else
                     delete_one.hint(hint{request_arguments["hint"].get_document().value});
@@ -1080,7 +1080,7 @@ document::value operation_runner::_run_bulk_write(document::view operation) {
             document::view filter = request_arguments["filter"].get_document().value;
             model::delete_many delete_many(filter);
             if (request_arguments["hint"]) {
-                if (request_arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+                if (request_arguments["hint"].type() == bsoncxx::type::k_string)
                     delete_many.hint(hint{request_arguments["hint"].get_string().value});
                 else
                     delete_many.hint(hint{request_arguments["hint"].get_document().value});
@@ -1243,22 +1243,6 @@ document::value operation_runner::_run_run_command(bsoncxx::document::view opera
     return result.extract();
 }
 
-document::value operation_runner::_run_configure_fail_point(bsoncxx::document::view operation) {
-    auto arguments = operation["arguments"].get_document().value;
-    auto command = arguments["failPoint"].get_document().value;
-
-    const client_session* session = _lookup_session(arguments);
-
-    read_preference rp;
-    uint32_t server_id = session->server_id();
-    stdx::optional<document::value> reply = (*_client)["admin"].run_command(command, server_id);
-
-    auto result = builder::basic::document{};
-    result.append(builder::basic::kvp("result", *reply));
-
-    return result.extract();
-}
-
 document::value operation_runner::_create_index(const document::view& operation) {
     auto arguments = operation["arguments"];
     auto session = _lookup_session(arguments.get_document().value);
@@ -1271,6 +1255,49 @@ document::value operation_runner::_create_index(const document::view& operation)
     opts.append(bsoncxx::builder::basic::kvp("name", name));
 
     return _coll->create_index(*session, keys, opts.extract());
+}
+
+document::value operation_runner::_run_create_collection(document::view operation) {
+    using bsoncxx::builder::basic::kvp;
+    using bsoncxx::builder::basic::make_document;
+
+    bsoncxx::document::value empty_document({});
+
+    auto arguments = operation["arguments"].get_document().value;
+    auto collection_name = arguments["collection"].get_string().value;
+    auto session = _lookup_session(arguments);
+    bsoncxx::builder::basic::document opts;
+
+    if (arguments["encryptedFields"]) {
+        opts.append(kvp("encryptedFields", arguments["encryptedFields"].get_document().value));
+    }
+
+    if (session) {
+        _db->create_collection(*session, collection_name, opts.extract());
+    } else {
+        _db->create_collection(collection_name, opts.extract());
+    }
+    return empty_document;
+}
+
+document::value operation_runner::_run_drop_collection(document::view operation) {
+    using bsoncxx::builder::basic::kvp;
+    using bsoncxx::builder::basic::make_document;
+
+    bsoncxx::document::value empty_document({});
+
+    auto arguments = operation["arguments"].get_document().value;
+
+    auto collection_name = operation["arguments"]["collection"].get_string().value;
+
+    if (arguments.find("encryptedFields") != arguments.end()) {
+        auto encrypted_fields = arguments["encryptedFields"].get_document().value;
+        auto encrypted_fields_map = make_document(kvp("encryptedFields", encrypted_fields));
+        _db->collection(collection_name).drop(stdx::nullopt, std::move(encrypted_fields_map));
+    } else {
+        _db->collection(collection_name).drop();
+    }
+    return empty_document;
 }
 
 operation_runner::operation_runner(collection* coll) : operation_runner(nullptr, coll) {}
@@ -1335,17 +1362,40 @@ document::value operation_runner::run(document::view operation) {
         return _run_abort_transaction(operation);
     } else if (key.compare("runCommand") == 0) {
         return _run_run_command(operation);
-    } else if (key.compare("targetedFailPoint") == 0) {
-        return _run_configure_fail_point(operation);
     } else if (key.compare("assertSessionPinned") == 0) {
         const client_session* session =
             _lookup_session(operation["arguments"].get_document().value);
-        REQUIRE(session->server_id());
+        REQUIRE(session);
+        REQUIRE(session->server_id() != 0);
         return empty_document;
-    } else if (key.compare("operationassertSessionUnpinned") == 0) {
+    } else if (key.compare("assertSessionUnpinned") == 0) {
         const client_session* session =
             _lookup_session(operation["arguments"].get_document().value);
-        REQUIRE(!session->server_id());
+        REQUIRE(session);
+        REQUIRE(session->server_id() == 0);
+        return empty_document;
+    } else if (key.compare("assertSessionTransactionState") == 0) {
+        const auto arguments = operation["arguments"].get_document().value;
+        const client_session* session = _lookup_session(arguments);
+        REQUIRE(session);
+        const auto state = arguments["state"].get_string().value;
+        switch (session->get_transaction_state()) {
+            case client_session::transaction_state::k_transaction_none:
+                REQUIRE(state == stdx::string_view("none"));
+                break;
+            case client_session::transaction_state::k_transaction_starting:
+                REQUIRE(state == stdx::string_view("starting"));
+                break;
+            case client_session::transaction_state::k_transaction_in_progress:
+                REQUIRE(state == stdx::string_view("in_progress"));
+                break;
+            case client_session::transaction_state::k_transaction_committed:
+                REQUIRE(state == stdx::string_view("committed"));
+                break;
+            case client_session::transaction_state::k_transaction_aborted:
+                REQUIRE(state == stdx::string_view("aborted"));
+                break;
+        }
         return empty_document;
     } else if (key.compare("watch") == 0) {
         if (object.compare("collection") == 0) {
@@ -1365,9 +1415,7 @@ document::value operation_runner::run(document::view operation) {
         _coll->drop();
         return empty_document;
     } else if (key.compare("dropCollection") == 0) {
-        auto collection_name = operation["arguments"]["collection"].get_string().value;
-        _db->collection(collection_name).drop();
-        return empty_document;
+        return _run_drop_collection(operation);
     } else if (key.compare("listCollectionNames") == 0) {
         _db->list_collection_names();
         return empty_document;
@@ -1392,12 +1440,7 @@ document::value operation_runner::run(document::view operation) {
 
         return empty_document;
     } else if (key.compare("createCollection") == 0) {
-        auto collection_name = operation["arguments"]["collection"].get_string().value;
-        auto session = _lookup_session(operation["arguments"].get_document().value);
-        REQUIRE(session);
-
-        _db->create_collection(*session, collection_name);
-        return empty_document;
+        return _run_create_collection(operation);
     } else if (key.compare("assertCollectionNotExists") == 0) {
         auto collection_name = operation["arguments"]["collection"].get_string().value;
         client client{uri{}};
@@ -1414,26 +1457,44 @@ document::value operation_runner::run(document::view operation) {
         client client{uri{}};
         auto cursor = client[_db->name()][_coll->name()].list_indexes();
 
-        REQUIRE(cursor.end() ==
-                std::find_if(cursor.begin(),
-                             cursor.end(),
-                             [operation](bsoncxx::v_noabi::document::view doc) {
-                                 return (doc["name"].get_string() ==
-                                         operation["arguments"]["index"].get_string());
-                             }));
+        REQUIRE(
+            cursor.end() ==
+            std::find_if(cursor.begin(), cursor.end(), [operation](bsoncxx::document::view doc) {
+                return (doc["name"].get_string() == operation["arguments"]["index"].get_string());
+            }));
 
         return empty_document;
     } else if (key.compare("assertIndexExists") == 0) {
         client client{uri{}};
-        auto cursor = client[_db->name()][_coll->name()].list_indexes();
+        auto db = operation["arguments"]["database"].get_string().value;
+        auto collection = operation["arguments"]["collection"].get_string().value;
+        auto cursor = client[db][collection].list_indexes();
 
-        REQUIRE(cursor.end() !=
-                std::find_if(cursor.begin(),
-                             cursor.end(),
-                             [operation](bsoncxx::v_noabi::document::view doc) {
-                                 return (doc["name"].get_string() ==
-                                         operation["arguments"]["index"].get_string());
-                             }));
+        REQUIRE(
+            cursor.end() !=
+            std::find_if(cursor.begin(), cursor.end(), [operation](bsoncxx::document::view doc) {
+                return (doc["name"].get_string() == operation["arguments"]["index"].get_string());
+            }));
+
+        return empty_document;
+    } else if (key.compare("targetedFailPoint") == 0) {
+        REQUIRE(object == stdx::string_view("testRunner"));
+
+        const auto arguments = operation["arguments"].get_document().value;
+
+        const auto session_ptr = _lookup_session(arguments);
+        REQUIRE(session_ptr);
+        auto& session = *session_ptr;
+        const auto server_id = session.server_id();
+
+        if (server_id == 0) {
+            FAIL("session object is not pinned to a mongos server");
+        }
+
+        const auto command = arguments["failPoint"].get_document().value;
+        REQUIRE(!command.empty());
+
+        session.client()["admin"].run_command(command, server_id);
 
         return empty_document;
     } else {
@@ -1442,7 +1503,6 @@ document::value operation_runner::run(document::view operation) {
 }
 
 }  // namespace spec
-MONGOCXX_INLINE_NAMESPACE_END
 }  // namespace mongocxx
 
 #include <mongocxx/config/private/postlude.hh>

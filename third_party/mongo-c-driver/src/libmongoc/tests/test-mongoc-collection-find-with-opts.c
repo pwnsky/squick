@@ -63,12 +63,12 @@ _test_collection_find_command (test_collection_find_with_opts_t *test_data)
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson (test_data->expected_find_command));
    ASSERT (request);
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': 0,"
-                               "    'ns': 'db.collection',"
-                               "    'firstBatch': [{}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 0,"
+                            "    'ns': 'db.collection',"
+                            "    'firstBatch': [{}]}}");
    ASSERT (future_get_bool (future));
 
    request_destroy (request);
@@ -484,14 +484,13 @@ test_exhaust (void)
     * fallback to existing OP_QUERY wire protocol messages."
     */
    request = mock_server_receives_request (server);
-   mock_server_replies_to_find (request,
-                                MONGOC_QUERY_SECONDARY_OK |
-                                   MONGOC_QUERY_EXHAUST,
-                                0,
-                                0,
-                                "db.collection",
-                                "{}",
-                                false /* is_command */);
+   reply_to_find_request (request,
+                          MONGOC_QUERY_SECONDARY_OK | MONGOC_QUERY_EXHAUST,
+                          0,
+                          0,
+                          "db.collection",
+                          "{}",
+                          false /* is_command */);
 
    ASSERT (future_get_bool (future));
    ASSERT_OR_PRINT (!mongoc_cursor_error (cursor, &error), error);
@@ -543,12 +542,12 @@ test_getmore_cmd_await (void)
                 " 'maxAwaitTimeMS': {'$exists': false}}"));
 
    ASSERT (request);
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': {'$numberLong': '123'},"
-                               "    'ns': 'db.collection',"
-                               "    'firstBatch': [{}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': {'$numberLong': '123'},"
+                            "    'ns': 'db.collection',"
+                            "    'firstBatch': [{}]}}");
 
    ASSERT (future_get_bool (future));
    request_destroy (request);
@@ -568,12 +567,12 @@ test_getmore_cmd_await (void)
                 " 'maxTimeMS': {'$numberLong': '9999'}}"));
 
    ASSERT (request);
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': {'$numberLong': '0'},"
-                               "    'ns': 'db.collection',"
-                               "    'nextBatch': [{}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': {'$numberLong': '0'},"
+                            "    'ns': 'db.collection',"
+                            "    'nextBatch': [{}]}}");
 
    ASSERT (future_get_bool (future));
 
@@ -622,11 +621,11 @@ test_find_w_server_id (void)
                 " '$readPreference': {'mode': 'primaryPreferred'}}"));
 
    ASSERT (mock_rs_request_is_to_secondary (rs, request));
-   mock_rs_replies_simple (request,
-                           "{'ok': 1,"
-                           " 'cursor': {"
-                           "   'ns': 'db.collection',"
-                           "   'firstBatch': [{}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "   'ns': 'db.collection',"
+                            "   'firstBatch': [{}]}}");
    ASSERT_OR_PRINT (future_get_bool (future), cursor->error);
 
    future_destroy (future);
@@ -678,12 +677,12 @@ test_find_cmd_w_server_id (void)
                                       " 'serverId': {'$exists': false}}"));
 
    ASSERT (mock_rs_request_is_to_secondary (rs, request));
-   mock_rs_replies_simple (request,
-                           "{'ok': 1,"
-                           " 'cursor': {"
-                           "    'id': 0,"
-                           "    'ns': 'db.collection',"
-                           "    'firstBatch': [{}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 0,"
+                            "    'ns': 'db.collection',"
+                            "    'firstBatch': [{}]}}");
 
    ASSERT_OR_PRINT (future_get_bool (future), error);
 
@@ -731,12 +730,12 @@ test_find_w_server_id_sharded (void)
                 " 'filter': {},"
                 " '$readPreference': {'$exists': false}}"));
 
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': 0,"
-                               "    'ns': 'db.collection',"
-                               "    'firstBatch': [{}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 0,"
+                            "    'ns': 'db.collection',"
+                            "    'firstBatch': [{}]}}");
    ASSERT_OR_PRINT (future_get_bool (future), error);
 
    future_destroy (future);
@@ -784,12 +783,12 @@ test_find_cmd_w_server_id_sharded (void)
                                           " 'readConcern': {'level': 'local'},"
                                           " 'serverId': {'$exists': false}}"));
 
-   mock_rs_replies_simple (request,
-                           "{'ok': 1,"
-                           " 'cursor': {"
-                           "    'id': 0,"
-                           "    'ns': 'db.collection',"
-                           "    'firstBatch': [{}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 0,"
+                            "    'ns': 'db.collection',"
+                            "    'firstBatch': [{}]}}");
 
    ASSERT_OR_PRINT (future_get_bool (future), error);
 
@@ -837,6 +836,88 @@ test_server_id_option (void)
    ASSERT_OR_PRINT (!mongoc_cursor_error (cursor, &error), error);
 
    mongoc_cursor_destroy (cursor);
+   mongoc_collection_destroy (collection);
+   mongoc_client_destroy (client);
+}
+
+static void
+test_find_batchSize (void)
+{
+   mongoc_client_t *client;
+   mongoc_collection_t *collection;
+   bson_error_t error;
+   mongoc_cursor_t *cursor;
+
+   client = test_framework_new_default_client ();
+   collection = mongoc_client_get_collection (client, "db", "collection");
+
+   // Test a cursor with an int32 batchSize.
+   {
+      cursor = mongoc_collection_find_with_opts (
+         collection,
+         tmp_bson ("{}"),
+         tmp_bson ("{'batchSize': { '$numberInt': '1' }}"),
+         NULL);
+
+      ASSERT_OR_PRINT (!mongoc_cursor_error (cursor, &error), error);
+
+      // Exhaust the cursor.
+      {
+         // Note: Cursors are lazy. The `find` command is sent on the first call
+         // to `mongoc_cursor_next`.
+         const bson_t *got;
+         while (mongoc_cursor_next (cursor, &got))
+            ;
+      }
+
+      ASSERT_OR_PRINT (!mongoc_cursor_error (cursor, &error), error);
+      mongoc_cursor_destroy (cursor);
+   }
+
+   // Test a cursor with an int64 batchSize.
+   {
+      cursor = mongoc_collection_find_with_opts (
+         collection,
+         tmp_bson ("{}"),
+         tmp_bson ("{'batchSize': { '$numberLong': '1' }}"),
+         NULL);
+
+      ASSERT_OR_PRINT (!mongoc_cursor_error (cursor, &error), error);
+
+      // Exhaust the cursor.
+      {
+         // Note: Cursors are lazy. The `find` command is sent on the first call
+         // to `mongoc_cursor_next`.
+         const bson_t *got;
+         while (mongoc_cursor_next (cursor, &got))
+            ;
+      }
+
+      ASSERT_OR_PRINT (!mongoc_cursor_error (cursor, &error), error);
+      mongoc_cursor_destroy (cursor);
+   }
+
+   // Test a cursor with a string batchSize.
+   {
+      cursor = mongoc_collection_find_with_opts (
+         collection, tmp_bson ("{}"), tmp_bson ("{'batchSize': 'foo'}"), NULL);
+
+      ASSERT_OR_PRINT (!mongoc_cursor_error (cursor, &error), error);
+
+      // Attempt to exhaust the cursor.
+      {
+         // Note: Cursors are lazy. The `find` command is sent on the first call
+         // to `mongoc_cursor_next`.
+         const bson_t *got;
+         while (mongoc_cursor_next (cursor, &got))
+            ;
+      }
+
+      // Expect an error from the server.
+      ASSERT (mongoc_cursor_error (cursor, &error));
+      mongoc_cursor_destroy (cursor);
+   }
+
    mongoc_collection_destroy (collection);
    mongoc_client_destroy (client);
 }
@@ -921,4 +1002,5 @@ test_collection_find_with_opts_install (TestSuite *suite)
    TestSuite_AddLive (suite,
                       "/Collection/find_with_opts/server_id/option",
                       test_server_id_option);
+   TestSuite_AddLive (suite, "/Collection/find/batchSize", test_find_batchSize);
 }

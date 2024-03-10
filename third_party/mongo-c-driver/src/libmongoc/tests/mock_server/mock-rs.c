@@ -48,7 +48,7 @@ struct _mock_rs_t {
 
 
 mock_server_t *
-get_server (mongoc_array_t *servers, int i)
+get_server (mongoc_array_t *servers, size_t i)
 {
    return _mongoc_array_index (servers, mock_server_t *, i);
 }
@@ -65,15 +65,14 @@ append_array (mongoc_array_t *dst, mongoc_array_t *src)
 char *
 hosts (mongoc_array_t *servers)
 {
-   int i;
    const char *host_and_port;
    bson_string_t *hosts_str = bson_string_new ("");
 
-   for (i = 0; i < servers->len; i++) {
+   for (size_t i = 0u; i < servers->len; i++) {
       host_and_port = mock_server_get_host_and_port (get_server (servers, i));
       bson_string_append_printf (hosts_str, "\"%s\"", host_and_port);
 
-      if (i < servers->len - 1) {
+      if (i + 1u < servers->len) {
          bson_string_append_printf (hosts_str, ", ");
       }
    }
@@ -85,16 +84,15 @@ hosts (mongoc_array_t *servers)
 mongoc_uri_t *
 make_uri (mongoc_array_t *servers)
 {
-   int i;
    const char *host_and_port;
    bson_string_t *uri_str = bson_string_new ("mongodb://");
    mongoc_uri_t *uri;
 
-   for (i = 0; i < servers->len; i++) {
+   for (size_t i = 0u; i < servers->len; i++) {
       host_and_port = mock_server_get_host_and_port (get_server (servers, i));
       bson_string_append_printf (uri_str, "%s", host_and_port);
 
-      if (i < servers->len - 1) {
+      if (i + 1u < servers->len) {
          bson_string_append_printf (uri_str, ",");
       }
    }
@@ -102,6 +100,11 @@ make_uri (mongoc_array_t *servers)
    bson_string_append_printf (uri_str, "/?replicaSet=rs");
 
    uri = mongoc_uri_new (uri_str->str);
+
+   // Many mock server tests do not expect retryable handshakes. Disable by
+   // default: tests that expect or require retryable handshakes must opt-in.
+   mongoc_uri_set_option_as_bool (uri, MONGOC_URI_RETRYREADS, false);
+   mongoc_uri_set_option_as_bool (uri, MONGOC_URI_RETRYWRITES, false);
 
    bson_string_free (uri_str, true);
 
@@ -237,14 +240,6 @@ mock_rs_with_auto_hello (int32_t max_wire_version,
 
 
 void
-mock_rs_tag_primary (mock_rs_t *rs, const bson_t *tags)
-{
-   bson_destroy (&rs->primary_tags);
-   bson_copy_to (tags, &rs->primary_tags);
-}
-
-
-void
 mock_rs_tag_secondary (mock_rs_t *rs, int server_number, const bson_t *tags)
 {
    bson_destroy (rs->secondary_tags[server_number]);
@@ -255,29 +250,11 @@ mock_rs_tag_secondary (mock_rs_t *rs, int server_number, const bson_t *tags)
 static void
 mock_rs_auto_endsessions (mock_rs_t *rs)
 {
-   int i;
-
-   for (i = 0; i < rs->servers.len; i++) {
+   for (size_t i = 0u; i < rs->servers.len; i++) {
       mock_server_auto_endsessions (get_server (&rs->servers, i));
    }
 }
 
-
-/*--------------------------------------------------------------------------
- *
- * mock_rs_get_request_timeout_msec --
- *
- *       How long mock_rs_receives_* functions wait for a client
- *       request before giving up and returning NULL.
- *
- *--------------------------------------------------------------------------
- */
-
-int64_t
-mock_rs_get_request_timeout_msec (mock_rs_t *rs)
-{
-   return rs->request_timeout_msec;
-}
 
 /*--------------------------------------------------------------------------
  *
@@ -326,7 +303,6 @@ rs_q_append (request_t *request, void *data)
 void
 mock_rs_run (mock_rs_t *rs)
 {
-   int i;
    mock_server_t *server;
    char *hello;
 
@@ -339,7 +315,7 @@ mock_rs_run (mock_rs_t *rs)
    /* start secondaries */
    _mongoc_array_init (&rs->secondaries, sizeof (mock_server_t *));
 
-   for (i = 0; i < rs->n_secondaries; i++) {
+   for (int i = 0; i < rs->n_secondaries; i++) {
       server = mock_server_new ();
       mock_server_run (server);
       _mongoc_array_append_val (&rs->secondaries, server);
@@ -348,7 +324,7 @@ mock_rs_run (mock_rs_t *rs)
    /* start arbiters */
    _mongoc_array_init (&rs->arbiters, sizeof (mock_server_t *));
 
-   for (i = 0; i < rs->n_arbiters; i++) {
+   for (int i = 0; i < rs->n_arbiters; i++) {
       server = mock_server_new ();
       mock_server_run (server);
       _mongoc_array_append_val (&rs->arbiters, server);
@@ -367,7 +343,7 @@ mock_rs_run (mock_rs_t *rs)
     * mock_rs_receives_query() &co. rs_q_append is added first so it
     * runs last, after auto_hello.
     */
-   for (i = 0; i < rs->servers.len; i++) {
+   for (size_t i = 0u; i < rs->servers.len; i++) {
       mock_server_autoresponds (
          get_server (&rs->servers, i), rs_q_append, (void *) rs, NULL);
    }
@@ -386,17 +362,17 @@ mock_rs_run (mock_rs_t *rs)
    }
 
    /* secondaries' hello response */
-   for (i = 0; i < rs->n_secondaries; i++) {
+   for (int i = 0; i < rs->n_secondaries; i++) {
       hello = secondary_json (rs, i);
-      mock_server_auto_hello (get_server (&rs->secondaries, i), hello);
+      mock_server_auto_hello (get_server (&rs->secondaries, (size_t) i), hello);
       bson_free (hello);
    }
 
    /* arbiters' hello response */
    hello = arbiter_json (rs);
 
-   for (i = 0; i < rs->n_arbiters; i++) {
-      mock_server_auto_hello (get_server (&rs->arbiters, i), hello);
+   for (int i = 0; i < rs->n_arbiters; i++) {
+      mock_server_auto_hello (get_server (&rs->arbiters, (size_t) i), hello);
    }
 
    bson_free (hello);
@@ -452,213 +428,6 @@ mock_rs_receives_request (mock_rs_t *rs)
 
 /*--------------------------------------------------------------------------
  *
- * mock_rs_receives_query --
- *
- *       Pop a client request if one is enqueued, or wait up to
- *       request_timeout_ms for the client to send a request.
- *
- * Returns:
- *       A request you must request_destroy, or NULL if the request does
- *       not match.
- *
- * Side effects:
- *       Logs if the current request is not a query matching ns, flags,
- *       skip, n_return, query_json, and fields_json.
- *
- *--------------------------------------------------------------------------
- */
-
-/* TODO: refactor with mock_server_receives_query, etc.? */
-request_t *
-mock_rs_receives_query (mock_rs_t *rs,
-                        const char *ns,
-                        mongoc_query_flags_t flags,
-                        uint32_t skip,
-                        int32_t n_return,
-                        const char *query_json,
-                        const char *fields_json)
-{
-   request_t *request;
-
-   request = mock_rs_receives_request (rs);
-
-   if (request &&
-       !request_matches_query (
-          request, ns, flags, skip, n_return, query_json, fields_json, false)) {
-      request_destroy (request);
-      return NULL;
-   }
-
-   return request;
-}
-
-
-/*--------------------------------------------------------------------------
- *
- * mock_server_reply_to_find --
- *
- *       Receive an OP_QUERY or a find command and reply to it.
- *
- *       Pop a client request if one is enqueued, or wait up to
- *       request_timeout_ms for the client to send a request.
- *
- * Side effects:
- *       Logs and aborts if the current request is not a query or find command
- *       matching "flags".
- *
- *--------------------------------------------------------------------------
- */
-/*
-
-void
-mock_rs_reply_to_find (mock_rs_t           *rs,
-                       mongoc_query_flags_t flags,
-                       int64_t              cursor_id,
-                       int32_t              number_returned,
-                       const char          *reply_json,
-                       bool                 is_command)
-{
-   request_t *request;
-
-   request = mock_rs_receives_request (rs);
-   BSON_ASSERT (request);
-
-   mock_server_reply_to_find (request, flags, cursor_id, number_returned,
-                              reply_json, is_command);
-}
-*/
-
-/*--------------------------------------------------------------------------
- *
- * mock_rs_receives_command --
- *
- *       Pop a client request if one is enqueued, or wait up to
- *       request_timeout_ms for the client to send a request.
- *
- * Returns:
- *       A request you must request_destroy, or NULL if the request does
- *       not match.
- *
- * Side effects:
- *       Logs if the current request is not a command matching
- *       database_name, command_name, and command_json.
- *
- *--------------------------------------------------------------------------
- */
-
-MONGOC_PRINTF_FORMAT (4, 5)
-request_t *
-mock_rs_receives_command (mock_rs_t *rs,
-                          const char *database_name,
-                          mongoc_query_flags_t flags,
-                          const char *command_json,
-                          ...)
-{
-   va_list args;
-   char *formatted_command_json = NULL;
-   char *ns;
-   request_t *request;
-
-   va_start (args, command_json);
-   if (command_json) {
-      formatted_command_json = bson_strdupv_printf (command_json, args);
-   }
-   va_end (args);
-
-   ns = bson_strdup_printf ("%s.$cmd", database_name);
-
-   request = (request_t *) q_get (rs->q, rs->request_timeout_msec);
-
-   if (request &&
-       !request_matches_query (
-          request, ns, flags, 0, 1, formatted_command_json, NULL, true)) {
-      bson_free (formatted_command_json);
-      request_destroy (request);
-      return NULL;
-   }
-
-   bson_free (ns);
-   bson_free (formatted_command_json);
-
-   return request;
-}
-
-/*--------------------------------------------------------------------------
- *
- * mock_rs_receives_insert --
- *
- *       Pop a client request if one is enqueued, or wait up to
- *       request_timeout_ms for the client to send a request.
- *
- * Returns:
- *       A request you must request_destroy, or NULL if the request does
- *       not match.
- *
- * Side effects:
- *       Logs if the current request is not an insert matching ns, flags,
- *       and doc_json.
- *
- *--------------------------------------------------------------------------
- */
-
-request_t *
-mock_rs_receives_insert (mock_rs_t *rs,
-                         const char *ns,
-                         mongoc_insert_flags_t flags,
-                         const char *doc_json)
-{
-   request_t *request;
-
-   request = (request_t *) q_get (rs->q, rs->request_timeout_msec);
-
-   if (request && !request_matches_insert (request, ns, flags, doc_json)) {
-      request_destroy (request);
-      return NULL;
-   }
-
-   return request;
-}
-
-
-/*--------------------------------------------------------------------------
- *
- * mock_rs_receives_getmore --
- *
- *       Pop a client request if one is enqueued, or wait up to
- *       request_timeout_ms for the client to send a request.
- *
- * Returns:
- *       A request you must request_destroy, or NULL if the request does
- *       not match.
- *
- * Side effects:
- *       Logs if the current request is not a getmore matching n_return
- *       and cursor_id.
- *
- *--------------------------------------------------------------------------
- */
-
-request_t *
-mock_rs_receives_getmore (mock_rs_t *rs,
-                          const char *ns,
-                          int32_t n_return,
-                          int64_t cursor_id)
-{
-   request_t *request;
-
-   request = (request_t *) q_get (rs->q, rs->request_timeout_msec);
-
-   if (request && !request_matches_getmore (request, ns, n_return, cursor_id)) {
-      request_destroy (request);
-      return NULL;
-   }
-
-   return request;
-}
-
-
-/*--------------------------------------------------------------------------
- *
  * mock_rs_receives_msg --
  *
  *       Pop a client OP_MSG request if one is enqueued, or wait up to
@@ -685,6 +454,9 @@ _mock_rs_receives_msg (mock_rs_t *rs, uint32_t flags, ...)
 
    request = (request_t *) q_get (rs->q, rs->request_timeout_msec);
 
+   ASSERT_WITH_MSG (request,
+                    "expected an OP_MSG request but did not receive one!");
+
    va_start (args, flags);
    r = request_matches_msgv (request, flags, &args);
    va_end (args);
@@ -695,28 +467,6 @@ _mock_rs_receives_msg (mock_rs_t *rs, uint32_t flags, ...)
    }
 
    return request;
-}
-
-
-/*--------------------------------------------------------------------------
- *
- * mock_rs_hangs_up --
- *
- *       Hang up on a client request.
- *
- * Returns:
- *       None.
- *
- * Side effects:
- *       Causes a network error on the client side.
- *
- *--------------------------------------------------------------------------
- */
-
-void
-mock_rs_hangs_up (request_t *request)
-{
-   mock_server_hangs_up (request);
 }
 
 
@@ -757,109 +507,26 @@ mock_rs_receives_kill_cursors (mock_rs_t *rs, int64_t cursor_id)
 }
 
 
-/*--------------------------------------------------------------------------
- *
- * mock_rs_replies --
- *
- *       Respond to a client request.
- *
- * Returns:
- *       None.
- *
- * Side effects:
- *       Sends an OP_REPLY to the client.
- *
- *--------------------------------------------------------------------------
- */
-
-void
-mock_rs_replies (request_t *request,
-                 uint32_t flags,
-                 int64_t cursor_id,
-                 int32_t starting_from,
-                 int32_t number_returned,
-                 const char *docs_json)
-{
-   mock_server_replies (
-      request, flags, cursor_id, starting_from, number_returned, docs_json);
-}
-
-
 static mongoc_server_description_type_t
 _mock_rs_server_type (mock_rs_t *rs, uint16_t port)
 {
-   int i;
-
    if (rs->primary && port == mock_server_get_port (rs->primary)) {
       return MONGOC_SERVER_RS_PRIMARY;
    }
 
-   for (i = 0; i < rs->secondaries.len; i++) {
+   for (size_t i = 0u; i < rs->secondaries.len; i++) {
       if (port == mock_server_get_port (get_server (&rs->secondaries, i))) {
          return MONGOC_SERVER_RS_SECONDARY;
       }
    }
 
-   for (i = 0; i < rs->arbiters.len; i++) {
+   for (size_t i = 0u; i < rs->arbiters.len; i++) {
       if (port == mock_server_get_port (get_server (&rs->arbiters, i))) {
          return MONGOC_SERVER_RS_ARBITER;
       }
    }
 
    return MONGOC_SERVER_UNKNOWN;
-}
-
-
-/*--------------------------------------------------------------------------
- *
- * mock_rs_replies_simple --
- *
- *       Respond to a client request.
- *
- * Returns:
- *       None.
- *
- * Side effects:
- *       Sends an OP_REPLY to the client.
- *
- *--------------------------------------------------------------------------
- */
-
-void
-mock_rs_replies_simple (request_t *request, const char *docs_json)
-{
-   mock_rs_replies (request, 0, 0, 0, 1, docs_json);
-}
-
-
-/*--------------------------------------------------------------------------
- *
- * mock_rs_replies_to_find --
- *
- *       Receive an OP_QUERY or "find" command and reply appropriately.
- *
- * Returns:
- *       None.
- *
- * Side effects:
- *       Very roughly validates the query or "find" command or aborts.
- *       The intent is not to test the driver's query or find command
- *       implementation here, see _test_kill_cursors for example use.
- *
- *--------------------------------------------------------------------------
- */
-
-void
-mock_rs_replies_to_find (request_t *request,
-                         mongoc_query_flags_t flags,
-                         int64_t cursor_id,
-                         int32_t number_returned,
-                         const char *ns,
-                         const char *reply_json,
-                         bool is_command)
-{
-   mock_server_replies_to_find (
-      request, flags, cursor_id, number_returned, ns, reply_json, is_command);
 }
 
 
@@ -956,14 +623,12 @@ mock_rs_stepdown (mock_rs_t *rs)
  */
 
 void
-mock_rs_elect (mock_rs_t *rs, int id)
+mock_rs_elect (mock_rs_t *rs, size_t id)
 {
    char *json;
-   size_t i;
    mock_server_t **ptrs;
 
    BSON_ASSERT (!rs->primary);
-   BSON_ASSERT (id >= 0);
    BSON_ASSERT (id < rs->secondaries.len);
 
    rs->primary = get_server (&rs->secondaries, id);
@@ -979,9 +644,9 @@ mock_rs_elect (mock_rs_t *rs, int id)
 
    ptrs = (mock_server_t **) rs->secondaries.data;
 
-   for (i = (size_t) id + 1; i < rs->secondaries.len; i++) {
-      ptrs[i - 1] = ptrs[i];
-      rs->secondary_tags[i - 1] = rs->secondary_tags[i];
+   for (size_t i = id + 1u; i < rs->secondaries.len; i++) {
+      ptrs[i - 1u] = ptrs[i];
+      rs->secondary_tags[i - 1u] = rs->secondary_tags[i];
    }
 
    rs->secondaries.len--;
@@ -1007,9 +672,7 @@ mock_rs_elect (mock_rs_t *rs, int id)
 void
 mock_rs_destroy (mock_rs_t *rs)
 {
-   int i;
-
-   for (i = 0; i < rs->servers.len; i++) {
+   for (size_t i = 0u; i < rs->servers.len; i++) {
       mock_server_destroy (get_server (&rs->servers, i));
    }
 
@@ -1022,7 +685,7 @@ mock_rs_destroy (mock_rs_t *rs)
    q_destroy (rs->q);
 
    bson_destroy (&rs->primary_tags);
-   for (i = 0; i < rs->n_secondaries; i++) {
+   for (int i = 0u; i < rs->n_secondaries; i++) {
       bson_destroy (rs->secondary_tags[i]);
    }
 

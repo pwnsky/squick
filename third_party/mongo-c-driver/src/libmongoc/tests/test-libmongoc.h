@@ -19,6 +19,20 @@
 #define TEST_LIBMONGOC_H
 
 
+struct _TestSuite;
+struct _bson_t;
+struct _server_version_t;
+
+
+void
+test_libmongoc_init (struct _TestSuite *suite,
+                     const char *name,
+                     int argc,
+                     char **argv);
+void
+test_libmongoc_destroy (struct _TestSuite *suite);
+
+
 mongoc_database_t *
 get_test_database (mongoc_client_t *client);
 char *
@@ -47,8 +61,6 @@ bool
 test_framework_getenv_bool (const char *name);
 int64_t
 test_framework_getenv_int64 (const char *name, int64_t default_value);
-bool
-test_framework_setenv (const char *name, const char *value);
 char *
 test_framework_get_host (void);
 uint16_t
@@ -126,6 +138,11 @@ bool
 test_framework_is_mongos (void);
 bool
 test_framework_is_replset (void);
+// `test_framework_is_mongohouse` returns true if configured to test
+// mongohoused (used for Atlas Data Lake).
+// See: "Atlas Data Lake Tests" in the MongoDB Specifications.
+bool
+test_framework_is_mongohouse (void);
 bool
 test_framework_server_is_secondary (mongoc_client_t *client,
                                     uint32_t server_id);
@@ -177,13 +194,9 @@ test_framework_skip_if_not_single (void);
 int
 test_framework_skip_if_offline (void);
 int
-test_framework_skip_if_rhel8_zseries (void);
-int
 test_framework_skip_if_slow (void);
 int
 test_framework_skip_if_slow_or_live (void);
-int
-test_framework_skip_if_valgrind (void);
 
 #define WIRE_VERSION_CHECK_DECLS(wv)                                  \
    int test_framework_skip_if_max_wire_version_less_than_##wv (void); \
@@ -191,7 +204,6 @@ test_framework_skip_if_valgrind (void);
    int test_framework_skip_if_rs_version_##wv (void);                 \
    int test_framework_skip_if_not_rs_version_##wv (void);
 
-WIRE_VERSION_CHECK_DECLS (6)
 WIRE_VERSION_CHECK_DECLS (7)
 WIRE_VERSION_CHECK_DECLS (8)
 WIRE_VERSION_CHECK_DECLS (9)
@@ -201,6 +213,12 @@ WIRE_VERSION_CHECK_DECLS (13)
 WIRE_VERSION_CHECK_DECLS (14)
 /* wire version 17 begins with the 6.0 release. */
 WIRE_VERSION_CHECK_DECLS (17)
+/* wire version 19 begins with the 6.2 release. */
+WIRE_VERSION_CHECK_DECLS (19)
+/* wire version 21 begins with the 7.0 release. */
+WIRE_VERSION_CHECK_DECLS (21)
+/* wire version 22 begins with the 7.1 release. */
+WIRE_VERSION_CHECK_DECLS (22)
 
 #undef WIRE_VERSION_CHECK_DECLS
 
@@ -229,6 +247,9 @@ test_framework_skip_if_no_dual_ip_hostname (void);
 char *
 test_framework_get_compressors (void);
 
+bool
+test_framework_has_compressors (void);
+
 int
 test_framework_skip_if_no_compressors (void);
 
@@ -240,9 +261,6 @@ test_framework_skip_if_no_failpoint (void);
 
 int
 test_framework_skip_if_no_client_side_encryption (void);
-
-int
-test_framework_skip_if_time_sensitive (void);
 
 int
 test_framework_skip_if_no_aws (void);
@@ -264,6 +282,9 @@ test_framework_skip_if_no_exhaust_cursors (void);
 
 bool
 test_framework_is_serverless (void);
+
+int
+test_framework_skip_if_serverless (void);
 
 bool
 test_framework_is_loadbalanced (void);

@@ -82,8 +82,7 @@ _check_cursor (mongoc_cursor_t *cursor, test_collection_find_t *test_data)
    ASSERT_OR_PRINT (!mongoc_cursor_error (cursor, &error), error);
 
    if (i != test_data->n_results) {
-      fprintf (stderr, "expect %d results, got %d\n", test_data->n_results, i);
-      abort ();
+      test_error ("expect %d results, got %d", test_data->n_results, i);
    }
 
    ASSERT (match_json (&actual_result,
@@ -171,7 +170,7 @@ _reply_to_find_command (request_t *request, test_collection_find_t *test_data)
                                     "    'firstBatch': %s}}",
                                     result_json);
 
-   mock_server_replies_simple (request, reply_json);
+   reply_to_request_simple (request, reply_json);
 
    bson_free (reply_json);
 }
@@ -250,9 +249,7 @@ _test_collection_find_command (test_collection_find_t *test_data)
    }
 
    if (i != test_data->n_results) {
-      fprintf (
-         stderr, "Expected %d results, got %d\n", test_data->n_results, i);
-      abort ();
+      test_error ("Expected %d results, got %d\n", test_data->n_results, i);
    }
 
    ASSERT (match_json (&actual_result,
@@ -469,15 +466,6 @@ _test_int_modifier (const char *mod)
    _test_collection_find (&test_data);
    bson_free (query);
    bson_free (find_command);
-}
-
-
-static void
-test_maxscan (void *ctx)
-{
-   BSON_UNUSED (ctx);
-
-   _test_int_modifier ("maxScan");
 }
 
 
@@ -727,14 +715,13 @@ test_exhaust (void)
     * fallback to existing OP_QUERY wire protocol messages."
     */
    request = mock_server_receives_request (server);
-   mock_server_replies_to_find (request,
-                                MONGOC_QUERY_SECONDARY_OK |
-                                   MONGOC_QUERY_EXHAUST,
-                                0,
-                                0,
-                                "db.collection",
-                                "{}",
-                                false /* is_command */);
+   reply_to_find_request (request,
+                          MONGOC_QUERY_SECONDARY_OK | MONGOC_QUERY_EXHAUST,
+                          0,
+                          0,
+                          "db.collection",
+                          "{}",
+                          false /* is_command */);
 
    ASSERT (future_get_bool (future));
    ASSERT_OR_PRINT (!mongoc_cursor_error (cursor, &error), error);
@@ -796,12 +783,12 @@ test_getmore_batch_size (void)
                                                     " 'batchSize': %s}",
                                                     batch_size_json));
 
-      mock_server_replies_simple (request,
-                                  "{'ok': 1,"
-                                  " 'cursor': {"
-                                  "    'id': 0,"
-                                  "    'ns': 'db.collection',"
-                                  "    'firstBatch': []}}");
+      reply_to_request_simple (request,
+                               "{'ok': 1,"
+                               " 'cursor': {"
+                               "    'id': 0,"
+                               "    'ns': 'db.collection',"
+                               "    'firstBatch': []}}");
 
       /* no result */
       ASSERT (!future_get_bool (future));
@@ -852,12 +839,12 @@ test_getmore_invalid_reply (void *ctx)
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'db', 'find': 'collection', 'filter': {}}"));
 
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': {'$numberLong': '123'},"
-                               "    'ns': 'db.collection',"
-                               "    'firstBatch': [{}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': {'$numberLong': '123'},"
+                            "    'ns': 'db.collection',"
+                            "    'firstBatch': [{}]}}");
 
    ASSERT (future_get_bool (future));
 
@@ -873,7 +860,7 @@ test_getmore_invalid_reply (void *ctx)
                                           " 'collection': 'collection'}"));
 
    /* missing "cursor" */
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    ASSERT (!future_get_bool (future));
    ASSERT (mongoc_cursor_error (cursor, &error));
@@ -945,12 +932,12 @@ test_getmore_await (void)
                    " 'maxAwaitTimeMS': {'$exists': false}}"));
 
       /* reply with cursor id 1 */
-      mock_server_replies_simple (request,
-                                  "{'ok': 1,"
-                                  " 'cursor': {"
-                                  "    'id': 1,"
-                                  "    'ns': 'db.collection',"
-                                  "    'firstBatch': [{}]}}");
+      reply_to_request_simple (request,
+                               "{'ok': 1,"
+                               " 'cursor': {"
+                               "    'id': 1,"
+                               "    'ns': 'db.collection',"
+                               "    'firstBatch': [{}]}}");
 
       /* no result or error */
       ASSERT (future_get_bool (future));
@@ -979,12 +966,12 @@ test_getmore_await (void)
 
       BSON_ASSERT (request);
       /* reply with cursor id 0 */
-      mock_server_replies_simple (request,
-                                  "{'ok': 1,"
-                                  " 'cursor': {"
-                                  "    'id': 0,"
-                                  "    'ns': 'db.collection',"
-                                  "    'nextBatch': []}}");
+      reply_to_request_simple (request,
+                               "{'ok': 1,"
+                               " 'cursor': {"
+                               "    'id': 0,"
+                               "    'ns': 'db.collection',"
+                               "    'nextBatch': []}}");
 
       /* no result or error */
       ASSERT (!future_get_bool (future));
@@ -1121,12 +1108,6 @@ test_collection_find_install (TestSuite *suite)
    TestSuite_AddLive (suite, "/Collection/find/newoption", test_newoption);
    TestSuite_AddLive (suite, "/Collection/find/orderby", test_orderby);
    TestSuite_AddLive (suite, "/Collection/find/fields", test_fields);
-   TestSuite_AddFull (suite,
-                      "/Collection/find/modifiers/maxscan",
-                      test_maxscan,
-                      NULL,
-                      NULL,
-                      test_framework_skip_if_max_wire_version_more_than_6);
    TestSuite_AddLive (
       suite, "/Collection/find/modifiers/maxtimems", test_maxtimems);
    TestSuite_AddLive (suite, "/Collection/find/comment", test_comment);

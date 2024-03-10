@@ -15,13 +15,7 @@ The mongo-c-driver has a few guidelines that help direct the process.
 ### Portability
 
 mongo-c-driver is portable software. It needs to run on a multitude of
-operating systems and architectures.
-
- * Linux (RHEL 5 and newer)
- * FreeBSD (10 and newer)
- * Windows (Vista and newer)
- * macOS (10.8 and newer)
- * ARM/SPARC/x86/x86_64
+[Supported Platforms](https://mongoc.org/libmongoc/current/installing.html#supported-platforms).
 
 
 ### Licensing
@@ -117,6 +111,22 @@ a block comment like the following:
 Public functions do not need these comment blocks, since they are documented in
 the .rst files.
 
+To build the documentation, it is recommended to use the Poetry-managed Python
+project to ensure that the exact tooling versions match. If you do not have
+Poetry installed, you can use the `poetry.sh` or `poetry.ps1` scripts in the
+`tools/` directory. First, install dependencies:
+
+```sh
+./tools/poetry.sh install --with=docs
+```
+
+Then, execute `sphinx-build` in the Python environment, using the paths to the
+documentation to be generated:
+
+```sh
+./tools/poetry.sh run sphinx-build -WEn -bhtml src/libmongoc/doc/ src/libmongoc/doc/html
+```
+
 
 ### Testing
 
@@ -125,13 +135,14 @@ To run the entire test suite, including authentication and support for the
 enabled:
 
 ```
-$ mongod --auth --setParameter enableTestCommands=1
+$ mkdir db
+$ mongod --auth --setParameter enableTestCommands=1 --dbpath db/
 ```
 
-In another terminal, use the `mongo` shell to create a user:
+In another terminal, use the `mongosh` shell to create a user:
 
 ```
-$ mongo --eval "db.createUser({user: 'admin', pwd: 'pass', roles: ['root']})" admin
+$ mongosh --eval "db.createUser({user: 'admin', pwd: 'pass', roles: ['root']})" admin
 ```
 
 Authentication in MongoDB 3.0 and later uses SCRAM-SHA-1, which in turn
@@ -236,6 +247,8 @@ For AWS:
 
 * `MONGOC_TEST_AWS_SECRET_ACCESS_KEY=<string>`
 * `MONGOC_TEST_AWS_ACCESS_KEY_ID=<string>`
+* `MONGOC_TEST_AWSNAME2_SECRET_ACCESS_KEY=<string>`
+* `MONGOC_TEST_AWSNAME2_ACCESS_KEY_ID=<string>`
 
 An Azure:
 
@@ -247,6 +260,14 @@ For GCP:
 
 * `MONGOC_TEST_GCP_EMAIL=<string>`
 * `MONGOC_TEST_GCP_PRIVATEKEY=<string>`
+
+Tests of Client-Side Field Level Encryption also require temporary credentials to external KMS providers.
+
+For AWS:
+
+* `MONGOC_TEST_AWS_TEMP_SECRET_ACCESS_KEY=<string>`
+* `MONGOC_TEST_AWS_TEMP_ACCESS_KEY_ID=<string>`
+* `MONGOC_TEST_AWS_TEMP_SESSION_TOKEN=<string>`
 
 Tests of Client-Side Field Level Encryption spawn an extra process, "mongocryptd", by default. To bypass this spawning,
 start mongocryptd on port 27020 and set the following:
@@ -278,7 +299,12 @@ Specification tests may be filtered by their description:
 
 * `MONGOC_JSON_SUBTEST=<string>`
 
-This can be useful in debugging a specific test case in a spec test file with multiple tests.
+This can be useful in debugging a specific test case in a spec test file with multiple tests. Example:
+
+```sh
+MONGOC_JSON_SUBTEST="Insert with randomized encryption, then find it" \
+  ./cmake-build/src/libmongoc/test-libmongoc -l "/client_side_encryption/legacy/basic"
+```
 
 To test with a declared API version, you can pass the API version using an environment variable:
 
@@ -306,44 +332,3 @@ $ ./test-libmongoc -l "/server_selection/*"
 ```
 
 The full list of tests is shown in the help.
-
-## Creating and checking a distribution tarball
-
-The `make distcheck` command can be used to confirm that any modifications are
-able to be packaged into the distribution tarball and that the resulting
-distribution tarball can be used to successfully build the project.
-
-A failure of the `make distcheck` target is an indicator of an oversight in the
-modification to the project. For example, if a new source file is added to the
-project but it is not added to the proper distribution list, it is possible that
-the distribution tarball will be created without that file. An attempt to build
-the project without the file is likely to fail.
-
-When `make distcheck` is invoked, several things happen. The `dist` target is
-executed to create a distribution tarball. Then the tarball is unpacked,
-configured (with an invocation of `cmake`), built (by calling `make`), installed
-(by calling `make install`), and tested (by calling `make check`). Three
-environment variables can be used to modify these steps.
-
-To adjust the options passed to `make` during the build step, set:
-
-* `DISTCHECK_BUILD_OPTS`
-
-If this variable is not set, then `make` is called with a default of "-j 8".
-
-To adjust the options passed to `make install` during the installation step,
-set:
-
-* `DISTCHECK_INSTALL_OPTS`
-
-To adjust the options passed to `make check` during the test step, set:
-
-* `DISTCHECK_CHECK_OPTS`
-
-Remember, if you want to modify the top-level `make` invocation, you will need
-to pass options on the command line as normal.
-
-For example, the command `make -j 6 distcheck DISTCHECK_BUILD_OPTS="-j 4"` will
-call the standard sequence of targets depended upon by `distcheck` with a
-parallelism level of 6, while the build step that is later called by the
-`distcheck` target will be executed with a parallelism level of 4.

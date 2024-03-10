@@ -25,8 +25,8 @@ server_id_for_reads (mongoc_cluster_t *cluster)
    mongoc_server_stream_t *server_stream;
    uint32_t id;
 
-   server_stream = mongoc_cluster_stream_for_reads (
-      cluster, NULL, NULL, NULL, false, &error);
+   server_stream =
+      mongoc_cluster_stream_for_reads (cluster, NULL, NULL, NULL, NULL, &error);
    ASSERT_OR_PRINT (server_stream, error);
    id = server_stream->sd->id;
 
@@ -174,7 +174,6 @@ _test_cluster_node_disconnect (bool pooled)
    mock_server_run (server);
 
    uri = mongoc_uri_copy (mock_server_get_uri (server));
-   mongoc_uri_set_option_as_bool (uri, MONGOC_URI_RETRYREADS, false);
 
    if (pooled) {
       pool = test_framework_client_pool_new_from_uri (uri, NULL);
@@ -188,19 +187,19 @@ _test_cluster_node_disconnect (bool pooled)
    /* query 0 fails. set client_port_0 to the port used by the query. */
    START_QUERY (client_port_0);
 
-   mock_server_resets (request);
+   reply_to_request_with_reset (request);
    ASSERT_CURSOR_ERR ();
    CLEANUP_QUERY ();
 
    /* query 1 opens a new socket. set client_port_1 to the new port. */
    START_QUERY (client_port_1);
    ASSERT_CMPINT (client_port_1, !=, client_port_0);
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "   'id': 0,"
-                               "   'ns': 'db.collection',"
-                               "   'firstBatch': [{'a': 1}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "   'id': 0,"
+                            "   'ns': 'db.collection',"
+                            "   'firstBatch': [{'a': 1}]}}");
 
    /* success! */
    BSON_ASSERT (future_get_bool (future));
@@ -286,7 +285,7 @@ _test_cluster_command_timeout (bool pooled)
    BSON_ASSERT (sd->type != MONGOC_SERVER_UNKNOWN);
 
    /* late response */
-   mock_server_replies_simple (request, "{'ok': 1, 'bar': 1}");
+   reply_to_request_simple (request, "{'ok': 1, 'bar': 1}");
    request_destroy (request);
    future_destroy (future);
 
@@ -297,7 +296,7 @@ _test_cluster_command_timeout (bool pooled)
    ASSERT (request);
    /* new socket */
    ASSERT_CMPUINT16 (client_port, !=, request_get_client_port (request));
-   mock_server_replies_simple (request, "{'ok': 1, 'quux': 1}");
+   reply_to_request_simple (request, "{'ok': 1, 'quux': 1}");
    ASSERT (future_get_bool (future));
 
    /* got the proper response */
@@ -367,18 +366,18 @@ _test_write_disconnect (void)
                                WIRE_VERSION_MIN,
                                WIRE_VERSION_MAX);
 
-   mock_server_replies_simple (request, hello);
+   reply_to_request_simple (request, hello);
    request_destroy (request);
 
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'db', 'ping': 1}"));
-   mock_server_replies_simple (request, "{'ok': 1}");
+   reply_to_request_simple (request, "{'ok': 1}");
    ASSERT_OR_PRINT (future_get_bool (future), error);
 
    /*
     * close the socket
     */
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
 
    /*
     * next operation detects the hangup
@@ -459,12 +458,9 @@ test_cluster_time_cmd_started_cb (const mongoc_apm_command_started_t *event)
          BSON_ASSERT (!bson_empty0 (test->cluster_time));
          bson_iter_bson (&iter, &client_cluster_time);
          if (!bson_equal (test->cluster_time, &client_cluster_time)) {
-            fprintf (stderr,
-                     "Unequal clusterTimes.\nServer sent %s\nClient sent %s\n",
-                     bson_as_json (test->cluster_time, NULL),
-                     bson_as_json (&client_cluster_time, NULL));
-
-            abort ();
+            test_error ("Unequal clusterTimes.\nServer sent %s\nClient sent %s",
+                        bson_as_json (test->cluster_time, NULL),
+                        bson_as_json (&client_cluster_time, NULL));
          }
 
          bson_destroy (&client_cluster_time);
@@ -589,6 +585,8 @@ client_command (mongoc_client_t *client, bson_error_t *error)
    const bson_t *doc;
    bool r;
 
+   ASSERT (client);
+
    cursor = mongoc_client_command (client,
                                    "test",
                                    MONGOC_QUERY_NONE,
@@ -653,6 +651,8 @@ aggregate (mongoc_client_t *client, bson_error_t *error)
    const bson_t *doc;
    bool r;
 
+   ASSERT (client);
+
    collection = mongoc_client_get_collection (client, "test", "collection");
    cursor = mongoc_collection_aggregate (
       collection, MONGOC_QUERY_NONE, tmp_bson ("{}"), NULL, NULL);
@@ -690,6 +690,7 @@ cursor_next (mongoc_client_t *client, bson_error_t *error)
    const bson_t *doc;
    bool r;
 
+   ASSERT (client);
    collection = get_test_collection (client, "test_cluster_time_cursor");
    cursor = mongoc_collection_find_with_opts (
       collection, tmp_bson ("{'ping': 1}"), NULL, NULL);
@@ -725,6 +726,8 @@ insert (mongoc_client_t *client, bson_error_t *error)
    mongoc_collection_t *collection;
    bool r;
 
+   ASSERT (client);
+
    collection = get_test_collection (client, "test_cluster_time_cursor");
    r = mongoc_collection_insert_one (
       collection, tmp_bson ("{}"), NULL, NULL, error);
@@ -746,6 +749,32 @@ static void
 test_cluster_time_insert_pooled (void)
 {
    _test_cluster_time (true, insert);
+}
+
+
+static void
+test_cluster_command_timeout_negative (void)
+{
+   bson_error_t error;
+
+   mongoc_uri_t *const uri = test_framework_get_uri ();
+
+   // CDRIVER-4781: libmongoc historically supports negative values as
+   // fallback to a "default" value for timeouts.
+   mongoc_uri_set_option_as_int32 (uri, MONGOC_URI_SOCKETTIMEOUTMS, -1);
+
+   mongoc_client_t *const client =
+      test_framework_client_new_from_uri (uri, NULL);
+   test_framework_set_ssl_opts (client);
+
+   // There should not be an error when validating sockettimeoutms.
+   ASSERT_OR_PRINT (
+      mongoc_client_command_simple (
+         client, "admin", tmp_bson ("{'ping': 1}"), NULL, NULL, &error),
+      error);
+
+   mongoc_client_destroy (client);
+   mongoc_uri_destroy (uri);
 }
 
 
@@ -782,7 +811,7 @@ replies_with_cluster_time (request_t *request,
                 t,
                 i));
 
-   mock_server_reply_multi (
+   reply_to_request_with_multiple_docs (
       request, MONGOC_REPLY_NONE, &doc, 1, 0 /* cursor id */);
 
    bson_destroy (&doc);
@@ -813,13 +842,11 @@ receives_with_cluster_time (mock_server_t *server,
    BSON_ASSERT (BSON_ITER_HOLDS_TIMESTAMP (&cluster_time));
    bson_iter_timestamp (&cluster_time, &t, &i);
    if (t != timestamp || i != increment) {
-      fprintf (stderr,
-               "Expected Timestamp(%d, %d), got Timestamp(%d, %d)\n",
-               timestamp,
-               increment,
-               t,
-               i);
-      abort ();
+      test_error ("Expected Timestamp(%d, %d), got Timestamp(%d, %d)",
+                  timestamp,
+                  increment,
+                  t,
+                  i);
    }
 
    return request;
@@ -903,7 +930,7 @@ _test_cluster_time_comparison (bool pooled)
 
    /* client doesn't update cluster time, since new value is less than old */
    request = receives_with_cluster_time (server, 2, 2, ping);
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    assert_ok (future, &error);
 
    if (pooled) {
@@ -938,7 +965,7 @@ _test_cluster_time_comparison (bool pooled)
 
       replies_with_cluster_time (request, 2, 1, hello);
       request = receives_with_cluster_time (server, 2, 2, ping);
-      mock_server_replies_ok_and_destroys (request);
+      reply_to_request_with_ok_and_destroy (request);
       assert_ok (future, &error);
 
       mongoc_client_destroy (client);
@@ -1024,7 +1051,7 @@ _test_not_primary (bool pooled,
          client, "test", tmp_bson (cmd), NULL, NULL, &error);
 
       request = mock_server_receives_request (server);
-      mock_server_replies_ok_and_destroys (request);
+      reply_to_request_with_ok_and_destroy (request);
       BSON_ASSERT (future_get_bool (future));
       future_destroy (future);
 
@@ -1042,7 +1069,7 @@ _test_not_primary (bool pooled,
 
       reply = bson_strdup_printf ("{'ok': 0, 'errmsg': '%s'}",
                                   test_error_msg->errmsg);
-      mock_server_replies_simple (request, reply);
+      reply_to_request_simple (request, reply);
       BSON_ASSERT (!future_get_bool (future));
 
       /* Topology should be invalidated by run_command */
@@ -1111,8 +1138,10 @@ future_command_private (mongoc_client_t *client)
    bson_error_t error;
    mongoc_server_stream_t *server_stream;
 
-   server_stream =
-      mongoc_cluster_stream_for_writes (&client->cluster, NULL, NULL, &error);
+   ASSERT (client);
+
+   server_stream = mongoc_cluster_stream_for_writes (
+      &client->cluster, NULL, NULL, NULL, &error);
    ASSERT_OR_PRINT (server_stream, error);
 
    mongoc_cmd_parts_init (
@@ -1228,8 +1257,13 @@ _test_dollar_query (void *ctx)
 
    future = future_cursor_next (cursor, &doc);
    request = mock_server_receives_msg (server, 0, tmp_bson (test->e));
-   mock_server_replies_to_find (
-      request, MONGOC_QUERY_NONE, 0, 0, "db.collection", "", true);
+   reply_to_op_msg_request (request,
+                            MONGOC_MSG_NONE,
+                            tmp_bson ("{'ok': 1,"
+                                      " 'cursor': {"
+                                      "    'id': {'$numberLong': '0'},"
+                                      "    'ns': 'db.collection',"
+                                      "    'firstBatch': []}}"));
 
    BSON_ASSERT (!future_get_bool (future));
    ASSERT_OR_PRINT (!mongoc_cursor_error (cursor, &error), error);
@@ -1372,7 +1406,7 @@ _test_cluster_hello_fails (bool hangup)
    mock_server_run (mock_server);
    uri = mongoc_uri_copy (mock_server_get_uri (mock_server));
    /* increase heartbeatFrequencyMS to prevent background server selection. */
-   mongoc_uri_set_option_as_int32 (uri, "heartbeatFrequencyMS", 99999);
+   mongoc_uri_set_option_as_int32 (uri, MONGOC_URI_HEARTBEATFREQUENCYMS, 99999);
    pool = test_framework_client_pool_new_from_uri (uri, NULL);
    mongoc_client_pool_set_error_api (pool, 2);
    mongoc_uri_destroy (uri);
@@ -1395,12 +1429,12 @@ _test_cluster_hello_fails (bool hangup)
 
    if (hangup) {
       capture_logs (true); /* suppress "failed to buffer" warning */
-      mock_server_hangs_up (request);
+      reply_to_request_with_hang_up (request);
       BSON_ASSERT (!future_get_bool (future));
       ASSERT_ERROR_CONTAINS (
          error, MONGOC_ERROR_STREAM, MONGOC_ERROR_STREAM_SOCKET, "socket err");
    } else {
-      mock_server_replies_simple (request, "{'ok': 0, 'code': 123}");
+      reply_to_request_simple (request, "{'ok': 0, 'code': 123}");
       BSON_ASSERT (!future_get_bool (future));
       ASSERT_ERROR_CONTAINS (
          error, MONGOC_ERROR_SERVER, 123, "Unknown command error");
@@ -1447,7 +1481,7 @@ test_cluster_command_error (void)
                                           &err);
    request = mock_server_receives_msg (
       server, MONGOC_QUERY_NONE, tmp_bson ("{'$db': 'db', 'ping': 1}"));
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
    BSON_ASSERT (!future_get_bool (future));
    future_destroy (future);
    request_destroy (request);
@@ -1510,8 +1544,13 @@ test_advanced_cluster_time_not_sent_to_standalone (void)
                 "   'find': 'collection', 'filter': {},"
                 "   '$clusterTime': {'$exists': false}"
                 "}"));
-   mock_server_replies_to_find (
-      request, MONGOC_QUERY_NONE, 0, 0, "db.collection", "", true);
+   reply_to_op_msg_request (request,
+                            MONGOC_MSG_NONE,
+                            tmp_bson ("{'ok': 1,"
+                                      " 'cursor': {"
+                                      "    'id': {'$numberLong': '0'},"
+                                      "    'ns': 'db.collection',"
+                                      "    'firstBatch': []}}"));
 
    BSON_ASSERT (!future_get_bool (future));
    ASSERT_OR_PRINT (!mongoc_cursor_error (cursor, &error), error);
@@ -1536,17 +1575,17 @@ _responder (request_t *req, void *data)
    hello = (char *) data;
    if (0 == strcasecmp (req->command_name, HANDSHAKE_CMD_LEGACY_HELLO) ||
        0 == strcasecmp (req->command_name, "hello")) {
-      mock_server_replies_simple (req, hello);
+      reply_to_request_simple (req, hello);
       request_destroy (req);
       return true;
    } else if (0 == strcmp (req->command_name, "serverStatus")) {
-      mock_server_hangs_up (req);
+      reply_to_request_with_hang_up (req);
       request_destroy (req);
       return true;
    }
 
    /* Otherwise, reply {ok:1} */
-   mock_server_replies_ok_and_destroys (req);
+   reply_to_request_with_ok_and_destroy (req);
    return true;
 }
 
@@ -1746,8 +1785,11 @@ test_cluster_stream_invalidation_single (void)
 
    /* Test "clearing the pool". This should invalidate existing server streams.
     */
-   stream = mongoc_cluster_stream_for_writes (
-      &client->cluster, NULL /* session */, NULL /* reply */, &error);
+   stream = mongoc_cluster_stream_for_writes (&client->cluster,
+                                              NULL /* session */,
+                                              NULL /* deprioritized servers */,
+                                              NULL /* reply */,
+                                              &error);
    ASSERT_OR_PRINT (stream, error);
    BSON_ASSERT (mongoc_cluster_stream_valid (&client->cluster, stream));
    tdmod = mc_tpld_modify_begin (client->topology);
@@ -1759,8 +1801,11 @@ test_cluster_stream_invalidation_single (void)
 
    /* Test closing the connection. This should invalidate existing server
     * streams. */
-   stream = mongoc_cluster_stream_for_writes (
-      &client->cluster, NULL /* session */, NULL /* reply */, &error);
+   stream = mongoc_cluster_stream_for_writes (&client->cluster,
+                                              NULL /* session */,
+                                              NULL /* deprioritized servers */,
+                                              NULL /* reply */,
+                                              &error);
    ASSERT_OR_PRINT (stream, error);
    BSON_ASSERT (mongoc_cluster_stream_valid (&client->cluster, stream));
    mongoc_cluster_disconnect_node (&client->cluster, sd->id);
@@ -1768,8 +1813,11 @@ test_cluster_stream_invalidation_single (void)
    mongoc_server_stream_cleanup (stream);
 
    /* Test that a new stream is considered valid. */
-   stream = mongoc_cluster_stream_for_writes (
-      &client->cluster, NULL /* session */, NULL /* reply */, &error);
+   stream = mongoc_cluster_stream_for_writes (&client->cluster,
+                                              NULL /* session */,
+                                              NULL /* deprioritized servers */,
+                                              NULL /* reply */,
+                                              &error);
    ASSERT_OR_PRINT (stream, error);
    BSON_ASSERT (mongoc_cluster_stream_valid (&client->cluster, stream));
    mongoc_server_stream_cleanup (stream);
@@ -1798,8 +1846,11 @@ test_cluster_stream_invalidation_pooled (void)
 
    /* Test "clearing the pool". This should invalidate existing server streams.
     */
-   stream = mongoc_cluster_stream_for_writes (
-      &client->cluster, NULL /* session */, NULL /* reply */, &error);
+   stream = mongoc_cluster_stream_for_writes (&client->cluster,
+                                              NULL /* session */,
+                                              NULL /* deprioritized servers */,
+                                              NULL /* reply */,
+                                              &error);
    ASSERT_OR_PRINT (stream, error);
    BSON_ASSERT (mongoc_cluster_stream_valid (&client->cluster, stream));
    tdmod = mc_tpld_modify_begin (client->topology);
@@ -1811,8 +1862,11 @@ test_cluster_stream_invalidation_pooled (void)
 
    /* Test closing the connection. This should invalidate existing server
     * streams. */
-   stream = mongoc_cluster_stream_for_writes (
-      &client->cluster, NULL /* session */, NULL /* reply */, &error);
+   stream = mongoc_cluster_stream_for_writes (&client->cluster,
+                                              NULL /* session */,
+                                              NULL /* deprioritized servers */,
+                                              NULL /* reply */,
+                                              &error);
    ASSERT_OR_PRINT (stream, error);
    BSON_ASSERT (mongoc_cluster_stream_valid (&client->cluster, stream));
    mongoc_cluster_disconnect_node (&client->cluster, sd->id);
@@ -1820,8 +1874,11 @@ test_cluster_stream_invalidation_pooled (void)
    mongoc_server_stream_cleanup (stream);
 
    /* Test that a new stream is considered valid. */
-   stream = mongoc_cluster_stream_for_writes (
-      &client->cluster, NULL /* session */, NULL /* reply */, &error);
+   stream = mongoc_cluster_stream_for_writes (&client->cluster,
+                                              NULL /* session */,
+                                              NULL /* deprioritized servers */,
+                                              NULL /* reply */,
+                                              &error);
    ASSERT_OR_PRINT (stream, error);
    BSON_ASSERT (mongoc_cluster_stream_valid (&client->cluster, stream));
    mongoc_server_stream_cleanup (stream);
@@ -1911,6 +1968,9 @@ test_cluster_install (TestSuite *suite)
    TestSuite_AddLive (suite,
                       "/Cluster/cluster_time/insert/pooled",
                       test_cluster_time_insert_pooled);
+   TestSuite_AddLive (suite,
+                      "/Cluster/command/timeout/negative",
+                      test_cluster_command_timeout_negative);
    TestSuite_AddMockServerTest (suite,
                                 "/Cluster/cluster_time/comparison/single",
                                 test_cluster_time_comparison_single,

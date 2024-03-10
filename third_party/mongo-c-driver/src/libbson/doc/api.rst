@@ -6,12 +6,12 @@ API Reference
   :maxdepth: 2
 
   bson_t
+  bson_array_builder_t
   bson_context_t
   bson_decimal128_t
   bson_error_t
   bson_iter_t
   bson_json_reader_t
-  bson_md5_t
   bson_oid_t
   bson_reader_t
   character_and_string_routines

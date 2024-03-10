@@ -129,16 +129,16 @@ sd_to_bson (const mongoc_server_description_t *sd, bson_t *bson)
 static void
 td_to_bson (const mongoc_topology_description_t *td, bson_t *bson)
 {
-   size_t i;
    bson_t servers = BSON_INITIALIZER;
    bson_t server;
    char str[16];
    const char *key;
    mongoc_set_t const *servers_set = mc_tpld_servers_const (td);
 
-   for (i = 0; i < servers_set->items_len; i++) {
+   for (size_t i = 0; i < servers_set->items_len; i++) {
+      BSON_ASSERT (bson_in_range_unsigned (uint32_t, i));
       bson_uint32_to_string ((uint32_t) i, &key, str, sizeof str);
-      sd_to_bson (mongoc_set_get_item_const (servers_set, (int) i), &server);
+      sd_to_bson (mongoc_set_get_item_const (servers_set, i), &server);
       BSON_APPEND_DOCUMENT (&servers, key, &server);
       bson_destroy (&server);
    }
@@ -398,6 +398,8 @@ client_set_topology_event_callbacks (mongoc_client_t *client,
 {
    mongoc_apm_callbacks_t *callbacks;
 
+   ASSERT (client);
+
    callbacks = topology_event_callbacks ();
    mongoc_client_set_apm_callbacks (client, callbacks, (void *) context);
    mongoc_apm_callbacks_destroy (callbacks);
@@ -408,6 +410,8 @@ pool_set_topology_event_callbacks (mongoc_client_pool_t *pool,
                                    context_t *context)
 {
    mongoc_apm_callbacks_t *callbacks;
+
+   ASSERT (pool);
 
    callbacks = topology_event_callbacks ();
    mongoc_client_pool_set_apm_callbacks (pool, callbacks, (void *) context);
@@ -436,6 +440,8 @@ client_set_heartbeat_event_callbacks (mongoc_client_t *client,
 {
    mongoc_apm_callbacks_t *callbacks;
 
+   ASSERT (client);
+
    callbacks = heartbeat_event_callbacks ();
    mongoc_client_set_apm_callbacks (client, callbacks, (void *) context);
    mongoc_apm_callbacks_destroy (callbacks);
@@ -446,6 +452,8 @@ pool_set_heartbeat_event_callbacks (mongoc_client_pool_t *pool,
                                     context_t *context)
 {
    mongoc_apm_callbacks_t *callbacks;
+
+   ASSERT (pool);
 
    callbacks = heartbeat_event_callbacks ();
    mongoc_client_pool_set_apm_callbacks (pool, callbacks, (void *) context);
@@ -662,7 +670,7 @@ responder (request_t *request, void *data)
    BSON_UNUSED (data);
 
    if (!strcmp (request->command_name, "foo")) {
-      mock_server_replies_simple (request, "{'ok': 1}");
+      reply_to_request_simple (request, "{'ok': 1}");
       request_destroy (request);
       return true;
    }
@@ -717,7 +725,7 @@ _test_heartbeat_events (bool pooled, bool succeeded)
    request = mock_server_receives_any_hello (server);
 
    if (succeeded) {
-      mock_server_replies (
+      reply_to_request (
          request,
          MONGOC_REPLY_NONE,
          0,
@@ -728,14 +736,14 @@ _test_heartbeat_events (bool pooled, bool succeeded)
                   WIRE_VERSION_MAX));
       request_destroy (request);
    } else {
-      mock_server_hangs_up (request);
+      reply_to_request_with_hang_up (request);
       request_destroy (request);
    }
 
    /* pooled client opens new socket, handshakes it by calling hello again */
    if (pooled && succeeded) {
       request = mock_server_receives_any_hello (server);
-      mock_server_replies (
+      reply_to_request (
          request,
          MONGOC_REPLY_NONE,
          0,
@@ -840,7 +848,7 @@ _test_heartbeat_fails_dns (bool pooled)
     * client for a client pool). */
    start = bson_get_monotonic_time ();
    uri = mongoc_uri_new (
-      "mongodb://doesntexist.foobar/?serverSelectionTimeoutMS=3000");
+      "mongodb://doesntexist.invalid/?serverSelectionTimeoutMS=100");
    if (pooled) {
       pool = test_framework_client_pool_new_from_uri (uri, NULL);
       pool_set_heartbeat_event_callbacks (pool, &context);
@@ -854,15 +862,13 @@ _test_heartbeat_fails_dns (bool pooled)
    r = mongoc_client_command_simple (
       client, "admin", tmp_bson ("{'foo': 1}"), NULL, NULL, &error);
 
-   /* This should result in either a DNS failure or connection failure depending
-    * on the network. We assert the domain/code but not the message string. */
+   /* Expect a server selection error. */
    ASSERT (!r);
    ASSERT_ERROR_CONTAINS (error,
                           MONGOC_ERROR_SERVER_SELECTION,
                           MONGOC_ERROR_SERVER_SELECTION_FAILURE,
-                          "");
+                          "No suitable servers found");
 
-   duration = bson_get_monotonic_time () - start;
 
    if (pooled) {
       mongoc_client_pool_push (pool, client);
@@ -870,6 +876,8 @@ _test_heartbeat_fails_dns (bool pooled)
    } else {
       mongoc_client_destroy (client);
    }
+
+   duration = bson_get_monotonic_time () - start;
 
    durations = &context.heartbeat_failed_durations;
 
@@ -885,18 +893,14 @@ _test_heartbeat_fails_dns (bool pooled)
 }
 
 static void
-test_heartbeat_fails_dns_single (void *ctx)
+test_heartbeat_fails_dns_single (void)
 {
-   BSON_UNUSED (ctx);
-
    _test_heartbeat_fails_dns (false);
 }
 
 static void
-test_heartbeat_fails_dns_pooled (void *ctx)
+test_heartbeat_fails_dns_pooled (void)
 {
-   BSON_UNUSED (ctx);
-
    _test_heartbeat_fails_dns (true);
 }
 
@@ -955,13 +959,13 @@ test_no_duplicates (void)
 
    /* Topology scanning thread starts, and sends a hello. */
    request = mock_server_receives_any_hello (server);
-   mock_server_replies_simple (request,
-                               tmp_str ("{'ok': 1.0,"
-                                        " 'isWritablePrimary': true, "
-                                        " 'minWireVersion': %d,"
-                                        " 'maxWireVersion': %d}",
-                                        WIRE_VERSION_MIN,
-                                        WIRE_VERSION_4_4));
+   reply_to_request_simple (request,
+                            tmp_str ("{'ok': 1.0,"
+                                     " 'isWritablePrimary': true, "
+                                     " 'minWireVersion': %d,"
+                                     " 'maxWireVersion': %d}",
+                                     WIRE_VERSION_MIN,
+                                     WIRE_VERSION_4_4));
    request_destroy (request);
 
    /* Perform a ping, which creates a new connection, which performs the
@@ -973,7 +977,7 @@ test_no_duplicates (void)
                                           NULL /* reply */,
                                           &error);
    request = mock_server_receives_any_hello (server);
-   mock_server_replies_simple (
+   reply_to_request_simple (
       request,
       tmp_str (
          "{'ok': 1.0,"
@@ -987,7 +991,7 @@ test_no_duplicates (void)
    request_destroy (request);
    request = mock_server_receives_msg (
       server, MONGOC_QUERY_NONE, tmp_bson ("{'ping': 1}"));
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -1042,27 +1046,18 @@ test_sdam_monitoring_install (TestSuite *suite)
       suite,
       "/server_discovery_and_monitoring/monitoring/heartbeat/pooled/succeeded",
       test_heartbeat_events_pooled_succeeded);
-   _TestSuite_AddMockServerTest (
+   TestSuite_AddMockServerTest (
       suite,
       "/server_discovery_and_monitoring/monitoring/heartbeat/pooled/failed",
-      test_heartbeat_events_pooled_failed,
-      test_framework_skip_if_time_sensitive,
-      NULL);
-   TestSuite_AddFull (
+      test_heartbeat_events_pooled_failed);
+   TestSuite_Add (
       suite,
       "/server_discovery_and_monitoring/monitoring/heartbeat/single/dns",
-      test_heartbeat_fails_dns_single,
-      NULL,
-      NULL,
-      test_framework_skip_if_offline);
-   TestSuite_AddFull (
+      test_heartbeat_fails_dns_single);
+   TestSuite_Add (
       suite,
       "/server_discovery_and_monitoring/monitoring/heartbeat/pooled/dns",
-      test_heartbeat_fails_dns_pooled,
-      NULL,
-      NULL,
-      test_framework_skip_if_offline,
-      test_framework_skip_if_rhel8_zseries);
+      test_heartbeat_fails_dns_pooled);
    TestSuite_AddMockServerTest (
       suite,
       "/server_discovery_and_monitoring/monitoring/no_duplicates",

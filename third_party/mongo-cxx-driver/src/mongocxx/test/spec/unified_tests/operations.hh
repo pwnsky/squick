@@ -25,8 +25,6 @@
 #include <mongocxx/config/private/prelude.hh>
 
 namespace mongocxx {
-MONGOCXX_INLINE_NAMESPACE_BEGIN
-
 namespace operations {
 
 struct state {
@@ -39,15 +37,11 @@ bsoncxx::document::value run(entity::map& map,
                              const bsoncxx::array::element& op,
                              state& state);
 
-}  // namespace operations
-
-namespace operations {
-
 bsoncxx::stdx::optional<read_concern> lookup_read_concern(bsoncxx::document::view doc);
 bsoncxx::stdx::optional<write_concern> lookup_write_concern(bsoncxx::document::view doc);
 bsoncxx::stdx::optional<read_preference> lookup_read_preference(bsoncxx::document::view doc);
 
 }  // namespace operations
-
-MONGOCXX_INLINE_NAMESPACE_END
 }  // namespace mongocxx
+
+#include <mongocxx/config/private/postlude.hh>
