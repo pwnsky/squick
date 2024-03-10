@@ -50,13 +50,6 @@ static bson_mutex_t gTestMutex;
 static TestSuite *gTestSuite;
 
 
-#define TEST_NOFORK (1 << 1)
-#define TEST_HELPTEXT (1 << 2)
-#define TEST_DEBUGOUTPUT (1 << 3)
-#define TEST_TRACE (1 << 4)
-#define TEST_VALGRIND (1 << 5)
-#define TEST_LISTTESTS (1 << 6)
-
 MONGOC_PRINTF_FORMAT (1, 2)
 static void
 test_msg (const char *format, ...)
@@ -66,8 +59,8 @@ test_msg (const char *format, ...)
    va_start (ap, format);
    vprintf (format, ap);
    printf ("\n");
-   fflush (stdout);
    va_end (ap);
+   fflush (stdout);
 }
 
 
@@ -76,11 +69,12 @@ _test_error (const char *format, ...)
 {
    va_list ap;
 
+   fflush (stdout);
    va_start (ap, format);
    vfprintf (stderr, format, ap);
    fprintf (stderr, "\n");
-   fflush (stderr);
    va_end (ap);
+   fflush (stderr);
    abort ();
 }
 
@@ -207,10 +201,6 @@ TestSuite_Init (TestSuite *suite, const char *name, int argc, char **argv)
       test_error ("'--ctest-run' cannot be specified with '-l' or '--match'");
    }
 
-   if (test_framework_getenv_bool ("MONGOC_TEST_VALGRIND")) {
-      suite->flags |= TEST_VALGRIND;
-   }
-
    mock_server_log = test_framework_getenv ("MONGOC_TEST_SERVER_LOG");
    if (mock_server_log) {
       if (!strcmp (mock_server_log, "stdout")) {
@@ -222,7 +212,6 @@ TestSuite_Init (TestSuite *suite, const char *name, int argc, char **argv)
       } else {
          test_error ("Unrecognized option: MONGOC_TEST_SERVER_LOG=%s",
                      mock_server_log);
-         abort ();
       }
 
       bson_free (mock_server_log);
@@ -231,7 +220,6 @@ TestSuite_Init (TestSuite *suite, const char *name, int argc, char **argv)
    if (suite->silent) {
       if (suite->outfile) {
          test_error ("Cannot combine -F with --silent");
-         abort ();
       }
 
       suite->flags &= ~(TEST_DEBUGOUTPUT);
@@ -298,11 +286,11 @@ _TestSuite_AddCheck (Test *test, CheckFunc check, const char *name)
 {
    test->checks[test->num_checks] = check;
    if (++test->num_checks > MAX_TEST_CHECK_FUNCS) {
-      fprintf (stderr,
-               "Too many check funcs for %s, increase MAX_TEST_CHECK_FUNCS "
-               "to more than %d\n",
-               name,
-               MAX_TEST_CHECK_FUNCS);
+      MONGOC_STDERR_PRINTF (
+         "Too many check funcs for %s, increase MAX_TEST_CHECK_FUNCS "
+         "to more than %d\n",
+         name,
+         MAX_TEST_CHECK_FUNCS);
       abort ();
    }
 }
@@ -327,7 +315,7 @@ _V_TestSuite_AddFull (TestSuite *suite,
       return NULL;
    }
 
-   test = (Test *) calloc (1, sizeof *test);
+   test = (Test *) bson_malloc0 (sizeof *test);
    test->name = bson_strdup (name);
    test->func = func;
    test->num_checks = 0;
@@ -407,7 +395,7 @@ _TestSuite_TestFnCtxDtor (void *ctx)
    if (dtor) {
       dtor (ctx);
    }
-   free (ctx);
+   bson_free (ctx);
 }
 
 
@@ -670,9 +658,9 @@ TestSuite_RunTest (TestSuite *suite, /* IN */
    }
 
    t2 = bson_get_monotonic_time ();
+   // CDRIVER-2567: check that bson_get_monotonic_time does not wrap.
+   ASSERT_CMPINT64 (t2, >=, t1);
    t3 = t2 - t1;
-   /* CDRIVER-2567: check that bson_get_monotonic_time does not wrap. */
-   BSON_ASSERT (t3 >= 0);
 
    bson_string_append_printf (buf,
                               "    { \"status\": \"%s\", "
@@ -767,20 +755,20 @@ TestSuite_PrintJsonSystemHeader (FILE *stream)
 #define INFO_BUFFER_SIZE 32767
 
    SYSTEM_INFO si;
-   DWORD version = 0;
-   DWORD major_version = 0;
-   DWORD minor_version = 0;
-   DWORD build = 0;
 
    GetSystemInfo (&si);
-   version = GetVersion ();
 
-   major_version = (DWORD) (LOBYTE (LOWORD (version)));
-   minor_version = (DWORD) (HIBYTE (LOWORD (version)));
+#if defined(_MSC_VER)
+   // CDRIVER-4263: GetVersionEx is deprecated.
+#pragma warning(suppress : 4996)
+   const DWORD version = GetVersion ();
+#else
+   const DWORD version = GetVersion ();
+#endif
 
-   if (version < 0x80000000) {
-      build = (DWORD) (HIWORD (version));
-   }
+   const DWORD major_version = (DWORD) (LOBYTE (LOWORD (version)));
+   const DWORD minor_version = (DWORD) (HIBYTE (LOWORD (version)));
+   const DWORD build = version < 0x80000000u ? (DWORD) (HIWORD (version)) : 0u;
 
    fprintf (stream,
             "  \"host\": {\n"
@@ -953,8 +941,6 @@ TestSuite_TestMatchesName (const TestSuite *suite,
 bool
 test_matches (TestSuite *suite, Test *test)
 {
-   int i;
-
    if (suite->ctest_run) {
       /* We only want exactly the named test */
       return strcmp (test->name, suite->ctest_run) == 0;
@@ -965,7 +951,7 @@ test_matches (TestSuite *suite, Test *test)
       return true;
    }
 
-   for (i = 0; i < suite->match_patterns.len; i++) {
+   for (size_t i = 0u; i < suite->match_patterns.len; i++) {
       char *pattern = _mongoc_array_index (&suite->match_patterns, char *, i);
       if (TestSuite_TestMatchesName (suite, test, pattern)) {
          return true;
@@ -1017,7 +1003,7 @@ _process_skip_file (const char *filename, mongoc_array_t *skips)
          continue; /* Comment line or blank line */
       }
 
-      skip = (TestSkip *) calloc (1, sizeof *skip);
+      skip = (TestSkip *) bson_malloc0 (sizeof *skip);
       if (buffer[buflen - 1] == '\n')
          buflen--;
       test_name_end = buffer + buflen;
@@ -1169,7 +1155,6 @@ TestSuite_Destroy (TestSuite *suite)
 {
    Test *test;
    Test *tmp;
-   int i;
 
    bson_mutex_lock (&gTestMutex);
    gTestSuite = NULL;
@@ -1181,8 +1166,8 @@ TestSuite_Destroy (TestSuite *suite)
       if (test->dtor) {
          test->dtor (test->ctx);
       }
-      free (test->name);
-      free (test);
+      bson_free (test->name);
+      bson_free (test);
    }
 
    if (suite->outfile) {
@@ -1193,17 +1178,17 @@ TestSuite_Destroy (TestSuite *suite)
       bson_string_free (suite->mock_server_log_buf, true);
    }
 
-   free (suite->name);
-   free (suite->prgname);
-   free (suite->ctest_run);
-   for (i = 0; i < suite->match_patterns.len; i++) {
+   bson_free (suite->name);
+   bson_free (suite->prgname);
+   bson_free (suite->ctest_run);
+   for (size_t i = 0u; i < suite->match_patterns.len; i++) {
       char *val = _mongoc_array_index (&suite->match_patterns, char *, i);
       bson_free (val);
    }
 
    _mongoc_array_destroy (&suite->match_patterns);
 
-   for (i = 0; i < suite->failing_flaky_skips.len; i++) {
+   for (size_t i = 0u; i < suite->failing_flaky_skips.len; i++) {
       TestSkip *val =
          _mongoc_array_index (&suite->failing_flaky_skips, TestSkip *, i);
       bson_free (val->test_name);
@@ -1223,19 +1208,6 @@ test_suite_debug_output (void)
 
    bson_mutex_lock (&gTestMutex);
    ret = gTestSuite->flags & TEST_DEBUGOUTPUT;
-   bson_mutex_unlock (&gTestMutex);
-
-   return ret;
-}
-
-
-int
-test_suite_valgrind (void)
-{
-   int ret;
-
-   bson_mutex_lock (&gTestMutex);
-   ret = gTestSuite->flags & TEST_VALGRIND;
    bson_mutex_unlock (&gTestMutex);
 
    return ret;
@@ -1277,4 +1249,31 @@ TestSuite_NoFork (TestSuite *suite)
       return true;
    }
    return false;
+}
+
+char *
+bson_value_to_str (const bson_value_t *val)
+{
+   bson_t *tmp = bson_new ();
+   BSON_APPEND_VALUE (tmp, "v", val);
+   char *str = bson_as_canonical_extended_json (tmp, NULL);
+   // str is the string: { "v": ... }
+   // remove the prefix and suffix.
+   char *ret = bson_strndup (str + 6, strlen (str) - (6 + 1));
+   bson_free (str);
+   bson_destroy (tmp);
+   return ret;
+}
+
+bool
+bson_value_eq (const bson_value_t *a, const bson_value_t *b)
+{
+   bson_t *tmp_a = bson_new ();
+   bson_t *tmp_b = bson_new ();
+   BSON_APPEND_VALUE (tmp_a, "v", a);
+   BSON_APPEND_VALUE (tmp_b, "v", b);
+   bool ret = bson_equal (tmp_a, tmp_b);
+   bson_destroy (tmp_b);
+   bson_destroy (tmp_a);
+   return ret;
 }

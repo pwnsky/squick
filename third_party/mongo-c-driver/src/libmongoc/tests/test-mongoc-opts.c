@@ -96,6 +96,8 @@ func_ctx_init (func_ctx_t *ctx,
                const mongoc_read_prefs_t *prefs,
                const bson_t *opts)
 {
+   ASSERT (client);
+
    ctx->test = test;
    ctx->client = client;
    ctx->db = db;
@@ -135,27 +137,27 @@ func_ctx_cleanup (func_ctx_t *ctx)
    mongoc_write_concern_destroy (wc); \
    mongoc_read_prefs_destroy (prefs);
 
-#define SET_OPT(_type)                                     \
-   static void set_##_type##_opt (mongoc_##_type##_t *obj, \
-                                  opt_type_t opt_type)     \
-   {                                                       \
-      SET_OPT_PREAMBLE (_type);                            \
-                                                           \
-      switch (opt_type) {                                  \
-      case OPT_READ_CONCERN:                               \
-         mongoc_##_type##_set_read_concern (obj, rc);      \
-         break;                                            \
-      case OPT_WRITE_CONCERN:                              \
-         mongoc_##_type##_set_write_concern (obj, wc);     \
-         break;                                            \
-      case OPT_READ_PREFS:                                 \
-         mongoc_##_type##_set_read_prefs (obj, prefs);     \
-         break;                                            \
-      default:                                             \
-         abort ();                                         \
-      }                                                    \
-                                                           \
-      SET_OPT_CLEANUP;                                     \
+#define SET_OPT(_type)                                        \
+   static void set_##_type##_opt (mongoc_##_type##_t *obj,    \
+                                  opt_type_t opt_type)        \
+   {                                                          \
+      SET_OPT_PREAMBLE (_type);                               \
+                                                              \
+      switch (opt_type) {                                     \
+      case OPT_READ_CONCERN:                                  \
+         mongoc_##_type##_set_read_concern (obj, rc);         \
+         break;                                               \
+      case OPT_WRITE_CONCERN:                                 \
+         mongoc_##_type##_set_write_concern (obj, wc);        \
+         break;                                               \
+      case OPT_READ_PREFS:                                    \
+         mongoc_##_type##_set_read_prefs (obj, prefs);        \
+         break;                                               \
+      default:                                                \
+         test_error ("invalid opt_type: %d", (int) opt_type); \
+      }                                                       \
+                                                              \
+      SET_OPT_CLEANUP;                                        \
    }
 
 SET_OPT (client)
@@ -181,7 +183,7 @@ set_func_opt (bson_t *opts,
       *prefs_ptr = mongoc_read_prefs_copy (prefs);
       break;
    default:
-      abort ();
+      test_error ("invalid opt_type: %d", (int) opt_type);
    }
 
    SET_OPT_CLEANUP;
@@ -206,8 +208,7 @@ add_expected_opt (opt_source_t opt_source, opt_type_t opt_type, bson_t *cmd)
    } else if (opt_source & OPT_SOURCE_CLIENT) {
       source_name = "client";
    } else {
-      MONGOC_ERROR ("opt_json called with OPT_SOURCE_NONE");
-      abort ();
+      test_error ("opt_json called with OPT_SOURCE_NONE");
    }
 
    switch (opt_type) {
@@ -223,7 +224,7 @@ add_expected_opt (opt_source_t opt_source, opt_type_t opt_type, bson_t *cmd)
          source_name);
       break;
    default:
-      abort ();
+      test_error ("invalid opt_type: %d", (int) opt_type);
    }
 
    bson_concat (cmd, opt);
@@ -241,7 +242,7 @@ opt_type_name (opt_type_t opt_type)
    case OPT_READ_PREFS:
       return "readPrefs";
    default:
-      abort ();
+      test_error ("invalid opt_type: %d", (int) opt_type);
    }
 }
 
@@ -785,7 +786,7 @@ test_func_inherits_opts (void *ctx)
    bson_error_t error;
 
    /* one primary, one secondary */
-   rs = mock_rs_with_auto_hello (WIRE_VERSION_OP_MSG, true, 1, 0);
+   rs = mock_rs_with_auto_hello (WIRE_VERSION_MAX, true, 1, 0);
    /* we use read pref tags like "collection": "yes" to verify where the
     * pref was inherited from; ensure all secondaries match all tags */
    mock_rs_tag_secondary (rs,
@@ -835,14 +836,8 @@ test_func_inherits_opts (void *ctx)
       capture_logs (false);
 
       if (source_matrix[i] != OPT_SOURCE_NONE) {
-         if (strstr (test->func_name, "aggregate")) {
-            if (test->opt_type != OPT_READ_PREFS) {
-               add_expected_opt (source_matrix[i], test->opt_type, &cmd);
-            }
-         } else {
-            add_expected_opt (source_matrix[i], test->opt_type, &cmd);
-            expect_secondary = test->opt_type == OPT_READ_PREFS;
-         }
+         add_expected_opt (source_matrix[i], test->opt_type, &cmd);
+         expect_secondary = test->opt_type == OPT_READ_PREFS;
       }
 
       /* write commands send two OP_MSG sections */
@@ -859,19 +854,19 @@ test_func_inherits_opts (void *ctx)
       }
 
       if (func_ctx.cursor) {
-         mock_server_replies_simple (request,
-                                     "{'ok': 1,"
-                                     " 'cursor': {"
-                                     "    'id': 0,"
-                                     "    'ns': 'db.collection',"
-                                     "    'firstBatch': []}}");
+         reply_to_request_simple (request,
+                                  "{'ok': 1,"
+                                  " 'cursor': {"
+                                  "    'id': 0,"
+                                  "    'ns': 'db.collection',"
+                                  "    'firstBatch': []}}");
 
          BSON_ASSERT (!future_get_bool (future));
          future_destroy (future);
          ASSERT_OR_PRINT (!mongoc_cursor_error (func_ctx.cursor, &error),
                           error);
       } else {
-         mock_server_replies_simple (request, "{'ok': 1}");
+         reply_to_request_simple (request, "{'ok': 1}");
          cleanup_future (future);
       }
 

@@ -97,27 +97,41 @@ test_mongoc_scram_iteration_count (void)
 static void
 test_mongoc_scram_sasl_prep (void)
 {
-#ifdef MONGOC_ENABLE_ICU
    int i, ntests;
    char *normalized;
    bson_error_t err;
    /* examples from RFC 4013 section 3. */
-   sasl_prep_testcase_t tests[] = {{"\x65\xCC\x81", "\xC3\xA9", true, true},
-                                   {"I\xC2\xADX", "IX", true, true},
-                                   {"user", "user", false, true},
-                                   {"USER", "USER", false, true},
-                                   {"\xC2\xAA", "a", true, true},
-                                   {"\xE2\x85\xA8", "IX", true, true},
-                                   {"\x07", "(invalid)", true, false},
-                                   {"\xD8\xA7\x31", "(invalid)", true, false}};
+   sasl_prep_testcase_t tests[] = {
+      // normalization
+      {"\x65\xCC\x81", "\xC3\xA9", true, true},
+      {"\xC2\xAA", "a", true, true},
+      {"Henry \xE2\x85\xA3", "Henry IV", true, true},
+      {"A\xEF\xAC\x83n", "Affin", true, true},
+      // mapped to nothing character (Table B.1)
+      {"I\xC2\xADX", "IX", true, true},
+      // mapped to nothing character (Table C.1.2)
+      {"I\xE2\x80\x80\xC2\xA0X", "I  X", true, true},
+      // prohibited character
+      {"banana \x07 apple", "(invalid)", true, false},
+      // unassigned codepoint (Table A.1)
+      {"banana \xe0\xAA\xBA apple", "(invalid)", true, false},
+      // bidi: RandALCat but not RandALCat at beginning and end
+      {"\xD8\xA7\x31", "(invalid)", true, false},
+      // bidi: RandALCat and LCat characters
+      {"\xFB\x1D apple \x09\xA8", "(invalid)", true, false},
+      // bidi: RandALCat with RandALCat at beginning and end
+      {"\xD8\xA1 \xDC\x92", "\xD8\xA1 \xDC\x92", true, true},
+      // normalization and mapped to nothing
+      {"I\xE2\x80\x80\xC2\xA0X \xE2\x85\xA3", "I  X IV", true, true},
+      {"user", "user", false, true},
+      {"USER", "USER", false, true}};
    ntests = sizeof (tests) / sizeof (sasl_prep_testcase_t);
    for (i = 0; i < ntests; i++) {
       ASSERT_CMPINT (tests[i].should_be_required,
                      ==,
                      _mongoc_sasl_prep_required (tests[i].original));
       memset (&err, 0, sizeof (err));
-      normalized = _mongoc_sasl_prep (
-         tests[i].original, strlen (tests[i].original), &err);
+      normalized = _mongoc_sasl_prep (tests[i].original, &err);
       if (tests[i].should_succeed) {
          ASSERT_CMPSTR (tests[i].normalized, normalized);
          ASSERT_CMPINT (err.code, ==, 0);
@@ -128,9 +142,160 @@ test_mongoc_scram_sasl_prep (void)
          BSON_ASSERT (normalized == NULL);
       }
    }
-#endif
 }
+
+static void
+test_mongoc_utf8_char_length (void)
+{
+   ASSERT_CMPSIZE_T (_mongoc_utf8_char_length (","), ==, 1u);
+   ASSERT_CMPSIZE_T (_mongoc_utf8_char_length ("ɶ"), ==, 2u);
+   ASSERT_CMPSIZE_T (_mongoc_utf8_char_length ("ྡྷ"), ==, 3u);
+   ASSERT_CMPSIZE_T (_mongoc_utf8_char_length ("🌂"), ==, 4u);
+}
+
+static void
+test_mongoc_utf8_string_length (void)
+{
+   ASSERT_CMPSIZE_T (_mongoc_utf8_string_length (",ase"), ==, 4u);
+   ASSERT_CMPSIZE_T (_mongoc_utf8_string_length ("ɸɴ"), ==, 2u);
+   ASSERT_CMPSIZE_T (_mongoc_utf8_string_length ("ྡྷ🌂e4🌕"), ==, 5u);
+   ASSERT_CMPSIZE_T (
+      _mongoc_utf8_string_length ("no special characters"), ==, 21u);
+}
+
+static void
+test_mongoc_utf8_to_unicode (void)
+{
+   ASSERT_CMPUINT32 (_mongoc_utf8_get_first_code_point (",", 1), ==, 0x002C);
+   ASSERT_CMPUINT32 (_mongoc_utf8_get_first_code_point ("ɶ", 2), ==, 0x0276);
+   ASSERT_CMPUINT32 (_mongoc_utf8_get_first_code_point ("ྡྷ", 3), ==, 0x0FA2);
+   ASSERT_CMPUINT32 (_mongoc_utf8_get_first_code_point ("🌂", 4), ==, 0x1F302);
+}
+
 #endif
+
+enum {
+   // ensure there are more users than slots in cache to test cache invalidation
+   NUM_CACHE_TEST_USERS = 10 + MONGOC_SCRAM_CACHE_SIZE,
+
+   // ensure that there are several times that the cache needs to be invalidated
+   NUM_CACHE_TEST_THREADS = 3 * NUM_CACHE_TEST_USERS,
+};
+
+static char *_scram_cache_invalidation_uri_str = NULL;
+
+static BSON_THREAD_FUN (_scram_cache_invalidation_thread, username_number_ptr)
+{
+   bson_error_t error;
+
+   const char *password = "mypass";
+   char *username =
+      bson_strdup_printf ("cachetestuser%dX", *(int *) username_number_ptr);
+   bson_free (username_number_ptr);
+
+   const char *uri_str = _scram_cache_invalidation_uri_str;
+   char *cache_test_user_uri =
+      test_framework_add_user_password (uri_str, username, password);
+   BSON_ASSERT (cache_test_user_uri);
+
+   mongoc_uri_t *cache_test_uri = mongoc_uri_new (cache_test_user_uri);
+   BSON_ASSERT (cache_test_uri);
+
+   // Set serverSelectionTryOnce=false so a single failed connection attempt
+   // does not result in an error.
+   mongoc_uri_set_option_as_bool (
+      cache_test_uri, MONGOC_URI_SERVERSELECTIONTRYONCE, false);
+
+   mongoc_client_t *client =
+      test_framework_client_new_from_uri (cache_test_uri, NULL /* api */);
+   BSON_ASSERT (client);
+
+   test_framework_set_ssl_opts (client);
+   BSON_ASSERT (client);
+
+   mongoc_collection_t *collection =
+      mongoc_client_get_collection (client, "admin", "testcache");
+   BSON_ASSERT (collection);
+
+   bson_t insert = BSON_INITIALIZER;
+   bool ok =
+      mongoc_collection_insert_one (collection, &insert, NULL, NULL, &error);
+   ASSERT_OR_PRINT (ok, error);
+
+   mongoc_collection_destroy (collection);
+   mongoc_client_destroy (client);
+   mongoc_uri_destroy (cache_test_uri);
+   bson_free (cache_test_user_uri);
+   bson_free (username);
+
+   BSON_THREAD_RETURN;
+}
+
+static void
+test_mongoc_scram_cache_invalidation (void *ctx)
+{
+   bson_error_t error;
+   mongoc_uri_t *const uri = test_framework_get_uri ();
+   BSON_ASSERT (uri);
+
+   mongoc_client_t *client = test_framework_new_default_client ();
+   BSON_ASSERT (client);
+
+   mongoc_database_t *const db = mongoc_client_get_database (client, "admin");
+   BSON_ASSERT (db);
+
+   bson_t *roles = tmp_bson ("[{'role': 'readWrite', 'db': 'admin'}]");
+
+   _scram_cache_invalidation_uri_str =
+      test_framework_get_uri_str_no_auth ("admin");
+
+   /* Remove cache test users if they already exist.
+    * Create more test users than could exist in cache. */
+   for (int i = 0; i < NUM_CACHE_TEST_USERS; i++) {
+      const char *password = "mypass";
+      char *username = bson_strdup_printf ("cachetestuser%dX", i);
+
+      mongoc_database_remove_user (db, username, &error);
+      bool ok =
+         mongoc_database_add_user (db, username, password, roles, NULL, &error);
+      ASSERT_OR_PRINT (ok, error);
+      bson_free (username);
+   }
+
+   bson_thread_t threads[NUM_CACHE_TEST_THREADS];
+   for (int i = 0; i < NUM_CACHE_TEST_THREADS; i++) {
+      int *username_number_ptr = bson_malloc (sizeof (*username_number_ptr));
+      *username_number_ptr = i % NUM_CACHE_TEST_USERS;
+      int rc = mcommon_thread_create (
+         &threads[i], _scram_cache_invalidation_thread, username_number_ptr);
+      BSON_ASSERT (rc == 0);
+   }
+
+   for (int i = 0; i < NUM_CACHE_TEST_THREADS; i++) {
+      int rc = mcommon_thread_join (threads[i]);
+      BSON_ASSERT (rc == 0);
+   }
+
+   bson_free (_scram_cache_invalidation_uri_str);
+   _scram_cache_invalidation_uri_str = NULL;
+   mongoc_database_destroy (db);
+   mongoc_client_destroy (client);
+   mongoc_uri_destroy (uri);
+}
+
+static void
+_clear_scram_users (void)
+{
+   mongoc_client_t *const client = test_framework_new_default_client ();
+   ASSERT (client);
+   mongoc_database_t *const db = mongoc_client_get_database (client, "admin");
+   ASSERT (db);
+   (void) mongoc_database_remove_user (db, "sha1", NULL);
+   (void) mongoc_database_remove_user (db, "sha256", NULL);
+   (void) mongoc_database_remove_user (db, "both", NULL);
+   mongoc_database_destroy (db);
+   mongoc_client_destroy (client);
+}
 
 static void
 _create_scram_users (void)
@@ -242,7 +407,7 @@ _check_mechanism (bool pooled,
    used_mech = bson_lookup_utf8 (sasl_doc, "mechanism");
    ASSERT_CMPSTR (used_mech, expected_used_mech);
    /* we're not actually going to auth, just hang up. */
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
    future_wait (future);
    future_destroy (future);
    request_destroy (request);
@@ -260,32 +425,34 @@ _check_mechanism (bool pooled,
 typedef enum {
    MONGOC_TEST_NO_ERROR,
    MONGOC_TEST_USER_NOT_FOUND_ERROR,
-   MONGOC_TEST_AUTH_ERROR,
-   MONGOC_TEST_NO_ICU_ERROR
+   MONGOC_TEST_AUTH_ERROR
 } test_error_t;
 
 void
 _check_error (const bson_error_t *error, test_error_t expected_error)
 {
-   int32_t domain = 0;
-   int32_t code = 0;
+   uint32_t domain = 0;
+   uint32_t code = 0;
    const char *message = "";
 
    switch (expected_error) {
-   case MONGOC_TEST_AUTH_ERROR:
+   case MONGOC_TEST_AUTH_ERROR: {
       domain = MONGOC_ERROR_CLIENT;
       code = MONGOC_ERROR_CLIENT_AUTHENTICATE;
-      message = "Authentication failed";
+      ASSERT_CMPUINT32 (error->domain, ==, domain);
+      ASSERT_CMPUINT32 (error->code, ==, code);
+      const char *const a = "Authentication failed";
+      const char *const b = "Unable to use";
+      const bool found =
+         strstr (error->message, a) || strstr (error->message, b);
+      ASSERT_WITH_MSG (
+         found, "[%s] does not contain [%s] or [%s]", error->message, a, b);
       break;
+   }
    case MONGOC_TEST_USER_NOT_FOUND_ERROR:
       domain = MONGOC_ERROR_CLIENT;
       code = MONGOC_ERROR_CLIENT_AUTHENTICATE;
       message = "Could not find user";
-      break;
-   case MONGOC_TEST_NO_ICU_ERROR:
-      domain = MONGOC_ERROR_SCRAM;
-      code = MONGOC_ERROR_SCRAM_PROTOCOL_ERROR;
-      message = "SCRAM Failure: ICU required to SASLPrep password";
       break;
    case MONGOC_TEST_NO_ERROR:
    default:
@@ -416,6 +583,8 @@ test_mongoc_scram_auth (void *ctx)
 {
    BSON_UNUSED (ctx);
 
+   _clear_scram_users ();
+
    /* Auth spec: "Create three test users, one with only SHA-1, one with only
     * SHA-256 and one with both" */
    _create_scram_users ();
@@ -425,7 +594,7 @@ test_mongoc_scram_auth (void *ctx)
 }
 
 static int
-_skip_if_no_sha256 ()
+_skip_if_no_sha256 (void)
 {
    mongoc_client_t *client;
    bool res;
@@ -459,24 +628,21 @@ _skip_if_no_sha256 ()
 #define ROMAN_NUMERAL_NINE "\xE2\x85\xA8"
 #define ROMAN_NUMERAL_FOUR "\xE2\x85\xA3"
 
-static int
-skip_if_no_icu (void)
+static void
+_clear_saslprep_users (void)
 {
-#ifdef MONGOC_ENABLE_ICU
-   return true;
-#else
-   return false;
-#endif
-}
-
-static int
-skip_if_icu (void)
-{
-   return !skip_if_no_icu ();
+   mongoc_client_t *const client = test_framework_new_default_client ();
+   ASSERT (client);
+   mongoc_database_t *const db = mongoc_client_get_database (client, "admin");
+   ASSERT (db);
+   (void) mongoc_database_remove_user (db, "IX", NULL);
+   (void) mongoc_database_remove_user (db, ROMAN_NUMERAL_NINE, NULL);
+   mongoc_database_destroy (db);
+   mongoc_client_destroy (client);
 }
 
 static void
-_create_saslprep_users ()
+_create_saslprep_users (void)
 {
    mongoc_client_t *client;
    bool res;
@@ -505,7 +671,7 @@ _create_saslprep_users ()
 }
 
 static void
-_drop_saslprep_users ()
+_drop_saslprep_users (void)
 {
    mongoc_client_t *client;
    mongoc_database_t *db;
@@ -599,34 +765,10 @@ test_mongoc_saslprep_auth (void *ctx)
 {
    BSON_UNUSED (ctx);
 
+   _clear_saslprep_users ();
    _create_saslprep_users ();
    _test_mongoc_scram_saslprep_auth (false);
    _test_mongoc_scram_saslprep_auth (true);
-   _drop_saslprep_users ();
-}
-
-
-static void
-_test_mongoc_scram_saslprep_auth_no_icu (bool pooled)
-{
-   _try_auth (pooled, "IX", "IX", NULL, MONGOC_TEST_NO_ERROR);
-   _try_auth (pooled, "IX", ROMAN_NUMERAL_NINE, NULL, MONGOC_TEST_NO_ICU_ERROR);
-   _try_auth (pooled, ROMAN_NUMERAL_NINE, "IV", NULL, MONGOC_TEST_NO_ERROR);
-   _try_auth (pooled,
-              ROMAN_NUMERAL_NINE,
-              ROMAN_NUMERAL_FOUR,
-              NULL,
-              MONGOC_TEST_NO_ICU_ERROR);
-}
-
-static void
-test_mongoc_saslprep_auth_no_icu (void *ctx)
-{
-   BSON_UNUSED (ctx);
-
-   _create_saslprep_users ();
-   _test_mongoc_scram_saslprep_auth_no_icu (false);
-   _test_mongoc_scram_saslprep_auth_no_icu (true);
    _drop_saslprep_users ();
 }
 
@@ -640,7 +782,18 @@ test_scram_install (TestSuite *suite)
    TestSuite_Add (suite, "/scram/sasl_prep", test_mongoc_scram_sasl_prep);
    TestSuite_Add (
       suite, "/scram/iteration_count", test_mongoc_scram_iteration_count);
+   TestSuite_Add (
+      suite, "/scram/utf8_char_length", test_mongoc_utf8_char_length);
+   TestSuite_Add (
+      suite, "/scram/utf8_string_length", test_mongoc_utf8_string_length);
+   TestSuite_Add (suite, "/scram/utf8_to_unicode", test_mongoc_utf8_to_unicode);
 #endif
+   TestSuite_AddFull (suite,
+                      "/scram/cache_invalidation",
+                      test_mongoc_scram_cache_invalidation,
+                      NULL,
+                      NULL,
+                      test_framework_skip_if_no_auth);
    TestSuite_AddFull (suite,
                       "/scram/auth_tests",
                       test_mongoc_scram_auth,
@@ -656,15 +809,5 @@ test_scram_install (TestSuite *suite)
                       NULL /* ctx */,
                       test_framework_skip_if_no_auth,
                       _skip_if_no_sha256,
-                      skip_if_no_icu,
-                      TestSuite_CheckLive);
-   TestSuite_AddFull (suite,
-                      "/scram/saslprep_auth_no_icu",
-                      test_mongoc_saslprep_auth_no_icu,
-                      NULL /* dtor */,
-                      NULL /* ctx */,
-                      test_framework_skip_if_no_auth,
-                      _skip_if_no_sha256,
-                      skip_if_icu,
                       TestSuite_CheckLive);
 }

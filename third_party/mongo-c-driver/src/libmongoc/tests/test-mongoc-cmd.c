@@ -42,7 +42,7 @@ test_client_cmd_options (void)
    request_t *request;
    bson_error_t error;
 
-   server = mock_server_with_auto_hello (WIRE_VERSION_OP_MSG);
+   server = mock_server_with_auto_hello (WIRE_VERSION_MAX);
    mock_server_run (server);
    client =
       test_framework_client_new_from_uri (mock_server_get_uri (server), NULL);
@@ -66,7 +66,7 @@ test_client_cmd_options (void)
       MONGOC_QUERY_NONE,
       tmp_bson ("{'readConcern': { '$exists': true }}"));
 
-   mock_server_replies_simple (request, "{'ok': 1, 'n': 1}");
+   reply_to_request_simple (request, "{'ok': 1, 'n': 1}");
    ASSERT_OR_PRINT (future_get_bool (future), error);
 
    request_destroy (request);

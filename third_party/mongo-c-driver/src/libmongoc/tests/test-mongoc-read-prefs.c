@@ -45,12 +45,12 @@ _test_op_msg (const mongoc_uri_t *uri,
 
    future = future_cursor_next (cursor, &doc);
    request = mock_server_receives_msg (server, 0, tmp_bson (expected_find));
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': 0,"
-                               "    'ns': 'db.collection',"
-                               "    'firstBatch': [{'a': 1}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 0,"
+                            "    'ns': 'db.collection',"
+                            "    'firstBatch': [{'a': 1}]}}");
 
    /* mongoc_cursor_next returned true */
    BSON_ASSERT (future_get_bool (future));
@@ -97,12 +97,12 @@ _test_command (const mongoc_uri_t *uri,
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson (expected_cmd));
 
-   mock_server_replies (request,
-                        MONGOC_REPLY_NONE, /* flags */
-                        0,                 /* cursorId */
-                        0,                 /* startingFrom */
-                        1,                 /* numberReturned */
-                        "{'ok': 1}");
+   reply_to_request (request,
+                     MONGOC_REPLY_NONE, /* flags */
+                     0,                 /* cursorId */
+                     0,                 /* startingFrom */
+                     1,                 /* numberReturned */
+                     "{'ok': 1}");
 
    /* mongoc_cursor_next returned true */
    BSON_ASSERT (future_get_bool (future));
@@ -137,12 +137,12 @@ _test_command_simple (const mongoc_uri_t *uri,
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson (expected_cmd));
 
-   mock_server_replies (request,
-                        MONGOC_REPLY_NONE, /* flags */
-                        0,                 /* cursorId */
-                        0,                 /* startingFrom */
-                        1,                 /* numberReturned */
-                        "{'ok': 1}");
+   reply_to_request (request,
+                     MONGOC_REPLY_NONE, /* flags */
+                     0,                 /* cursorId */
+                     0,                 /* startingFrom */
+                     1,                 /* numberReturned */
+                     "{'ok': 1}");
 
    /* mongoc_cursor_next returned true */
    BSON_ASSERT (future_get_bool (future));
@@ -216,8 +216,7 @@ _run_server (read_pref_test_type_t test_type)
                               mock_server_get_host_and_port (server));
       break;
    default:
-      fprintf (stderr, "Invalid test_type: : %d\n", test_type);
-      abort ();
+      test_error ("Invalid test_type: %d", (int) test_type);
    }
 
    return server;
@@ -612,14 +611,13 @@ test_read_prefs_mongos_max_staleness (void)
       "                     'maxStalenessSeconds': 120}}",
       "{}");
 
-   mock_server_replies_to_find (request,
-                                MONGOC_QUERY_EXHAUST |
-                                   MONGOC_QUERY_SECONDARY_OK,
-                                0,
-                                1,
-                                "test.test",
-                                "{}",
-                                false);
+   reply_to_find_request (request,
+                          MONGOC_QUERY_EXHAUST | MONGOC_QUERY_SECONDARY_OK,
+                          0,
+                          1,
+                          "test.test",
+                          "{}",
+                          false);
 
    /* mongoc_cursor_next returned true */
    BSON_ASSERT (future_get_bool (future));
@@ -658,30 +656,23 @@ test_read_prefs_mongos_hedged_reads (void)
 
    mongoc_read_prefs_set_hedge (prefs, &hedge_doc);
 
-   /* exhaust cursor is required so the driver downgrades the OP_QUERY find
-    * command to an OP_QUERY legacy find */
    cursor = mongoc_collection_find_with_opts (
       collection, tmp_bson ("{'a': 1}"), tmp_bson ("{'exhaust': true}"), prefs);
    future = future_cursor_next (cursor, &doc);
-   request = mock_server_receives_query (
+   request = mock_server_receives_msg (
       server,
-      "test.test",
-      MONGOC_QUERY_EXHAUST | MONGOC_QUERY_SECONDARY_OK,
-      0,
-      0,
-      "{'$query': {'a': 1},"
-      " '$readPreference': {'mode': 'secondaryPreferred',"
-      "                     'hedge': {'enabled': true}}}",
-      "{}");
-
-   mock_server_replies_to_find (request,
-                                MONGOC_QUERY_EXHAUST |
-                                   MONGOC_QUERY_SECONDARY_OK,
-                                0,
-                                1,
-                                "test.test",
-                                "{}",
-                                false);
+      MONGOC_MSG_EXHAUST_ALLOWED,
+      tmp_bson ("{'find': 'test',"
+                " 'filter': {'a': {'$numberInt': '1'}},"
+                " '$readPreference': {'mode': 'secondaryPreferred',"
+                "                     'hedge': {'enabled': true}}}"));
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': {'$numberLong': '0'},"
+                            "    'ns': 'db.collection',"
+                            "    'firstBatch': [{}]}}");
+   mock_server_auto_endsessions (server);
 
    /* mongoc_cursor_next returned true */
    BSON_ASSERT (future_get_bool (future));
@@ -733,8 +724,13 @@ test_mongos_read_concern (void)
                 " '$readPreference': {'mode': 'secondary'},"
                 " 'readConcern': {'level': 'foo'}}"));
 
-   mock_server_replies_to_find (
-      request, MONGOC_QUERY_NONE, 0, 1, "db.collection", "{}", true);
+   reply_to_op_msg_request (request,
+                            MONGOC_MSG_NONE,
+                            tmp_bson ("{'ok': 1,"
+                                      " 'cursor': {"
+                                      "    'id': {'$numberLong': '0'},"
+                                      "    'ns': 'db.collection',"
+                                      "    'firstBatch': [{}]}}"));
 
    /* mongoc_cursor_next returned true */
    BSON_ASSERT (future_get_bool (future));
@@ -773,7 +769,7 @@ _test_op_msg_direct_connection (bool is_mongos,
    int i;
 
    if (is_mongos) {
-      server = mock_mongos_new (WIRE_VERSION_OP_MSG);
+      server = mock_mongos_new (WIRE_VERSION_MAX);
    } else {
       char *hello = bson_strdup_printf ("{'ok': 1.0,"
                                         " 'isWritablePrimary': true,"
@@ -782,7 +778,7 @@ _test_op_msg_direct_connection (bool is_mongos,
                                         " 'minWireVersion': %d,"
                                         " 'maxWireVersion': %d}",
                                         WIRE_VERSION_MIN,
-                                        WIRE_VERSION_OP_MSG);
+                                        WIRE_VERSION_MAX);
       server = mock_server_new ();
       mock_server_auto_hello (server, hello);
       bson_free (hello);
@@ -811,7 +807,7 @@ _test_op_msg_direct_connection (bool is_mongos,
               "    'ns': 'db.collection',"
               "    'firstBatch': [{'a': 1}]}}";
 
-      mock_server_replies_simple (request, reply);
+      reply_to_request_simple (request, reply);
       BSON_ASSERT (future_get_bool (future));
       future_destroy (future);
       request_destroy (request);

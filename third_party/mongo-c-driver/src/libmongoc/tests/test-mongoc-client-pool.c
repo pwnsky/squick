@@ -60,7 +60,7 @@ test_mongoc_client_pool_pop_timeout (void)
    duration_usec = bson_get_monotonic_time () - start;
    /* There is a possibility that the wait is a few milliseconds short.  The
     * assertion is structured like this since the timeout is a rough lower bound
-    * and some test environments (e.g., valgrind) might slow things down. */
+    * and some test environments might slow things down. */
    BSON_ASSERT (duration_usec / 1000 >= 1990);
    mongoc_client_pool_push (pool, client);
    mongoc_uri_destroy (uri);
@@ -367,15 +367,13 @@ test_client_pool_destroy_without_pushing (void)
 static void
 command_started_cb (const mongoc_apm_command_started_t *event)
 {
-   int *count;
-
    if (strcmp (mongoc_apm_command_started_get_command_name (event),
                "endSessions") != 0) {
       return;
    }
 
-   count = (int *) mongoc_apm_command_started_get_context (event);
-   count++;
+   int *const count = (int *) mongoc_apm_command_started_get_context (event);
+   (*count)++;
 }
 
 /* tests that creating and destroying an unused session
@@ -453,8 +451,8 @@ test_client_pool_max_pool_size_exceeded (void)
    bson_mutex_init (&args->mutex);
    mongoc_cond_init (&args->cond);
 
-   mcommon_thread_create (&thread1, worker, args);
-   mcommon_thread_create (&thread2, worker, args);
+   ASSERT_CMPINT (0, ==, mcommon_thread_create (&thread1, worker, args));
+   ASSERT_CMPINT (0, ==, mcommon_thread_create (&thread2, worker, args));
 
    bson_mutex_lock (&args->mutex);
    while (args->nleft > 0) {

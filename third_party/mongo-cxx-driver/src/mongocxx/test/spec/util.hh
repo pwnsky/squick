@@ -25,7 +25,6 @@
 #include <mongocxx/config/private/prelude.hh>
 
 namespace mongocxx {
-MONGOCXX_INLINE_NAMESPACE_BEGIN
 namespace spec {
 
 using namespace bsoncxx;
@@ -117,6 +116,6 @@ void run_transactions_tests_in_file(const std::string& test_path);
 void run_crud_tests_in_file(const std::string& test_path, uri test_uri = uri{});
 
 }  // namespace spec
-MONGOCXX_INLINE_NAMESPACE_END
 }  // namespace mongocxx
+
 #include <mongocxx/config/private/postlude.hh>

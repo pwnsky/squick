@@ -27,12 +27,14 @@ _force_scan (mongoc_client_t *client, mock_server_t *server, const char *hello)
    future_t *future;
    mongoc_server_description_t *sd;
 
+   ASSERT (client);
+
    /* Mark the topology as "stale" to trigger a scan. */
    client->topology->stale = true;
    future =
       future_client_select_server (client, true /* for writes */, NULL, &error);
    request = mock_server_receives_any_hello (server);
-   mock_server_replies_simple (request, hello);
+   reply_to_request_simple (request, hello);
    sd = future_get_mongoc_server_description_ptr (future);
    BSON_ASSERT (sd);
 

@@ -18,10 +18,10 @@
 #define MONGOC_LOG_DOMAIN "topology-test"
 
 typedef struct {
-   int n_started;
-   int n_succeeded;
-   int n_failed;
-   int n_unknowns;
+   size_t n_started;
+   size_t n_succeeded;
+   size_t n_failed;
+   size_t n_unknowns;
    bson_mutex_t mutex;
 } checks_t;
 
@@ -39,9 +39,9 @@ checks_cleanup (checks_t *checks)
 }
 
 static bool
-checks_cmp (checks_t *checks, const char *metric, char cmp, int expected)
+checks_cmp (checks_t *checks, const char *metric, char cmp, size_t expected)
 {
-   int actual = 0;
+   size_t actual = 0;
 
    bson_mutex_lock (&checks->mutex);
    if (0 == strcmp (metric, "n_started")) {
@@ -181,7 +181,7 @@ test_topology_client_creation (void)
 
    /* ensure that we are sharing streams with the client */
    server_stream = mongoc_cluster_stream_for_reads (
-      &client_a->cluster, NULL, NULL, NULL, false, &error);
+      &client_a->cluster, NULL, NULL, NULL, NULL, &error);
 
    ASSERT_OR_PRINT (server_stream, error);
    node = mongoc_topology_scanner_get_node (client_a->topology->scanner,
@@ -370,7 +370,7 @@ _test_server_selection (bool try_once)
       client->topology, MONGOC_SS_READ, primary_pref, NULL, &error);
    request = mock_server_receives_any_hello (server);
    BSON_ASSERT (request);
-   mock_server_replies_simple (request, secondary_response);
+   reply_to_request_simple (request, secondary_response);
    request_destroy (request);
 
    /* the selection timeout is 100 ms, and we can't rescan until a half second
@@ -403,7 +403,7 @@ _test_server_selection (bool try_once)
    BSON_ASSERT (request);
 
    /* the secondary is now primary, selection succeeds */
-   mock_server_replies_simple (request, primary_response);
+   reply_to_request_simple (request, primary_response);
    sd = future_get_mongoc_server_description_ptr (future);
    BSON_ASSERT (sd);
    BSON_ASSERT (!client->topology->stale);
@@ -456,7 +456,6 @@ _test_topology_invalidate_server (bool pooled)
 {
    mongoc_server_description_t *fake_sd;
    const mongoc_server_description_t *sd;
-   mongoc_uri_t *uri;
    mongoc_client_t *client;
    mongoc_client_pool_t *pool = NULL;
    bson_error_t error;
@@ -465,18 +464,18 @@ _test_topology_invalidate_server (bool pooled)
    uint32_t id;
    mongoc_server_stream_t *server_stream;
    checks_t checks;
-   int server_count;
-   mongoc_apm_callbacks_t *callbacks;
    mc_shared_tpld td;
    mc_tpld_modification tdmod;
 
    checks_init (&checks);
-   uri = test_framework_get_uri ();
+
+   mongoc_uri_t *const uri = test_framework_get_uri ();
    /* no auto heartbeat */
    mongoc_uri_set_option_as_int32 (uri, "heartbeatFrequencyMS", INT32_MAX);
    mongoc_uri_set_option_as_int32 (uri, "connectTimeoutMS", 3000);
-   server_count = test_framework_server_count ();
-   callbacks = heartbeat_callbacks ();
+
+   const size_t server_count = test_framework_server_count ();
+   mongoc_apm_callbacks_t *const callbacks = heartbeat_callbacks ();
 
    if (pooled) {
       pool = test_framework_client_pool_new_from_uri (uri, NULL);
@@ -496,7 +495,7 @@ _test_topology_invalidate_server (bool pooled)
 
    /* call explicitly */
    server_stream = mongoc_cluster_stream_for_reads (
-      &client->cluster, NULL, NULL, NULL, false, &error);
+      &client->cluster, NULL, NULL, NULL, NULL, &error);
    ASSERT_OR_PRINT (server_stream, error);
    sd = server_stream->sd;
    id = server_stream->sd->id;
@@ -603,7 +602,7 @@ test_invalid_cluster_node (void *ctx)
 
    /* load stream into cluster */
    server_stream = mongoc_cluster_stream_for_reads (
-      &client->cluster, NULL, NULL, NULL, false, &error);
+      &client->cluster, NULL, NULL, NULL, NULL, &error);
    ASSERT_OR_PRINT (server_stream, error);
    id = server_stream->sd->id;
    mongoc_server_stream_cleanup (server_stream);
@@ -676,7 +675,7 @@ test_max_wire_version_race_condition (void *ctx)
 
    /* load stream into cluster */
    server_stream = mongoc_cluster_stream_for_reads (
-      &client->cluster, NULL, NULL, NULL, false, &error);
+      &client->cluster, NULL, NULL, NULL, NULL, &error);
    ASSERT_OR_PRINT (server_stream, error);
    id = server_stream->sd->id;
    mongoc_server_stream_cleanup (server_stream);
@@ -724,7 +723,7 @@ test_cooldown_standalone (void)
       client->topology, MONGOC_SS_READ, primary_pref, NULL, &error);
    request = mock_server_receives_any_hello (server);
    BSON_ASSERT (request);
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
    BSON_ASSERT (!future_get_mongoc_server_description_ptr (future));
    request_destroy (request);
    future_destroy (future);
@@ -765,13 +764,13 @@ test_cooldown_standalone (void)
       client->topology, MONGOC_SS_READ, primary_pref, NULL, &error);
    request = mock_server_receives_any_hello (server); /* not in cooldown now */
    BSON_ASSERT (request);
-   mock_server_replies_simple (request,
-                               tmp_str ("{'ok': 1,"
-                                        " 'isWritablePrimary': true,"
-                                        " 'minWireVersion': %d,"
-                                        " 'maxWireVersion': %d}",
-                                        WIRE_VERSION_MIN,
-                                        WIRE_VERSION_MAX));
+   reply_to_request_simple (request,
+                            tmp_str ("{'ok': 1,"
+                                     " 'isWritablePrimary': true,"
+                                     " 'minWireVersion': %d,"
+                                     " 'maxWireVersion': %d}",
+                                     WIRE_VERSION_MIN,
+                                     WIRE_VERSION_MAX));
    sd = future_get_mongoc_server_description_ptr (future);
    BSON_ASSERT (sd);
    request_destroy (request);
@@ -788,7 +787,6 @@ static void
 test_cooldown_rs (void)
 {
    mock_server_t *servers[2]; /* two secondaries, no primary */
-   char *uri_str;
    int i;
    mongoc_client_t *client;
    mongoc_read_prefs_t *primary_pref;
@@ -804,12 +802,25 @@ test_cooldown_rs (void)
       mock_server_run (servers[i]);
    }
 
-   uri_str = bson_strdup_printf ("mongodb://localhost:%hu/?replicaSet=rs"
-                                 "&serverSelectionTimeoutMS=100"
-                                 "&connectTimeoutMS=100",
-                                 mock_server_get_port (servers[0]));
+   {
+      char *uri_str =
+         bson_strdup_printf ("mongodb://localhost:%hu/?replicaSet=rs"
+                             "&serverSelectionTimeoutMS=100"
+                             "&connectTimeoutMS=100",
+                             mock_server_get_port (servers[0]));
 
-   client = test_framework_client_new (uri_str, NULL);
+      mongoc_uri_t *const uri = mongoc_uri_new_with_error (uri_str, &error);
+      ASSERT_OR_PRINT (uri, error);
+
+      // Prevent retryable handshakes from interfering with mock server hangups.
+      mongoc_uri_set_option_as_bool (uri, MONGOC_URI_RETRYREADS, false);
+
+      client = test_framework_client_new_from_uri (uri, NULL);
+
+      bson_free (uri_str);
+      mongoc_uri_destroy (uri);
+   }
+
    primary_pref = mongoc_read_prefs_new (MONGOC_READ_PRIMARY);
 
    secondary_response =
@@ -841,13 +852,13 @@ test_cooldown_rs (void)
 
    request = mock_server_receives_any_hello (servers[0]);
    BSON_ASSERT (request);
-   mock_server_replies_simple (request, secondary_response);
+   reply_to_request_simple (request, secondary_response);
    request_destroy (request);
 
    /* server 0 told us about server 1. we check it immediately but it's down. */
    request = mock_server_receives_any_hello (servers[1]);
    BSON_ASSERT (request);
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
    request_destroy (request);
 
    /* selection fails. */
@@ -862,7 +873,7 @@ test_cooldown_rs (void)
 
    request = mock_server_receives_any_hello (servers[0]);
    BSON_ASSERT (request);
-   mock_server_replies_simple (request, secondary_response);
+   reply_to_request_simple (request, secondary_response);
    request_destroy (request);
 
    mock_server_set_request_timeout_msec (servers[1], 100);
@@ -881,7 +892,7 @@ test_cooldown_rs (void)
 
    request = mock_server_receives_any_hello (servers[1]);
    BSON_ASSERT (request);
-   mock_server_replies_simple (request, primary_response);
+   reply_to_request_simple (request, primary_response);
    request_destroy (request);
 
    /* server 0 doesn't need to respond */
@@ -894,7 +905,6 @@ test_cooldown_rs (void)
    mongoc_client_destroy (client);
    bson_free (secondary_response);
    bson_free (primary_response);
-   bson_free (uri_str);
    mock_server_destroy (servers[0]);
    mock_server_destroy (servers[1]);
 }
@@ -929,7 +939,7 @@ test_cooldown_retry (void)
    /* first hello fails */
    request = mock_server_receives_any_hello (server);
    BSON_ASSERT (request);
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
    request_destroy (request);
 
    /* after cooldown passes, driver sends another hello */
@@ -941,13 +951,13 @@ test_cooldown_retry (void)
    ASSERT_CMPINT64 (duration, >, (int64_t) 5 * 1000 * 1000);
    ASSERT_CMPINT64 (duration, <, (int64_t) 10 * 1000 * 1000);
 
-   mock_server_replies_simple (request,
-                               tmp_str ("{'ok': 1,"
-                                        " 'isWritablePrimary': true,"
-                                        " 'minWireVersion': %d,"
-                                        " 'maxWireVersion': %d}",
-                                        WIRE_VERSION_MIN,
-                                        WIRE_VERSION_MAX));
+   reply_to_request_simple (request,
+                            tmp_str ("{'ok': 1,"
+                                     " 'isWritablePrimary': true,"
+                                     " 'minWireVersion': %d,"
+                                     " 'maxWireVersion': %d}",
+                                     WIRE_VERSION_MIN,
+                                     WIRE_VERSION_MAX));
    sd = future_get_mongoc_server_description_ptr (future);
    ASSERT_OR_PRINT (sd, error);
    request_destroy (request);
@@ -1029,9 +1039,7 @@ _test_select_succeed (bool try_once)
 
    duration_usec = bson_get_monotonic_time () - start;
 
-   if (!test_suite_valgrind ()) {
-      ASSERT_ALMOST_EQUAL (duration_usec / 1000, connect_timeout_ms);
-   }
+   ASSERT_ALMOST_EQUAL (duration_usec / 1000, connect_timeout_ms);
 
    mongoc_client_destroy (client);
    mongoc_uri_destroy (uri);
@@ -1061,15 +1069,13 @@ test_select_after_try_once (void)
 
 
 static void
-test_multiple_selection_errors (void *context)
+test_multiple_selection_errors (void)
 {
-   const char *uri = "mongodb://doesntexist,example.com:2/?replicaSet=rs"
-                     "&connectTimeoutMS=100";
+   const char *const uri = "mongodb://doesntexist.invalid,example.invalid/"
+                           "?replicaSet=rs&connectTimeoutMS=100";
    mongoc_client_t *client;
    bson_t reply;
    bson_error_t error;
-
-   BSON_UNUSED (context);
 
    client = test_framework_client_new (uri, NULL);
    mongoc_client_command_simple (
@@ -1080,13 +1086,13 @@ test_multiple_selection_errors (void *context)
 
    /* Like:
     * "No suitable servers found (`serverselectiontryonce` set):
-    *  [Failed to resolve 'doesntexist']
-    *  [connection error calling hello on 'example.com:2']"
+    *  [Failed to resolve 'doesntexist.invalid']
+    *  [Failed to resolve 'example.invalid']
     */
    ASSERT_CONTAINS (error.message, "No suitable servers found");
    /* either "connection error" or "connection timeout" calling hello */
-   ASSERT_CONTAINS (error.message, "calling hello on 'example.com:2'");
-   ASSERT_CONTAINS (error.message, "[Failed to resolve 'doesntexist']");
+   ASSERT_CONTAINS (error.message, "[Failed to resolve 'doesntexist.invalid']");
+   ASSERT_CONTAINS (error.message, "[Failed to resolve 'example.invalid']");
 
    bson_destroy (&reply);
    mongoc_client_destroy (client);
@@ -1118,7 +1124,7 @@ auto_ping (request_t *request, void *data)
       return false;
    }
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    return true;
 }
@@ -1281,7 +1287,7 @@ test_rtt (void *ctx)
 
    request = mock_server_receives_any_hello (server);
    _mongoc_usleep (1000 * 1000); /* one second */
-   mock_server_replies (
+   reply_to_request (
       request,
       MONGOC_REPLY_NONE,
       0,
@@ -1293,7 +1299,7 @@ test_rtt (void *ctx)
    request_destroy (request);
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'db', 'ping': 1}"));
-   mock_server_replies (
+   reply_to_request (
       request,
       MONGOC_REPLY_NONE,
       0,
@@ -1359,18 +1365,26 @@ test_add_and_scan_failure (void)
 
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'db', 'ping': 1}"));
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
 
-   sd = mongoc_topology_description_server_by_id_const (
-      mc_tpld_unsafe_get_const (client->topology), 1, NULL);
-   ASSERT (sd);
-   ASSERT_CMPSTR (mongoc_server_description_type (sd), "RSPrimary");
+   {
+      mc_shared_tpld shared_tpld = mc_tpld_take_ref (client->topology);
+      sd = mongoc_topology_description_server_by_id_const (
+         shared_tpld.ptr, 1, NULL);
+      ASSERT (sd);
+      ASSERT_CMPSTR (mongoc_server_description_type (sd), "RSPrimary");
+      mc_tpld_drop_ref (&shared_tpld);
+   }
 
-   sd = mongoc_topology_description_server_by_id_const (
-      mc_tpld_unsafe_get_const (client->topology), 2, NULL);
-   ASSERT (sd);
-   ASSERT_CMPSTR (mongoc_server_description_type (sd), "Unknown");
+   {
+      mc_shared_tpld shared_tpld = mc_tpld_take_ref (client->topology);
+      sd = mongoc_topology_description_server_by_id_const (
+         mc_tpld_unsafe_get_const (client->topology), 2, NULL);
+      ASSERT (sd);
+      ASSERT_CMPSTR (mongoc_server_description_type (sd), "Unknown");
+      mc_tpld_drop_ref (&shared_tpld);
+   }
 
    future_destroy (future);
    mongoc_client_pool_push (pool, client);
@@ -1396,7 +1410,7 @@ receives_command (mock_server_t *server, future_t *future)
 
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'admin', 'foo': 1}"));
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 }
@@ -1408,6 +1422,8 @@ has_known_server (mongoc_client_t *client)
    mongoc_server_description_t *sd;
    bool r;
 
+   ASSERT (client);
+
    /* in this test we know the server id is always 1 */
    sd = mongoc_client_get_server_description (client, 1);
    r = (sd->type != MONGOC_SERVER_UNKNOWN);
@@ -1417,7 +1433,7 @@ has_known_server (mongoc_client_t *client)
 
 
 static void
-_test_hello_retry_single (bool hangup, int n_failures)
+_test_hello_retry_single (bool hangup, size_t n_failures)
 {
    checks_t checks;
    mongoc_apm_callbacks_t *callbacks;
@@ -1457,7 +1473,7 @@ _test_hello_retry_single (bool hangup, int n_failures)
    /* start a {foo: 1} command, handshake normally */
    future = future_command (client, &error);
    request = mock_server_receives_any_hello (server);
-   mock_server_replies_simple (request, hello);
+   reply_to_request_simple (request, hello);
    request_destroy (request);
    receives_command (server, future);
 
@@ -1469,7 +1485,7 @@ _test_hello_retry_single (bool hangup, int n_failures)
    request = mock_server_receives_any_hello (server);
    t = bson_get_monotonic_time ();
    if (hangup) {
-      mock_server_hangs_up (request);
+      reply_to_request_with_hang_up (request);
    }
 
    request_destroy (request);
@@ -1478,26 +1494,26 @@ _test_hello_retry_single (bool hangup, int n_failures)
    request = mock_server_receives_any_hello (server);
    ASSERT_CMPINT64 (bson_get_monotonic_time () - t, <, (int64_t) 250 * 1000);
 
-   if (n_failures == 2) {
+   if (n_failures == 2u) {
       if (hangup) {
-         mock_server_hangs_up (request);
+         reply_to_request_with_hang_up (request);
       }
 
       BSON_ASSERT (!future_get_bool (future));
       future_destroy (future);
    } else {
-      mock_server_replies_simple (request, hello);
+      reply_to_request_simple (request, hello);
       /* the {foo: 1} command finishes */
       receives_command (server, future);
    }
 
    request_destroy (request);
 
-   ASSERT_CMPINT (checks.n_started, ==, 3);
-   WAIT_UNTIL (checks.n_succeeded == 3 - n_failures);
+   ASSERT_CMPSIZE_T (checks.n_started, ==, 3u);
+   WAIT_UNTIL (checks.n_succeeded == 3u - n_failures);
    WAIT_UNTIL (checks.n_failed == n_failures);
 
-   if (n_failures == 2) {
+   if (n_failures == 2u) {
       BSON_ASSERT (!has_known_server (client));
    } else {
       BSON_ASSERT (has_known_server (client));
@@ -1513,7 +1529,7 @@ _test_hello_retry_single (bool hangup, int n_failures)
 
 
 static void
-_test_hello_retry_pooled (bool hangup, int n_failures)
+_test_hello_retry_pooled (bool hangup, size_t n_failures)
 {
    checks_t checks;
    mongoc_apm_callbacks_t *callbacks;
@@ -1554,7 +1570,7 @@ _test_hello_retry_pooled (bool hangup, int n_failures)
 
    /* As soon as the client is popped, background monitoring starts. */
    request = mock_server_receives_legacy_hello (server, NULL);
-   mock_server_replies_simple (request, hello);
+   reply_to_request_simple (request, hello);
    request_destroy (request);
 
    /* start a {foo: 1} command, handshake normally */
@@ -1562,7 +1578,7 @@ _test_hello_retry_pooled (bool hangup, int n_failures)
 
    /* Another hello to handshake the connection */
    request = mock_server_receives_legacy_hello (server, NULL);
-   mock_server_replies_simple (request, hello);
+   reply_to_request_simple (request, hello);
    request_destroy (request);
 
    /* the {foo: 1} command finishes */
@@ -1572,7 +1588,7 @@ _test_hello_retry_pooled (bool hangup, int n_failures)
    request = mock_server_receives_legacy_hello (server, NULL);
    t = bson_get_monotonic_time ();
    if (hangup) {
-      mock_server_hangs_up (request);
+      reply_to_request_with_hang_up (request);
    }
 
    request_destroy (request);
@@ -1588,20 +1604,20 @@ _test_hello_retry_pooled (bool hangup, int n_failures)
     * check without waiting".
     */
    BSON_ASSERT (!has_known_server (client));
-   if (n_failures == 2) {
+   if (n_failures == 2u) {
       if (hangup) {
-         mock_server_hangs_up (request);
+         reply_to_request_with_hang_up (request);
       }
    } else {
-      mock_server_replies_simple (request, hello);
+      reply_to_request_simple (request, hello);
       WAIT_UNTIL (has_known_server (client));
    }
 
    request_destroy (request);
 
-   WAIT_UNTIL (checks_cmp (&checks, "n_succeeded", '=', 3 - n_failures));
+   WAIT_UNTIL (checks_cmp (&checks, "n_succeeded", '=', 3u - n_failures));
    WAIT_UNTIL (checks_cmp (&checks, "n_failed", '=', n_failures));
-   BSON_ASSERT (checks_cmp (&checks, "n_started", '=', 3));
+   BSON_ASSERT (checks_cmp (&checks, "n_started", '=', 3u));
 
    mongoc_client_pool_push (pool, client);
    mongoc_client_pool_destroy (pool);
@@ -1616,55 +1632,55 @@ _test_hello_retry_pooled (bool hangup, int n_failures)
 static void
 test_hello_retry_single_hangup (void)
 {
-   _test_hello_retry_single (true, 1);
+   _test_hello_retry_single (true, 1u);
 }
 
 
 static void
 test_hello_retry_single_timeout (void)
 {
-   _test_hello_retry_single (false, 1);
+   _test_hello_retry_single (false, 1u);
 }
 
 static void
 test_hello_retry_single_hangup_fail (void)
 {
-   _test_hello_retry_single (true, 2);
+   _test_hello_retry_single (true, 2u);
 }
 
 
 static void
 test_hello_retry_single_timeout_fail (void)
 {
-   _test_hello_retry_single (false, 2);
+   _test_hello_retry_single (false, 2u);
 }
 
 
 static void
 test_hello_retry_pooled_hangup (void)
 {
-   _test_hello_retry_pooled (true, 1);
+   _test_hello_retry_pooled (true, 1u);
 }
 
 
 static void
 test_hello_retry_pooled_timeout (void)
 {
-   _test_hello_retry_pooled (false, 1);
+   _test_hello_retry_pooled (false, 1u);
 }
 
 
 static void
 test_hello_retry_pooled_hangup_fail (void)
 {
-   _test_hello_retry_pooled (true, 2);
+   _test_hello_retry_pooled (true, 2u);
 }
 
 
 static void
 test_hello_retry_pooled_timeout_fail (void)
 {
-   _test_hello_retry_pooled (false, 2);
+   _test_hello_retry_pooled (false, 2u);
 }
 
 
@@ -1987,7 +2003,7 @@ _test_request_scan_on_error (bool pooled,
    /* Capture logs to swallow warnings about endSessions */
    capture_logs (true);
 
-   mock_server_replies_simple (request, err_response);
+   reply_to_request_simple (request, err_response);
    request_destroy (request);
    /* don't check the return value of future. write concern errors are still
     * considered successful results. */
@@ -2010,8 +2026,8 @@ _test_request_scan_on_error (bool pooled,
          /* after the 'ping' command and returning, the server should
           * have been marked as unknown. */
          BSON_ASSERT (sd->type == MONGOC_SERVER_UNKNOWN);
-         ASSERT_CMPINT (sd->last_update_time_usec, >=, ping_started_usec);
-         ASSERT_CMPINT (
+         ASSERT_CMPINT64 (sd->last_update_time_usec, >=, ping_started_usec);
+         ASSERT_CMPINT64 (
             sd->last_update_time_usec, <=, bson_get_monotonic_time ());
          /* check that the error on the server description matches the error
           * message in the response. */
@@ -2046,7 +2062,7 @@ _test_request_scan_on_error (bool pooled,
          request = mock_server_receives_msg (
             secondary, MONGOC_QUERY_NONE, tmp_bson ("{'ping': 1}"));
       }
-      mock_server_replies_simple (request, "{'ok': 1}");
+      reply_to_request_simple (request, "{'ok': 1}");
       request_destroy (request);
       BSON_ASSERT (future_get_bool (future));
       future_destroy (future);
@@ -2293,7 +2309,7 @@ test_slow_server_pooled (void)
     * blocked for connectTimeoutMS. */
    mock_server_auto_hello (secondary, hello_secondary);
    /* Respond to the first hello. */
-   mock_server_replies_simple (request, hello_secondary);
+   reply_to_request_simple (request, hello_secondary);
    request_destroy (request);
 
    /* Now a command to the secondary succeeds. */
@@ -2366,7 +2382,7 @@ _test_hello_versioned_api (bool pooled)
    BSON_ASSERT (bson_has_field (request_get_doc (request, 0), "apiVersion"));
    BSON_ASSERT (bson_has_field (request_get_doc (request, 0), "helloOk"));
 
-   mock_server_replies_simple (request, hello_reply);
+   reply_to_request_simple (request, hello_reply);
 
    request_destroy (request);
 
@@ -2374,7 +2390,7 @@ _test_hello_versioned_api (bool pooled)
       request = mock_server_receives_msg (
          server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'admin', 'ping': 1}"));
 
-      mock_server_replies_ok_and_destroys (request);
+      reply_to_request_with_ok_and_destroy (request);
       BSON_ASSERT (future_get_bool (future));
       future_destroy (future);
    }
@@ -2461,14 +2477,14 @@ _test_hello_ok (bool pooled)
       server, NULL, "{'" HANDSHAKE_CMD_LEGACY_HELLO "': 1, 'helloOk': true}");
 
    BSON_ASSERT (request);
-   mock_server_replies_simple (request, hello);
+   reply_to_request_simple (request, hello);
    request_destroy (request);
 
    /* For non-pooled clients, handle the ping */
    if (!pooled) {
       request = mock_server_receives_msg (
          server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'admin', 'ping': 1}"));
-      mock_server_replies_ok_and_destroys (request);
+      reply_to_request_with_ok_and_destroy (request);
       BSON_ASSERT (future_get_bool (future));
       future_destroy (future);
 
@@ -2482,7 +2498,7 @@ _test_hello_ok (bool pooled)
    /* Hang up to ensure that the next check runs legacy hello again */
    request = mock_server_receives_any_hello_with_match (server, "{}", "{}");
    BSON_ASSERT (request);
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
    request_destroy (request);
 
    /* The previous failure will trigger another handshake using legacy hello */
@@ -2492,14 +2508,14 @@ _test_hello_ok (bool pooled)
       "{'" HANDSHAKE_CMD_LEGACY_HELLO "': 1, 'helloOk': true}");
 
    BSON_ASSERT (request);
-   mock_server_replies_simple (request, hello_not_ok);
+   reply_to_request_simple (request, hello_not_ok);
    request_destroy (request);
 
    /* Once again, handle the ping */
    if (!pooled) {
       request = mock_server_receives_msg (
          server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'admin', 'ping': 1}"));
-      mock_server_replies_ok_and_destroys (request);
+      reply_to_request_with_ok_and_destroy (request);
       BSON_ASSERT (future_get_bool (future));
       future_destroy (future);
 
@@ -2518,14 +2534,14 @@ _test_hello_ok (bool pooled)
       "{'" HANDSHAKE_CMD_LEGACY_HELLO "': 1, 'helloOk': true}");
 
    BSON_ASSERT (request);
-   mock_server_replies_simple (request, hello_not_ok);
+   reply_to_request_simple (request, hello_not_ok);
    request_destroy (request);
 
    /* Once again, handle the ping */
    if (!pooled) {
       request = mock_server_receives_msg (
          server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'admin', 'ping': 1}"));
-      mock_server_replies_ok_and_destroys (request);
+      reply_to_request_with_ok_and_destroy (request);
       BSON_ASSERT (future_get_bool (future));
       future_destroy (future);
    }
@@ -2553,6 +2569,195 @@ static void
 test_hello_ok_pooled (void)
 {
    _test_hello_ok (true);
+}
+
+// initiator_fail is a stream initiator that always fails.
+static mongoc_stream_t *
+initiator_fail (const mongoc_uri_t *uri,
+                const mongoc_host_list_t *host,
+                void *user_data,
+                bson_error_t *error)
+{
+   bson_set_error (error,
+                   MONGOC_ERROR_STREAM,
+                   MONGOC_ERROR_STREAM_CONNECT,
+                   "failing in initiator");
+   printf ("failing in initiator\n");
+   return false;
+}
+
+// Test failure in `mongoc_topology_scanner_node_setup` during retry of scanning
+// a known server. This is a regression test of CDRIVER-4666.
+static void
+test_failure_to_setup_after_retry (void)
+{
+   mock_server_t *server;
+   mongoc_uri_t *uri;
+   mongoc_client_t *client;
+   future_t *future;
+   bson_error_t error;
+
+   server = mock_server_new ();
+   mock_server_run (server);
+   uri = mongoc_uri_copy (mock_server_get_uri (server));
+   client = mongoc_client_new_from_uri_with_error (uri, &error);
+   ASSERT_OR_PRINT (client, error);
+
+   // Override the heartbeatFrequencyMS (default 60 seconds) and
+   // minHeartbeatFrequencyMS (default 500ms) to speed up the test.
+   const int64_t overridden_heartbeat_ms = 1;
+   {
+      mc_tpld_modification tdmod = mc_tpld_modify_begin (client->topology);
+      tdmod.new_td->heartbeat_msec = overridden_heartbeat_ms;
+      mc_tpld_modify_commit (tdmod);
+      client->topology->min_heartbeat_frequency_msec = overridden_heartbeat_ms;
+   }
+
+   future = future_client_command_simple (
+      client, "test", tmp_bson ("{'ping': 1}"), NULL, NULL, &error);
+
+   // The first command starts the first topology scan.
+   // Expect legacy hello with handshake.
+   {
+      request_t *request = mock_server_receives_legacy_hello (server, "{}");
+      char *reply = bson_strdup_printf ("{'ok': 1,"
+                                        " 'minWireVersion': %d,"
+                                        " 'maxWireVersion': %d }",
+                                        WIRE_VERSION_MIN,
+                                        WIRE_VERSION_MAX);
+
+      reply_to_request_simple (request, reply);
+      bson_free (reply);
+      request_destroy (request);
+   }
+
+   // Expect "ping" command.
+   {
+      request_t *request = mock_server_receives_msg (
+         server, MONGOC_MSG_NONE, tmp_bson ("{'ping': 1}"));
+      reply_to_request_with_ok_and_destroy (request);
+      ASSERT_OR_PRINT (future_get_bool (future), error);
+      future_destroy (future);
+   }
+
+   // Wait until ready for next topology scan.
+   _mongoc_usleep (overridden_heartbeat_ms * 1000);
+
+   // Send another command.
+   future = future_client_command_simple (
+      client, "test", tmp_bson ("{'ping': 1}"), NULL, NULL, &error);
+
+   // Expect legacy hello with handshake.
+   {
+      request_t *request = mock_server_receives_legacy_hello (server, "{}");
+      // Set the initiator to fail.
+      mongoc_client_set_stream_initiator (client, initiator_fail, NULL);
+      // A network error on a previously known server triggers the retry.
+      reply_to_request_with_hang_up (request);
+      request_destroy (request);
+   }
+
+   // The initiator fails in `mongoc_topology_scanner_node_setup`. Causes a
+   // deadlock similar to that observed in CDRIVER-4666.
+   // Test fails on macOS due to deadlock with "future_get_bool timed out".
+
+   ASSERT (!future_get_bool (future));
+   future_destroy (future);
+   ASSERT_ERROR_CONTAINS (error,
+                          MONGOC_ERROR_SERVER_SELECTION,
+                          MONGOC_ERROR_SERVER_SELECTION_FAILURE,
+                          "No suitable servers found");
+
+   mongoc_client_destroy (client);
+   mongoc_uri_destroy (uri);
+   mock_server_destroy (server);
+}
+
+static void
+test_detect_nongenuine_hosts (void)
+{
+   const char *cosmos_uris[] = {
+      "mongodb://a.mongo.cosmos.azure.com:19555/",
+      /* Test case-insensitive matching */
+      "mongodb://a.MONGO.COSMOS.AZURE.COM:19555/",
+      /* Mixing genuine and nongenuine hosts (unlikely in practice) */
+      "mongodb://a.example.com:27017,b.mongo.cosmos.azure.com:19555/",
+      /* Test SRV matching */
+      "mongodb+srv://a.mongo.cosmos.azure.com/",
+      /* Test SRV case-insensitive matching */
+      "mongodb+srv://A.MONGO.COSMOS.AZURE.COM/",
+   };
+
+   const char *docdb_uris[] = {
+      "mongodb://a.docdb.amazonaws.com:27017/",
+      "mongodb://a.docdb-elastic.amazonaws.com:27017/",
+      "mongodb://a.DOCDB.AMAZONAWS.COM:27017/",
+      "mongodb://a.DOCDB-ELASTIC.AMAZONAWS.COM:27017/",
+      "mongodb://a.example.com:27017,b.docdb.amazonaws.com:27017/",
+      "mongodb://a.example.com:27017,b.docdb-elastic.amazonaws.com:27017/",
+      "mongodb+srv://a.DOCDB.AMAZONAWS.COM/",
+      "mongodb+srv://a.DOCDB-ELASTIC.AMAZONAWS.COM/",
+   };
+
+   const char *genuine_uris[] = {
+      "mongodb://a.example.com:27017,b.example.com:27017/",
+      "mongodb://a.mongodb.net:27017",
+      /* Host names do not end with expected suffix */
+      "mongodb://a.mongo.cosmos.azure.com.tld:19555/",
+      "mongodb://a.docdb.amazonaws.com.tld:27017/",
+      "mongodb://a.docdb-elastic.amazonaws.com.tld:27017/",
+      /* Test genuine SRV URIs */
+      "mongodb+srv://a.example.com/",
+      "mongodb+srv://a.mongodb.net/",
+      /* SRV host names do not end with expected suffix */
+      "mongodb+srv://a.mongo.cosmos.azure.com.tld/",
+      "mongodb+srv://a.docdb.amazonaws.com.tld/",
+      "mongodb+srv://a.docdb-elastic.amazonaws.com.tld/",
+   };
+
+   for (size_t i = 0u; i < sizeof (cosmos_uris) / sizeof (*cosmos_uris); ++i) {
+      capture_logs (true);
+      mongoc_uri_t *const uri = mongoc_uri_new (cosmos_uris[i]);
+      ASSERT (uri);
+      mongoc_topology_t *const topology = mongoc_topology_new (uri, true);
+      ASSERT (topology);
+      ASSERT_CAPTURED_LOG (
+         cosmos_uris[i],
+         MONGOC_LOG_LEVEL_INFO,
+         "You appear to be connected to a CosmosDB cluster. For more "
+         "information regarding feature compatibility and support please visit "
+         "https://www.mongodb.com/supportability/cosmosdb");
+      mongoc_topology_destroy (topology);
+      mongoc_uri_destroy (uri);
+   }
+
+   for (size_t i = 0u; i < sizeof (docdb_uris) / sizeof (*docdb_uris); ++i) {
+      capture_logs (true);
+      mongoc_uri_t *const uri = mongoc_uri_new (docdb_uris[i]);
+      ASSERT (uri);
+      mongoc_topology_t *const topology = mongoc_topology_new (uri, true);
+      ASSERT (topology);
+      ASSERT_CAPTURED_LOG (
+         docdb_uris[i],
+         MONGOC_LOG_LEVEL_INFO,
+         "You appear to be connected to a DocumentDB cluster. For more "
+         "information regarding feature compatibility and support please visit "
+         "https://www.mongodb.com/supportability/documentdb");
+      mongoc_topology_destroy (topology);
+      mongoc_uri_destroy (uri);
+   }
+
+   for (size_t i = 0u; i < sizeof (genuine_uris) / sizeof (*genuine_uris);
+        ++i) {
+      capture_logs (true);
+      mongoc_uri_t *const uri = mongoc_uri_new (genuine_uris[i]);
+      ASSERT (uri);
+      mongoc_topology_t *const topology = mongoc_topology_new (uri, true);
+      ASSERT (topology);
+      ASSERT_NO_CAPTURED_LOGS (genuine_uris[i]);
+      mongoc_topology_destroy (topology);
+      mongoc_uri_destroy (uri);
+   }
 }
 
 void
@@ -2588,15 +2793,13 @@ test_topology_install (TestSuite *suite)
                       test_topology_invalidate_server_single,
                       NULL,
                       NULL,
-                      test_framework_skip_if_slow_or_live,
-                      test_framework_skip_if_valgrind);
+                      test_framework_skip_if_slow_or_live);
    TestSuite_AddFull (suite,
                       "/Topology/invalidate_server/pooled",
                       test_topology_invalidate_server_pooled,
                       NULL,
                       NULL,
-                      test_framework_skip_if_slow_or_live,
-                      test_framework_skip_if_valgrind);
+                      test_framework_skip_if_slow_or_live);
    TestSuite_AddFull (suite,
                       "/Topology/invalid_cluster_node",
                       test_invalid_cluster_node,
@@ -2627,22 +2830,13 @@ test_topology_install (TestSuite *suite)
                                 NULL,
                                 NULL,
                                 test_framework_skip_if_slow);
-   TestSuite_AddFull (suite,
-                      "/Topology/multiple_selection_errors",
-                      test_multiple_selection_errors,
-                      NULL,
-                      NULL,
-                      test_framework_skip_if_offline);
-   _TestSuite_AddMockServerTest (suite,
-                                 "/Topology/connect_timeout/succeed",
-                                 test_select_after_timeout,
-                                 test_framework_skip_if_time_sensitive,
-                                 NULL);
-   _TestSuite_AddMockServerTest (suite,
-                                 "/Topology/try_once/succeed",
-                                 test_select_after_try_once,
-                                 test_framework_skip_if_time_sensitive,
-                                 NULL);
+   TestSuite_Add (suite,
+                  "/Topology/multiple_selection_errors",
+                  test_multiple_selection_errors);
+   TestSuite_AddMockServerTest (
+      suite, "/Topology/connect_timeout/succeed", test_select_after_timeout);
+   TestSuite_AddMockServerTest (
+      suite, "/Topology/try_once/succeed", test_select_after_try_once);
    TestSuite_AddLive (
       suite, "/Topology/invalid_server_id", test_invalid_server_id);
    TestSuite_AddMockServerTest (suite,
@@ -2721,4 +2915,9 @@ test_topology_install (TestSuite *suite)
       suite, "/Topology/hello_ok/single", test_hello_ok_single);
    TestSuite_AddMockServerTest (
       suite, "/Topology/hello_ok/pooled", test_hello_ok_pooled);
+   TestSuite_AddMockServerTest (suite,
+                                "/Topology/failure_to_setup_after_retry",
+                                test_failure_to_setup_after_retry);
+   TestSuite_Add (
+      suite, "/Topology/detect_nongenuine_hosts", test_detect_nongenuine_hosts);
 }

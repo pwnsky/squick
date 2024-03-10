@@ -16,7 +16,7 @@
 #include <set>
 
 #include <bsoncxx/string/to_string.hpp>
-#include <bsoncxx/test_util/catch.hh>
+#include <bsoncxx/test/catch.hh>
 #include <mongocxx/exception/operation_exception.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/test/spec/monitoring.hh>
@@ -135,6 +135,6 @@ TEST_CASE("retryable reads spec tests", "[retryable_reads_spec]") {
                                             "count-serverErrors.json"};
 
     run_tests_in_suite(
-        "RETRYABLE_READS_TESTS_PATH", run_retryable_reads_tests_in_file, unsupported_tests);
+        "RETRYABLE_READS_LEGACY_TESTS_PATH", run_retryable_reads_tests_in_file, unsupported_tests);
 }
 }  // namespace

@@ -26,7 +26,6 @@
 #include <mongocxx/config/private/prelude.hh>
 
 namespace mongocxx {
-MONGOCXX_INLINE_NAMESPACE_BEGIN
 namespace spec {
 
 using namespace bsoncxx;
@@ -58,6 +57,8 @@ class operation_runner {
     client_session* _lookup_session(stdx::string_view key);
     document::value _run_aggregate(document::view operation);
     document::value _run_count(document::view operation);
+    document::value _run_create_collection(document::view operation);
+    document::value _run_drop_collection(document::view operation);
     document::value _run_distinct(document::view operation);
     document::value _run_find(document::view operation);
     document::value _run_delete_many(document::view operation);
@@ -77,13 +78,12 @@ class operation_runner {
     document::value _run_commit_transaction(document::view operation);
     document::value _run_abort_transaction(document::view operation);
     document::value _run_run_command(document::view operation);
-    document::value _run_configure_fail_point(bsoncxx::document::view operation);
     document::value _run_find_one(document::view operation);
     document::value _create_index(const document::view& operation);
     void _set_collection_options(document::view operation);
 };
 
 }  // namespace spec
-MONGOCXX_INLINE_NAMESPACE_END
 }  // namespace mongocxx
+
 #include <mongocxx/config/private/postlude.hh>

@@ -17,6 +17,7 @@ API Reference
    mongoc_client_encryption_datakey_opts_t
    mongoc_client_encryption_rewrap_many_datakey_result_t
    mongoc_client_encryption_encrypt_opts_t
+   mongoc_client_encryption_encrypt_range_opts_t
    mongoc_client_encryption_opts_t
    mongoc_client_pool_t
    mongoc_client_session_t
@@ -38,7 +39,6 @@ API Reference
    mongoc_index_opt_wt_t
    mongoc_insert_flags_t
    mongoc_iovec_t
-   mongoc_matcher_t
    mongoc_optional_t
    mongoc_query_flags_t
    mongoc_rand

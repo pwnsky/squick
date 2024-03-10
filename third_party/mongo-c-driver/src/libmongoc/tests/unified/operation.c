@@ -17,10 +17,13 @@
 #include "operation.h"
 
 #include "mongoc-array-private.h"
+#include "mongoc-util-private.h" // hex_to_bin
 #include "result.h"
 #include "test-diagnostics.h"
+#include "test-libmongoc.h"
 #include "util.h"
 #include "utlist.h"
+#include "bson-dsl.h"
 
 typedef struct {
    char *name;
@@ -171,6 +174,64 @@ operation_list_databases (test_t *test,
    ret = true;
 done:
    mongoc_cursor_destroy (cursor);
+   bson_destroy (opts);
+   return ret;
+}
+
+static bool
+operation_list_database_names (test_t *test,
+                               operation_t *op,
+                               result_t *result,
+                               bson_error_t *error)
+{
+   bool ret = false;
+   mongoc_client_t *client = NULL;
+   bson_t *opts = NULL;
+
+   opts = bson_new ();
+   if (op->session) {
+      if (!mongoc_client_session_append (op->session, opts, error)) {
+         goto done;
+      }
+   }
+   if (op->arguments) {
+      bson_concat (opts, op->arguments);
+   }
+
+   client = entity_map_get_client (test->entity_map, op->object, error);
+   if (!client) {
+      goto done;
+   }
+
+   char **names =
+      mongoc_client_get_database_names_with_opts (client, opts, error);
+
+   {
+      bson_val_t *val = NULL;
+      if (names) {
+         bson_t bson = BSON_INITIALIZER;
+         bson_array_builder_t *element;
+
+         BSON_APPEND_ARRAY_BUILDER_BEGIN (&bson, "v", &element);
+         for (char **names_iter = names; *names_iter != NULL; ++names_iter) {
+            bson_array_builder_append_utf8 (element, *names_iter, -1);
+         }
+         bson_append_array_builder_end (&bson, element);
+
+         bson_iter_t iter;
+         bson_iter_init_find (&iter, &bson, "v");
+         val = bson_val_from_iter (&iter);
+
+         bson_destroy (&bson);
+      }
+      result_from_val_and_reply (result, val, NULL, error);
+      bson_val_destroy (val);
+   }
+
+   bson_strfreev (names);
+
+   ret = true;
+done:
    bson_destroy (opts);
    return ret;
 }
@@ -656,6 +717,151 @@ done:
 }
 
 static bool
+operation_encrypt (test_t *test,
+                   operation_t *op,
+                   result_t *result,
+                   bson_error_t *error)
+{
+   bool ret = false;
+   mongoc_client_encryption_t *ce = NULL;
+   mongoc_client_encryption_encrypt_opts_t *eo =
+      mongoc_client_encryption_encrypt_opts_new ();
+   bson_val_t *value = NULL;
+   bson_t *opts = NULL;
+   char *opts_keyaltname = NULL;
+   bson_val_t *opts_id = NULL;
+   char *opts_algorithm = NULL;
+
+   // Parse `value` and `opts`.
+   {
+      bson_parser_t *const parser = bson_parser_new ();
+      bool success = false;
+
+      bson_parser_any (parser, "value", &value);
+      bson_parser_doc (parser, "opts", &opts);
+
+      success = bson_parser_parse (parser, op->arguments, error);
+
+      bson_parser_destroy (parser);
+
+      if (!success) {
+         goto done;
+      }
+   }
+
+   // Parse fields in `opts`.
+   {
+      bson_parser_t *const parser = bson_parser_new ();
+      bool success = false;
+
+      bson_parser_utf8_optional (parser, "keyAltName", &opts_keyaltname);
+      bson_parser_any_optional (parser, "id", &opts_id);
+      bson_parser_utf8 (parser, "algorithm", &opts_algorithm);
+
+      success = bson_parser_parse (parser, opts, error);
+
+      bson_parser_destroy (parser);
+
+      if (!success) {
+         goto done;
+      }
+   }
+
+   // Get ClientEncryption object.
+   if (!(ce = entity_map_get_client_encryption (
+            test->entity_map, op->object, error))) {
+      goto done;
+   }
+
+   // Encrypt.
+   {
+      if (opts_id) {
+         mongoc_client_encryption_encrypt_opts_set_keyid (
+            eo, bson_val_to_value (opts_id));
+      }
+      if (opts_keyaltname) {
+         mongoc_client_encryption_encrypt_opts_set_keyaltname (eo,
+                                                               opts_keyaltname);
+      }
+      mongoc_client_encryption_encrypt_opts_set_algorithm (eo, opts_algorithm);
+
+      bson_value_t ciphertext;
+      const bool success = mongoc_client_encryption_encrypt (
+         ce, bson_val_to_value (value), eo, &ciphertext, error);
+      bson_val_t *const val =
+         success ? bson_val_from_value (&ciphertext) : NULL;
+      result_from_val_and_reply (result, val, NULL /* reply */, error);
+      bson_value_destroy (&ciphertext);
+      bson_val_destroy (val);
+   }
+
+   ret = true;
+
+done:
+
+   bson_free (opts_algorithm);
+   bson_val_destroy (opts_id);
+   bson_free (opts_keyaltname);
+   bson_destroy (opts);
+   bson_val_destroy (value);
+   mongoc_client_encryption_encrypt_opts_destroy (eo);
+
+   return ret;
+}
+
+static bool
+operation_decrypt (test_t *test,
+                   operation_t *op,
+                   result_t *result,
+                   bson_error_t *error)
+{
+   bool ret = false;
+   mongoc_client_encryption_t *ce = NULL;
+   bson_val_t *value = NULL;
+
+   // Parse `value`.
+   {
+      bson_parser_t *const parser = bson_parser_new ();
+      bool success = false;
+
+      bson_parser_any (parser, "value", &value);
+
+      success = bson_parser_parse (parser, op->arguments, error);
+
+      bson_parser_destroy (parser);
+
+      if (!success) {
+         goto done;
+      }
+   }
+
+   // Get ClientEncryption object.
+   if (!(ce = entity_map_get_client_encryption (
+            test->entity_map, op->object, error))) {
+      goto done;
+   }
+
+   // Decrypt.
+   {
+      bson_value_t plaintext;
+      const bool success = mongoc_client_encryption_decrypt (
+         ce, bson_val_to_value (value), &plaintext, error);
+      bson_val_t *const val = success ? bson_val_from_value (&plaintext) : NULL;
+      result_from_val_and_reply (result, val, NULL /* reply */, error);
+      bson_value_destroy (&plaintext);
+      bson_val_destroy (val);
+   }
+
+   ret = true;
+
+done:
+
+   bson_val_destroy (value);
+
+   return ret;
+}
+
+static bool
 operation_create_collection (test_t *test,
                              operation_t *op,
                              result_t *result,
@@ -769,7 +975,9 @@ operation_list_collections (test_t *test,
          goto done;
       }
    }
-   bson_concat (opts, op->arguments);
+   if (op->arguments) {
+      bson_concat (opts, op->arguments);
+   }
 
    db = entity_map_get_database (test->entity_map, op->object, error);
    if (!db) {
@@ -1313,10 +1521,13 @@ operation_create_index (test_t *test,
    bson_parser_t *bp = NULL;
    char *name = NULL;
    bson_t *keys = NULL;
-   bson_t *create_indexes = NULL;
+   bool *unique = NULL;
+   bson_t *create_indexes = bson_new ();
    bson_t op_reply = BSON_INITIALIZER;
    bson_error_t op_error = {0};
    bson_t *opts = bson_new ();
+   bson_t *index_opts = bson_new ();
+   mongoc_index_model_t *im = NULL;
 
    coll = entity_map_get_collection (test->entity_map, op->object, error);
    if (!coll) {
@@ -1324,44 +1535,46 @@ operation_create_index (test_t *test,
    }
 
    bp = bson_parser_new ();
-   bson_parser_utf8 (bp, "name", &name);
    bson_parser_doc (bp, "keys", &keys);
+   bson_parser_utf8_optional (bp, "name", &name);
+   bson_parser_bool_optional (bp, "unique", &unique);
+
    if (!bson_parser_parse (bp, op->arguments, error)) {
       goto done;
    }
 
-   /* libmongoc has no create index helper. Use runCommand. */
-   create_indexes = BCON_NEW ("createIndexes",
-                              mongoc_collection_get_name (coll),
-                              "indexes",
-                              "[",
-                              "{",
-                              "name",
-                              name,
-                              "key",
-                              BCON_DOCUMENT (keys),
-                              "}",
-                              "]");
+   if (name) {
+      BSON_APPEND_UTF8 (index_opts, "name", name);
+   }
+   if (unique) {
+      BSON_APPEND_BOOL (index_opts, "unique", *unique);
+   }
+
    if (op->session) {
       if (!mongoc_client_session_append (op->session, opts, error)) {
          goto done;
       }
    }
 
+   im = mongoc_index_model_new (keys, index_opts);
+   mongoc_collection_create_indexes_with_opts (
+      coll, &im, 1, opts, &op_reply, &op_error);
+
    MONGOC_DEBUG ("running createIndexes: %s", tmp_json (create_indexes));
 
-   bson_destroy (&op_reply);
-   mongoc_collection_command_with_opts (
-      coll, create_indexes, NULL /* read prefs */, opts, &op_reply, &op_error);
+   printf ("got reply: %s\n", tmp_json (&op_reply));
 
    result_from_val_and_reply (result, NULL, &op_reply, &op_error);
 
    ret = true;
 done:
+   mongoc_index_model_destroy (im);
+   bson_destroy (index_opts);
    bson_parser_destroy_with_parsed_fields (bp);
    bson_destroy (&op_reply);
    bson_destroy (opts);
    bson_destroy (create_indexes);
+
    return ret;
 }
 
@@ -2155,6 +2368,49 @@ done:
 }
 
 static bool
+operation_drop_index (test_t *test,
+                      operation_t *op,
+                      result_t *result,
+                      bson_error_t *error)
+{
+   bool ret = false;
+   entity_t *entity;
+   bson_parser_t *parser = NULL;
+   char *index = NULL;
+   bson_t *opts = NULL;
+   mongoc_collection_t *coll = NULL;
+   bson_error_t op_error = {0};
+
+   parser = bson_parser_new ();
+   bson_parser_utf8 (parser, "name", &index);
+   if (!bson_parser_parse (parser, op->arguments, error)) {
+      goto done;
+   }
+
+   entity = entity_map_get (test->entity_map, op->object, error);
+   if (!entity) {
+      goto done;
+   }
+
+   opts = bson_new ();
+   if (op->session) {
+      if (!mongoc_client_session_append (op->session, opts, error)) {
+         goto done;
+      }
+   }
+
+   coll = entity_map_get_collection (test->entity_map, op->object, error);
+   mongoc_collection_drop_index (coll, index, error);
+   result_from_val_and_reply (result, NULL, NULL, &op_error);
+   ret = true;
+
+done:
+   bson_parser_destroy_with_parsed_fields (parser);
+   bson_destroy (opts);
+   return ret;
+}
+
+static bool
 operation_failpoint (test_t *test,
                      operation_t *op,
                      result_t *result,
@@ -2340,12 +2596,14 @@ operation_download (test_t *test,
    if (stream) {
       while ((bytes_read =
                  mongoc_stream_read (stream, buf, sizeof (buf), 1, 0)) > 0) {
-         _mongoc_array_append_vals (&all_bytes, buf, bytes_read);
+         ASSERT (bson_in_range_signed (uint32_t, bytes_read));
+         _mongoc_array_append_vals (&all_bytes, buf, (uint32_t) bytes_read);
       }
       mongoc_gridfs_bucket_stream_error (stream, &op_error);
    }
 
-   val = bson_val_from_bytes (all_bytes.data, all_bytes.len);
+   ASSERT (bson_in_range_unsigned (uint32_t, all_bytes.len));
+   val = bson_val_from_bytes (all_bytes.data, (uint32_t) all_bytes.len);
    result_from_val_and_reply (result, val, NULL, &op_error);
 
    ret = true;
@@ -2390,7 +2648,7 @@ operation_upload (test_t *test,
       bucket, filename, bson_parser_get_extra (bp), &file_id, &op_error);
 
    if (stream) {
-      ssize_t total_written = 0;
+      size_t total_written = 0u;
       uint8_t *source_bytes;
       uint32_t source_bytes_len;
       bson_iter_t iter;
@@ -2404,17 +2662,12 @@ operation_upload (test_t *test,
       source_bytes =
          hex_to_bin (bson_iter_utf8 (&iter, NULL), &source_bytes_len);
       while (total_written < source_bytes_len) {
-         ssize_t bytes_written = 0;
-
-         bytes_written =
-            mongoc_stream_write (stream,
-                                 source_bytes,
-                                 (size_t) (source_bytes_len - total_written),
-                                 0);
+         const ssize_t bytes_written = mongoc_stream_write (
+            stream, source_bytes, source_bytes_len - total_written, 0);
          if (bytes_written < 0) {
             break;
          }
-         total_written += bytes_written;
+         total_written += (size_t) bytes_written;
       }
       mongoc_gridfs_bucket_stream_error (stream, &op_error);
       bson_free (source_bytes);
@@ -3079,17 +3332,278 @@ operation_assert_session_unpinned (test_t *test,
 }
 
 static bool
+create_loop_bson_array_entity (entity_map_t *em,
+                               const char *id,
+                               bson_error_t *error)
+{
+   BSON_ASSERT_PARAM (em);
+   BSON_ASSERT (id || true);
+   BSON_ASSERT (error || true);
+
+   if (!id) {
+      // Nothing to do.
+      return true;
+   }
+
+   const entity_t *const entity = entity_map_get (em, id, error);
+
+   // If the entity does not exist, the test runner MUST create it with the
+   // type of BSON array.
+   if (!entity) {
+      return entity_map_add_bson_array (em, id, error);
+   }
+
+   // If the entity exists and is of type BSON array, the test runner MUST do
+   // nothing.
+   else if (strcmp (entity->type, "bson_array") == 0) {
+      return true;
+   }
+
+   // If the entity exists and is of a different type, the test runner MUST
+   // raise an error.
+   else {
+      test_set_error (
+         error, "loop entity %s exists but is not of type BSON array", id);
+      return false;
+   }
+}
+
+static bool
+create_loop_size_t_entity (entity_map_t *em,
+                           const char *id,
+                           bson_error_t *error)
+{
+   BSON_ASSERT_PARAM (em);
+   BSON_ASSERT (id || true);
+   BSON_ASSERT (error || true);
+
+   if (!id) {
+      return true;
+   }
+
+   const entity_t *const entity = entity_map_get (em, id, error);
+
+   // If the entity of the specified name already exists, the test runner MUST
+   // raise an error.
+   if (entity) {
+      test_set_error (
+         error, "loop entity %s already exists when it should not", id);
+      return false;
+   }
+
+   return entity_map_add_size_t (em, id, bson_malloc0 (sizeof (size_t)), error);
+}
+
+static void
+increment_loop_counter (entity_map_t *em, const char *id)
+{
+   BSON_ASSERT_PARAM (em);
+   BSON_ASSERT (id || true);
+
+   if (id) {
+      bson_error_t error = {0};
+      size_t *const counter = entity_map_get_size_t (em, id, &error);
+
+      // Entity should always be valid at this point.
+      ASSERT_OR_PRINT (counter, error);
+
+      *counter += 1u;
+   }
+}
+
+static bool
+append_loop_error (entity_map_t *em,
+                   const char *id,
+                   bson_error_t *op_error,
+                   bson_error_t *error)
+{
+   BSON_ASSERT_PARAM (em);
+   BSON_ASSERT (id || true);
+   BSON_ASSERT_PARAM (op_error);
+   BSON_ASSERT (error || true);
+
+   if (!id) {
+      return true;
+   }
+
+   mongoc_array_t *array = entity_map_get_bson_array (em, id, error);
+
+   if (!array) {
+      return false;
+   }
+
+   const int64_t usecs = usecs_since_epoch ();
+   const double secs = (double) usecs / 1000000.0;
+
+   bson_t *doc = bson_new ();
+   BSON_APPEND_UTF8 (doc, "error", op_error->message);
+   BSON_APPEND_DOUBLE (doc, "time", secs);
+
+   _mongoc_array_append_val (array, doc); // Transfer ownership.
+
+   return true;
+}
+
+// Expected to be set by a SIGINT (on Linux and OS X) or CTRL_BREAK_EVENT (on
+// Windows) handler when test suite is being executed by test-atlas-executor.
+volatile sig_atomic_t operation_loop_terminated = false;
+
+static bool
 operation_loop (test_t *test,
                 operation_t *op,
                 result_t *result,
                 bson_error_t *error)
 {
-   BSON_UNUSED (test);
-   BSON_UNUSED (op);
-   BSON_UNUSED (result);
-   /* TODO: CDRIVER-3867 Comprehensive Atlas Testing */
-   test_set_error (error, "Loop operation not implemented");
-   return false;
+   bool ret = false;
+
+   BSON_ASSERT_PARAM (test);
+   BSON_ASSERT_PARAM (op);
+   BSON_ASSERT_PARAM (result);
+   BSON_ASSERT_PARAM (error);
+
+   if (test->loop_operation_executed) {
+      test_set_error (error,
+                      "test should not contain more than one loop operation");
+      return false;
+   } else {
+      test->loop_operation_executed = true;
+   }
+
+   if (!op->object || strcmp (op->object, "testRunner") != 0) {
+      test_set_error (error, "loop operation object should be \"testRunner\"");
+      return false;
+   }
+
+   bson_t *operations = NULL;
+   char *errors_as_entity = NULL;
+   char *failures_as_entity = NULL;
+   char *successes_as_entity = NULL;
+   char *iterations_as_entity = NULL;
+
+   bson_parser_t *const parser = bson_parser_new ();
+
+   bson_parser_array (parser, "operations", &operations);
+   bson_parser_utf8_optional (parser, "storeErrorsAsEntity", &errors_as_entity);
+   bson_parser_utf8_optional (
+      parser, "storeFailuresAsEntity", &failures_as_entity);
+   bson_parser_utf8_optional (
+      parser, "storeSuccessesAsEntity", &successes_as_entity);
+   bson_parser_utf8_optional (
+      parser, "storeIterationsAsEntity", &iterations_as_entity);
+
+   if (!bson_parser_parse (parser, op->arguments, error)) {
+      goto done;
+   }
+
+   // If the test runner propagates an error or failure (e.g. it is not captured
+   // by the loop or occurs outside of the loop), it MUST be reported by the
+   // workload executor.
+   const bool should_propagate = !failures_as_entity && !errors_as_entity;
+
+   // Guarantee propagation of errors if captures are not defined by the loop.
+   if (should_propagate) {
+      // Ensure any errors or failures are still reported.
+      errors_as_entity = bson_strdup ("errors");
+   }
+
+   // If only one of errors or failures is provided, all failures and errors
+   // must be stored in the provided entity.
+   if ((errors_as_entity ? 1 : 0) != (failures_as_entity ? 1 : 0)) {
+      if (errors_as_entity) {
+         failures_as_entity = bson_strdup (errors_as_entity);
+      } else {
+         errors_as_entity = bson_strdup (failures_as_entity);
+      }
+   }
+
+   if (!create_loop_bson_array_entity (
+          test->entity_map, errors_as_entity, error)) {
+      goto done;
+   }
+
+   if (!create_loop_bson_array_entity (
+          test->entity_map, failures_as_entity, error)) {
+      goto done;
+   }
+
+   if (!create_loop_size_t_entity (
+          test->entity_map, successes_as_entity, error)) {
+      goto done;
+   }
+
+   if (!create_loop_size_t_entity (
+          test->entity_map, iterations_as_entity, error)) {
+      goto done;
+   }
+
+   MONGOC_DEBUG ("running loop operations...");
+   // `operation_loop_terminated` may be set to true within the loop if
+   // `should_propagate` is true on error/failure or by test-atlas-executor upon
+   // receiving a termination request.
+   while (!operation_loop_terminated) {
+      // Clear any prior errors that may have occurred.
+      error->code = 0;
+
+      increment_loop_counter (test->entity_map, iterations_as_entity);
+
+      bson_iter_t iter;
+      BSON_FOREACH (operations, iter)
+      {
+         bson_t op_bson;
+         bson_iter_bson (&iter, &op_bson);
+
+         bson_error_t op_error = {0};
+
+         // Execute the loop sub-operation.
+         const bool res = operation_run (test, &op_bson, &op_error);
+
+         if (res) {
+            increment_loop_counter (test->entity_map, successes_as_entity);
+         } else {
+            // Categorize errors triggered by a sub-operation as a "failure".
+            // If this operation fails, categorize as an "error" instead.
+            (void) append_loop_error (
+               test->entity_map, failures_as_entity, &op_error, error);
+
+            // If neither storeErrorsAsEntity nor storeFailuresAsEntity are
+            // specified, the loop MUST terminate and raise the error/failure
+            // (i.e. the error/failure will interrupt the test).
+            operation_loop_terminated =
+               operation_loop_terminated || should_propagate;
+
+            // If, in the course of executing sub-operations, a sub-operation
+            // yields an error or failure, the test runner MUST NOT execute
+            // subsequent sub-operations in the same loop iteration.
+            break;
+         }
+      } // End of loop sub-operations, but *not* end of loop iterations.
+
+      // Categorize errors triggered outside of sub-operation execution as
+      // "errors".
+      if (error->code != 0) {
+         // We have a problem if we can't store errors without triggering a new
+         // error. Terminate the test suite early instead of looping with an
+         // irrecoverable state.
+         ASSERT_OR_PRINT (append_loop_error (
+                             test->entity_map, errors_as_entity, error, error),
+                          (*error));
+
+         // If neither storeErrorsAsEntity nor storeFailuresAsEntity are
+         // specified, the loop MUST terminate and raise the error/failure
+         // (i.e. the error/failure will interrupt the test).
+         operation_loop_terminated =
+            operation_loop_terminated || should_propagate;
+      }
+   }
+   MONGOC_DEBUG ("running loop operations... done.");
+
+   result_from_ok (result);
+   ret = true;
+
+done:
+   bson_parser_destroy_with_parsed_fields (parser);
+
+   return ret;
 }
 
 static bool
@@ -3118,8 +3632,10 @@ operation_rename (test_t *test,
    const char *object = op->object;
    bson_parser_t *bp = bson_parser_new ();
    bool ret = false;
+   bool *drop_target = false;
    char *new_name = NULL;
    bson_parser_utf8 (bp, "to", &new_name);
+   bson_parser_bool_optional (bp, "dropTarget", &drop_target);
    bool parse_ok = bson_parser_parse (bp, op->arguments, error);
    bson_parser_destroy (bp);
    if (!parse_ok) {
@@ -3133,22 +3649,248 @@ operation_rename (test_t *test,
    }
    // We only support collections so far
    if (0 != strcmp (ent->type, "collection")) {
-      test_set_error (
-         error,
-         "'rename' is only supported for collection objects '%s' has type '%s'",
-         object,
-         ent->type);
+      test_set_error (error,
+                      "'rename' is only supported for collection objects "
+                      "'%s' has type '%s'",
+                      object,
+                      ent->type);
       goto done;
    }
+
    // Rename the collection in the server,
    mongoc_collection_t *coll = ent->value;
-   if (!mongoc_collection_rename (coll, NULL, new_name, false, error)) {
+   if (!mongoc_collection_rename (coll, NULL, new_name, drop_target, error)) {
       goto done;
    }
    result_from_ok (result);
    ret = true;
 done:
    bson_free (new_name);
+   bson_free (drop_target);
+   return ret;
+}
+
+static bool
+operation_createSearchIndex (test_t *test,
+                             operation_t *op,
+                             result_t *result,
+                             bson_error_t *error)
+{
+   bool ret = false;
+   bson_parser_t *bp = bson_parser_new ();
+   bson_t *model = NULL;
+   mongoc_collection_t *coll = NULL;
+   bson_error_t op_error;
+   bson_t op_reply = BSON_INITIALIZER;
+   bson_t *cmd = bson_new ();
+
+   // Parse arguments.
+   bson_parser_doc (bp, "model", &model);
+   if (!bson_parser_parse (bp, op->arguments, error)) {
+      goto done;
+   }
+
+   coll = entity_map_get_collection (test->entity_map, op->object, error);
+   if (!coll) {
+      goto done;
+   }
+
+   // Build command.
+   bsonBuildAppend (*cmd,
+                    kv ("createSearchIndexes", cstr (coll->collection)),
+                    kv ("indexes", array (bson (*model))));
+   ASSERT (!bsonBuildError);
+
+   mongoc_collection_command_simple (
+      coll, cmd, NULL /* read_prefs */, NULL /* reply */, &op_error);
+   result_from_val_and_reply (result, NULL, &op_reply, &op_error);
+   ret = true;
+done:
+   bson_destroy (cmd);
+   bson_parser_destroy_with_parsed_fields (bp);
+   bson_destroy (&op_reply);
+   return ret;
+}
+
+static bool
+operation_createSearchIndexes (test_t *test,
+                               operation_t *op,
+                               result_t *result,
+                               bson_error_t *error)
+{
+   bool ret = false;
+   bson_parser_t *bp = bson_parser_new ();
+   bson_t *models = NULL;
+   mongoc_collection_t *coll = NULL;
+   bson_error_t op_error;
+   bson_t op_reply = BSON_INITIALIZER;
+   bson_t *cmd = bson_new ();
+
+   // Parse arguments.
+   bson_parser_array (bp, "models", &models);
+   if (!bson_parser_parse (bp, op->arguments, error)) {
+      goto done;
+   }
+
+   coll = entity_map_get_collection (test->entity_map, op->object, error);
+   if (!coll) {
+      goto done;
+   }
+
+   // Build command.
+   bsonBuildAppend (*cmd,
+                    kv ("createSearchIndexes", cstr (coll->collection)),
+                    kv ("indexes", bsonArray (*models)));
+   ASSERT (!bsonBuildError);
+
+   mongoc_collection_command_simple (
+      coll, cmd, NULL /* read_prefs */, NULL /* reply */, &op_error);
+   result_from_val_and_reply (result, NULL, &op_reply, &op_error);
+   ret = true;
+done:
+   bson_destroy (cmd);
+   bson_parser_destroy_with_parsed_fields (bp);
+   bson_destroy (&op_reply);
+   return ret;
+}
+
+static bool
+operation_dropSearchIndex (test_t *test,
+                           operation_t *op,
+                           result_t *result,
+                           bson_error_t *error)
+{
+   bool ret = false;
+   bson_parser_t *bp = bson_parser_new ();
+   char *name = NULL;
+   mongoc_collection_t *coll = NULL;
+   bson_error_t op_error;
+   bson_t op_reply = BSON_INITIALIZER;
+   bson_t *cmd = bson_new ();
+
+   // Parse arguments.
+   bson_parser_utf8 (bp, "name", &name);
+   if (!bson_parser_parse (bp, op->arguments, error)) {
+      goto done;
+   }
+
+   coll = entity_map_get_collection (test->entity_map, op->object, error);
+   if (!coll) {
+      goto done;
+   }
+
+   // Build command.
+   bsonBuildAppend (*cmd,
+                    kv ("dropSearchIndex", cstr (coll->collection)),
+                    kv ("name", cstr (name)));
+   ASSERT (!bsonBuildError);
+
+   mongoc_collection_command_simple (
+      coll, cmd, NULL /* read_prefs */, NULL /* reply */, &op_error);
+   result_from_val_and_reply (result, NULL, &op_reply, &op_error);
+   ret = true;
+done:
+   bson_destroy (cmd);
+   bson_parser_destroy_with_parsed_fields (bp);
+   bson_destroy (&op_reply);
+   return ret;
+}
+
+static bool
+operation_listSearchIndexes (test_t *test,
+                             operation_t *op,
+                             result_t *result,
+                             bson_error_t *error)
+{
+   bool ret = false;
+   bson_parser_t *bp = bson_parser_new ();
+   bson_t *aggregateOptions = NULL;
+   char *name = NULL;
+   mongoc_collection_t *coll = NULL;
+   bson_t *pipeline = bson_new ();
+   mongoc_cursor_t *cursor = NULL;
+
+   // Parse arguments.
+   if (op->arguments) {
+      bson_parser_utf8_optional (bp, "name", &name);
+      bson_parser_doc_optional (bp, "aggregationOptions", &aggregateOptions);
+      if (!bson_parser_parse (bp, op->arguments, error)) {
+         goto done;
+      }
+   }
+
+   coll = entity_map_get_collection (test->entity_map, op->object, error);
+   if (!coll) {
+      goto done;
+   }
+
+   // Build command.
+   bsonBuildAppend (
+      *pipeline,
+      kv ("pipeline",
+          array (doc (kv ("$listSearchIndexes",
+                          if (name != NULL,
+                              then (doc (kv ("name", cstr (name)))),
+                              else (doc ())))))));
+   ASSERT (!bsonBuildError);
+
+   cursor = mongoc_collection_aggregate (coll,
+                                         MONGOC_QUERY_NONE,
+                                         pipeline,
+                                         aggregateOptions /* opts */,
+                                         NULL /* read_prefs */);
+
+   result_from_cursor (result, cursor);
+   ret = true;
+done:
+   mongoc_cursor_destroy (cursor);
+   bson_destroy (pipeline);
+   bson_parser_destroy_with_parsed_fields (bp);
+   return ret;
+}
+
+static bool
+operation_updateSearchIndex (test_t *test,
+                             operation_t *op,
+                             result_t *result,
+                             bson_error_t *error)
+{
+   bool ret = false;
+   bson_parser_t *bp = bson_parser_new ();
+   bson_t *definition = NULL;
+   char *name = NULL;
+   mongoc_collection_t *coll = NULL;
+   bson_error_t op_error;
+   bson_t op_reply = BSON_INITIALIZER;
+   bson_t *cmd = bson_new ();
+
+   // Parse arguments.
+   bson_parser_doc (bp, "definition", &definition);
+   bson_parser_utf8_optional (bp, "name", &name);
+   if (!bson_parser_parse (bp, op->arguments, error)) {
+      goto done;
+   }
+
+   coll = entity_map_get_collection (test->entity_map, op->object, error);
+   if (!coll) {
+      goto done;
+   }
+
+   // Build command.
+   bsonBuildAppend (*cmd,
+                    kv ("updateSearchIndex", cstr (coll->collection)),
+                    kv ("definition", bson (*definition)),
+                    if (name != NULL, then (kv ("name", cstr (name)))));
+   ASSERT (!bsonBuildError);
+
+   mongoc_collection_command_simple (
+      coll, cmd, NULL /* read_prefs */, NULL /* reply */, &op_error);
+   result_from_val_and_reply (result, NULL, &op_reply, &op_error);
+   ret = true;
+done:
+   bson_destroy (cmd);
+   bson_parser_destroy_with_parsed_fields (bp);
+   bson_destroy (&op_reply);
    return ret;
 }
 
@@ -3168,6 +3910,7 @@ operation_run (test_t *test, bson_t *op_bson, bson_error_t *error)
       /* Client operations */
       {"createChangeStream", operation_create_change_stream},
       {"listDatabases", operation_list_databases},
+      {"listDatabaseNames", operation_list_database_names},
 
       /* ClientEncryption operations */
       {"createDataKey", operation_create_datakey},
@@ -3178,6 +3921,8 @@ operation_run (test_t *test, bson_t *op_bson, bson_error_t *error)
       {"addKeyAltName", operation_add_key_alt_name},
       {"removeKeyAltName", operation_remove_key_alt_name},
       {"getKeyByAltName", operation_get_key_by_alt_name},
+      {"encrypt", operation_encrypt},
+      {"decrypt", operation_decrypt},
 
       /* Database operations */
       {"createCollection", operation_create_collection},
@@ -3208,11 +3953,17 @@ operation_run (test_t *test, bson_t *op_bson, bson_error_t *error)
       {"updateOne", operation_update_one},
       {"updateMany", operation_update_many},
       {"rename", operation_rename},
+      {"createSearchIndex", operation_createSearchIndex},
+      {"createSearchIndexes", operation_createSearchIndexes},
+      {"dropSearchIndex", operation_dropSearchIndex},
+      {"listSearchIndexes", operation_listSearchIndexes},
+      {"updateSearchIndex", operation_updateSearchIndex},
 
       /* Change stream and cursor operations */
       {"iterateUntilDocumentOrError",
        operation_iterate_until_document_or_error},
       {"close", operation_close},
+      {"dropIndex", operation_drop_index},
 
       /* Test runner operations */
       {"failPoint", operation_failpoint},
@@ -3277,7 +4028,10 @@ operation_run (test_t *test, bson_t *op_bson, bson_error_t *error)
       op->session = session;
    }
 
-   MONGOC_DEBUG ("running operation: %s", tmp_json (op_bson));
+   // Avoid spamming output with sub-operations when executing loop operation.
+   if (!test->loop_operation_executed || operation_loop_terminated) {
+      MONGOC_DEBUG ("running operation: %s", tmp_json (op_bson));
+   }
 
    num_ops = sizeof (op_to_fn_map) / sizeof (op_to_fn_t);
    result = result_new ();

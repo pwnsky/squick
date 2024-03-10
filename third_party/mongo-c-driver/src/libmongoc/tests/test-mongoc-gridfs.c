@@ -96,7 +96,7 @@ _get_gridfs (mock_server_t *server,
       server,
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'db', 'listIndexes': 'fs.chunks'}"));
-   mock_server_replies_simple (
+   reply_to_request_simple (
       request,
       "{ 'ok' : 0, 'errmsg' : 'ns does not exist: db.fs.chunks', 'code' : 26, "
       "'codeName' : 'NamespaceNotFound' }");
@@ -107,13 +107,13 @@ _get_gridfs (mock_server_t *server,
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'db', 'createIndexes': 'fs.chunks'}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    request = mock_server_receives_msg (
       server,
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'db', 'listIndexes': 'fs.files'}"));
-   mock_server_replies_simple (
+   reply_to_request_simple (
       request,
       "{ 'ok' : 0, 'errmsg' : 'ns does not exist: db.fs.files', 'code' : 26, "
       "'codeName' : 'NamespaceNotFound' }");
@@ -124,7 +124,7 @@ _get_gridfs (mock_server_t *server,
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'db', 'createIndexes': 'fs.files'}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    gridfs = future_get_mongoc_gridfs_ptr (future);
    ASSERT (gridfs);
@@ -444,13 +444,15 @@ test_find_one_with_opts_limit (void)
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'db', 'find': 'fs.files', 'filter': {}, 'limit': 1}"));
 
-   mock_server_replies_to_find (request,
-                                MONGOC_QUERY_NONE,
-                                0 /* cursor_id */,
-                                1 /* num returned */,
-                                "db.fs.files",
-                                "{'_id': 1, 'length': 1, 'chunkSize': 1}",
-                                true /* is_command */);
+   reply_to_op_msg_request (
+      request,
+      MONGOC_MSG_NONE,
+      tmp_bson (
+         "{'ok': 1,"
+         " 'cursor': {"
+         "    'id': {'$numberLong': '0'},"
+         "    'ns': 'db.fs.files',"
+         "    'firstBatch': [{'_id': 1, 'length': 1, 'chunkSize': 1}]}}"));
 
    file = future_get_mongoc_gridfs_file_ptr (future);
    ASSERT (file);
@@ -467,13 +469,15 @@ test_find_one_with_opts_limit (void)
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'db', 'find': 'fs.files', 'filter': {}, 'limit': 1}"));
 
-   mock_server_replies_to_find (request,
-                                MONGOC_QUERY_NONE,
-                                0 /* cursor_id */,
-                                1 /* num returned */,
-                                "db.fs.files",
-                                "{'_id': 1, 'length': 1, 'chunkSize': 1}",
-                                true /* is_command */);
+   reply_to_op_msg_request (
+      request,
+      MONGOC_MSG_NONE,
+      tmp_bson (
+         "{'ok': 1,"
+         " 'cursor': {"
+         "    'id': {'$numberLong': '0'},"
+         "    'ns': 'db.fs.files',"
+         "    'firstBatch': [{'_id': 1, 'length': 1, 'chunkSize': 1}]}}"));
 
    file = future_get_mongoc_gridfs_file_ptr (future);
    ASSERT (file);
@@ -872,11 +876,12 @@ test_write_past_end (void)
    mongoc_gridfs_file_opt_t opt = {0};
    mongoc_iovec_t iov[1];
    mongoc_iovec_t riov;
-   const size_t len = sizeof (buf) - 1;
-   const int64_t delta = 35;
-   const uint32_t chunk_sz = 10;
+   const size_t len = sizeof (buf) - 1u;
+   const uint64_t delta = 35u;
+   const uint32_t chunk_sz = 10u;
    /* division, rounding up */
-   const int64_t expected_chunks = ((delta + len) + (chunk_sz - 1)) / chunk_sz;
+   const uint64_t expected_chunks =
+      ((delta + len) + (chunk_sz - 1u)) / chunk_sz;
    int64_t cnt;
 
    iov[0].iov_base = buf;
@@ -898,13 +903,16 @@ test_write_past_end (void)
    ASSERT (file);
 
    r = mongoc_gridfs_file_writev (file, iov, 1, 0);
-   ASSERT_CMPSSIZE_T (r, ==, len);
+   ASSERT (bson_in_range_signed (size_t, r));
+   ASSERT_CMPSIZE_T ((size_t) r, ==, len);
 
-   ASSERT_CMPINT (mongoc_gridfs_file_seek (file, delta, SEEK_SET), ==, 0);
-   ASSERT_CMPUINT64 (mongoc_gridfs_file_tell (file), ==, (uint64_t) delta);
+   ASSERT_CMPINT (
+      mongoc_gridfs_file_seek (file, (int64_t) delta, SEEK_SET), ==, 0);
+   ASSERT_CMPUINT64 (mongoc_gridfs_file_tell (file), ==, delta);
 
    r = mongoc_gridfs_file_writev (file, iov, 1, 0);
-   ASSERT_CMPSSIZE_T (r, ==, len);
+   ASSERT (bson_in_range_signed (size_t, r));
+   ASSERT_CMPSIZE_T ((size_t) r, ==, len);
    mongoc_gridfs_file_save (file);
 
    cnt = mongoc_collection_count_documents (mongoc_gridfs_get_chunks (gridfs),
@@ -915,14 +923,18 @@ test_write_past_end (void)
                                             &error);
 
    ASSERT_OR_PRINT (cnt != -1, error);
-   ASSERT_CMPINT64 (expected_chunks, ==, cnt);
+   ASSERT (bson_cmp_equal_us (expected_chunks, cnt));
 
    mongoc_gridfs_file_destroy (file);
    file = mongoc_gridfs_find_one (gridfs, tmp_bson (NULL), &error);
    ASSERT_OR_PRINT (file, error);
 
-   r = mongoc_gridfs_file_readv (file, &riov, 1, delta + len, 0);
-   ASSERT_CMPSSIZE_T (r, ==, (ssize_t) (delta + len));
+   BSON_ASSERT (bson_in_range_unsigned (size_t, delta + len));
+   const size_t total_bytes = (size_t) (delta + len);
+
+   r = mongoc_gridfs_file_readv (file, &riov, 1, total_bytes, 0);
+   ASSERT (bson_in_range_signed (size_t, r));
+   ASSERT_CMPSIZE_T ((size_t) r, ==, total_bytes);
 
    mongoc_gridfs_file_destroy (file);
    drop_collections (gridfs, &error);
@@ -996,7 +1008,6 @@ test_stream (void)
    mongoc_stream_t *stream;
    mongoc_stream_t *in_stream;
    bson_error_t error;
-   ssize_t r;
    char buf[4096];
    mongoc_iovec_t iov;
 
@@ -1020,7 +1031,9 @@ test_stream (void)
 
    stream = mongoc_stream_gridfs_new (file);
 
-   r = mongoc_stream_readv (stream, &iov, 1, file->length, 0);
+   ASSERT (bson_in_range_signed (size_t, file->length));
+   const ssize_t r =
+      mongoc_stream_readv (stream, &iov, 1, (size_t) file->length, 0);
    ASSERT_CMPINT64 ((int64_t) r, ==, file->length);
 
    /* cleanup */
@@ -1444,7 +1457,7 @@ test_inherit_client_config (void)
                 " 'readConcern': {'level': 'majority'},"
                 " '$readPreference': {'mode': 'secondary'}}"));
 
-   mock_server_replies_simple (
+   reply_to_request_simple (
       request,
       "{'ok': 1, 'cursor': {'ns': 'fs.files', 'firstBatch': [{'_id': 1}]}}");
 
@@ -1464,7 +1477,7 @@ test_inherit_client_config (void)
          "{'$db': 'db', 'delete': 'fs.files', 'writeConcern': {'w': 2}}"),
       tmp_bson ("{'q': {'_id': 1}, 'limit': 1}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    request = mock_server_receives_msg (
       server,
@@ -1473,7 +1486,7 @@ test_inherit_client_config (void)
          "{'$db': 'db', 'delete': 'fs.chunks', 'writeConcern': {'w': 2}}"),
       tmp_bson ("{'q': {'files_id': 1}, 'limit': 0}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT (future_get_bool (future));
    future_destroy (future);
 
@@ -1515,15 +1528,15 @@ responder (request_t *request, void *data)
    BSON_UNUSED (data);
 
    if (!strcasecmp (request->command_name, "createIndexes")) {
-      mock_server_replies_ok_and_destroys (request);
+      reply_to_request_with_ok_and_destroy (request);
       return true;
    }
 
    if (!strcasecmp (request->command_name, "listIndexes")) {
-      mock_server_replies_simple (request,
-                                  "{ 'ok' : 0, 'errmsg' : 'ns does not exist: "
-                                  "db.fs.chunks', 'code' : 26, "
-                                  "'codeName' : 'NamespaceNotFound' }");
+      reply_to_request_simple (request,
+                               "{ 'ok' : 0, 'errmsg' : 'ns does not exist: "
+                               "db.fs.chunks', 'code' : 26, "
+                               "'codeName' : 'NamespaceNotFound' }");
       request_destroy (request);
       return true;
    }
@@ -1544,7 +1557,7 @@ test_write_failure (void)
    mongoc_gridfs_file_t *file;
    bson_error_t error;
 
-   server = mock_server_with_auto_hello (WIRE_VERSION_OP_MSG);
+   server = mock_server_with_auto_hello (WIRE_VERSION_MAX);
    mock_server_autoresponds (server, responder, NULL, NULL);
    mock_server_run (server);
    uri = mongoc_uri_copy (mock_server_get_uri (server));

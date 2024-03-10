@@ -1,4 +1,5 @@
 #include <bson/bcon.h>
+#include <bson-dsl.h>
 #include <mongoc/mongoc.h>
 #include <mongoc/mongoc-client-private.h>
 #include <mongoc/mongoc-cursor-private.h>
@@ -135,7 +136,7 @@ test_aggregate_inherit_collection (void)
                 " 'readConcern': {'level': 'majority'},"
                 " 'writeConcern': {'w': 2}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    ASSERT (!future_get_bool (future));
 
@@ -165,7 +166,7 @@ test_aggregate_inherit_collection (void)
                 " 'readConcern': {'level': 'local'},"
                 " 'writeConcern': {'w': 3}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    ASSERT (!future_get_bool (future));
 
@@ -187,7 +188,7 @@ test_aggregate_inherit_collection (void)
                 " 'readConcern': {'level': 'majority'},"
                 " 'writeConcern': {'w': 2}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    ASSERT (!future_get_bool (future));
 
@@ -213,7 +214,7 @@ test_aggregate_inherit_collection (void)
                 " 'readConcern': {'level': 'local'},"
                 " 'writeConcern': {'$exists': false}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT (!future_get_bool (future));
 
    future_destroy (future);
@@ -267,7 +268,7 @@ _batch_size_test (bson_t *pipeline,
          tmp_bson ("{ 'cursor' : { 'batchSize' : { '$exists': false } } }"));
    }
 
-   mock_server_replies_simple (request, "{'ok': 1}");
+   reply_to_request_simple (request, "{'ok': 1}");
 
    request_destroy (request);
    future_wait (future);
@@ -953,7 +954,7 @@ test_insert_command_keys (void)
                                 tmp_bson ("{'_id': 1}"),
                                 tmp_bson ("{'_id': 2}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    ASSERT_OR_PRINT (future_get_uint32_t (future), error);
 
@@ -1920,6 +1921,8 @@ storage_engine (mongoc_client_t *client)
    bson_t cmd = BSON_INITIALIZER;
    bson_t reply;
 
+   ASSERT (client);
+
    /* NOTE: this default will change eventually */
    char *engine = bson_strdup ("mmapv1");
 
@@ -2051,7 +2054,7 @@ test_count_read_pref (void)
                 " 'count': 'collection',"
                 " '$readPreference': {'mode': 'secondary'}}"));
 
-   mock_server_replies_simple (request, "{'ok': 1, 'n': 1}");
+   reply_to_request_simple (request, "{'ok': 1, 'n': 1}");
    ASSERT_OR_PRINT (1 == future_get_int64_t (future), error);
 
    request_destroy (request);
@@ -2094,7 +2097,7 @@ test_count_read_concern (void)
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'test', 'count': 'test', 'query': {}}"));
 
-   mock_server_replies_simple (request, "{ 'n' : 42, 'ok' : 1 } ");
+   reply_to_request_simple (request, "{ 'n' : 42, 'ok' : 1 } ");
    count = future_get_int64_t (future);
    ASSERT_OR_PRINT (count == 42, error);
    request_destroy (request);
@@ -2117,7 +2120,7 @@ test_count_read_concern (void)
                 " 'query': {},"
                 " 'readConcern': {'level': 'majority'}}"));
 
-   mock_server_replies_simple (request, "{ 'n' : 43, 'ok' : 1 } ");
+   reply_to_request_simple (request, "{ 'n' : 43, 'ok' : 1 } ");
    count = future_get_int64_t (future);
    ASSERT_OR_PRINT (count == 43, error);
    mongoc_read_concern_destroy (rc);
@@ -2141,7 +2144,7 @@ test_count_read_concern (void)
                 " 'query': {},"
                 " 'readConcern': {'level': 'local'}}"));
 
-   mock_server_replies_simple (request, "{ 'n' : 44, 'ok' : 1 } ");
+   reply_to_request_simple (request, "{ 'n' : 44, 'ok' : 1 } ");
    count = future_get_int64_t (future);
    ASSERT_OR_PRINT (count == 44, error);
    mongoc_read_concern_destroy (rc);
@@ -2165,7 +2168,7 @@ test_count_read_concern (void)
                 " 'query': {},"
                 " 'readConcern': {'level': 'futureCompatible'}}"));
 
-   mock_server_replies_simple (request, "{ 'n' : 45, 'ok' : 1 } ");
+   reply_to_request_simple (request, "{ 'n' : 45, 'ok' : 1 } ");
    count = future_get_int64_t (future);
    ASSERT_OR_PRINT (count == 45, error);
    mongoc_read_concern_destroy (rc);
@@ -2189,7 +2192,7 @@ test_count_read_concern (void)
                 " 'query': {},"
                 " 'readConcern': { '$exists': false }}"));
 
-   mock_server_replies_simple (request, "{ 'n' : 46, 'ok' : 1 } ");
+   reply_to_request_simple (request, "{ 'n' : 46, 'ok' : 1 } ");
    count = future_get_int64_t (future);
    ASSERT_OR_PRINT (count == 46, error);
    mongoc_read_concern_destroy (rc);
@@ -2212,7 +2215,7 @@ test_count_read_concern (void)
                 " 'query': {},"
                 " 'readConcern': { '$exists': false }}"));
 
-   mock_server_replies_simple (request, "{ 'n' : 47, 'ok' : 1 } ");
+   reply_to_request_simple (request, "{ 'n' : 47, 'ok' : 1 } ");
    count = future_get_int64_t (future);
    ASSERT_OR_PRINT (count == 47, error);
 
@@ -2243,14 +2246,31 @@ test_count_read_concern_live (void *unused)
    collection = mongoc_client_get_collection (client, "test", "test");
    ASSERT (collection);
 
-   /* don't care if ns not found. */
-   (void) mongoc_collection_drop (collection, &error);
+   // Drop collection.
+   // Use writeConcern=majority so later readConcern=majority observes dropped
+   // collection.
+   {
+      mongoc_write_concern_t *wc = mongoc_write_concern_new ();
+      mongoc_write_concern_set_w (wc, MONGOC_WRITE_CONCERN_W_MAJORITY);
+      bson_t drop_opts = BSON_INITIALIZER;
+      mongoc_write_concern_append (wc, &drop_opts);
+      if (!mongoc_collection_drop_with_opts (collection, &drop_opts, &error)) {
+         // Ignore an "ns not found" error.
+         if (NULL == strstr (error.message, "ns not found")) {
+            ASSERT_OR_PRINT (false, error);
+         }
+      }
+
+      bson_destroy (&drop_opts);
+      mongoc_write_concern_destroy (wc);
+   }
 
    bson_init (&b);
    count = mongoc_collection_count (
       collection, MONGOC_QUERY_NONE, &b, 0, 0, NULL, &error);
    bson_destroy (&b);
-   ASSERT_OR_PRINT (count == 0, error);
+   ASSERT_OR_PRINT (count != -1, error);
+   ASSERT_CMPINT64 (count, ==, 0);
 
    /* Setting readConcern to NULL should not send readConcern */
    rc = mongoc_read_concern_new ();
@@ -2261,7 +2281,8 @@ test_count_read_concern_live (void *unused)
    count = mongoc_collection_count (
       collection, MONGOC_QUERY_NONE, &b, 0, 0, NULL, &error);
    bson_destroy (&b);
-   ASSERT_OR_PRINT (count == 0, error);
+   ASSERT_OR_PRINT (count != -1, error);
+   ASSERT_CMPINT64 (count, ==, 0);
    mongoc_read_concern_destroy (rc);
 
    /* readConcern: { level: local } should raise error pre 3.2 */
@@ -2273,7 +2294,8 @@ test_count_read_concern_live (void *unused)
    count = mongoc_collection_count (
       collection, MONGOC_QUERY_NONE, &b, 0, 0, NULL, &error);
    bson_destroy (&b);
-   ASSERT_OR_PRINT (count == 0, error);
+   ASSERT_OR_PRINT (count != -1, error);
+   ASSERT_CMPINT64 (count, ==, 0);
    mongoc_read_concern_destroy (rc);
 
    /* readConcern: { level: majority } should raise error pre 3.2 */
@@ -2285,7 +2307,8 @@ test_count_read_concern_live (void *unused)
    count = mongoc_collection_count (
       collection, MONGOC_QUERY_NONE, &b, 0, 0, NULL, &error);
    bson_destroy (&b);
-   ASSERT_OR_PRINT (count == 0, error);
+   ASSERT_OR_PRINT (count != -1, error);
+   ASSERT_CMPINT64 (count, ==, 0);
    mongoc_read_concern_destroy (rc);
 
    mongoc_collection_destroy (collection);
@@ -2347,7 +2370,7 @@ test_count_with_opts (void)
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'db', 'count': 'collection', 'opt': 1}"));
 
-   mock_server_replies_simple (request, "{'ok': 1, 'n': 1}");
+   reply_to_request_simple (request, "{'ok': 1, 'n': 1}");
    ASSERT_OR_PRINT (1 == future_get_int64_t (future), error);
 
    request_destroy (request);
@@ -2391,7 +2414,7 @@ test_count_with_collation (void)
                                 tmp_bson ("{'$db': 'db',"
                                           " 'count': 'collection',"
                                           " 'collation': {'locale': 'en'}}"));
-   mock_server_replies_simple (request, "{'ok': 1, 'n': 1}");
+   reply_to_request_simple (request, "{'ok': 1, 'n': 1}");
    ASSERT_OR_PRINT (1 == future_get_int64_t (future), error);
    request_destroy (request);
 
@@ -2436,7 +2459,7 @@ test_count_documents (void)
       tmp_bson ("{'aggregate': 'coll', 'pipeline': [{'$match': "
                 "{'x': 1}}, {'$skip': 1}, {'$limit': 2}, {'$group': "
                 "{'n': {'$sum': 1}}}]}"));
-   mock_server_replies_simple (request, server_reply);
+   reply_to_request_simple (request, server_reply);
    ASSERT_OR_PRINT (123 == future_get_int64_t (future), error);
    ASSERT_MATCH (&reply, server_reply);
 
@@ -2459,7 +2482,27 @@ test_count_documents (void)
       tmp_bson ("{'aggregate': 'coll', 'pipeline': [{'$match': {}}, {'$skip': "
                 "1}, {'$limit': 2}, {'$group': "
                 "{'n': {'$sum': 1}}}]}"));
-   mock_server_replies_simple (request, server_reply);
+   reply_to_request_simple (request, server_reply);
+   ASSERT_OR_PRINT (123 == future_get_int64_t (future), error);
+   ASSERT_MATCH (&reply, server_reply);
+   bson_destroy (&reply);
+   request_destroy (request);
+   future_destroy (future);
+
+   // Test appending maxTimeMS.
+   future = future_collection_count_documents (collection,
+                                               tmp_bson ("{}"),
+                                               tmp_bson ("{'maxTimeMS': 123}"),
+                                               NULL,
+                                               &reply,
+                                               &error);
+
+   request = mock_server_receives_msg (
+      server,
+      0,
+      tmp_bson ("{'aggregate': 'coll', 'pipeline': [{'$match': {}}, {'$group': "
+                "{'n': {'$sum': 1}}}], 'maxTimeMS': 123}"));
+   reply_to_request_simple (request, server_reply);
    ASSERT_OR_PRINT (123 == future_get_int64_t (future), error);
    ASSERT_MATCH (&reply, server_reply);
    bson_destroy (&reply);
@@ -2519,7 +2562,7 @@ test_estimated_document_count (void)
 
    request = mock_server_receives_msg (
       server, 0, tmp_bson ("{'count': 'coll', 'limit': 2, 'skip': 1}"));
-   mock_server_replies_simple (request, server_reply);
+   reply_to_request_simple (request, server_reply);
    ASSERT_OR_PRINT (123 == future_get_int64_t (future), error);
    ASSERT_MATCH (&reply, server_reply);
 
@@ -2846,10 +2889,7 @@ again:
       for (j = 0; j < 2; j++) {
          r = mongoc_cursor_next (cursor, &doc);
          if (mongoc_cursor_error (cursor, &error)) {
-            fprintf (
-               stderr, "[%d.%d] %s", error.domain, error.code, error.message);
-
-            abort ();
+            test_error ("[%d.%d] %s", error.domain, error.code, error.message);
          }
 
          ASSERT (r);
@@ -2861,8 +2901,7 @@ again:
 
       r = mongoc_cursor_next (cursor, &doc);
       if (mongoc_cursor_error (cursor, &error)) {
-         fprintf (stderr, "%s", error.message);
-         abort ();
+         test_error ("%s", error.message);
       }
 
       ASSERT (!r);
@@ -3011,13 +3050,13 @@ test_aggregate_modern (void *data)
                                          : "{'$empty': true}",
                 context->with_options ? ", 'foo': 1" : ""));
 
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': 42,"
-                               "    'ns': 'db.collection',"
-                               "    'firstBatch': [{'_id': 123}]"
-                               "}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 42,"
+                            "    'ns': 'db.collection',"
+                            "    'firstBatch': [{'_id': 123}]"
+                            "}}");
 
    ASSERT (future_get_bool (future));
    ASSERT_MATCH (doc, "{'_id': 123}");
@@ -3037,12 +3076,12 @@ test_aggregate_modern (void *data)
                 context->with_batch_size ? "{'$numberLong': '11'}"
                                          : "{'$exists': false}"));
 
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "   'id': 0,"
-                               "   'ns': 'db.collection',"
-                               "   'nextBatch': [{'_id': 123}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "   'id': 0,"
+                            "   'ns': 'db.collection',"
+                            "   'nextBatch': [{'_id': 123}]}}");
 
    ASSERT (future_get_bool (future));
    ASSERT_MATCH (doc, "{'_id': 123}");
@@ -3095,11 +3134,11 @@ test_aggregate_w_server_id (void)
                                       " 'serverId': {'$exists': false}}"));
 
    ASSERT (mock_rs_request_is_to_secondary (rs, request));
-   mock_rs_replies_simple (request,
-                           "{'ok': 1,"
-                           " 'cursor': {"
-                           "    'ns': 'db.collection',"
-                           "    'firstBatch': [{}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'ns': 'db.collection',"
+                            "    'firstBatch': [{}]}}");
    ASSERT_OR_PRINT (future_get_bool (future), cursor->error);
 
    future_destroy (future);
@@ -3143,11 +3182,11 @@ test_aggregate_w_server_id_sharded (void)
                                           " 'aggregate': 'collection',"
                                           " 'serverId': {'$exists': false}}"));
 
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'ns': 'db.collection',"
-                               "    'firstBatch': [{}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'ns': 'db.collection',"
+                            "    'firstBatch': [{}]}}");
 
    ASSERT_OR_PRINT (future_get_bool (future), cursor->error);
 
@@ -3386,8 +3425,9 @@ test_rename (void)
 
 
 static void
-test_stats (void)
+test_stats (void *unused)
 {
+   BSON_UNUSED (unused);
    mongoc_collection_t *collection;
    mongoc_client_t *client;
    bson_error_t error;
@@ -3453,7 +3493,7 @@ test_stats_read_pref (void)
                 " 'collStats': 'collection',"
                 " '$readPreference': {'mode': 'secondary'}}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
 
    future_destroy (future);
@@ -3522,7 +3562,7 @@ test_find_and_modify_write_concern (void)
                 " 'new' : true,"
                 " 'writeConcern': {'w': 42}}"));
 
-   mock_server_replies_simple (request, "{ 'value' : null, 'ok' : 1 }");
+   reply_to_request_simple (request, "{ 'value' : null, 'ok' : 1 }");
    ASSERT_OR_PRINT (future_get_bool (future), error);
 
    future_destroy (future);
@@ -3938,7 +3978,7 @@ test_find_limit (void)
                                           " 'filter': {},"
                                           " 'limit': {'$numberLong': '2'}}"));
 
-   mock_server_replies_simple (
+   reply_to_request_simple (
       request,
       "{'ok': 1, 'cursor': {'id': 0, 'ns': 'test.test', 'firstBatch': [{}]}}");
    BSON_ASSERT (future_get_bool (future));
@@ -3962,7 +4002,7 @@ test_find_limit (void)
                                           " 'filter': {},"
                                           " 'limit': {'$numberLong': '2'}}"));
 
-   mock_server_replies_simple (
+   reply_to_request_simple (
       request,
       "{'ok': 1, 'cursor': {'id': 0, 'ns': 'test.test', 'firstBatch': [{}]}}");
    BSON_ASSERT (future_get_bool (future));
@@ -4014,7 +4054,7 @@ test_find_batch_size (void)
                 " 'filter': {},"
                 " 'batchSize': {'$numberLong': '2'}}"));
 
-   mock_server_replies_simple (
+   reply_to_request_simple (
       request,
       "{'ok': 1, 'cursor': {'id': 0, 'ns': 'test.test', 'firstBatch': [{}]}}");
    BSON_ASSERT (future_get_bool (future));
@@ -4038,7 +4078,7 @@ test_find_batch_size (void)
                 " 'filter': {},"
                 " 'batchSize': {'$numberLong': '2'}}"));
 
-   mock_server_replies_simple (
+   reply_to_request_simple (
       request,
       "{'ok': 1, 'cursor': {'id': 0, 'ns': 'test.test', 'firstBatch': [{}]}}");
    BSON_ASSERT (future_get_bool (future));
@@ -4084,8 +4124,7 @@ test_command_fq (void *context)
    if (bson_iter_init_find (&iter, doc, "db") && BSON_ITER_HOLDS_UTF8 (&iter)) {
       ASSERT_CMPSTR (bson_iter_utf8 (&iter, NULL), "sometest");
    } else {
-      fprintf (stderr, "dbstats didn't return 'db' key?");
-      abort ();
+      test_error ("dbstats didn't return 'db' key?");
    }
 
 
@@ -4291,8 +4330,8 @@ test_find_indexes_err (void)
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'db', 'listIndexes': 'collection'}"));
 
-   mock_server_replies_simple (request,
-                               "{'ok': 0, 'code': 1234567, 'errmsg': 'foo'}");
+   reply_to_request_simple (request,
+                            "{'ok': 0, 'code': 1234567, 'errmsg': 'foo'}");
    cursor = future_get_mongoc_cursor_ptr (future);
    BSON_ASSERT (mongoc_cursor_error (cursor, &error));
    ASSERT_ERROR_CONTAINS (error, MONGOC_ERROR_SERVER, 1234567, "foo");
@@ -4369,12 +4408,12 @@ test_find_read_concern (void)
       server,
       MONGOC_MSG_NONE,
       tmp_bson ("{'$db': 'test', 'find': 'test', 'filter': {}}"));
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': 0,"
-                               "    'ns': 'test.test',"
-                               "    'firstBatch': [{'_id': 123}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 0,"
+                            "    'ns': 'test.test',"
+                            "    'firstBatch': [{'_id': 123}]}}");
    ASSERT (future_get_bool (future));
    future_destroy (future);
    request_destroy (request);
@@ -4401,12 +4440,12 @@ test_find_read_concern (void)
                 " 'find': 'test',"
                 " 'filter': {},"
                 " 'readConcern': {'level': 'local'}}"));
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': 0,"
-                               "    'ns': 'test.test',"
-                               "    'firstBatch': [{'_id': 123}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 0,"
+                            "    'ns': 'test.test',"
+                            "    'firstBatch': [{'_id': 123}]}}");
    ASSERT (future_get_bool (future));
    future_destroy (future);
    request_destroy (request);
@@ -4434,12 +4473,12 @@ test_find_read_concern (void)
                 " 'find': 'test',"
                 " 'filter': {},"
                 " 'readConcern': {'level': 'random'}}"));
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': 0,"
-                               "    'ns': 'test.test',"
-                               "    'firstBatch': [{'_id': 123}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 0,"
+                            "    'ns': 'test.test',"
+                            "    'firstBatch': [{'_id': 123}]}}");
    ASSERT (future_get_bool (future));
    future_destroy (future);
    request_destroy (request);
@@ -4466,12 +4505,12 @@ test_find_read_concern (void)
                 " 'find': 'test',"
                 " 'filter': {},"
                 " 'readConcern': {'$exists': false}}"));
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': 0,"
-                               "    'ns': 'test.test',"
-                               "    'firstBatch': [{'_id': 123}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 0,"
+                            "    'ns': 'test.test',"
+                            "    'firstBatch': [{'_id': 123}]}}");
    ASSERT (future_get_bool (future));
    future_destroy (future);
    request_destroy (request);
@@ -4499,12 +4538,12 @@ test_find_read_concern (void)
                 " 'find': 'test',"
                 " 'filter': {},"
                 " 'readConcern': {'$exists': false}}"));
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': 0,"
-                               "    'ns': 'test.test',"
-                               "    'firstBatch': [{'_id': 123}]}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 0,"
+                            "    'ns': 'test.test',"
+                            "    'firstBatch': [{'_id': 123}]}}");
    ASSERT (future_get_bool (future));
 
    future_destroy (future);
@@ -4637,12 +4676,12 @@ test_aggregate_secondary_sharded (void)
                 " 'pipeline': [],"
                 " '$readPreference': {'mode': 'secondary'}}"));
 
-   mock_server_replies_simple (request,
-                               "{ 'ok':1,"
-                               "  'cursor': {"
-                               "     'id': 0,"
-                               "     'ns': 'db.collection',"
-                               "     'firstBatch': []}}");
+   reply_to_request_simple (request,
+                            "{ 'ok':1,"
+                            "  'cursor': {"
+                            "     'id': 0,"
+                            "     'ns': 'db.collection',"
+                            "     'firstBatch': []}}");
 
    ASSERT (!future_get_bool (future)); /* cursor_next returns false */
    ASSERT_OR_PRINT (!mongoc_cursor_error (cursor, &error), error);
@@ -4691,13 +4730,13 @@ test_aggregate_read_concern (void)
                 " 'cursor': {},"
                 " 'readConcern': {'$exists': false}}"));
 
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': 0,"
-                               "    'ns': 'db.collection',"
-                               "    'firstBatch': [{'_id': 123}]"
-                               "}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 0,"
+                            "    'ns': 'db.collection',"
+                            "    'firstBatch': [{'_id': 123}]"
+                            "}}");
 
    ASSERT (future_get_bool (future));
    ASSERT_MATCH (doc, "{'_id': 123}");
@@ -4727,13 +4766,13 @@ test_aggregate_read_concern (void)
                 " 'cursor': {},"
                 " 'readConcern': {'level': 'majority'}}"));
 
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': 0,"
-                               "    'ns': 'db.collection',"
-                               "    'firstBatch': [{'_id': 123}]"
-                               "}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 0,"
+                            "    'ns': 'db.collection',"
+                            "    'firstBatch': [{'_id': 123}]"
+                            "}}");
 
    ASSERT (future_get_bool (future));
    ASSERT_MATCH (doc, "{'_id': 123}");
@@ -4785,13 +4824,13 @@ test_aggregate_with_collation (void)
                                           " 'pipeline': [{'a': 1}],"
                                           " 'collation': {'locale': 'en'}}"));
 
-   mock_server_replies_simple (request,
-                               "{'ok': 1,"
-                               " 'cursor': {"
-                               "    'id': 0,"
-                               "    'ns': 'db.collection',"
-                               "    'firstBatch': [{'_id': 123}]"
-                               "}}");
+   reply_to_request_simple (request,
+                            "{'ok': 1,"
+                            " 'cursor': {"
+                            "    'id': 0,"
+                            "    'ns': 'db.collection',"
+                            "    'firstBatch': [{'_id': 123}]"
+                            "}}");
    ASSERT (future_get_bool (future));
    ASSERT_MATCH (doc, "{'_id': 123}");
    /* cursor is completed */
@@ -4846,7 +4885,7 @@ test_index_with_collation (void)
                 "   'name': 'hello_1',"
                 "   'collation': {'locale': 'en', 'strength': 2}}]}"));
 
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT (future_get_bool (future));
 
    bson_destroy (&reply);
@@ -5763,7 +5802,7 @@ _test_delete_collation (bool is_multi)
                 " 'delete': 'collection'}"),
       tmp_bson ("{'q': {}, 'limit': %d, 'collation': {'locale': 'en'}}",
                 is_multi ? 0 : 1));
-   mock_server_replies_simple (request, "{'ok': 1, 'n': 1}");
+   reply_to_request_simple (request, "{'ok': 1, 'n': 1}");
    ASSERT_OR_PRINT (future_get_bool (future), error);
    request_destroy (request);
 
@@ -5831,7 +5870,7 @@ _test_update_or_replace_with_collation (bool is_replace, bool is_multi)
       tmp_bson ("{'$db': 'db', 'update': 'collection'}"),
       tmp_bson ("{'q': {}, 'u': {}, 'collation': {'locale': 'en'}%s}",
                 is_multi ? ", 'multi': true" : ""));
-   mock_server_replies_simple (request, "{'ok': 1, 'n': 1}");
+   reply_to_request_simple (request, "{'ok': 1, 'n': 1}");
    ASSERT_OR_PRINT (future_get_bool (future), error);
    request_destroy (request);
 
@@ -5890,7 +5929,7 @@ _test_update_hint (bool is_replace, bool is_multi, const char *hint)
                 hint,
                 is_multi ? ", 'multi': true" : ""));
 
-   mock_server_replies_simple (request, "{'ok': 1, 'n': 1}");
+   reply_to_request_simple (request, "{'ok': 1, 'n': 1}");
    ASSERT_OR_PRINT (future_get_bool (future), error);
    request_destroy (request);
 
@@ -6141,6 +6180,237 @@ test_fam_no_error_on_retry (void *unused)
    mongoc_find_and_modify_opts_destroy (opts);
 }
 
+static void
+test_hint_is_validated_aggregate (void)
+{
+   bson_error_t error;
+   mongoc_client_t *client = test_framework_new_default_client ();
+   mongoc_client_set_error_api (client, MONGOC_ERROR_API_VERSION_2);
+   mongoc_collection_t *collection =
+      get_test_collection (client, "test_hint_is_validated_aggregate");
+   mongoc_cursor_t *cursor =
+      mongoc_collection_aggregate (collection,
+                                   MONGOC_QUERY_NONE,
+                                   tmp_bson ("{}"),
+                                   tmp_bson ("{'hint': 1}"),
+                                   NULL /* read prefs */);
+   bool has_error = mongoc_cursor_error (cursor, &error);
+   ASSERT (has_error);
+   ASSERT_ERROR_CONTAINS (error,
+                          MONGOC_ERROR_COMMAND,
+                          MONGOC_ERROR_COMMAND_INVALID_ARG,
+                          "The hint option must be a string or document");
+   mongoc_cursor_destroy (cursor);
+   mongoc_collection_destroy (collection);
+   mongoc_client_destroy (client);
+}
+
+static void
+test_hint_is_validated_countDocuments (void)
+{
+   bson_error_t error;
+   mongoc_client_t *client = test_framework_new_default_client ();
+   mongoc_client_set_error_api (client, MONGOC_ERROR_API_VERSION_2);
+   mongoc_collection_t *collection =
+      get_test_collection (client, "test_hint_is_validated_countDocuments");
+   int64_t got = mongoc_collection_count_documents (collection,
+                                                    tmp_bson ("{}"),
+                                                    tmp_bson ("{'hint': 1}"),
+                                                    NULL /* read prefs */,
+                                                    NULL /* reply */,
+                                                    &error);
+   ASSERT_CMPINT64 (got, ==, -1);
+   ASSERT_ERROR_CONTAINS (error,
+                          MONGOC_ERROR_COMMAND,
+                          MONGOC_ERROR_COMMAND_INVALID_ARG,
+                          "The hint option must be a string or document");
+   mongoc_collection_destroy (collection);
+   mongoc_client_destroy (client);
+}
+
+#define ASSERT_INDEX_EXISTS(keys, expect_name)                               \
+   if (1) {                                                                  \
+      bool found = false;                                                    \
+      mongoc_cursor_t *cursor =                                              \
+         mongoc_collection_find_indexes_with_opts (coll, NULL /* opts */);   \
+      const bson_t *got;                                                     \
+      while (mongoc_cursor_next (cursor, &got)) {                            \
+         bson_t got_key;                                                     \
+         const char *got_name = NULL;                                        \
+         /* Results have the form: `{ v: 2, key: { x: 1 }, name: 'x_1' }` */ \
+         bsonParse (                                                         \
+            *got,                                                            \
+            require (keyWithType ("key", doc), storeDocRef (got_key)),       \
+            require (keyWithType ("name", utf8), storeStrRef (got_name)));   \
+         ASSERT_WITH_MSG (                                                   \
+            !bsonParseError, "got parse error: %s", bsonParseError);         \
+         if (bson_equal (&got_key, keys)) {                                  \
+            found = true;                                                    \
+            ASSERT_CMPSTR (got_name, expect_name);                           \
+         }                                                                   \
+      }                                                                      \
+      ASSERT_OR_PRINT (!mongoc_cursor_error (cursor, &error), error);        \
+      ASSERT_WITH_MSG (found,                                                \
+                       "could not find expected index for keys: '%s'",       \
+                       tmp_json (keys));                                     \
+      mongoc_cursor_destroy (cursor);                                        \
+   } else                                                                    \
+      (void) 0
+
+static void
+test_create_indexes_with_opts (void)
+{
+   mongoc_client_t *client = test_framework_new_default_client ();
+   mongoc_collection_t *coll =
+      get_test_collection (client, "test_create_indexes_with_opts");
+   bson_error_t error;
+
+   // Test creating an index.
+   {
+      const bson_t *keys = tmp_bson ("{'x': 1}");
+      mongoc_index_model_t *im = mongoc_index_model_new (keys, NULL);
+      bool ok = mongoc_collection_create_indexes_with_opts (
+         coll, &im, 1, NULL /* opts */, NULL /* reply */, &error);
+      ASSERT_OR_PRINT (ok, error);
+      mongoc_index_model_destroy (im);
+      ASSERT_INDEX_EXISTS (keys, "x_1");
+   }
+
+   // Drop collection to remove previously created index.
+   ASSERT_OR_PRINT (mongoc_collection_drop (coll, &error), error);
+
+   // Test creating an index uses specified `name`.
+   {
+      const bson_t *keys = tmp_bson ("{'x': 1}");
+      mongoc_index_model_t *im =
+         mongoc_index_model_new (keys, tmp_bson ("{'name': 'foobar'}"));
+      bool ok = mongoc_collection_create_indexes_with_opts (
+         coll, &im, 1, NULL /* opts */, NULL /* reply */, &error);
+      ASSERT_OR_PRINT (ok, error);
+      mongoc_index_model_destroy (im);
+      ASSERT_INDEX_EXISTS (keys, "foobar");
+   }
+
+   mongoc_collection_destroy (coll);
+   mongoc_client_destroy (client);
+}
+
+static void
+test_create_indexes_with_opts_no_retry (void *unused)
+{
+   BSON_UNUSED (unused);
+   mongoc_client_t *client = test_framework_new_default_client ();
+   mongoc_collection_t *coll =
+      get_test_collection (client, "test_create_indexes_with_opts");
+   bson_error_t error;
+
+   // Configure failpoint to cause a network error.
+   {
+      const char *cmd_str = BSON_STR ({
+         "configureFailPoint" : "failCommand",
+         "mode" : {"times" : 1},
+         "data" : {"failCommands" : ["createIndexes"], "closeConnection" : true}
+      });
+      bson_t *failpoint_cmd =
+         bson_new_from_json ((const uint8_t *) cmd_str, -1, &error);
+      ASSERT_OR_PRINT (failpoint_cmd, error);
+      bool ok = mongoc_client_command_simple (client,
+                                              "admin",
+                                              failpoint_cmd,
+                                              NULL /* read_prefs */,
+                                              NULL /* reply */,
+                                              &error);
+      ASSERT_OR_PRINT (ok, error);
+      bson_destroy (failpoint_cmd);
+   }
+
+   // Test creating an index does not retry on network error.
+   {
+      const bson_t *keys = tmp_bson ("{'x': 1}");
+      mongoc_index_model_t *im = mongoc_index_model_new (keys, NULL);
+      bool ok = mongoc_collection_create_indexes_with_opts (
+         coll, &im, 1, NULL /* opts */, NULL /* reply */, &error);
+      ASSERT (!ok);
+      ASSERT_ERROR_CONTAINS (error,
+                             MONGOC_ERROR_STREAM,
+                             MONGOC_ERROR_STREAM_SOCKET,
+                             "Failed to send");
+      mongoc_index_model_destroy (im);
+   }
+
+
+   mongoc_collection_destroy (coll);
+   mongoc_client_destroy (client);
+}
+
+// Test creating an index with the 'commitQuorum' option results in a driver
+// error on Server Version <4.4.
+static void
+test_create_indexes_with_opts_commitQuorum_pre44 (void *unused)
+{
+   BSON_UNUSED (unused);
+   mongoc_client_t *client = test_framework_new_default_client ();
+   mongoc_collection_t *coll =
+      get_test_collection (client, "test_create_indexes_with_opts");
+   bson_error_t error;
+
+   // Create index.
+   {
+      const bson_t *keys = tmp_bson ("{'x': 1}");
+      mongoc_index_model_t *im = mongoc_index_model_new (keys, NULL);
+      bool ok = mongoc_collection_create_indexes_with_opts (
+         coll,
+         &im,
+         1,
+         tmp_bson ("{'commitQuorum': 'majority'}"),
+         NULL /* reply */,
+         &error);
+      ASSERT (!ok);
+      ASSERT_ERROR_CONTAINS (
+         error,
+         MONGOC_ERROR_COMMAND,
+         MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION,
+         "The selected server does not support the commitQuorum option");
+      mongoc_index_model_destroy (im);
+   }
+
+   mongoc_collection_destroy (coll);
+   mongoc_client_destroy (client);
+}
+
+// Test creating an index with the 'commitQuorum' option succeeds on Server
+// Version >=4.4.
+static void
+test_create_indexes_with_opts_commitQuorum_post44 (void *unused)
+{
+   BSON_UNUSED (unused);
+   mongoc_client_t *client = test_framework_new_default_client ();
+   mongoc_collection_t *coll =
+      get_test_collection (client, "test_create_indexes_with_opts");
+   bson_error_t error;
+
+   // Create index.
+   {
+      const bson_t *keys = tmp_bson ("{'x': 1}");
+      mongoc_index_model_t *im = mongoc_index_model_new (keys, NULL);
+      bool ok = mongoc_collection_create_indexes_with_opts (
+         coll,
+         &im,
+         1,
+         tmp_bson ("{'commitQuorum': 'majority'}"),
+         NULL /* reply */,
+         &error);
+      ASSERT_OR_PRINT (ok, error);
+      mongoc_index_model_destroy (im);
+      ASSERT_INDEX_EXISTS (keys, "x_1");
+   }
+
+   mongoc_collection_destroy (coll);
+   mongoc_client_destroy (client);
+}
+
+#undef ASSERT_INDEX_EXISTS
+
 void
 test_collection_install (TestSuite *suite)
 {
@@ -6281,7 +6551,14 @@ test_collection_install (TestSuite *suite)
                       NULL,
                       test_framework_skip_if_slow_or_live);
    TestSuite_AddLive (suite, "/Collection/rename", test_rename);
-   TestSuite_AddLive (suite, "/Collection/stats", test_stats);
+   // The collStats command is deprecated in MongoDB 6.0 (maxWireVersion=17) and
+   // may be removed in a future major release.
+   TestSuite_AddFull (suite,
+                      "/Collection/stats",
+                      test_stats,
+                      NULL,
+                      NULL,
+                      test_framework_skip_if_max_wire_version_more_than_17);
    TestSuite_AddMockServerTest (
       suite, "/Collection/stats/read_pref", test_stats_read_pref);
    TestSuite_AddMockServerTest (
@@ -6371,4 +6648,40 @@ test_collection_install (TestSuite *suite)
                       NULL,
                       test_framework_skip_if_no_failpoint,
                       test_framework_skip_if_max_wire_version_more_than_9);
+   TestSuite_AddLive (suite,
+                      "/Collection/hint_is_validated/aggregate",
+                      test_hint_is_validated_aggregate);
+   TestSuite_AddLive (suite,
+                      "/Collection/hint_is_validated/countDocuments",
+                      test_hint_is_validated_countDocuments);
+   TestSuite_AddLive (suite,
+                      "/Collection/create_indexes_with_opts",
+                      test_create_indexes_with_opts);
+   TestSuite_AddFull (
+      suite,
+      "/Collection/create_indexes_with_opts/commitQuorum/pre44",
+      test_create_indexes_with_opts_commitQuorum_pre44,
+      NULL /* _dtor */,
+      NULL /* _ctx */,
+      // commitQuorum option is not available on standalone servers.
+      test_framework_skip_if_not_replset,
+      // Server Version 4.4 has Wire Version 9.
+      test_framework_skip_if_max_wire_version_more_than_8);
+   TestSuite_AddFull (
+      suite,
+      "/Collection/create_indexes_with_opts/commitQuorum/post44",
+      test_create_indexes_with_opts_commitQuorum_post44,
+      NULL /* _dtor */,
+      NULL /* _ctx */,
+      // commitQuorum option is not available on standalone servers.
+      test_framework_skip_if_not_replset,
+      // Server Version 4.4 has Wire Version 9.
+      test_framework_skip_if_max_wire_version_less_than_9);
+   TestSuite_AddFull (suite,
+                      "/Collection/create_indexes_with_opts/no_retry",
+                      test_create_indexes_with_opts_no_retry,
+                      NULL /* _dtor */,
+                      NULL /* _ctx */,
+                      // requires failpoint
+                      test_framework_skip_if_no_failpoint);
 }

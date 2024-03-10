@@ -22,7 +22,7 @@ Parameters
 * ``collection``: A :symbol:`mongoc_collection_t`.
 * ``selector``: A :symbol:`bson:bson_t` containing the query to match the document for updating.
 * ``replacement``: A :symbol:`bson:bson_t` containing the replacement document.
-* ``reply``: Optional. An uninitialized :symbol:`bson:bson_t` populated with the update result, or ``NULL``.
+* ``reply``: A |bson_t-opt-storage-ptr| to contain the results.
 * ``error``: An optional location for a :symbol:`bson_error_t <errors>` or ``NULL``.
 
 .. |opts-source| replace:: ``collection``
@@ -50,7 +50,7 @@ A write concern timeout or write concern error is considered a failure.
 
 .. seealso::
 
-  | `MongoDB update command documentation <https://docs.mongodb.com/manual/reference/command/update/>`_ for more information on the update options.
+  | `MongoDB update command documentation <https://www.mongodb.com/docs/manual/reference/command/update/>`_ for more information on the update options.
 
   | :symbol:`mongoc_collection_update_one`
 

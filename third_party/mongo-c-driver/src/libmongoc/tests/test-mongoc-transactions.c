@@ -257,10 +257,19 @@ transactions_test_run_operation (json_test_ctx_t *ctx,
 }
 
 
+static test_skip_t skips[] = {
+   {"callback is not retried after non-transient error (DuplicateKeyError)",
+    "Waiting on CDRIVER-4811"},
+   {0}};
+
+
 static void
 test_transactions_cb (bson_t *scenario)
 {
    json_test_config_t config = JSON_TEST_CONFIG_INIT;
+
+   config.skips = skips;
+
    config.before_test_cb = transactions_test_before_test;
    config.run_operation_cb = transactions_test_run_operation;
    config.after_test_cb = transactions_test_after_test;
@@ -443,7 +452,7 @@ hangup_except_hello (request_t *request, void *data)
       return false;
    }
 
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
    request_destroy (request);
    return true;
 }
@@ -663,7 +672,7 @@ test_unknown_commit_result (void)
       collection, tmp_bson ("{}"), &opts, NULL, &error);
    request = mock_server_receives_msg (
       server, 0, tmp_bson ("{'insert': 'collection'}"), tmp_bson ("{}"));
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
 
@@ -947,7 +956,6 @@ test_selected_server_is_pinned_to_mongos (void *ctx)
    uint32_t expected_id;
    uint32_t actual_id;
    const mongoc_server_description_t *sd = NULL;
-   int i;
 
    BSON_UNUSED (ctx);
 
@@ -975,7 +983,7 @@ test_selected_server_is_pinned_to_mongos (void *ctx)
    BSON_ASSERT (0 == mongoc_client_session_get_server_id (session));
 
    expected_id = mongoc_topology_select_server_id (
-      client->topology, MONGOC_SS_WRITE, NULL, NULL, &error);
+      client->topology, MONGOC_SS_WRITE, NULL, NULL, NULL, &error);
    ASSERT_OR_PRINT (expected_id, error);
 
    /* session should still be unpinned */
@@ -1006,7 +1014,7 @@ test_selected_server_is_pinned_to_mongos (void *ctx)
    /* get a valid server id that's different from the pinned server id */
    servers =
       mc_tpld_servers_const (mc_tpld_unsafe_get_const (client->topology));
-   for (i = 0; i < servers->items_len; i++) {
+   for (size_t i = 0; i < servers->items_len; i++) {
       sd = mongoc_set_get_item_const (servers, i);
       if (sd && sd->id != actual_id) {
          break;

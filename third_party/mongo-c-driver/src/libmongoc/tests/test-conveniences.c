@@ -46,7 +46,7 @@ static char *gFourMBString;
 
 
 void
-test_conveniences_init ()
+test_conveniences_init (void)
 {
    if (!gConveniencesInitialized) {
       _mongoc_array_init (&gTmpBsonArray, sizeof (bson_t *));
@@ -62,16 +62,15 @@ test_conveniences_init ()
 void
 test_conveniences_cleanup (void)
 {
-   int i;
    bson_t *doc;
 
    if (gConveniencesInitialized) {
-      for (i = 0; i < gTmpBsonArray.len; i++) {
+      for (size_t i = 0u; i < gTmpBsonArray.len; i++) {
          doc = _mongoc_array_index (&gTmpBsonArray, bson_t *, i);
          bson_destroy (doc);
       }
 
-      for (i = 0; i < gTmpStringArray.len; i++) {
+      for (size_t i = 0u; i < gTmpStringArray.len; i++) {
          char *str;
 
          str = _mongoc_array_index (&gTmpStringArray, char *, i);
@@ -121,9 +120,7 @@ tmp_bson (const char *json, ...)
       doc = bson_new_from_json ((const uint8_t *) double_quoted, -1, &error);
 
       if (!doc) {
-         fprintf (
-            stderr, "tmp_bson error %s: parsing: %s\n", error.message, json);
-         abort ();
+         test_error ("tmp_bson error %s: parsing: %s", error.message, json);
       }
 
       bson_free (formatted);
@@ -178,9 +175,7 @@ bson_lookup (const bson_t *bson, const char *path, bson_iter_t *out)
 
    bson_iter_init (&iter, bson);
    if (!bson_iter_find_descendant (&iter, path, out)) {
-      fprintf (
-         stderr, "'%s' field not found in BSON: %s", path, tmp_json (bson));
-      abort ();
+      test_error ("'%s' field not found in BSON: %s", path, tmp_json (bson));
    }
 }
 /*--------------------------------------------------------------------------
@@ -470,7 +465,6 @@ bson_lookup_read_prefs (const bson_t *b, const char *key)
       mode = MONGOC_READ_NEAREST;
    } else {
       test_error ("Bad readPreference: {\"mode\": \"%s\"}.", str);
-      abort ();
    }
 
    return mongoc_read_prefs_new (mode);
@@ -648,6 +642,8 @@ bson_lookup_session_opts (const bson_t *b, const char *key)
 mongoc_client_session_t *
 bson_lookup_session (const bson_t *b, const char *key, mongoc_client_t *client)
 {
+   ASSERT (client);
+
    mongoc_session_opt_t *opts;
    mongoc_client_session_t *session;
    bson_error_t error;
@@ -757,8 +753,7 @@ match_json (const bson_t *doc,
    pattern = bson_new_from_json ((const uint8_t *) double_quoted, -1, &error);
 
    if (!pattern) {
-      fprintf (stderr, "couldn't parse JSON: %s\n", error.message);
-      abort ();
+      test_error ("couldn't parse JSON: %s", error.message);
    }
 
    ctx.is_command = is_command;
@@ -816,38 +811,6 @@ match_bson (const bson_t *doc, const bson_t *pattern, bool is_command)
    ctx.is_command = is_command;
 
    return match_bson_with_ctx (doc, pattern, &ctx);
-}
-
-/*
- *--------------------------------------------------------------------------
- *
- * assert_match_bson --
- *
- *       Test helper that wraps match_bson. Fails the test if there
- *       is no found match.
- *
- * Returns:
- *       Nothing.
- *
- * Side effects:
- *       abort()s if there is no match.
- *
- *--------------------------------------------------------------------------
- */
-void
-assert_match_bson (const bson_t *doc, const bson_t *pattern, bool is_command)
-{
-   match_ctx_t ctx = {{0}};
-
-   ctx.strict_numeric_types = true;
-   ctx.is_command = is_command;
-
-   if (!match_bson_with_ctx (doc, pattern, &ctx)) {
-      test_error ("Expected: %s\n, Got: %s\n, %s\n",
-                  bson_as_canonical_extended_json (pattern, NULL),
-                  bson_as_canonical_extended_json (doc, NULL),
-                  ctx.errmsg);
-   }
 }
 
 
@@ -984,10 +947,14 @@ match_bson_with_ctx (const bson_t *doc, const bson_t *pattern, match_ctx_t *ctx)
          match_action_t action =
             ctx->visitor_fn (ctx, &pattern_iter, found ? &doc_iter : NULL);
          if (action == MATCH_ACTION_ABORT) {
+            // Visitor encountered a match error.
             goto fail;
          } else if (action == MATCH_ACTION_SKIP) {
+            // Visitor handled match of this field. Skip any additional matching
+            // of this field.
             goto next;
          }
+         ASSERT (action == MATCH_ACTION_CONTINUE);
       }
 
       if (value->value_type == BSON_TYPE_NULL && found) {
@@ -1195,7 +1162,7 @@ get_type_operator (const bson_value_t *value, bson_type_t *out)
    const char *value_string;
 
    /* See list of aliases on this page:
-    * https://docs.mongodb.com/manual/reference/bson-types/ */
+    * https://www.mongodb.com/docs/manual/reference/bson-types/ */
    if (value->value_type == BSON_TYPE_DOCUMENT &&
        bson_init_from_value (&bson, value) &&
        bson_iter_init_find (&iter, &bson, "$$type")) {
@@ -1243,8 +1210,7 @@ get_type_operator (const bson_value_t *value, bson_type_t *out)
       } else if (0 == strcasecmp ("maxKey", value_string)) {
          *out = BSON_TYPE_MAXKEY;
       } else {
-         fprintf (stderr, "unrecognized $$type value: %s\n", value_string);
-         abort ();
+         test_error ("unrecognized $$type value: %s", value_string);
       }
       return true;
    }
@@ -1310,6 +1276,20 @@ match_bson_arrays (const bson_t *array, const bson_t *pattern, match_ctx_t *ctx)
 
       derive (ctx, &derived, bson_iter_key (&array_iter));
 
+      if (ctx && ctx->visitor_fn) {
+         match_action_t action =
+            ctx->visitor_fn (ctx, &pattern_iter, &array_iter);
+         if (action == MATCH_ACTION_ABORT) {
+            // Visitor encountered a match error.
+            return false;
+         } else if (action == MATCH_ACTION_SKIP) {
+            // Visitor handled match of this field. Skip any additional matching
+            // of this field.
+            continue;
+         }
+         ASSERT (action == MATCH_ACTION_CONTINUE);
+      }
+
       if (!match_bson_value (array_value, pattern_value, &derived)) {
          return false;
       }
@@ -1342,7 +1322,6 @@ bson_value_as_int64 (const bson_value_t *value)
    } else {
       test_error ("bson_value_as_int64 called on value of type %d",
                   value->value_type);
-      abort ();
    }
 }
 
@@ -1583,7 +1562,6 @@ match_bson_value (const bson_value_t *doc,
       test_error ("unexpected value type %d: %s",
                   doc->value_type,
                   _mongoc_bson_type_to_str (doc->value_type));
-      abort ();
    }
 
    if (!ret) {
@@ -1618,7 +1596,7 @@ init_huge_string (mongoc_client_t *client)
 {
    int32_t max_bson_size;
 
-   BSON_ASSERT (client);
+   ASSERT (client);
 
    test_conveniences_init ();
 
@@ -1637,6 +1615,7 @@ init_huge_string (mongoc_client_t *client)
 const char *
 huge_string (mongoc_client_t *client)
 {
+   ASSERT (client);
    init_huge_string (client);
    return gHugeString;
 }
@@ -1645,13 +1624,14 @@ huge_string (mongoc_client_t *client)
 size_t
 huge_string_length (mongoc_client_t *client)
 {
+   ASSERT (client);
    init_huge_string (client);
    return gHugeStringLength;
 }
 
 
 static void
-init_four_mb_string ()
+init_four_mb_string (void)
 {
    test_conveniences_init ();
 
@@ -1665,7 +1645,7 @@ init_four_mb_string ()
 
 
 const char *
-four_mb_string ()
+four_mb_string (void)
 {
    init_four_mb_string ();
    return gFourMBString;
@@ -1701,11 +1681,9 @@ assert_no_duplicate_keys (const bson_t *doc)
    while (bson_iter_next (&iter)) {
       if (mongoc_set_find_item (
              keys, find_key, (void *) bson_iter_key (&iter))) {
-         fprintf (stderr,
-                  "Duplicate key \"%s\" in document:\n%s",
-                  bson_iter_key (&iter),
-                  bson_as_json (doc, NULL));
-         abort ();
+         test_error ("Duplicate key \"%s\" in document:\n%s",
+                     bson_iter_key (&iter),
+                     bson_as_json (doc, NULL));
       }
 
       mongoc_set_add (keys, 0 /* index */, (void *) bson_iter_key (&iter));
@@ -1749,7 +1727,7 @@ match_in_array (const bson_t *doc, const bson_t *array, match_ctx_t *ctx)
 }
 
 bson_t *
-bson_with_all_types ()
+bson_with_all_types (void)
 {
    bson_t *bson = tmp_bson ("{}");
    bson_oid_t oid;
@@ -1788,7 +1766,7 @@ bson_with_all_types ()
 }
 
 const char *
-json_with_all_types ()
+json_with_all_types (void)
 {
    const char *json = "{\n"
                       "    \"double\": {\n"
@@ -1925,6 +1903,8 @@ server_semver (mongoc_client_t *client, semver_t *out)
    bson_t reply;
    bson_error_t error;
    const char *server_version_str;
+
+   ASSERT (client);
 
    ASSERT_OR_PRINT (
       mongoc_client_command_simple (

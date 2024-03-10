@@ -16,14 +16,14 @@
 
 #include <bsoncxx/document/view.hpp>
 #include <bsoncxx/string/to_string.hpp>
-#include <bsoncxx/test_util/catch.hh>
+#include <bsoncxx/test/catch.hh>
 #include <mongocxx/client.hpp>
 #include <mongocxx/exception/exception.hpp>
 #include <mongocxx/instance.hpp>
+#include <mongocxx/test/client_helpers.hh>
 #include <mongocxx/test/spec/monitoring.hh>
 #include <mongocxx/test/spec/operation.hh>
 #include <mongocxx/test/spec/util.hh>
-#include <mongocxx/test_util/client_helpers.hh>
 
 namespace {
 
@@ -61,6 +61,10 @@ void add_auto_encryption_opts(document::view test, options::client* client_opts)
                 test_encrypt_opts["bypassAutoEncryption"].get_bool().value);
         }
 
+        if (const auto bqa = test_encrypt_opts["bypassQueryAnalysis"]) {
+            auto_encrypt_opts.bypass_query_analysis(bqa.get_bool().value);
+        }
+
         if (test_encrypt_opts["keyVaultNamespace"]) {
             auto ns_string = bsoncxx::string::to_string(
                 test_encrypt_opts["keyVaultNamespace"].get_string().value);
@@ -75,6 +79,11 @@ void add_auto_encryption_opts(document::view test, options::client* client_opts)
 
         if (test_encrypt_opts["schemaMap"]) {
             auto_encrypt_opts.schema_map(test_encrypt_opts["schemaMap"].get_document().value);
+        }
+
+        if (test_encrypt_opts["encryptedFieldsMap"]) {
+            auto_encrypt_opts.encrypted_fields_map(
+                test_encrypt_opts["encryptedFieldsMap"].get_document().value);
         }
 
         if (const auto providers = test_encrypt_opts["kmsProviders"]) {
@@ -93,6 +102,31 @@ void add_auto_encryption_opts(document::view test, options::client* client_opts)
                     subdoc.append(
                         kvp("accessKeyId",
                             test_util::getenv_or_fail("MONGOCXX_TEST_AWS_ACCESS_KEY_ID")));
+                }));
+            }
+
+            if (providers["awsTemporary"]) {
+                kms_doc.append(kvp("aws", [](sub_document subdoc) {
+                    subdoc.append(
+                        kvp("secretAccessKey",
+                            test_util::getenv_or_fail("MONGOCXX_TEST_AWS_TEMP_SECRET_ACCESS_KEY")));
+                    subdoc.append(
+                        kvp("accessKeyId",
+                            test_util::getenv_or_fail("MONGOCXX_TEST_AWS_TEMP_ACCESS_KEY_ID")));
+                    subdoc.append(
+                        kvp("sessionToken",
+                            test_util::getenv_or_fail("MONGOCXX_TEST_AWS_TEMP_SESSION_TOKEN")));
+                }));
+            }
+
+            if (providers["awsTemporaryNoSessionToken"]) {
+                kms_doc.append(kvp("aws", [](sub_document subdoc) {
+                    subdoc.append(
+                        kvp("secretAccessKey",
+                            test_util::getenv_or_fail("MONGOCXX_TEST_AWS_TEMP_SECRET_ACCESS_KEY")));
+                    subdoc.append(
+                        kvp("accessKeyId",
+                            test_util::getenv_or_fail("MONGOCXX_TEST_AWS_TEMP_ACCESS_KEY_ID")));
                 }));
             }
 
@@ -181,8 +215,9 @@ void run_encryption_tests_in_file(const std::string& test_path) {
         return;
     }
 
-    class client setup_client {
-        uri{}, test_util::add_test_server_api(),
+    mongocxx::client setup_client{
+        uri{},
+        test_util::add_test_server_api(),
     };
 
     write_concern wc_majority;
@@ -219,8 +254,9 @@ void run_encryption_tests_in_file(const std::string& test_path) {
                 check_results_logging = true;
             }
 
-            class client client {
-                get_uri(test.get_document().value), test_util::add_test_server_api(client_opts),
+            mongocxx::client client{
+                get_uri(test.get_document().value),
+                test_util::add_test_server_api(client_opts),
             };
 
             auto db = client[db_name];
@@ -231,15 +267,14 @@ void run_encryption_tests_in_file(const std::string& test_path) {
 
             for (auto&& op : test["operations"].get_array().value) {
                 if (check_results_logging) {
-                    fprintf(stdout,
-                            "about to run operation %s\n",
-                            to_json(op.get_document().value).c_str());
-                    fprintf(stdout, "collection contents before: \n");
+                    UNSCOPED_INFO("about to run operation " << to_json(op.get_document().value));
+                    std::string contents;
                     auto cursor = test_coll.find({});
                     for (auto&& doc : cursor) {
-                        fprintf(stdout, "%s\n", to_json(doc).c_str());
+                        contents += to_json(doc);
+                        contents += '\n';
                     }
-                    fprintf(stdout, "\n\n");
+                    UNSCOPED_INFO("collection contents before:\n" << contents);
                 }
 
                 run_operation_check_result(op.get_document().value, [&]() {
@@ -247,12 +282,13 @@ void run_encryption_tests_in_file(const std::string& test_path) {
                 });
 
                 if (check_results_logging) {
-                    fprintf(stdout, "after running operation, collection contents:\n");
+                    std::string contents;
                     auto cursor = test_coll.find({});
                     for (auto&& doc : cursor) {
-                        fprintf(stdout, "%s\n", to_json(doc).c_str());
+                        contents += to_json(doc);
+                        contents += '\n';
                     }
-                    fprintf(stdout, "\n\n");
+                    UNSCOPED_INFO("after running operation, collection contents:\n" << contents);
                 }
             }
 
@@ -264,8 +300,9 @@ void run_encryption_tests_in_file(const std::string& test_path) {
             }
 
             if (test["outcome"] && test["outcome"]["collection"]) {
-                class client plaintext_client {
-                    uri{}, test_util::add_test_server_api(),
+                mongocxx::client plaintext_client{
+                    uri{},
+                    test_util::add_test_server_api(),
                 };
 
                 read_preference rp;
@@ -290,7 +327,7 @@ TEST_CASE("Client side encryption spec automated tests", "[client_side_encryptio
     std::set<std::string> unsupported_tests = {
         "badQueries.json", "count.json", "unsupportedCommand.json"};
 
-    char* encryption_tests_path = std::getenv("ENCRYPTION_TESTS_PATH");
+    char* encryption_tests_path = std::getenv("CLIENT_SIDE_ENCRYPTION_LEGACY_TESTS_PATH");
     REQUIRE(encryption_tests_path);
 
     if (!mongocxx::test_util::should_run_client_side_encryption_test()) {

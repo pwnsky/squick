@@ -17,17 +17,16 @@
 
 #include <bsoncxx/builder/basic/document.hpp>
 #include <bsoncxx/json.hpp>
-#include <bsoncxx/test_util/to_string.hh>
+#include <bsoncxx/test/to_string.hh>
 #include <mongocxx/exception/error_code.hpp>
+#include <mongocxx/test/client_helpers.hh>
 #include <mongocxx/test/spec/monitoring.hh>
 #include <mongocxx/test/spec/unified_tests/assert.hh>
-#include <mongocxx/test_util/client_helpers.hh>
 #include <third_party/catch/include/catch.hpp>
 
 #include <mongocxx/config/private/prelude.hh>
 
 namespace mongocxx {
-MONGOCXX_INLINE_NAMESPACE_BEGIN
 namespace spec {
 
 using namespace mongocxx;
@@ -52,9 +51,11 @@ void apm_checker::compare_unified(bsoncxx::array::view expectations,
                                   bool ignore_extra_events) {
     remove_ignored_command_monitoring_events(_events, _ignore);
 
+    CAPTURE(print_all());
+
     // This will throw an exception on unmatched fields and return true in all other cases.
     auto compare = [&](const bsoncxx::array::element& exp, const bsoncxx::document::view actual) {
-        CAPTURE(print_all(), to_json(actual), bsoncxx::to_string(exp.get_value()));
+        CAPTURE(to_json(actual), bsoncxx::to_string(exp.get_value()));
 
         // Extra fields are only allowed in root-level documents. Here, each k in keys is treated
         // as its own root-level document, allowing extra fields.
@@ -78,15 +79,11 @@ void apm_checker::compare_unified(bsoncxx::array::view expectations,
         compare(*exp_it, *ev_it);
     }
     if (exp_it != exp_end) {
-        auto next_expected = exp_it->get_document();
-        CAPTURE(to_json(next_expected));
         FAIL_CHECK("Not enough events occurred (Expected "
                    << std::distance(expectations.cbegin(), expectations.cend())
                    << " events, but got " << (_events.size()) << " events)");
     }
     if (!ignore_extra_events && ev_it != ev_end) {
-        auto next_event = *ev_it;
-        CAPTURE(to_json(next_event));
         FAIL_CHECK("Too many events occurred (Expected "
                    << std::distance(expectations.cbegin(), expectations.cend())
                    << " events, but got " << (_events.size()) << " events)");
@@ -122,13 +119,20 @@ void apm_checker::compare(bsoncxx::array::view expectations,
     CAPTURE(print_all());
     for (auto expectation : expectations) {
         auto expected = expectation.get_document().view();
-        REQUIRE(events_iter != _events.end());
+        if (events_iter == _events.end()) {
+            FAIL("Not enough events occurred: expected exactly "
+                 << std::distance(expectations.begin(), expectations.end()) << " events, but got "
+                 << _events.size() << " events");
+        }
         REQUIRE_BSON_MATCHES_V(*events_iter, expected, match_visitor);
         events_iter++;
     }
 
-    if (!allow_extra)
-        REQUIRE(events_iter == _events.end());
+    if (!allow_extra && events_iter != _events.end()) {
+        FAIL_CHECK("Too many events occurred: expected exactly "
+                   << std::distance(expectations.begin(), expectations.end()) << " events, but got "
+                   << _events.size() << " events");
+    }
 }
 
 void apm_checker::has(bsoncxx::array::view expectations) {
@@ -147,15 +151,14 @@ bool apm_checker::should_ignore(stdx::string_view command_name) const {
                        [command_name](stdx::string_view cmp) { return command_name == cmp; });
 }
 
-std::string apm_checker::print_all() {
-    std::stringstream output{};
-    output << std::endl << std::endl;
-    output << "APM Checker contents: " << std::endl;
-    for (auto&& event : _events) {
-        output << "APM event: " << bsoncxx::to_json(event) << std::endl;
+std::string apm_checker::print_all() const {
+    std::ostringstream output;
+    output << "\n\n";
+    output << "APM Checker contents:\n";
+    for (const auto& event : _events) {
+        output << "APM event: " << bsoncxx::to_json(event) << "\n\n";
     }
-    output << std::endl << std::endl;
-    return output.str();
+    return std::move(output).str();
 }
 
 /// A "sensitive" hello is a hello command with the "speculativeAuthenticate" argument set
@@ -346,6 +349,6 @@ void apm_checker::clear() {
 }
 
 }  // namespace spec
-MONGOCXX_INLINE_NAMESPACE_END
 }  // namespace mongocxx
+
 #include <mongocxx/config/private/postlude.hh>

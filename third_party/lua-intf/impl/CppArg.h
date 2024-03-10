@@ -24,12 +24,14 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+//include <cstdint>
+
 struct _arg {};
 
 template <typename T>
 struct _opt {};
 
-template <typename T, std::intmax_t DEF_NUM, std::intmax_t DEF_DEN = 1>
+template <typename T, intmax_t DEF_NUM, intmax_t DEF_DEN = 1>
 struct _def {};
 
 template <typename T>
@@ -41,7 +43,7 @@ struct _ref {};
 template <typename T>
 struct _ref_opt {};
 
-template <typename T, std::intmax_t DEF_NUM, std::intmax_t DEF_DEN = 1>
+template <typename T, intmax_t DEF_NUM, intmax_t DEF_DEN = 1>
 struct _ref_def {};
 
 #define LUA_ARGS_TYPE(...) LuaIntf::_arg(*)(__VA_ARGS__)
@@ -120,7 +122,7 @@ struct CppArgTraits <_opt<T>>
     static constexpr bool isOptonal = true;
 };
 
-template <typename T, std::intmax_t NUM, std::intmax_t DEN>
+template <typename T, intmax_t NUM, intmax_t DEN>
 struct CppArgTraits <_def<T, NUM, DEN>>
     : CppArgTraits <_opt<T>>
 {
@@ -159,7 +161,7 @@ struct CppArgTraits <_ref_opt<T>>
     static constexpr bool isOutput = true;
 };
 
-template <typename T, std::intmax_t NUM, std::intmax_t DEN>
+template <typename T, intmax_t NUM, intmax_t DEN>
 struct CppArgTraits <_ref_def<T, NUM, DEN>>
     : CppArgTraits <_def<T, NUM, DEN>>
 {

@@ -47,11 +47,9 @@ _topology_has_description (const mongoc_topology_description_t *topology,
       } else if (strcmp ("type", bson_iter_key (&server_iter)) == 0) {
          server_type = bson_iter_utf8 (&server_iter, NULL);
          if (sd->type != server_type_from_test (server_type)) {
-            fprintf (stderr,
-                     "expected server type %s not %s\n",
-                     server_type,
-                     mongoc_server_description_type (sd));
-            abort ();
+            test_error ("expected server type %s not %s",
+                        server_type,
+                        mongoc_server_description_type (sd));
          }
       } else if (strcmp ("setVersion", bson_iter_key (&server_iter)) == 0) {
          int64_t expected_set_version;
@@ -197,9 +195,9 @@ test_sdam_cb (bson_t *test)
          mc_tpld_renew_ref (&td, client->topology);
          if (strcmp ("servers", bson_iter_key (&outcome_iter)) == 0) {
             bson_iter_bson (&outcome_iter, &servers);
-            ASSERT_CMPINT (bson_count_keys (&servers),
-                           ==,
-                           mc_tpld_servers_const (td.ptr)->items_len);
+            ASSERT_CMPSIZE_T (bson_count_keys (&servers),
+                              ==,
+                              mc_tpld_servers_const (td.ptr)->items_len);
 
             bson_iter_init (&servers_iter, &servers);
 
@@ -261,7 +259,7 @@ test_sdam_cb (bson_t *test)
          } else if (strcmp ("maxElectionId", bson_iter_key (&outcome_iter)) ==
                     0) {
             const bson_oid_t *expected_oid;
-            bson_oid_t zeroed = {0};
+            bson_oid_t zeroed = {.bytes = {0}};
 
             expected_oid = bson_iter_oid (&outcome_iter);
 
@@ -318,6 +316,8 @@ sdam_json_test_ctx_init (json_test_ctx_t *ctx,
    const char *db_name;
    const char *coll_name;
 
+   ASSERT (pool);
+
    memset (ctx, 0, sizeof (*ctx));
    ctx->config = config;
    bson_init (&ctx->events);
@@ -371,12 +371,13 @@ sdam_integration_operation_cb (json_test_ctx_t *ctx,
 static void
 deactivate_failpoints_on_all_servers (mongoc_client_t *client)
 {
-   int i;
    uint32_t server_id;
    const mongoc_set_t *servers;
    bson_t cmd;
    bson_error_t error;
    mc_shared_tpld td;
+
+   ASSERT (client);
 
    bson_init (&cmd);
    BCON_APPEND (&cmd, "configureFailPoint", "failCommand", "mode", "off");
@@ -384,7 +385,7 @@ deactivate_failpoints_on_all_servers (mongoc_client_t *client)
    td = mc_tpld_take_ref (client->topology);
    servers = mc_tpld_servers_const (td.ptr);
 
-   for (i = 0; i < servers->items_len; i++) {
+   for (size_t i = 0u; i < servers->items_len; i++) {
       bool ret;
 
       server_id = servers->items[i].id;

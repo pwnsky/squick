@@ -13,8 +13,8 @@
 # limitations under the License.
 
 include_directories(
-    ${CMAKE_INSTALL_PREFIX}/${BSONCXX_HEADER_INSTALL_DIR}
-    ${CMAKE_INSTALL_PREFIX}/${MONGOCXX_HEADER_INSTALL_DIR}
+    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/bsoncxx/v_noabi
+    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/mongocxx/v_noabi
 )
 
 set(MONGOCXX_EXAMPLES
@@ -50,6 +50,12 @@ set(MONGOCXX_EXAMPLES
     view_or_value_variant.cpp
     with_transaction.cpp
 )
+
+if(MONGOCXX_BUILD_SHARED)
+    set(MONGOCXX_LIBRARY_FOR_EXAMPLES mongocxx_shared)
+else()
+    set(MONGOCXX_LIBRARY_FOR_EXAMPLES mongocxx_static)
+endif()
 
 foreach(EXAMPLE_SRC ${MONGOCXX_EXAMPLES})
     get_filename_component(EXAMPLE_TARGET ${EXAMPLE_SRC} NAME_WE)

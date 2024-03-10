@@ -38,8 +38,9 @@ _getenv (const char *name)
       return NULL;
    }
 #else
-   if (getenv (name) && strlen (getenv (name))) {
-      return bson_strdup (getenv (name));
+   char *const value = getenv (name);
+   if (value && strlen (value)) {
+      return bson_strdup (value);
    } else {
       return NULL;
    }
@@ -72,7 +73,9 @@ static BSON_THREAD_FUN (gssapi_kerberos_worker, data)
       client = mongoc_client_pool_pop (pool);
       if (!mongoc_client_command_with_opts (
              client, "test", cmd, NULL, NULL, NULL, &error)) {
+         fflush (stdout);
          fprintf (stderr, "ping command failed: %s\n", error.message);
+         fflush (stderr);
          abort ();
       }
       bson_destroy (cmd);
@@ -82,7 +85,9 @@ static BSON_THREAD_FUN (gssapi_kerberos_worker, data)
 
       if (!mongoc_cursor_next (cursor, &doc) &&
           mongoc_cursor_error (cursor, &error)) {
+         fflush (stdout);
          fprintf (stderr, "Cursor Failure: %s\n", error.message);
+         fflush (stderr);
          abort ();
       }
 

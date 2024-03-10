@@ -17,6 +17,8 @@
 #include "json-test.h"
 #include "test-libmongoc.h"
 
+#include "bson-dsl.h"
+
 #include "common-b64-private.h"
 
 /* _mongoc_host_list_from_string_with_err */
@@ -25,6 +27,8 @@
 
 /* MONGOC_SERVER_ERR_NS_NOT_FOUND */
 #include "mongoc/mongoc-error-private.h"
+
+#include "mongoc/mongoc-client-side-encryption-private.h"
 
 #include "mongoc/mongoc-uri.h"
 
@@ -216,10 +220,8 @@ _make_gcp_kms_provider (bson_t *kms_providers)
       test_framework_getenv_required ("MONGOC_TEST_GCP_PRIVATEKEY");
 
    if (!gcp_email || !gcp_privatekey) {
-      fprintf (stderr,
-               "Set MONGOC_TEST_GCP_EMAIL and MONGOC_TEST_GCP_PRIVATEKEY to "
-               "enable CSFLE tests.");
-      abort ();
+      test_error ("Set MONGOC_TEST_GCP_EMAIL and MONGOC_TEST_GCP_PRIVATEKEY to "
+                  "enable CSFLE tests.");
    }
 
    if (!kms_providers) {
@@ -672,9 +674,14 @@ test_datakey_and_double_encryption_creating_and_using (
 
    hello = bson_strdup_printf ("hello %s", kms_provider);
 
-   to_encrypt.value_type = BSON_TYPE_UTF8;
-   to_encrypt.value.v_utf8.str = bson_strdup (hello);
-   to_encrypt.value.v_utf8.len = strlen (to_encrypt.value.v_utf8.str);
+   {
+      to_encrypt.value_type = BSON_TYPE_UTF8;
+      to_encrypt.value.v_utf8.str = bson_strdup (hello);
+
+      const size_t len = strlen (to_encrypt.value.v_utf8.str);
+      ASSERT (bson_in_range_unsigned (uint32_t, len));
+      to_encrypt.value.v_utf8.len = (uint32_t) len;
+   }
 
    ret = mongoc_client_encryption_encrypt (
       client_encryption, &to_encrypt, encrypt_opts, &encrypted, &error);
@@ -1246,6 +1253,8 @@ _endpoint_setup (mongoc_client_t *keyvault_client,
    mongoc_client_encryption_opts_t *client_encryption_opts_invalid;
    bson_error_t error;
 
+   ASSERT (keyvault_client);
+
    char *mongoc_test_aws_access_key_id =
       test_framework_getenv_required ("MONGOC_TEST_AWS_ACCESS_KEY_ID");
    char *mongoc_test_aws_secret_access_key =
@@ -1415,6 +1424,7 @@ test_custom_endpoint (void *unused)
                                                         masterkey);
    res = mongoc_client_encryption_create_datakey (
       client_encryption, "aws", datakey_opts, &keyid, &error);
+   ASSERT_OR_PRINT (res, error);
 
    TEST_ENCRYPT_DECRYPT (&keyid, client_encryption, res, error);
    bson_value_destroy (&keyid);
@@ -1437,6 +1447,7 @@ test_custom_endpoint (void *unused)
                                                         masterkey);
    res = mongoc_client_encryption_create_datakey (
       client_encryption, "aws", datakey_opts, &keyid, &error);
+   ASSERT_OR_PRINT (res, error);
 
    TEST_ENCRYPT_DECRYPT (&keyid, client_encryption, res, error);
    bson_value_destroy (&keyid);
@@ -1459,6 +1470,7 @@ test_custom_endpoint (void *unused)
                                                         masterkey);
    res = mongoc_client_encryption_create_datakey (
       client_encryption, "aws", datakey_opts, &keyid, &error);
+   ASSERT_OR_PRINT (res, error);
 
    TEST_ENCRYPT_DECRYPT (&keyid, client_encryption, res, error);
    bson_value_destroy (&keyid);
@@ -1482,11 +1494,11 @@ test_custom_endpoint (void *unused)
                                                         masterkey);
    res = mongoc_client_encryption_create_datakey (
       client_encryption, "aws", datakey_opts, &keyid, &error);
-   BSON_ASSERT (!res);
    ASSERT_ERROR_CONTAINS (error,
                           MONGOC_ERROR_STREAM,
                           MONGOC_ERROR_STREAM_CONNECT,
                           "Failed to connect");
+   BSON_ASSERT (!res);
    bson_value_destroy (&keyid);
    bson_destroy (masterkey);
    mongoc_client_encryption_destroy (client_encryption);
@@ -1507,8 +1519,8 @@ test_custom_endpoint (void *unused)
    memset (&error, 0, sizeof (bson_error_t));
    res = mongoc_client_encryption_create_datakey (
       client_encryption, "aws", datakey_opts, &keyid, &error);
-   BSON_ASSERT (!res);
    ASSERT_ERROR_CONTAINS (error, MONGOC_ERROR_CLIENT_SIDE_ENCRYPTION, 1, "");
+   BSON_ASSERT (!res);
    bson_value_destroy (&keyid);
    bson_destroy (masterkey);
    mongoc_client_encryption_destroy (client_encryption);
@@ -1529,11 +1541,11 @@ test_custom_endpoint (void *unused)
    memset (&error, 0, sizeof (bson_error_t));
    res = mongoc_client_encryption_create_datakey (
       client_encryption, "aws", datakey_opts, &keyid, &error);
-   BSON_ASSERT (!res);
    ASSERT_ERROR_CONTAINS (error,
                           MONGOC_ERROR_STREAM,
                           MONGOC_ERROR_STREAM_NAME_RESOLUTION,
                           "Failed to resolve");
+   BSON_ASSERT (!res);
    bson_value_destroy (&keyid);
    bson_destroy (masterkey);
    mongoc_client_encryption_destroy (client_encryption);
@@ -1550,6 +1562,7 @@ test_custom_endpoint (void *unused)
                                                         masterkey);
    res = mongoc_client_encryption_create_datakey (
       client_encryption, "azure", datakey_opts, &keyid, &error);
+   ASSERT_OR_PRINT (res, error);
 
    TEST_ENCRYPT_DECRYPT (&keyid, client_encryption, res, error);
    bson_value_destroy (&keyid);
@@ -1587,6 +1600,7 @@ test_custom_endpoint (void *unused)
                                                         masterkey);
    res = mongoc_client_encryption_create_datakey (
       client_encryption, "gcp", datakey_opts, &keyid, &error);
+   ASSERT_OR_PRINT (res, error);
 
    TEST_ENCRYPT_DECRYPT (&keyid, client_encryption, res, error);
    bson_value_destroy (&keyid);
@@ -1653,6 +1667,7 @@ test_custom_endpoint (void *unused)
                           MONGOC_ERROR_STREAM,
                           MONGOC_ERROR_STREAM_NAME_RESOLUTION,
                           "Failed to resolve");
+   BSON_ASSERT (!res);
    bson_value_destroy (&keyid);
 
    bson_destroy (masterkey);
@@ -2128,6 +2143,8 @@ _reset (mongoc_client_pool_t **pool,
    bson_t *schema;
    bson_t *schema_map;
 
+   ASSERT (pool);
+
    mongoc_auto_encryption_opts_destroy (*opts);
    *opts = mongoc_auto_encryption_opts_new ();
    {
@@ -2201,6 +2218,8 @@ _perform_op (mongoc_client_t *client_encrypted)
    bson_error_t error;
    mongoc_collection_t *coll;
 
+   ASSERT (client_encrypted);
+
    coll = mongoc_client_get_collection (client_encrypted, "db", "coll");
    ret = mongoc_collection_insert_one (coll,
                                        tmp_bson ("{'encrypted_string': 'abc'}"),
@@ -2215,6 +2234,8 @@ static void
 _perform_op_pooled (mongoc_client_pool_t *client_pool_encrypted)
 {
    mongoc_client_t *client_encrypted;
+
+   ASSERT (client_pool_encrypted);
 
    client_encrypted = mongoc_client_pool_pop (client_pool_encrypted);
    _perform_op (client_encrypted);
@@ -2671,13 +2692,27 @@ test_bypass_spawning_via_helper (const char *auto_encryption_opt)
       mongoc_auto_encryption_opts_set_bypass_query_analysis (
          auto_encryption_opts, true);
    } else if (0 == strcmp (auto_encryption_opt, "cryptSharedLibRequired")) {
+      bson_t *schema =
+         get_bson_from_json_file ("./src/libmongoc/tests/"
+                                  "client_side_encryption_prose/external/"
+                                  "external-schema.json");
+      BSON_ASSERT (schema);
+      bson_t *schema_map = BCON_NEW ("db.coll", BCON_DOCUMENT (schema));
+      mongoc_auto_encryption_opts_set_schema_map (auto_encryption_opts,
+                                                  schema_map);
       check_crypt_shared = true;
       char *env_cryptSharedLibPath =
          test_framework_getenv ("MONGOC_TEST_CRYPT_SHARED_LIB_PATH");
       BSON_ASSERT (env_cryptSharedLibPath);
       BSON_APPEND_UTF8 (extra, "cryptSharedLibPath", env_cryptSharedLibPath);
       BSON_APPEND_BOOL (extra, "cryptSharedLibRequired", true);
+      BSON_APPEND_UTF8 (
+         extra,
+         "mongocryptdURI",
+         "mongodb://localhost:27021/db?serverSelectionTimeoutMS=1000");
       bson_free (env_cryptSharedLibPath);
+      bson_destroy (schema);
+      bson_destroy (schema_map);
    } else {
       test_error ("Unexpected 'auto_encryption_opt' argument: %s",
                   auto_encryption_opt);
@@ -2702,7 +2737,7 @@ test_bypass_spawning_via_helper (const char *auto_encryption_opt)
                    NULL);
    }
 
-   /* Insert { 'encrypt': 'test' }. Should succeed. */
+   /* Insert { 'unencrypted': 'test' }. Should succeed. */
    coll = mongoc_client_get_collection (client_encrypted, "db", "coll");
    doc_to_insert = BCON_NEW ("unencrypted", "test");
    ret = mongoc_collection_insert_one (
@@ -2736,8 +2771,9 @@ test_bypass_spawning_via_bypassQueryAnalysis (void *unused)
    test_bypass_spawning_via_helper ("bypass_query_analysis");
 }
 
+/* Prose Test 8: Bypass Spawning mongocryptd - Via loading shared library */
 static void
-test_bypass_spawning_via_cryptSharedLibRequired (void *unused)
+test_bypass_spawning_via_cryptSharedLibLoaded (void *unused)
 {
    BSON_UNUSED (unused);
    test_bypass_spawning_via_helper ("cryptSharedLibRequired");
@@ -2759,6 +2795,8 @@ _make_kms_certificate_client_encryption (mongoc_client_t *client,
                                          bson_error_t *error)
 {
    mongoc_client_encryption_t *client_encryption;
+
+   ASSERT (client);
 
    mongoc_client_encryption_opts_t *client_encryption_opts =
       mongoc_client_encryption_opts_new ();
@@ -2952,7 +2990,8 @@ typedef enum {
    NO_CLIENT_CERT,
    WITH_TLS,
    INVALID_HOSTNAME,
-   EXPIRED
+   EXPIRED,
+   WITH_NAMES
 } tls_test_ce_t;
 
 static mongoc_client_encryption_t *
@@ -2964,6 +3003,8 @@ _tls_test_make_client_encryption (mongoc_client_t *keyvault_client,
    bson_error_t error = {0};
    mongoc_client_encryption_t *client_encryption;
    bson_t *tls_opts = NULL;
+
+   ASSERT (keyvault_client);
 
    char *mongoc_test_aws_access_key_id =
       test_framework_getenv_required ("MONGOC_TEST_AWS_ACCESS_KEY_ID");
@@ -3105,6 +3146,94 @@ _tls_test_make_client_encryption (mongoc_client_t *keyvault_client,
                    tmp_bson ("{'kmip': { 'endpoint': '127.0.0.1:9001' }}"));
       bson_concat (tls_opts,
                    tmp_bson ("{'kmip': {'tlsCaFile': '%s'} }", ca_file));
+   } else if (test_ce == WITH_NAMES) {
+      kms_providers = tmp_bson ("{'aws:no_client_cert': {'accessKeyId': '%s', "
+                                "'secretAccessKey': '%s' }}",
+                                mongoc_test_aws_access_key_id,
+                                mongoc_test_aws_secret_access_key);
+      tls_opts =
+         tmp_bson ("{'aws:no_client_cert': {'tlsCaFile': '%s' }}", ca_file);
+
+      bson_concat (
+         kms_providers,
+         tmp_bson (
+            "{'aws:with_tls': {'accessKeyId': '%s', 'secretAccessKey': '%s' }}",
+            mongoc_test_aws_access_key_id,
+            mongoc_test_aws_secret_access_key));
+      bson_concat (tls_opts,
+                   tmp_bson ("{'aws:with_tls': {'tlsCaFile': '%s', "
+                             "'tlsCertificateKeyFile': '%s' }}",
+                             ca_file,
+                             certificate_key_file));
+
+      bson_concat (
+         kms_providers,
+         tmp_bson (
+            "{'azure:no_client_cert': {'tenantId': '%s', 'clientId': '%s',"
+            "'clientSecret': '%s', "
+            "'identityPlatformEndpoint': '127.0.0.1:9002'"
+            "}}",
+            mongoc_test_azure_tenant_id,
+            mongoc_test_azure_client_id,
+            mongoc_test_azure_client_secret));
+      bson_concat (
+         tls_opts,
+         tmp_bson ("{'azure:no_client_cert': {'tlsCaFile': '%s' }}", ca_file));
+
+      bson_concat (
+         kms_providers,
+         tmp_bson ("{'azure:with_tls': {'tenantId': '%s', 'clientId': '%s',"
+                   "'clientSecret': '%s', "
+                   "'identityPlatformEndpoint': '127.0.0.1:9002'"
+                   "}}",
+                   mongoc_test_azure_tenant_id,
+                   mongoc_test_azure_client_id,
+                   mongoc_test_azure_client_secret));
+      bson_concat (tls_opts,
+                   tmp_bson ("{'azure:with_tls': {'tlsCaFile': '%s', "
+                             "'tlsCertificateKeyFile': '%s' }}",
+                             ca_file,
+                             certificate_key_file));
+
+      bson_concat (
+         kms_providers,
+         tmp_bson (
+            "{'gcp:no_client_cert': { 'email': '%s', 'privateKey': '%s', "
+            "'endpoint': '127.0.0.1:9002' }}",
+            mongoc_test_gcp_email,
+            mongoc_test_gcp_privatekey));
+      bson_concat (tls_opts,
+                   tmp_bson ("{'gcp:no_client_cert': {'tlsCaFile': '%s' }}",
+                             ca_file,
+                             certificate_key_file));
+
+      bson_concat (
+         kms_providers,
+         tmp_bson ("{'gcp:with_tls': { 'email': '%s', 'privateKey': '%s', "
+                   "'endpoint': '127.0.0.1:9002' }}",
+                   mongoc_test_gcp_email,
+                   mongoc_test_gcp_privatekey));
+      bson_concat (tls_opts,
+                   tmp_bson ("{'gcp:with_tls': {'tlsCaFile': '%s', "
+                             "'tlsCertificateKeyFile': '%s' }}",
+                             ca_file,
+                             certificate_key_file));
+
+      bson_concat (
+         kms_providers,
+         tmp_bson ("{'kmip:no_client_cert': { 'endpoint': '127.0.0.1:5698'}}"));
+      bson_concat (
+         tls_opts,
+         tmp_bson ("{'kmip:no_client_cert': {'tlsCaFile': '%s' }}", ca_file));
+
+      bson_concat (
+         kms_providers,
+         tmp_bson ("{'kmip:with_tls': { 'endpoint': '127.0.0.1:5698'}}"));
+      bson_concat (tls_opts,
+                   tmp_bson ("{'kmip:with_tls': {'tlsCaFile': '%s', "
+                             "'tlsCertificateKeyFile': '%s' }}",
+                             ca_file,
+                             certificate_key_file));
    } else {
       BSON_UNREACHABLE ("Invalid value for test_ce");
    }
@@ -3178,6 +3307,7 @@ test_kms_tls_options (void *unused)
    mongoc_client_encryption_t *client_encryption_with_tls = NULL;
    mongoc_client_encryption_t *client_encryption_expired = NULL;
    mongoc_client_encryption_t *client_encryption_invalid_hostname = NULL;
+   mongoc_client_encryption_t *client_encryption_with_names = NULL;
    bson_value_t keyid;
    mongoc_client_encryption_datakey_opts_t *dkopts;
    bson_error_t error;
@@ -3196,6 +3326,8 @@ test_kms_tls_options (void *unused)
       _tls_test_make_client_encryption (keyvault_client, EXPIRED);
    client_encryption_invalid_hostname =
       _tls_test_make_client_encryption (keyvault_client, INVALID_HOSTNAME);
+   client_encryption_with_names =
+      _tls_test_make_client_encryption (keyvault_client, WITH_NAMES);
 
    /* Case 1: AWS - no client cert. */
    memset (&error, 0, sizeof (bson_error_t));
@@ -3213,6 +3345,25 @@ test_kms_tls_options (void *unused)
    ASSERT (!res);
    mongoc_client_encryption_datakey_opts_destroy (dkopts);
 
+   /* AWS - named with no client cert. */
+   memset (&error, 0, sizeof (bson_error_t));
+   dkopts = mongoc_client_encryption_datakey_opts_new ();
+   mongoc_client_encryption_datakey_opts_set_masterkey (
+      dkopts,
+      tmp_bson ("{ 'region': 'us-east-1', 'key': "
+                "'arn:aws:kms:us-east-1:579766882180:key/"
+                "89fcc2c4-08b0-4bd9-9f25-e30687b580d0', 'endpoint': "
+                "'127.0.0.1:9002' }"));
+   res = mongoc_client_encryption_create_datakey (client_encryption_with_names,
+                                                  "aws:no_client_cert",
+                                                  dkopts,
+                                                  &keyid,
+                                                  &error);
+   ASSERT_ERROR_CONTAINS (
+      error, MONGOC_ERROR_STREAM, MONGOC_ERROR_STREAM_SOCKET, "");
+   ASSERT (!res);
+   mongoc_client_encryption_datakey_opts_destroy (dkopts);
+
    /* AWS - with TLS. */
    memset (&error, 0, sizeof (bson_error_t));
    dkopts = mongoc_client_encryption_datakey_opts_new ();
@@ -3224,6 +3375,24 @@ test_kms_tls_options (void *unused)
                 "'127.0.0.1:9002' }"));
    res = mongoc_client_encryption_create_datakey (
       client_encryption_with_tls, "aws", dkopts, &keyid, &error);
+   ASSERT_ERROR_CONTAINS (error,
+                          MONGOC_ERROR_CLIENT_SIDE_ENCRYPTION,
+                          mongocrypt_errno,
+                          "parse error");
+   ASSERT (!res);
+   mongoc_client_encryption_datakey_opts_destroy (dkopts);
+
+   /* AWS - named with TLS. */
+   memset (&error, 0, sizeof (bson_error_t));
+   dkopts = mongoc_client_encryption_datakey_opts_new ();
+   mongoc_client_encryption_datakey_opts_set_masterkey (
+      dkopts,
+      tmp_bson ("{ 'region': 'us-east-1', 'key': "
+                "'arn:aws:kms:us-east-1:579766882180:key/"
+                "89fcc2c4-08b0-4bd9-9f25-e30687b580d0', 'endpoint': "
+                "'127.0.0.1:9002' }"));
+   res = mongoc_client_encryption_create_datakey (
+      client_encryption_with_names, "aws:with_tls", dkopts, &keyid, &error);
    ASSERT_ERROR_CONTAINS (error,
                           MONGOC_ERROR_CLIENT_SIDE_ENCRYPTION,
                           mongocrypt_errno,
@@ -3275,6 +3444,23 @@ test_kms_tls_options (void *unused)
    ASSERT (!res);
    mongoc_client_encryption_datakey_opts_destroy (dkopts);
 
+   /* Azure - named with no client cert. */
+   memset (&error, 0, sizeof (bson_error_t));
+   dkopts = mongoc_client_encryption_datakey_opts_new ();
+   mongoc_client_encryption_datakey_opts_set_masterkey (
+      dkopts,
+      tmp_bson (
+         "{ 'keyVaultEndpoint': 'doesnotexist.local', 'keyName': 'foo' }"));
+   res = mongoc_client_encryption_create_datakey (client_encryption_with_names,
+                                                  "azure:no_client_cert",
+                                                  dkopts,
+                                                  &keyid,
+                                                  &error);
+   ASSERT_ERROR_CONTAINS (
+      error, MONGOC_ERROR_STREAM, MONGOC_ERROR_STREAM_SOCKET, "");
+   ASSERT (!res);
+   mongoc_client_encryption_datakey_opts_destroy (dkopts);
+
    /* Azure - with TLS. */
    memset (&error, 0, sizeof (bson_error_t));
    dkopts = mongoc_client_encryption_datakey_opts_new ();
@@ -3284,6 +3470,22 @@ test_kms_tls_options (void *unused)
          "{ 'keyVaultEndpoint': 'doesnotexist.local', 'keyName': 'foo' }"));
    res = mongoc_client_encryption_create_datakey (
       client_encryption_with_tls, "azure", dkopts, &keyid, &error);
+   ASSERT_ERROR_CONTAINS (error,
+                          MONGOC_ERROR_CLIENT_SIDE_ENCRYPTION,
+                          mongocrypt_errno,
+                          "HTTP status=404");
+   ASSERT (!res);
+   mongoc_client_encryption_datakey_opts_destroy (dkopts);
+
+   /* Azure - named with TLS. */
+   memset (&error, 0, sizeof (bson_error_t));
+   dkopts = mongoc_client_encryption_datakey_opts_new ();
+   mongoc_client_encryption_datakey_opts_set_masterkey (
+      dkopts,
+      tmp_bson (
+         "{ 'keyVaultEndpoint': 'doesnotexist.local', 'keyName': 'foo' }"));
+   res = mongoc_client_encryption_create_datakey (
+      client_encryption_with_names, "azure:with_tls", dkopts, &keyid, &error);
    ASSERT_ERROR_CONTAINS (error,
                           MONGOC_ERROR_CLIENT_SIDE_ENCRYPTION,
                           mongocrypt_errno,
@@ -3331,6 +3533,23 @@ test_kms_tls_options (void *unused)
    ASSERT (!res);
    mongoc_client_encryption_datakey_opts_destroy (dkopts);
 
+   /* GCP - named with no client cert. */
+   memset (&error, 0, sizeof (bson_error_t));
+   dkopts = mongoc_client_encryption_datakey_opts_new ();
+   mongoc_client_encryption_datakey_opts_set_masterkey (
+      dkopts,
+      tmp_bson ("{ 'projectId': 'pid', 'location': 'l', 'keyRing': 'kr', "
+                "'keyName': 'kn' }"));
+   res = mongoc_client_encryption_create_datakey (client_encryption_with_names,
+                                                  "gcp:no_client_cert",
+                                                  dkopts,
+                                                  &keyid,
+                                                  &error);
+   ASSERT_ERROR_CONTAINS (
+      error, MONGOC_ERROR_STREAM, MONGOC_ERROR_STREAM_SOCKET, "");
+   ASSERT (!res);
+   mongoc_client_encryption_datakey_opts_destroy (dkopts);
+
    /* GCP - with TLS. */
    memset (&error, 0, sizeof (bson_error_t));
    dkopts = mongoc_client_encryption_datakey_opts_new ();
@@ -3340,6 +3559,22 @@ test_kms_tls_options (void *unused)
                 "'keyName': 'kn' }"));
    res = mongoc_client_encryption_create_datakey (
       client_encryption_with_tls, "gcp", dkopts, &keyid, &error);
+   ASSERT_ERROR_CONTAINS (error,
+                          MONGOC_ERROR_CLIENT_SIDE_ENCRYPTION,
+                          mongocrypt_errno,
+                          "HTTP status=404");
+   ASSERT (!res);
+   mongoc_client_encryption_datakey_opts_destroy (dkopts);
+
+   /* GCP - named with TLS. */
+   memset (&error, 0, sizeof (bson_error_t));
+   dkopts = mongoc_client_encryption_datakey_opts_new ();
+   mongoc_client_encryption_datakey_opts_set_masterkey (
+      dkopts,
+      tmp_bson ("{ 'projectId': 'pid', 'location': 'l', 'keyRing': 'kr', "
+                "'keyName': 'kn' }"));
+   res = mongoc_client_encryption_create_datakey (
+      client_encryption_with_names, "gcp:with_tls", dkopts, &keyid, &error);
    ASSERT_ERROR_CONTAINS (error,
                           MONGOC_ERROR_CLIENT_SIDE_ENCRYPTION,
                           mongocrypt_errno,
@@ -3385,6 +3620,21 @@ test_kms_tls_options (void *unused)
    ASSERT (!res);
    mongoc_client_encryption_datakey_opts_destroy (dkopts);
 
+   /* KMIP - named with no client cert. */
+   memset (&error, 0, sizeof (bson_error_t));
+   dkopts = mongoc_client_encryption_datakey_opts_new ();
+   mongoc_client_encryption_datakey_opts_set_masterkey (dkopts,
+                                                        tmp_bson ("{}"));
+   res = mongoc_client_encryption_create_datakey (client_encryption_with_names,
+                                                  "kmip:no_client_cert",
+                                                  dkopts,
+                                                  &keyid,
+                                                  &error);
+   ASSERT_ERROR_CONTAINS (
+      error, MONGOC_ERROR_STREAM, MONGOC_ERROR_STREAM_SOCKET, "");
+   ASSERT (!res);
+   mongoc_client_encryption_datakey_opts_destroy (dkopts);
+
    /* KMIP - with TLS. */
    memset (&error, 0, sizeof (bson_error_t));
    dkopts = mongoc_client_encryption_datakey_opts_new ();
@@ -3392,6 +3642,17 @@ test_kms_tls_options (void *unused)
                                                         tmp_bson ("{}"));
    res = mongoc_client_encryption_create_datakey (
       client_encryption_with_tls, "kmip", dkopts, &keyid, &error);
+   ASSERT_OR_PRINT (res, error);
+   bson_value_destroy (&keyid);
+   mongoc_client_encryption_datakey_opts_destroy (dkopts);
+
+   /* KMIP - named with TLS. */
+   memset (&error, 0, sizeof (bson_error_t));
+   dkopts = mongoc_client_encryption_datakey_opts_new ();
+   mongoc_client_encryption_datakey_opts_set_masterkey (dkopts,
+                                                        tmp_bson ("{}"));
+   res = mongoc_client_encryption_create_datakey (
+      client_encryption_with_names, "kmip:with_tls", dkopts, &keyid, &error);
    ASSERT_OR_PRINT (res, error);
    bson_value_destroy (&keyid);
    mongoc_client_encryption_datakey_opts_destroy (dkopts);
@@ -3418,6 +3679,7 @@ test_kms_tls_options (void *unused)
    ASSERT (!res);
    mongoc_client_encryption_datakey_opts_destroy (dkopts);
 
+   mongoc_client_encryption_destroy (client_encryption_with_names);
    mongoc_client_encryption_destroy (client_encryption_invalid_hostname);
    mongoc_client_encryption_destroy (client_encryption_expired);
    mongoc_client_encryption_destroy (client_encryption_with_tls);
@@ -3509,6 +3771,22 @@ test_kms_tls_options_extra_rejected (void *unused)
                           MONGOC_ERROR_CLIENT_INVALID_ENCRYPTION_ARG,
                           "Error parsing duplicate TLS options for aws");
    ASSERT (NULL == ce);
+   mongoc_client_encryption_opts_destroy (ce_opts);
+
+   /* Test that tlsDisableOCSPEndpointCheck may be set. */
+   memset (&error, 0, sizeof (bson_error_t));
+   ce_opts = mongoc_client_encryption_opts_new ();
+   mongoc_client_encryption_opts_set_keyvault_namespace (
+      ce_opts, "keyvault", "datakeys");
+   mongoc_client_encryption_opts_set_keyvault_client (ce_opts, keyvault_client);
+   mongoc_client_encryption_opts_set_kms_providers (ce_opts, kms_providers);
+   mongoc_client_encryption_opts_set_tls_opts (
+      ce_opts,
+      tmp_bson ("{'aws': {'%s': true}}",
+                MONGOC_URI_TLSDISABLEOCSPENDPOINTCHECK));
+   ce = mongoc_client_encryption_new (ce_opts, &error);
+   ASSERT_OR_PRINT (ce, error);
+   mongoc_client_encryption_destroy (ce);
    mongoc_client_encryption_opts_destroy (ce_opts);
 
    mongoc_client_destroy (keyvault_client);
@@ -3671,6 +3949,742 @@ explicit_encryption_destroy (ee_fixture *eef)
    mongoc_client_destroy (eef->keyVaultClient);
    bson_value_destroy (&eef->key1ID);
    bson_free (eef);
+}
+
+/* ree_fixture is a fixture for the Range Explicit Encryption prose test. */
+typedef struct {
+   bson_value_t key1ID;
+   mongoc_client_t *keyVaultClient;
+   mongoc_client_encryption_t *clientEncryption;
+   mongoc_client_t *encryptedClient;
+   mongoc_collection_t *encryptedColl;
+   // typeStr is DoublePrecision, DoubleNoPrecision, Date, Int, or Long
+   const char *typeStr;
+   char *fieldName;
+   bson_value_t zero;
+   bson_value_t six;
+   bson_value_t thirty;
+   bson_value_t twoHundred;
+   bson_value_t twoHundredOne;
+   mongoc_client_encryption_encrypt_range_opts_t *ro;
+} ree_fixture;
+
+static ree_fixture *
+range_explicit_encryption_setup (const char *typeStr)
+{
+   ree_fixture *reef = (ree_fixture *) bson_malloc0 (sizeof (ree_fixture));
+   reef->typeStr = typeStr;
+   reef->fieldName = bson_strdup_printf ("encrypted%s", typeStr);
+   char *filepath =
+      bson_strdup_printf ("./src/libmongoc/tests/client_side_encryption_prose/"
+                          "explicit_encryption/range-encryptedFields-%s.json",
+                          typeStr);
+   bson_t *encryptedFields = get_bson_from_json_file (filepath);
+   ASSERT (encryptedFields);
+   bson_free (filepath);
+   bson_t *key1Document = get_bson_from_json_file (
+      "./src/libmongoc/tests/client_side_encryption_prose/explicit_encryption/"
+      "key1-document.json");
+   ASSERT (key1Document);
+   mongoc_client_t *setupClient = test_framework_new_default_client ();
+
+
+   /* Read the ``"_id"`` field of ``key1Document`` as ``key1ID``. */
+   {
+      bson_iter_t iter;
+      const bson_value_t *value;
+
+      ASSERT (bson_iter_init_find (&iter, key1Document, "_id"));
+      value = bson_iter_value (&iter);
+      bson_value_copy (value, &reef->key1ID);
+   }
+
+   /* Drop and create the collection ``db.explicit_encryption`` using
+    * ``encryptedFields`` as an option. */
+   {
+      mongoc_database_t *db = mongoc_client_get_database (setupClient, "db");
+      mongoc_collection_t *coll =
+         mongoc_database_get_collection (db, "explicit_encryption");
+      bson_error_t error;
+      bson_t *opts;
+
+      opts = BCON_NEW ("encryptedFields", BCON_DOCUMENT (encryptedFields));
+
+      if (!mongoc_collection_drop_with_opts (coll, opts, &error)) {
+         if (error.code != MONGOC_SERVER_ERR_NS_NOT_FOUND) {
+            test_error ("unexpected error in drop: %s", error.message);
+         }
+      }
+      mongoc_collection_destroy (coll);
+
+      coll = mongoc_database_create_collection (
+         db, "explicit_encryption", opts, &error);
+      ASSERT_OR_PRINT (coll, error);
+
+      mongoc_collection_destroy (coll);
+      bson_destroy (opts);
+      mongoc_database_destroy (db);
+   }
+
+   /* Drop and create the collection ``keyvault.datakeys``. */
+   {
+      mongoc_database_t *db =
+         mongoc_client_get_database (setupClient, "keyvault");
+      mongoc_collection_t *coll =
+         mongoc_database_get_collection (db, "datakeys");
+      bson_error_t error;
+      bson_t iopts = BSON_INITIALIZER;
+      mongoc_write_concern_t *wc;
+
+      if (!mongoc_collection_drop (coll, &error)) {
+         if (error.code != MONGOC_SERVER_ERR_NS_NOT_FOUND) {
+            test_error ("unexpected error in drop: %s", error.message);
+         }
+      }
+      mongoc_collection_destroy (coll);
+
+      coll = mongoc_database_create_collection (
+         db, "datakeys", NULL /* opts */, &error);
+      ASSERT_OR_PRINT (coll, error);
+
+      /* Insert keyDocument1 with write concern majority */
+      wc = mongoc_write_concern_new ();
+      mongoc_write_concern_set_w (wc, MONGOC_WRITE_CONCERN_W_MAJORITY);
+      ASSERT (mongoc_write_concern_append (wc, &iopts));
+      ASSERT_OR_PRINT (mongoc_collection_insert_one (
+                          coll, key1Document, &iopts, NULL /* reply */, &error),
+                       error);
+
+      mongoc_write_concern_destroy (wc);
+      bson_destroy (&iopts);
+      mongoc_collection_destroy (coll);
+      mongoc_database_destroy (db);
+   }
+
+   reef->keyVaultClient = test_framework_new_default_client ();
+
+   /* Create a ClientEncryption object named ``clientEncryption`` */
+   {
+      mongoc_client_encryption_opts_t *ceOpts =
+         mongoc_client_encryption_opts_new ();
+      bson_t *kms_providers = _make_local_kms_provider (NULL);
+      bson_error_t error;
+
+      mongoc_client_encryption_opts_set_keyvault_client (ceOpts,
+                                                         reef->keyVaultClient);
+      mongoc_client_encryption_opts_set_keyvault_namespace (
+         ceOpts, "keyvault", "datakeys");
+      mongoc_client_encryption_opts_set_kms_providers (ceOpts, kms_providers);
+
+      reef->clientEncryption = mongoc_client_encryption_new (ceOpts, &error);
+      ASSERT_OR_PRINT (reef->clientEncryption, error);
+
+      bson_destroy (kms_providers);
+      mongoc_client_encryption_opts_destroy (ceOpts);
+   }
+
+   /* Create a MongoClient named ``encryptedClient``. */
+   {
+      mongoc_auto_encryption_opts_t *aeOpts =
+         mongoc_auto_encryption_opts_new ();
+      bson_t *kms_providers = _make_local_kms_provider (NULL);
+      bson_error_t error;
+
+      mongoc_auto_encryption_opts_set_keyvault_namespace (
+         aeOpts, "keyvault", "datakeys");
+      mongoc_auto_encryption_opts_set_kms_providers (aeOpts, kms_providers);
+      mongoc_auto_encryption_opts_set_bypass_query_analysis (aeOpts, true);
+      reef->encryptedClient = test_framework_new_default_client ();
+      ASSERT_OR_PRINT (mongoc_client_enable_auto_encryption (
+                          reef->encryptedClient, aeOpts, &error),
+                       error);
+
+      bson_destroy (kms_providers);
+      mongoc_auto_encryption_opts_destroy (aeOpts);
+      reef->encryptedColl = mongoc_client_get_collection (
+         reef->encryptedClient, "db", "explicit_encryption");
+   }
+
+   /* Create the values 0, 6, 30, 200, and 201 as BSON values. */
+   {
+      if (0 == strcmp ("DecimalNoPrecision", typeStr) ||
+          0 == strcmp ("DecimalPrecision", typeStr)) {
+         reef->zero.value_type = BSON_TYPE_DECIMAL128;
+         ASSERT (
+            bson_decimal128_from_string ("0", &reef->zero.value.v_decimal128));
+         reef->six.value_type = BSON_TYPE_DECIMAL128;
+         ASSERT (
+            bson_decimal128_from_string ("6", &reef->six.value.v_decimal128));
+         reef->thirty.value_type = BSON_TYPE_DECIMAL128;
+         ASSERT (bson_decimal128_from_string (
+            "30", &reef->thirty.value.v_decimal128));
+         reef->twoHundred.value_type = BSON_TYPE_DECIMAL128;
+         ASSERT (bson_decimal128_from_string (
+            "200", &reef->twoHundred.value.v_decimal128));
+         reef->twoHundredOne.value_type = BSON_TYPE_DECIMAL128;
+         ASSERT (bson_decimal128_from_string (
+            "201", &reef->twoHundredOne.value.v_decimal128));
+      } else if (0 == strcmp ("DoubleNoPrecision", typeStr) ||
+                 0 == strcmp ("DoublePrecision", typeStr)) {
+         reef->zero.value_type = BSON_TYPE_DOUBLE;
+         reef->zero.value.v_double = 0;
+         reef->six.value_type = BSON_TYPE_DOUBLE;
+         reef->six.value.v_double = 6;
+         reef->thirty.value_type = BSON_TYPE_DOUBLE;
+         reef->thirty.value.v_double = 30;
+         reef->twoHundred.value_type = BSON_TYPE_DOUBLE;
+         reef->twoHundred.value.v_double = 200;
+         reef->twoHundredOne.value_type = BSON_TYPE_DOUBLE;
+         reef->twoHundredOne.value.v_double = 201;
+      } else if (0 == strcmp ("Date", typeStr)) {
+         reef->zero.value_type = BSON_TYPE_DATE_TIME;
+         reef->zero.value.v_datetime = 0;
+         reef->six.value_type = BSON_TYPE_DATE_TIME;
+         reef->six.value.v_datetime = 6;
+         reef->thirty.value_type = BSON_TYPE_DATE_TIME;
+         reef->thirty.value.v_datetime = 30;
+         reef->twoHundred.value_type = BSON_TYPE_DATE_TIME;
+         reef->twoHundred.value.v_datetime = 200;
+         reef->twoHundredOne.value_type = BSON_TYPE_DATE_TIME;
+         reef->twoHundredOne.value.v_datetime = 201;
+      } else if (0 == strcmp ("Int", typeStr)) {
+         reef->zero.value_type = BSON_TYPE_INT32;
+         reef->zero.value.v_int32 = 0;
+         reef->six.value_type = BSON_TYPE_INT32;
+         reef->six.value.v_int32 = 6;
+         reef->thirty.value_type = BSON_TYPE_INT32;
+         reef->thirty.value.v_int32 = 30;
+         reef->twoHundred.value_type = BSON_TYPE_INT32;
+         reef->twoHundred.value.v_int32 = 200;
+         reef->twoHundredOne.value_type = BSON_TYPE_INT32;
+         reef->twoHundredOne.value.v_int32 = 201;
+      } else if (0 == strcmp ("Long", typeStr)) {
+         reef->zero.value_type = BSON_TYPE_INT64;
+         reef->zero.value.v_int64 = 0;
+         reef->six.value_type = BSON_TYPE_INT64;
+         reef->six.value.v_int64 = 6;
+         reef->thirty.value_type = BSON_TYPE_INT64;
+         reef->thirty.value.v_int64 = 30;
+         reef->twoHundred.value_type = BSON_TYPE_INT64;
+         reef->twoHundred.value.v_int64 = 200;
+         reef->twoHundredOne.value_type = BSON_TYPE_INT64;
+         reef->twoHundredOne.value.v_int64 = 201;
+      } else {
+         test_error ("Unexpected type string: %s\n", typeStr);
+      }
+   }
+
+   /* Create the RangeOpts depending on the type. */
+   {
+      reef->ro = mongoc_client_encryption_encrypt_range_opts_new ();
+      mongoc_client_encryption_encrypt_range_opts_set_sparsity (reef->ro, 1);
+      if (0 == strcmp ("DoubleNoPrecision", typeStr) ||
+          0 == strcmp ("DecimalNoPrecision", typeStr)) {
+         // DoubleNoPrecision does not need more range options.
+      } else if (0 == strcmp ("DoublePrecision", typeStr) ||
+                 0 == strcmp ("DecimalPrecision", typeStr)) {
+         mongoc_client_encryption_encrypt_range_opts_set_min (reef->ro,
+                                                              &reef->zero);
+         mongoc_client_encryption_encrypt_range_opts_set_max (
+            reef->ro, &reef->twoHundred);
+         mongoc_client_encryption_encrypt_range_opts_set_precision (reef->ro,
+                                                                    2);
+      } else if (0 == strcmp ("Date", typeStr) ||
+                 0 == strcmp ("Int", typeStr) ||
+                 0 == strcmp ("Long", typeStr)) {
+         mongoc_client_encryption_encrypt_range_opts_set_min (reef->ro,
+                                                              &reef->zero);
+         mongoc_client_encryption_encrypt_range_opts_set_max (
+            reef->ro, &reef->twoHundred);
+      } else {
+         test_error ("Unexpected type string: %s\n", typeStr);
+      }
+   }
+
+   /* Encrypt and insert 0, 6, 30, and 200. */
+   {
+      mongoc_client_encryption_encrypt_opts_t *eo;
+      bool ok;
+      bson_error_t error;
+
+      eo = mongoc_client_encryption_encrypt_opts_new ();
+      mongoc_client_encryption_encrypt_opts_set_keyid (eo, &reef->key1ID);
+      mongoc_client_encryption_encrypt_opts_set_algorithm (
+         eo, MONGOC_ENCRYPT_ALGORITHM_RANGEPREVIEW);
+      mongoc_client_encryption_encrypt_opts_set_contention_factor (eo, 0);
+      mongoc_client_encryption_encrypt_opts_set_range_opts (eo, reef->ro);
+
+      bson_value_t *values[4];
+      values[0] = &reef->zero;
+      values[1] = &reef->six;
+      values[2] = &reef->thirty;
+      values[3] = &reef->twoHundred;
+
+      for (size_t i = 0; i < sizeof values / sizeof values[0]; i++) {
+         bson_value_t *value = values[i];
+         bson_value_t ciphertext;
+         ok = mongoc_client_encryption_encrypt (
+            reef->clientEncryption, value, eo, &ciphertext, &error);
+         ASSERT_OR_PRINT (ok, error);
+         bson_t *doc = bson_new ();
+         BSON_APPEND_INT32 (doc, "_id", (int32_t) i);
+         BSON_APPEND_VALUE (doc, reef->fieldName, &ciphertext);
+         ok = mongoc_collection_insert_one (reef->encryptedColl,
+                                            doc,
+                                            NULL /* opts */,
+                                            NULL /* reply */,
+                                            &error);
+         ASSERT_OR_PRINT (ok, error);
+         bson_destroy (doc);
+         bson_value_destroy (&ciphertext);
+      }
+
+      mongoc_client_encryption_encrypt_opts_destroy (eo);
+   }
+
+   mongoc_client_destroy (setupClient);
+   bson_destroy (key1Document);
+   bson_destroy (encryptedFields);
+   return reef;
+}
+
+static void
+range_explicit_encryption_destroy (ree_fixture *reef)
+{
+   if (!reef) {
+      return;
+   }
+
+   bson_free (reef->fieldName);
+   mongoc_client_encryption_encrypt_range_opts_destroy (reef->ro);
+   mongoc_collection_destroy (reef->encryptedColl);
+   mongoc_client_destroy (reef->encryptedClient);
+   mongoc_client_encryption_destroy (reef->clientEncryption);
+   mongoc_client_destroy (reef->keyVaultClient);
+   bson_value_destroy (&reef->key1ID);
+   bson_free (reef);
+}
+
+// range_explicit_encryption_assert_cursor_results asserts that the encrypted
+// field in documents returned by the cursor have match a list of values. The
+// variadic args are a list of const bson_value_t *. The variadic args must be
+// NULL terminated.
+static void
+range_explicit_encryption_assert_cursor_results (ree_fixture *reef,
+                                                 mongoc_cursor_t *cursor,
+                                                 ...)
+{
+   const bson_t *got;
+   va_list args;
+   bson_error_t error;
+
+   va_start (args, cursor);
+   while (true) {
+      const bson_value_t *expect = va_arg (args, const bson_value_t *);
+      if (!expect) {
+         break;
+      }
+      if (!mongoc_cursor_next (cursor, &got)) {
+         if (mongoc_cursor_error (cursor, &error)) {
+            test_error ("Got unexpected error in mongoc_cursor_next: %s",
+                        error.message);
+         }
+         test_error ("Expected document with value: %s but got end of cursor",
+                     bson_value_to_str (expect));
+      }
+      bson_iter_t goti;
+      const bson_value_t *gotv;
+      if (!bson_iter_init_find (&goti, got, reef->fieldName)) {
+         test_error ("Expected to find field %s, but got %s",
+                     reef->fieldName,
+                     bson_as_canonical_extended_json (got, NULL));
+      }
+      gotv = bson_iter_value (&goti);
+      ASSERT_BSONVALUE_EQ (expect, gotv);
+   }
+   va_end (args);
+   if (mongoc_cursor_next (cursor, &got)) {
+      test_error ("Expected end of cursor, but got extra document: %s",
+                  bson_as_canonical_extended_json (got, NULL));
+   }
+}
+
+static void
+test_range_explicit_encryption_case1 (void *ctx)
+{
+   // Case 1: can decrypt a payload
+   const char *typeStr = (const char *) ctx;
+   mongoc_client_encryption_encrypt_opts_t *eo;
+   ree_fixture *reef = range_explicit_encryption_setup (typeStr);
+   bool ok;
+   bson_error_t error;
+   bson_value_t insertPayload;
+   bson_value_t decrypted;
+
+   eo = mongoc_client_encryption_encrypt_opts_new ();
+   mongoc_client_encryption_encrypt_opts_set_keyid (eo, &reef->key1ID);
+   mongoc_client_encryption_encrypt_opts_set_algorithm (
+      eo, MONGOC_ENCRYPT_ALGORITHM_RANGEPREVIEW);
+   mongoc_client_encryption_encrypt_opts_set_contention_factor (eo, 0);
+   mongoc_client_encryption_encrypt_opts_set_range_opts (eo, reef->ro);
+
+   /* Use clientEncryption.encrypt() to encrypt the value 6. */
+   ok = mongoc_client_encryption_encrypt (
+      reef->clientEncryption, &reef->six, eo, &insertPayload, &error);
+   ASSERT_OR_PRINT (ok, error);
+
+   /* Use clientEncryption to decrypt insertPayload. Assert the returned
+      value equals 6. */
+   ok = mongoc_client_encryption_decrypt (
+      reef->clientEncryption, &insertPayload, &decrypted, &error);
+   ASSERT_OR_PRINT (ok, error);
+   ASSERT_BSONVALUE_EQ (&decrypted, &reef->six);
+
+   bson_value_destroy (&insertPayload);
+   mongoc_client_encryption_encrypt_opts_destroy (eo);
+   range_explicit_encryption_destroy (reef);
+}
+
+static void
+test_range_explicit_encryption_case2 (void *ctx)
+{
+   // Case 2: can find encrypted range and return the maximum
+   const char *typeStr = (const char *) ctx;
+   ree_fixture *reef = range_explicit_encryption_setup (typeStr);
+   bool ok;
+   bson_error_t error;
+
+   // Encrypt.
+   bson_t findPayload;
+   {
+      mongoc_client_encryption_encrypt_opts_t *eo =
+         mongoc_client_encryption_encrypt_opts_new ();
+      mongoc_client_encryption_encrypt_opts_set_keyid (eo, &reef->key1ID);
+      mongoc_client_encryption_encrypt_opts_set_algorithm (
+         eo, MONGOC_ENCRYPT_ALGORITHM_RANGEPREVIEW);
+      mongoc_client_encryption_encrypt_opts_set_query_type (
+         eo, MONGOC_ENCRYPT_QUERY_TYPE_RANGEPREVIEW);
+      mongoc_client_encryption_encrypt_opts_set_contention_factor (eo, 0);
+      mongoc_client_encryption_encrypt_opts_set_range_opts (eo, reef->ro);
+
+      bsonBuildDecl (
+         expr,
+         kv ("$and",
+             array (                                             //
+                doc (kv (reef->fieldName,                        //
+                         doc (kv ("$gte", value (reef->six))))), //
+                doc (kv (reef->fieldName,
+                         doc (kv ("$lte", value (reef->twoHundred))))))));
+
+      ok = mongoc_client_encryption_encrypt_expression (
+         reef->clientEncryption, &expr, eo, &findPayload, &error);
+      ASSERT_OR_PRINT (ok, error);
+      bson_destroy (&expr);
+      mongoc_client_encryption_encrypt_opts_destroy (eo);
+   }
+
+   // Query and check results.
+   {
+      bson_t *opts = tmp_bson ("{'sort': { '_id': 1 }}");
+      mongoc_cursor_t *cursor = mongoc_collection_find_with_opts (
+         reef->encryptedColl, &findPayload, opts, NULL /* read_prefs */);
+      range_explicit_encryption_assert_cursor_results (
+         reef, cursor, &reef->six, &reef->thirty, &reef->twoHundred, NULL);
+      mongoc_cursor_destroy (cursor);
+   }
+
+   bson_destroy (&findPayload);
+   range_explicit_encryption_destroy (reef);
+}
+
+static void
+test_range_explicit_encryption_case3 (void *ctx)
+{
+   // Case 3: can find encrypted range and return the minimum
+   const char *typeStr = (const char *) ctx;
+   ree_fixture *reef = range_explicit_encryption_setup (typeStr);
+   bool ok;
+   bson_error_t error;
+
+   // Encrypt.
+   bson_t findPayload;
+   {
+      mongoc_client_encryption_encrypt_opts_t *eo =
+         mongoc_client_encryption_encrypt_opts_new ();
+      mongoc_client_encryption_encrypt_opts_set_keyid (eo, &reef->key1ID);
+      mongoc_client_encryption_encrypt_opts_set_algorithm (
+         eo, MONGOC_ENCRYPT_ALGORITHM_RANGEPREVIEW);
+      mongoc_client_encryption_encrypt_opts_set_query_type (
+         eo, MONGOC_ENCRYPT_QUERY_TYPE_RANGEPREVIEW);
+      mongoc_client_encryption_encrypt_opts_set_contention_factor (eo, 0);
+      mongoc_client_encryption_encrypt_opts_set_range_opts (eo, reef->ro);
+
+      bsonBuildDecl (expr,
+                     kv ("$and",
+                         array (                                              //
+                            doc (kv (reef->fieldName,                         //
+                                     doc (kv ("$gte", value (reef->zero))))), //
+                            doc (kv (reef->fieldName,
+                                     doc (kv ("$lte", value (reef->six))))))));
+
+      ok = mongoc_client_encryption_encrypt_expression (
+         reef->clientEncryption, &expr, eo, &findPayload, &error);
+      ASSERT_OR_PRINT (ok, error);
+      bson_destroy (&expr);
+      mongoc_client_encryption_encrypt_opts_destroy (eo);
+   }
+
+   // Query and check results.
+   {
+      bson_t *opts = tmp_bson ("{'sort': { '_id': 1 }}");
+      mongoc_cursor_t *cursor = mongoc_collection_find_with_opts (
+         reef->encryptedColl, &findPayload, opts, NULL /* read_prefs */);
+      range_explicit_encryption_assert_cursor_results (
+         reef, cursor, &reef->zero, &reef->six, NULL);
+      mongoc_cursor_destroy (cursor);
+   }
+
+   bson_destroy (&findPayload);
+   range_explicit_encryption_destroy (reef);
+}
+
+static void
+test_range_explicit_encryption_case4 (void *ctx)
+{
+   // Case 4: can find encrypted range with an open range query
+   const char *typeStr = (const char *) ctx;
+   ree_fixture *reef = range_explicit_encryption_setup (typeStr);
+   bool ok;
+   bson_error_t error;
+
+   // Encrypt.
+   bson_t findPayload;
+   {
+      mongoc_client_encryption_encrypt_opts_t *eo =
+         mongoc_client_encryption_encrypt_opts_new ();
+      mongoc_client_encryption_encrypt_opts_set_keyid (eo, &reef->key1ID);
+      mongoc_client_encryption_encrypt_opts_set_algorithm (
+         eo, MONGOC_ENCRYPT_ALGORITHM_RANGEPREVIEW);
+      mongoc_client_encryption_encrypt_opts_set_query_type (
+         eo, MONGOC_ENCRYPT_QUERY_TYPE_RANGEPREVIEW);
+      mongoc_client_encryption_encrypt_opts_set_contention_factor (eo, 0);
+      mongoc_client_encryption_encrypt_opts_set_range_opts (eo, reef->ro);
+
+      bsonBuildDecl (expr,
+                     kv ("$and",
+                         array (                                              //
+                            doc (kv (reef->fieldName,                         //
+                                     doc (kv ("$gt", value (reef->thirty))))) //
+                            )));
+
+      ok = mongoc_client_encryption_encrypt_expression (
+         reef->clientEncryption, &expr, eo, &findPayload, &error);
+      ASSERT_OR_PRINT (ok, error);
+      bson_destroy (&expr);
+      mongoc_client_encryption_encrypt_opts_destroy (eo);
+   }
+
+   // Query and check results.
+   {
+      bson_t *opts = tmp_bson ("{'sort': { '_id': 1 }}");
+      mongoc_cursor_t *cursor = mongoc_collection_find_with_opts (
+         reef->encryptedColl, &findPayload, opts, NULL /* read_prefs */);
+      range_explicit_encryption_assert_cursor_results (
+         reef, cursor, &reef->twoHundred, NULL);
+      mongoc_cursor_destroy (cursor);
+   }
+
+   bson_destroy (&findPayload);
+   range_explicit_encryption_destroy (reef);
+}
+
+static void
+test_range_explicit_encryption_case5 (void *ctx)
+{
+   // Case 5: can run an aggregation expression inside $expr
+   const char *typeStr = (const char *) ctx;
+   ree_fixture *reef = range_explicit_encryption_setup (typeStr);
+   bool ok;
+   bson_error_t error;
+
+   // Encrypt.
+   bson_t findPayload;
+   {
+      mongoc_client_encryption_encrypt_opts_t *eo =
+         mongoc_client_encryption_encrypt_opts_new ();
+      mongoc_client_encryption_encrypt_opts_set_keyid (eo, &reef->key1ID);
+      mongoc_client_encryption_encrypt_opts_set_algorithm (
+         eo, MONGOC_ENCRYPT_ALGORITHM_RANGEPREVIEW);
+      mongoc_client_encryption_encrypt_opts_set_query_type (
+         eo, MONGOC_ENCRYPT_QUERY_TYPE_RANGEPREVIEW);
+      mongoc_client_encryption_encrypt_opts_set_contention_factor (eo, 0);
+      mongoc_client_encryption_encrypt_opts_set_range_opts (eo, reef->ro);
+      char *fieldPath = bson_strdup_printf ("$%s", reef->fieldName);
+
+      // Encrypt this:
+      // {'$and': [ { '$lt': [ '$encrypted<Type>', 30 ] } ] } }
+      bsonBuildDecl (
+         expr,
+         kv ("$and",
+             array (            //
+                doc (kv ("$lt", //
+                         array (cstr (fieldPath), value (reef->thirty)))))));
+
+      ok = mongoc_client_encryption_encrypt_expression (
+         reef->clientEncryption, &expr, eo, &findPayload, &error);
+      ASSERT_OR_PRINT (ok, error);
+      bson_free (fieldPath);
+      bson_destroy (&expr);
+      mongoc_client_encryption_encrypt_opts_destroy (eo);
+   }
+
+   // Query and check results.
+   {
+      bson_t *opts = tmp_bson ("{'sort': { '_id': 1 }}");
+      bsonBuildDecl (filter, kv ("$expr", bson (findPayload)));
+      mongoc_cursor_t *cursor = mongoc_collection_find_with_opts (
+         reef->encryptedColl, &filter, opts, NULL /* read_prefs */);
+      range_explicit_encryption_assert_cursor_results (
+         reef, cursor, &reef->zero, &reef->six, NULL);
+      bson_destroy (&filter);
+      mongoc_cursor_destroy (cursor);
+   }
+
+   bson_destroy (&findPayload);
+   range_explicit_encryption_destroy (reef);
+}
+
+static void
+test_range_explicit_encryption_case6 (void *ctx)
+{
+   // Case 6: encrypting a document greater than the maximum errors
+   const char *typeStr = (const char *) ctx;
+
+   // This test case should be skipped if the encrypted field is
+   // encryptedDoubleNoPrecision or encryptedDecimalNoPrecision.
+   if (0 == strcmp (typeStr, "DoubleNoPrecision") ||
+       0 == strcmp (typeStr, "DecimalNoPrecision")) {
+      MONGOC_DEBUG ("skipping test");
+      return;
+   }
+
+   ree_fixture *reef = range_explicit_encryption_setup (typeStr);
+   bool ok;
+   bson_error_t error;
+
+   // Encrypt.
+   bson_value_t insertPayload;
+   {
+      mongoc_client_encryption_encrypt_opts_t *eo =
+         mongoc_client_encryption_encrypt_opts_new ();
+      mongoc_client_encryption_encrypt_opts_set_keyid (eo, &reef->key1ID);
+      mongoc_client_encryption_encrypt_opts_set_algorithm (
+         eo, MONGOC_ENCRYPT_ALGORITHM_RANGEPREVIEW);
+      mongoc_client_encryption_encrypt_opts_set_contention_factor (eo, 0);
+      mongoc_client_encryption_encrypt_opts_set_range_opts (eo, reef->ro);
+
+      ok = mongoc_client_encryption_encrypt (reef->clientEncryption,
+                                             &reef->twoHundredOne,
+                                             eo,
+                                             &insertPayload,
+                                             &error);
+      ASSERT (!ok);
+      mongoc_client_encryption_encrypt_opts_destroy (eo);
+   }
+
+   bson_value_destroy (&insertPayload);
+   range_explicit_encryption_destroy (reef);
+}
+
+static void
+test_range_explicit_encryption_case7 (void *ctx)
+{
+   // Case 7: encrypting a document of a different type errors
+   const char *typeStr = (const char *) ctx;
+
+   // This test case should be skipped if the encrypted field is
+   // encryptedDoubleNoPrecision or encryptedDecimalNoPrecision.
+   if (0 == strcmp (typeStr, "DoubleNoPrecision") ||
+       0 == strcmp (typeStr, "DecimalNoPrecision")) {
+      MONGOC_DEBUG ("skipping test");
+      return;
+   }
+
+   ree_fixture *reef = range_explicit_encryption_setup (typeStr);
+   bool ok;
+   bson_error_t error;
+
+   // Encrypt.
+   bson_value_t insertPayload;
+   {
+      mongoc_client_encryption_encrypt_opts_t *eo =
+         mongoc_client_encryption_encrypt_opts_new ();
+      mongoc_client_encryption_encrypt_opts_set_keyid (eo, &reef->key1ID);
+      mongoc_client_encryption_encrypt_opts_set_algorithm (
+         eo, MONGOC_ENCRYPT_ALGORITHM_RANGEPREVIEW);
+      mongoc_client_encryption_encrypt_opts_set_contention_factor (eo, 0);
+      mongoc_client_encryption_encrypt_opts_set_range_opts (eo, reef->ro);
+
+      bson_value_t wrongType;
+      if (0 == strcmp ("encryptedInt", reef->fieldName)) {
+         wrongType.value_type = BSON_TYPE_DOUBLE;
+         wrongType.value.v_double = 6;
+      } else {
+         wrongType.value_type = BSON_TYPE_INT32;
+         wrongType.value.v_int32 = 6;
+      }
+
+      ok = mongoc_client_encryption_encrypt (
+         reef->clientEncryption, &wrongType, eo, &insertPayload, &error);
+      ASSERT (!ok);
+      mongoc_client_encryption_encrypt_opts_destroy (eo);
+   }
+
+   bson_value_destroy (&insertPayload);
+   range_explicit_encryption_destroy (reef);
+}
+
+static void
+test_range_explicit_encryption_case8 (void *ctx)
+{
+   // Case 8: setting precision errors if the type is not a double
+   const char *typeStr = (const char *) ctx;
+
+   // This test case should be skipped if the encrypted field is
+   // encryptedDoublePrecision or encryptedDoubleNoPrecision or
+   // encryptedDecimalPrecision or encryptedDecimalNoPrecision.
+   if (0 == strcmp (typeStr, "DoubleNoPrecision") ||
+       0 == strcmp (typeStr, "DoublePrecision") ||
+       0 == strcmp (typeStr, "DecimalPrecision") ||
+       0 == strcmp (typeStr, "DecimalNoPrecision")) {
+      MONGOC_DEBUG ("skipping test");
+      return;
+   }
+
+   ree_fixture *reef = range_explicit_encryption_setup (typeStr);
+   bool ok;
+   bson_error_t error;
+
+   // Encrypt.
+   bson_value_t insertPayload;
+   {
+      mongoc_client_encryption_encrypt_opts_t *eo =
+         mongoc_client_encryption_encrypt_opts_new ();
+      mongoc_client_encryption_encrypt_opts_set_keyid (eo, &reef->key1ID);
+      mongoc_client_encryption_encrypt_opts_set_algorithm (
+         eo, MONGOC_ENCRYPT_ALGORITHM_RANGEPREVIEW);
+      mongoc_client_encryption_encrypt_opts_set_contention_factor (eo, 0);
+      mongoc_client_encryption_encrypt_range_opts_set_precision (reef->ro, 2);
+      mongoc_client_encryption_encrypt_opts_set_range_opts (eo, reef->ro);
+
+      ok = mongoc_client_encryption_encrypt (
+         reef->clientEncryption, &reef->six, eo, &insertPayload, &error);
+      ASSERT (!ok);
+      mongoc_client_encryption_encrypt_opts_destroy (eo);
+   }
+
+   bson_value_destroy (&insertPayload);
+   range_explicit_encryption_destroy (reef);
 }
 
 static void
@@ -4084,41 +5098,25 @@ _test_unique_index_on_keyaltnames_setup (
    /* Using client, create a unique index on keyAltNames with a partial index
     * filter for only documents where keyAltNames exists. */
    {
-      bson_t *const command = BCON_NEW ("createIndexes",
-                                        "datakeys",
-                                        "indexes",
-                                        "[",
-                                        "{",
-                                        "key",
-                                        "{",
-                                        "keyAltNames",
-                                        BCON_INT32 (1),
-                                        "}",
-                                        "name",
-                                        "keyAltNames_1",
-                                        "unique",
-                                        BCON_BOOL (true),
-                                        "partialFilterExpression",
-                                        "{",
-                                        "keyAltNames",
-                                        "{",
-                                        "$exists",
-                                        BCON_BOOL (true),
-                                        "}",
-                                        "}",
-                                        "}",
-                                        "]",
-                                        "writeConcern",
-                                        "{",
-                                        "w",
-                                        "majority",
-                                        "}");
+      mongoc_collection_t *const datakeys =
+         mongoc_database_get_collection (keyvault, "datakeys");
 
-      ASSERT_OR_PRINT (mongoc_database_write_command_with_opts (
-                          keyvault, command, NULL, NULL, &error),
-                       error);
+      mongoc_index_model_t *im = mongoc_index_model_new (
+         tmp_bson ("{'keyAltNames': 1}"), tmp_bson (BSON_STR ({
+            "name" : "keyAltNames_1",
+            "unique" : true,
+            "partialFilterExpression" : {"keyAltNames" : {"$exists" : true}}
+         })));
 
-      bson_destroy (command);
+      bson_t *const command_opts =
+         tmp_bson ("{'writeConcern': { 'w': 'majority' }}");
+
+      ASSERT_OR_PRINT (
+         mongoc_collection_create_indexes_with_opts (
+            datakeys, &im, 1, command_opts, NULL /* reply */, &error),
+         error);
+      mongoc_index_model_destroy (im);
+      mongoc_collection_destroy (datakeys);
    }
 
    /* Create a ClientEncryption object (referred to as client_encryption) with
@@ -4444,11 +5442,14 @@ decryption_events_setup (void)
       mongoc_client_encryption_encrypt_opts_t *eOpts;
       bson_error_t error;
       bson_value_t plaintext;
-
       eOpts = mongoc_client_encryption_encrypt_opts_new ();
       plaintext.value_type = BSON_TYPE_UTF8;
       plaintext.value.v_utf8.str = "hello";
-      plaintext.value.v_utf8.len = strlen (plaintext.value.v_utf8.str);
+
+      const size_t len = strlen (plaintext.value.v_utf8.str);
+      ASSERT (bson_in_range_unsigned (uint32_t, len));
+
+      plaintext.value.v_utf8.len = (uint32_t) len;
 
       mongoc_client_encryption_encrypt_opts_set_algorithm (
          eOpts, MONGOC_AEAD_AES_256_CBC_HMAC_SHA_512_DETERMINISTIC);
@@ -4910,7 +5911,7 @@ _test_rewrap_with_separate_client_encryption (const char *src_provider,
    mongoc_client_destroy (src_client);
 }
 
-/* Prose Test 16: Rewrap with separate ClientEncryption */
+/* Prose Test 16: Case 1: Rewrap with separate ClientEncryption */
 static void
 test_rewrap_with_separate_client_encryption (void *unused)
 {
@@ -4932,6 +5933,80 @@ test_rewrap_with_separate_client_encryption (void *unused)
          _test_rewrap_with_separate_client_encryption (src, dst);
       }
    }
+}
+
+/* Prose Test 16: Case 2: RewrapManyDataKeyOpts.provider is not optional. */
+static void
+test_rewrap_without_provider (void *unused)
+{
+   BSON_UNUSED (unused);
+
+   mongoc_uri_t *const uri = test_framework_get_uri ();
+   mongoc_client_encryption_opts_t *const ce_opts =
+      mongoc_client_encryption_opts_new ();
+   mongoc_client_t *const key_vault_client =
+      test_framework_client_new_from_uri (uri, NULL);
+
+   bson_error_t error = {0};
+
+   BSON_ASSERT (uri);
+   BSON_ASSERT (ce_opts);
+   BSON_ASSERT (key_vault_client);
+
+   test_framework_set_ssl_opts (key_vault_client);
+
+   {
+      mongoc_client_encryption_opts_set_keyvault_client (ce_opts,
+                                                         key_vault_client);
+      mongoc_client_encryption_opts_set_keyvault_namespace (
+         ce_opts, "keyvault", "datakeys");
+
+      {
+         bson_t *const kms_providers = _make_kms_providers (true, true);
+         BSON_ASSERT (kms_providers);
+         mongoc_client_encryption_opts_set_kms_providers (ce_opts,
+                                                          kms_providers);
+         bson_destroy (kms_providers);
+      }
+
+      {
+         bson_t *const tls_opts = _make_tls_opts ();
+         BSON_ASSERT (tls_opts);
+         mongoc_client_encryption_opts_set_tls_opts (ce_opts, tls_opts);
+         bson_destroy (tls_opts);
+      }
+   }
+
+   // 1. Create a ClientEncryption object named clientEncryption with these
+   // options: (see ce_opts).
+   mongoc_client_encryption_t *clientEncryption =
+      mongoc_client_encryption_new (ce_opts, &error);
+   ASSERT_OR_PRINT (clientEncryption, error);
+
+   // 2. Call ``clientEncryption.rewrapManyDataKey`` with an empty ``filter``
+   // and these options: (see below).
+   {
+      bool ok =
+         mongoc_client_encryption_rewrap_many_datakey (clientEncryption,
+                                                       NULL /* filter */,
+                                                       NULL /* kms_provider */,
+                                                       tmp_bson ("{}"),
+                                                       NULL /* result */,
+                                                       &error);
+      // Assert an error is returned from the driver suggesting that the
+      // ``provider`` option is required.
+      ASSERT_WITH_MSG (!ok, "expected error, but got success");
+      ASSERT_ERROR_CONTAINS (
+         error,
+         MONGOC_ERROR_CLIENT,
+         MONGOC_ERROR_CLIENT_INVALID_ENCRYPTION_ARG,
+         "expected 'provider' to be set to identify type of 'master_key'");
+   }
+
+   mongoc_client_encryption_destroy (clientEncryption);
+   mongoc_client_encryption_opts_destroy (ce_opts);
+   mongoc_uri_destroy (uri);
+   mongoc_client_destroy (key_vault_client);
 }
 
 /* test_qe_docs_example tests the documentation example requested in
@@ -5404,6 +6479,613 @@ test_drop_qe_null_error (void *unused)
    mongoc_client_destroy (client);
 }
 
+static bool
+_auto_datakeys (struct auto_datakey_context *ctx)
+{
+   ctx->out_keyid->value.v_int32 = 42;
+   ctx->out_keyid->value_type = BSON_TYPE_INT32;
+   return true;
+}
+
+static bool
+_auto_datakeys_error (struct auto_datakey_context *ctx)
+{
+   bson_set_error (ctx->out_error, 42, 1729, "I am an error");
+   return false;
+}
+
+static bool
+_auto_datakeys_error_noset (struct auto_datakey_context *ctx)
+{
+   // Do not set an error code, but indicate error anyway
+   BSON_UNUSED (ctx);
+   return false;
+}
+
+static void
+test_auto_datakeys (void *unused)
+{
+   BSON_UNUSED (unused);
+
+   bson_error_t error = {0};
+   bson_t in_fields = BSON_INITIALIZER;
+   bsonBuildArray ( //
+      in_fields,
+      doc (kv ("keyId", cstr ("keepme"))), //
+      doc (kv ("keyId", null)));
+   bson_t out_fields = BSON_INITIALIZER;
+   bool okay = _mongoc_encryptedFields_fill_auto_datakeys (
+      &out_fields, &in_fields, _auto_datakeys, NULL, &error);
+   ASSERT_ERROR_CONTAINS (error, 0, 0, "");
+   ASSERT (okay);
+   bsonParse ( //
+      out_fields,
+      require (
+         keyWithType ("0", doc), //
+         parse (require (allOf (key ("keyId"), strEqual ("keepme")), nop))),
+      require (
+         keyWithType ("1", doc),
+         parse (require (allOf (keyWithType ("keyId", int32)),
+                         do (ASSERT_CMPINT32 (bsonAs (int32), ==, 42))))));
+   ASSERT (bsonParseError == NULL);
+   bson_destroy (&out_fields);
+
+   // Do it again, but we will generate an error
+   okay = _mongoc_encryptedFields_fill_auto_datakeys (
+      &out_fields, &in_fields, _auto_datakeys_error, NULL, &error);
+   ASSERT (!okay);
+   ASSERT_ERROR_CONTAINS (error, 42, 1729, "I am an error");
+   bson_destroy (&out_fields);
+
+   // Do it again, but we will generate an error without the factory setting the
+   // error
+   okay = _mongoc_encryptedFields_fill_auto_datakeys (
+      &out_fields, &in_fields, _auto_datakeys_error_noset, NULL, &error);
+   ASSERT (!okay);
+   // Generic error, since the factory didn't provide one:
+   ASSERT_ERROR_CONTAINS (
+      error, MONGOC_ERROR_BSON, MONGOC_ERROR_BSON_INVALID, "indicated failure");
+   bson_destroy (&out_fields);
+   bson_destroy (&in_fields);
+}
+
+static void
+_do_cec_test (void (*test) (const char *kmsProvider))
+{
+   test ("local");
+   test ("aws");
+}
+
+// Declare a createEncryptedCollection test case (See usage below)
+#define CEC_TEST(name, ...)               \
+   static void name##_impl (__VA_ARGS__); \
+   static void name (void *unused)        \
+   {                                      \
+      BSON_UNUSED (unused);               \
+      _do_cec_test (name##_impl);         \
+   }                                      \
+   static void name##_impl (__VA_ARGS__)
+
+CEC_TEST (test_create_encrypted_collection_simple, const char *kmsProvider)
+{
+   bson_error_t error = {0};
+   mongoc_client_t *const client = test_framework_new_default_client ();
+   bson_t *const kmsProviders = _make_kms_providers (true, true);
+   bson_t *const tlsOptions = _make_tls_opts ();
+
+   const char *const dbName = "cec-test-db";
+
+   // Drop prior data
+   {
+      mongoc_collection_t *const coll =
+         mongoc_client_get_collection (client, "keyvault", "datakeys");
+      if (coll) {
+         mongoc_collection_drop (coll, &error);
+         bool okay =
+            error.code == 0 || strstr (error.message, "ns not found") != NULL;
+         ASSERT_OR_PRINT (okay, error);
+      }
+      mongoc_collection_destroy (coll);
+
+      mongoc_database_t *const db = mongoc_client_get_database (client, dbName);
+      ASSERT_OR_PRINT (mongoc_database_drop (db, &error), error);
+      mongoc_database_destroy (db);
+   }
+
+   // Create a CE
+   mongoc_client_encryption_opts_t *const ceOpts =
+      mongoc_client_encryption_opts_new ();
+   mongoc_client_encryption_opts_set_kms_providers (ceOpts, kmsProviders);
+   mongoc_client_encryption_opts_set_tls_opts (ceOpts, tlsOptions);
+   mongoc_client_encryption_opts_set_keyvault_namespace (
+      ceOpts, "keyvault", "datakeys");
+   mongoc_client_encryption_opts_set_keyvault_client (ceOpts, client);
+   mongoc_client_encryption_t *const ce =
+      mongoc_client_encryption_new (ceOpts, &error);
+   mongoc_client_encryption_opts_destroy (ceOpts);
+   ASSERT_OR_PRINT (ce, error);
+
+   // Create the encrypted collection
+   bsonBuildDecl (ccOpts,
+                  kv ("encryptedFields",
+                      doc (kv ("fields",
+                               array (doc (kv ("path", cstr ("ssn")),
+                                           kv ("bsonType", cstr ("string")),
+                                           kv ("keyId", null)))))));
+   mongoc_database_t *const db = mongoc_client_get_database (client, dbName);
+   bson_t *const mkey = _make_kms_masterkey (kmsProvider);
+   mongoc_collection_t *const coll =
+      mongoc_client_encryption_create_encrypted_collection (
+         ce, db, "test-coll", &ccOpts, NULL, kmsProvider, mkey, &error);
+   ASSERT_OR_PRINT (coll, error);
+   bson_destroy (&ccOpts);
+   bson_destroy (mkey);
+
+   bsonBuildDecl (doc, kv ("ssn", cstr ("123-45-6789")));
+   const bool okay =
+      mongoc_collection_insert_one (coll, &doc, NULL, NULL, &error);
+   // Expect a failure: We didn't encrypt the field, and we don't have
+   // auto-encryption enabled, but the server expects this to be encrypted.
+   ASSERT (!okay);
+   ASSERT_ERROR_CONTAINS (
+      error, MONGOC_ERROR_COLLECTION, 121, "failed validation");
+   bson_destroy (&doc);
+
+   bson_destroy (kmsProviders);
+   bson_destroy (tlsOptions);
+   mongoc_collection_destroy (coll);
+   mongoc_database_drop (db, &error);
+   mongoc_database_destroy (db);
+   mongoc_client_encryption_destroy (ce);
+   mongoc_client_destroy (client);
+}
+
+static void
+test_create_encrypted_collection_no_encryptedFields_helper (
+   mongoc_client_t *client,
+   const char *dbName,
+   const char *collName,
+   const char *kmsProvider)
+{
+   bson_error_t error = {0};
+   bson_t *const kmsProviders = _make_kms_providers (true, true);
+   bson_t *const tlsOptions = _make_tls_opts ();
+
+   ASSERT (client);
+
+   // Drop prior data
+   {
+      mongoc_collection_t *const coll =
+         mongoc_client_get_collection (client, "keyvault", "datakeys");
+      if (coll) {
+         mongoc_collection_drop (coll, &error);
+         bool okay =
+            error.code == 0 || strstr (error.message, "ns not found") != NULL;
+         ASSERT_OR_PRINT (okay, error);
+      }
+      mongoc_collection_destroy (coll);
+
+      mongoc_database_t *const db = mongoc_client_get_database (client, dbName);
+      ASSERT_OR_PRINT (mongoc_database_drop (db, &error), error);
+      mongoc_database_destroy (db);
+   }
+
+   // Create a CE
+   mongoc_client_encryption_opts_t *const ceOpts =
+      mongoc_client_encryption_opts_new ();
+   mongoc_client_encryption_opts_set_kms_providers (ceOpts, kmsProviders);
+   mongoc_client_encryption_opts_set_tls_opts (ceOpts, tlsOptions);
+   mongoc_client_encryption_opts_set_keyvault_namespace (
+      ceOpts, "keyvault", "datakeys");
+   mongoc_client_encryption_opts_set_keyvault_client (ceOpts, client);
+   mongoc_client_encryption_t *const ce =
+      mongoc_client_encryption_new (ceOpts, &error);
+   mongoc_client_encryption_opts_destroy (ceOpts);
+   ASSERT_OR_PRINT (ce, error);
+
+   // Create the encrypted collection
+   bsonBuildDecl (ccOpts, do ());
+   mongoc_database_t *const db = mongoc_client_get_database (client, dbName);
+   bson_t *const mkey = _make_kms_masterkey (kmsProvider);
+   mongoc_collection_t *const coll =
+      mongoc_client_encryption_create_encrypted_collection (
+         ce, db, collName, &ccOpts, NULL, kmsProvider, mkey, &error);
+   ASSERT_ERROR_CONTAINS (error,
+                          MONGOC_ERROR_COMMAND,
+                          MONGOC_ERROR_COMMAND_INVALID_ARG,
+                          "No 'encryptedFields' are defined");
+   bson_destroy (&ccOpts);
+   bson_destroy (mkey);
+
+   bson_destroy (kmsProviders);
+   bson_destroy (tlsOptions);
+   mongoc_collection_destroy (coll);
+   mongoc_database_drop (db, &error);
+   mongoc_database_destroy (db);
+   mongoc_client_encryption_destroy (ce);
+}
+
+CEC_TEST (test_create_encrypted_collection_no_encryptedFields,
+          const char *kmsProvider)
+{
+   const char *dbName = "cec-test-db";
+   const char *collName = "test-coll";
+
+   // Test with a default client.
+   {
+      mongoc_client_t *const client = test_framework_new_default_client ();
+      test_create_encrypted_collection_no_encryptedFields_helper (
+         client, dbName, collName, kmsProvider);
+      mongoc_client_destroy (client);
+   }
+
+   // Test with a client configured with an encryptedFieldsMap.
+   // This is not a required test. But a prior implementation checked if the
+   // target collection was configured in encryptedFieldsMap.
+   {
+      mongoc_client_t *const client = test_framework_new_default_client ();
+      mongoc_auto_encryption_opts_t *aeOpts =
+         mongoc_auto_encryption_opts_new ();
+      bson_t *const kmsProviders =
+         _make_kms_providers (true /* with aws */, true /* with local */);
+      char *namespace = bson_strdup_printf ("%s.%s", dbName, collName);
+      bson_t *encryptedFieldsMap =
+         tmp_bson ("{'%s': {'fields': []}}", namespace);
+      bson_error_t error;
+
+      mongoc_auto_encryption_opts_set_kms_providers (aeOpts, kmsProviders);
+      mongoc_auto_encryption_opts_set_keyvault_namespace (
+         aeOpts, "keyvault", "datakeys");
+      mongoc_auto_encryption_opts_set_encrypted_fields_map (aeOpts,
+                                                            encryptedFieldsMap);
+      ASSERT_OR_PRINT (
+         mongoc_client_enable_auto_encryption (client, aeOpts, &error), error);
+
+      test_create_encrypted_collection_no_encryptedFields_helper (
+         client, dbName, collName, kmsProvider);
+
+      bson_free (namespace);
+      bson_destroy (kmsProviders);
+      mongoc_auto_encryption_opts_destroy (aeOpts);
+      mongoc_client_destroy (client);
+   }
+}
+
+CEC_TEST (test_create_encrypted_collection_bad_keyId,
+          const char *const kmsProvider)
+{
+   bson_error_t error = {0};
+   mongoc_client_t *const client = test_framework_new_default_client ();
+   bson_t *const kmsProviders = _make_kms_providers (true, true);
+   bson_t *const tlsOptions = _make_tls_opts ();
+
+   const char *const dbName = "cec-test-db";
+
+   // Drop prior data
+   {
+      mongoc_collection_t *const coll =
+         mongoc_client_get_collection (client, "keyvault", "datakeys");
+      if (coll) {
+         mongoc_collection_drop (coll, &error);
+         bool okay =
+            error.code == 0 || strstr (error.message, "ns not found") != NULL;
+         ASSERT_OR_PRINT (okay, error);
+      }
+      mongoc_collection_destroy (coll);
+
+      mongoc_database_t *const db = mongoc_client_get_database (client, dbName);
+      ASSERT_OR_PRINT (mongoc_database_drop (db, &error), error);
+      mongoc_database_destroy (db);
+   }
+
+   // Create a CE
+   mongoc_client_encryption_opts_t *const ceOpts =
+      mongoc_client_encryption_opts_new ();
+   mongoc_client_encryption_opts_set_kms_providers (ceOpts, kmsProviders);
+   mongoc_client_encryption_opts_set_tls_opts (ceOpts, tlsOptions);
+   mongoc_client_encryption_opts_set_keyvault_namespace (
+      ceOpts, "keyvault", "datakeys");
+   mongoc_client_encryption_opts_set_keyvault_client (ceOpts, client);
+   mongoc_client_encryption_t *const ce =
+      mongoc_client_encryption_new (ceOpts, &error);
+   mongoc_client_encryption_opts_destroy (ceOpts);
+   ASSERT_OR_PRINT (ce, error);
+
+   // Create the encrypted collection
+   bsonBuildDecl (ccOpts,
+                  kv ("encryptedFields",
+                      doc (kv ("fields",
+                               array (doc (kv ("path", cstr ("ssn")),
+                                           kv ("bsonType", cstr ("string")),
+                                           kv ("keyId", bool (true))))))));
+   mongoc_database_t *const db = mongoc_client_get_database (client, dbName);
+   bson_t *const mkey = _make_kms_masterkey (kmsProvider);
+   mongoc_collection_t *const coll =
+      mongoc_client_encryption_create_encrypted_collection (
+         ce, db, "test-coll", &ccOpts, NULL, kmsProvider, mkey, &error);
+   ASSERT_ERROR_CONTAINS (error,
+                          MONGOC_ERROR_QUERY,
+                          MONGOC_ERROR_PROTOCOL_INVALID_REPLY,
+                          "create.encryptedFields.fields.keyId");
+   bson_destroy (&ccOpts);
+   bson_destroy (mkey);
+
+   bson_destroy (kmsProviders);
+   bson_destroy (tlsOptions);
+   mongoc_collection_destroy (coll);
+   mongoc_database_drop (db, &error);
+   mongoc_database_destroy (db);
+   mongoc_client_encryption_destroy (ce);
+   mongoc_client_destroy (client);
+}
+
+// Implements Prose Test 21. Case: 4.
+CEC_TEST (test_create_encrypted_collection_insert,
+          const char *const kmsProvider)
+{
+   bson_error_t error = {0};
+   mongoc_client_t *const client = test_framework_new_default_client ();
+   bson_t *const kmsProviders = _make_kms_providers (true, true);
+   bson_t *const tlsOptions = _make_tls_opts ();
+
+   const char *const dbName = "cec-test-db";
+
+   // Drop prior data
+   {
+      mongoc_collection_t *const coll =
+         mongoc_client_get_collection (client, "keyvault", "datakeys");
+      if (coll) {
+         mongoc_collection_drop (coll, &error);
+         bool okay =
+            error.code == 0 || strstr (error.message, "ns not found") != NULL;
+         ASSERT_OR_PRINT (okay, error);
+      }
+      mongoc_collection_destroy (coll);
+
+      mongoc_database_t *const db = mongoc_client_get_database (client, dbName);
+      ASSERT_OR_PRINT (mongoc_database_drop (db, &error), error);
+      mongoc_database_destroy (db);
+   }
+
+   // Create a CE
+   mongoc_client_encryption_opts_t *const ceOpts =
+      mongoc_client_encryption_opts_new ();
+   mongoc_client_encryption_opts_set_kms_providers (ceOpts, kmsProviders);
+   mongoc_client_encryption_opts_set_tls_opts (ceOpts, tlsOptions);
+   mongoc_client_encryption_opts_set_keyvault_namespace (
+      ceOpts, "keyvault", "datakeys");
+   mongoc_client_encryption_opts_set_keyvault_client (ceOpts, client);
+   mongoc_client_encryption_t *const ce =
+      mongoc_client_encryption_new (ceOpts, &error);
+   mongoc_client_encryption_opts_destroy (ceOpts);
+   ASSERT_OR_PRINT (ce, error);
+
+   // Create the encrypted collection
+   bsonBuildDecl (ccOpts,
+                  kv ("encryptedFields",
+                      doc (kv ("fields",
+                               array (doc (kv ("path", cstr ("ssn")),
+                                           kv ("bsonType", cstr ("string")),
+                                           kv ("keyId", null)))))));
+   mongoc_database_t *const db = mongoc_client_get_database (client, dbName);
+   bson_t new_opts;
+   bson_t *const mkey = _make_kms_masterkey (kmsProvider);
+   mongoc_collection_t *const coll =
+      mongoc_client_encryption_create_encrypted_collection (
+         ce, db, "testing1", &ccOpts, &new_opts, kmsProvider, mkey, &error);
+   ASSERT_OR_PRINT (coll, error);
+   bson_destroy (&ccOpts);
+   bson_destroy (mkey);
+
+   // Extract the encryption key ID that was generated by
+   // CreateEncryptedCollection:
+   bson_value_t new_keyid;
+   bsonParse (
+      new_opts,
+      require (
+         keyWithType ("encryptedFields", doc),
+         parse (require (
+            keyWithType ("fields", array),
+            visitEach (require (type (doc)),
+                       parse (require (key ("keyId"),
+                                       require (type (binary)),
+                                       do ({
+                                          bson_value_copy (
+                                             bson_iter_value (
+                                                (bson_iter_t *) &bsonVisitIter),
+                                             &new_keyid);
+                                       }),
+                                       halt)))))));
+   ASSERT_CMPSTR (bsonParseError, NULL);
+
+   // Generate some plaintext:
+   bson_value_t plain;
+   plain.value_type = BSON_TYPE_UTF8;
+   plain.value.v_utf8.str = "123-45-6789";
+   plain.value.v_utf8.len = (uint32_t) strlen (plain.value.v_utf8.str);
+
+   // Encrypt the value using the new encryption key:
+   mongoc_client_encryption_encrypt_opts_t *eo =
+      mongoc_client_encryption_encrypt_opts_new ();
+   mongoc_client_encryption_encrypt_opts_set_keyid (eo, &new_keyid);
+   mongoc_client_encryption_encrypt_opts_set_algorithm (
+      eo, MONGOC_ENCRYPT_ALGORITHM_UNINDEXED);
+   bson_value_t ciphertext;
+   bool okay =
+      mongoc_client_encryption_encrypt (ce, &plain, eo, &ciphertext, &error);
+   ASSERT_OR_PRINT (okay, error);
+   mongoc_client_encryption_encrypt_opts_destroy (eo);
+   bson_value_destroy (&new_keyid);
+
+   // Insert the ciphertext:
+   bsonBuildDecl (doc, kv ("ssn", value (ciphertext)));
+   okay = mongoc_collection_insert_one (coll, &doc, NULL, NULL, &error);
+   ASSERT_OR_PRINT (okay, error);
+   // Success!
+
+   bson_destroy (&doc);
+   bson_value_destroy (&ciphertext);
+   bson_destroy (kmsProviders);
+   bson_destroy (tlsOptions);
+   mongoc_collection_destroy (coll);
+   mongoc_database_drop (db, &error);
+   mongoc_database_destroy (db);
+   mongoc_client_encryption_destroy (ce);
+   mongoc_client_destroy (client);
+   bson_destroy (&new_opts);
+}
+
+
+typedef struct listen_socket {
+   mongoc_socket_t *socket;
+   mongoc_cond_t cond;
+   bson_mutex_t mutex;
+   bool failed;
+   char ip[16];
+   unsigned short port;
+   bool complete;
+} listen_socket_args_t;
+
+static BSON_THREAD_FUN (listen_socket, arg)
+{
+   listen_socket_args_t *args = arg;
+   mongoc_socket_t *socket;
+   struct sockaddr_in server_addr = {0};
+   args->failed = false;
+
+   // create a TcpListener on 127.0.0.1 endpoint
+   socket = mongoc_socket_new (AF_INET, SOCK_STREAM, 0);
+   BSON_ASSERT (socket);
+
+   server_addr.sin_family = AF_INET;
+   server_addr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+   server_addr.sin_port = htons (0);
+   mongoc_socklen_t addr_len = (mongoc_socklen_t) sizeof server_addr;
+
+   int r =
+      mongoc_socket_bind (socket, (struct sockaddr *) &server_addr, addr_len);
+   BSON_ASSERT (r == 0);
+
+   // forward the port and ip for mongocryptdURI
+   r = mongoc_socket_getsockname (
+      socket, (struct sockaddr *) &server_addr, &addr_len);
+   BSON_ASSERT (r == 0);
+
+   bson_mutex_lock (&args->mutex);
+   args->port = ntohs (server_addr.sin_port);
+   inet_ntop (AF_INET, &server_addr.sin_addr, args->ip, sizeof (args->ip));
+   mongoc_cond_signal (&args->cond);
+   bson_mutex_unlock (&args->mutex);
+
+   // listen on socket
+   r = mongoc_socket_listen (socket, 100);
+   BSON_ASSERT (r == 0);
+   _mongoc_usleep (1000); // wait to see if received connection
+   mongoc_socket_t *ret =
+      mongoc_socket_accept (socket, bson_get_monotonic_time () + 100);
+   if (ret) {
+      // not null received a connection and test should fail
+      args->failed = true;
+   }
+   // signal that test is complete.
+   bson_mutex_lock (&args->mutex);
+   args->complete = true;
+   mongoc_cond_signal (&args->cond);
+   bson_mutex_unlock (&args->mutex);
+
+   mongoc_socket_destroy (socket);
+   BSON_THREAD_RETURN;
+}
+
+/* Prose Test 20: Bypass creating mongocryptd client when shared library is
+ * loaded */
+static void
+test_bypass_mongocryptd_shared_library (void *unused)
+{
+   BSON_UNUSED (unused);
+   mongoc_client_t *client_encrypted;
+   mongoc_auto_encryption_opts_t *auto_encryption_opts;
+   bson_t *kms_providers;
+   mongoc_database_t *db;
+   mongoc_collection_t *coll;
+   bson_error_t error;
+   bson_thread_t socket_thread;
+
+   // start the socket on a thread
+   listen_socket_args_t *args = bson_malloc0 (sizeof (listen_socket_args_t));
+   bson_mutex_init (&args->mutex);
+   mongoc_cond_init (&args->cond);
+   ASSERT_CMPINT (
+      0, ==, mcommon_thread_create (&socket_thread, listen_socket, args));
+
+   // configure mongoclient with auto encryption
+   char *env_cryptSharedLibPath =
+      test_framework_getenv ("MONGOC_TEST_CRYPT_SHARED_LIB_PATH");
+   BSON_ASSERT (env_cryptSharedLibPath);
+   auto_encryption_opts = mongoc_auto_encryption_opts_new ();
+   kms_providers = BCON_NEW (
+      "local", "{", "key", BCON_BIN (0, (uint8_t *) LOCAL_MASTERKEY, 96), "}");
+   mongoc_auto_encryption_opts_set_kms_providers (auto_encryption_opts,
+                                                  kms_providers);
+   mongoc_auto_encryption_opts_set_keyvault_namespace (
+      auto_encryption_opts, "keyvault", "datakeys");
+
+   // wait for port and ip to be set on the other thread
+   bson_mutex_lock (&args->mutex);
+   while (!args->port) {
+      int cond_ret = mongoc_cond_timedwait (&args->cond, &args->mutex, 5000);
+      /* ret non-zero indicates an error (a timeout) */
+      BSON_ASSERT (!cond_ret);
+   }
+   bson_mutex_unlock (&args->mutex);
+   BSON_ASSERT (strlen (args->ip) > 0);
+
+   // configure extra options
+   bson_t *extra = tmp_bson ("{'mongocryptdURI': 'mongodb://%s:%d', "
+                             "'cryptSharedLibPath': '%s'}",
+                             args->ip,
+                             args->port,
+                             env_cryptSharedLibPath);
+   mongoc_auto_encryption_opts_set_extra (auto_encryption_opts, extra);
+   bson_free (env_cryptSharedLibPath);
+   // get the client
+   client_encrypted = test_framework_new_default_client ();
+   bool ret = mongoc_client_enable_auto_encryption (
+      client_encrypted, auto_encryption_opts, &error);
+   ASSERT_OR_PRINT (ret, error);
+
+   // insert a document
+   db = mongoc_client_get_database (client_encrypted, "db");
+   coll = mongoc_database_get_collection (db, "coll");
+   ret = mongoc_collection_insert_one (coll,
+                                       tmp_bson ("{'unencrypted': 'test'}"),
+                                       NULL /* opts */,
+                                       NULL /* reply */,
+                                       &error);
+   ASSERT_OR_PRINT (ret, error);
+
+   // Wait for listener thread to complete.
+   bson_mutex_lock (&args->mutex);
+   while (!args->complete) {
+      int cond_ret = mongoc_cond_timedwait (&args->cond, &args->mutex, 5000);
+      /* ret non-zero indicates an error (a timeout) */
+      BSON_ASSERT (!cond_ret);
+   }
+   bson_mutex_unlock (&args->mutex);
+   // failed should be false if the signal did not receive a connection
+   BSON_ASSERT (!args->failed);
+   mcommon_thread_join (socket_thread);
+
+   bson_mutex_destroy (&args->mutex);
+   mongoc_cond_destroy (&args->cond);
+   bson_destroy (kms_providers);
+   mongoc_auto_encryption_opts_destroy (auto_encryption_opts);
+   mongoc_collection_destroy (coll);
+   mongoc_database_destroy (db);
+   mongoc_client_destroy (client_encrypted);
+   bson_free (args);
+}
+
 void
 test_client_side_encryption_install (TestSuite *suite)
 {
@@ -5498,8 +7180,8 @@ test_client_side_encryption_install (TestSuite *suite)
                       test_framework_skip_if_max_wire_version_less_than_8);
    TestSuite_AddFull (suite,
                       "/client_side_encryption/bypass_spawning_mongocryptd/"
-                      "cryptSharedLibRequired",
-                      test_bypass_spawning_via_cryptSharedLibRequired,
+                      "cryptSharedLibLoaded",
+                      test_bypass_spawning_via_cryptSharedLibLoaded,
                       NULL,
                       NULL,
                       test_framework_skip_if_no_client_side_encryption,
@@ -5534,13 +7216,20 @@ test_client_side_encryption_install (TestSuite *suite)
                       test_framework_skip_if_no_client_side_encryption,
                       test_framework_skip_if_max_wire_version_less_than_8);
    TestSuite_AddFull (suite,
-                      "/client_side_encryption/prose_test_16",
+                      "/client_side_encryption/prose_test_16/case1",
                       test_rewrap_with_separate_client_encryption,
                       NULL,
                       NULL,
                       test_framework_skip_if_no_client_side_encryption,
                       test_framework_skip_if_max_wire_version_less_than_8,
                       test_framework_skip_if_slow);
+   TestSuite_AddFull (suite,
+                      "/client_side_encryption/prose_test_16/case2",
+                      test_rewrap_without_provider,
+                      NULL,
+                      NULL,
+                      test_framework_skip_if_no_client_side_encryption,
+                      test_framework_skip_if_max_wire_version_less_than_8);
 
    /* Other, C driver specific, tests. */
    TestSuite_AddFull (suite,
@@ -5584,14 +7273,17 @@ test_client_side_encryption_install (TestSuite *suite)
                       NULL,
                       test_framework_skip_if_no_client_side_encryption);
 
-   TestSuite_AddFull (suite,
-                      "/client_side_encryption/explicit_encryption/case1",
-                      test_explicit_encryption_case1,
-                      NULL /* dtor */,
-                      NULL /* ctx */,
-                      test_framework_skip_if_no_client_side_encryption,
-                      test_framework_skip_if_max_wire_version_less_than_17,
-                      test_framework_skip_if_single);
+   TestSuite_AddFull (
+      suite,
+      "/client_side_encryption/explicit_encryption/case1",
+      test_explicit_encryption_case1,
+      NULL /* dtor */,
+      NULL /* ctx */,
+      test_framework_skip_if_no_client_side_encryption,
+      test_framework_skip_if_max_wire_version_less_than_21,
+      // Remove skip_if_serverless once DRIVERS-2589 is resolved.
+      test_framework_skip_if_serverless,
+      test_framework_skip_if_single);
 
    TestSuite_AddFull (suite,
                       "/client_side_encryption/explicit_encryption/case2",
@@ -5599,35 +7291,46 @@ test_client_side_encryption_install (TestSuite *suite)
                       NULL /* dtor */,
                       NULL /* ctx */,
                       test_framework_skip_if_no_client_side_encryption,
-                      test_framework_skip_if_max_wire_version_less_than_17,
+                      test_framework_skip_if_max_wire_version_less_than_21,
+                      // Remove skip_if_serverless once DRIVERS-2589 is resolved
+                      test_framework_skip_if_serverless,
                       test_framework_skip_if_single);
 
-   TestSuite_AddFull (suite,
-                      "/client_side_encryption/explicit_encryption/case3",
-                      test_explicit_encryption_case3,
-                      NULL /* dtor */,
-                      NULL /* ctx */,
-                      test_framework_skip_if_no_client_side_encryption,
-                      test_framework_skip_if_max_wire_version_less_than_17,
-                      test_framework_skip_if_single);
+   TestSuite_AddFull (
+      suite,
+      "/client_side_encryption/explicit_encryption/case3",
+      test_explicit_encryption_case3,
+      NULL /* dtor */,
+      NULL /* ctx */,
+      test_framework_skip_if_no_client_side_encryption,
+      test_framework_skip_if_max_wire_version_less_than_21,
+      // Remove skip_if_serverless once DRIVERS-2589 is resolved.
+      test_framework_skip_if_serverless,
+      test_framework_skip_if_single);
 
-   TestSuite_AddFull (suite,
-                      "/client_side_encryption/explicit_encryption/case4",
-                      test_explicit_encryption_case4,
-                      NULL /* dtor */,
-                      NULL /* ctx */,
-                      test_framework_skip_if_no_client_side_encryption,
-                      test_framework_skip_if_max_wire_version_less_than_17,
-                      test_framework_skip_if_single);
+   TestSuite_AddFull (
+      suite,
+      "/client_side_encryption/explicit_encryption/case4",
+      test_explicit_encryption_case4,
+      NULL /* dtor */,
+      NULL /* ctx */,
+      test_framework_skip_if_no_client_side_encryption,
+      test_framework_skip_if_max_wire_version_less_than_21,
+      // Remove skip_if_serverless once DRIVERS-2589 is resolved.
+      test_framework_skip_if_serverless,
+      test_framework_skip_if_single);
 
-   TestSuite_AddFull (suite,
-                      "/client_side_encryption/explicit_encryption/case5",
-                      test_explicit_encryption_case5,
-                      NULL /* dtor */,
-                      NULL /* ctx */,
-                      test_framework_skip_if_no_client_side_encryption,
-                      test_framework_skip_if_max_wire_version_less_than_17,
-                      test_framework_skip_if_single);
+   TestSuite_AddFull (
+      suite,
+      "/client_side_encryption/explicit_encryption/case5",
+      test_explicit_encryption_case5,
+      NULL /* dtor */,
+      NULL /* ctx */,
+      test_framework_skip_if_no_client_side_encryption,
+      test_framework_skip_if_max_wire_version_less_than_21,
+      // Remove skip_if_serverless once DRIVERS-2589 is resolved.
+      test_framework_skip_if_serverless,
+      test_framework_skip_if_single);
 
    TestSuite_AddFull (suite,
                       "/client_side_encryption/decryption_events/case1",
@@ -5662,14 +7365,17 @@ test_client_side_encryption_install (TestSuite *suite)
                       test_framework_skip_if_no_client_side_encryption,
                       test_framework_skip_if_max_wire_version_less_than_8);
 
-   TestSuite_AddFull (suite,
-                      "/client_side_encryption/qe_docs_example",
-                      test_qe_docs_example,
-                      NULL /* dtor */,
-                      NULL /* ctx */,
-                      test_framework_skip_if_no_client_side_encryption,
-                      test_framework_skip_if_max_wire_version_less_than_17,
-                      test_framework_skip_if_single);
+   TestSuite_AddFull (
+      suite,
+      "/client_side_encryption/qe_docs_example",
+      test_qe_docs_example,
+      NULL /* dtor */,
+      NULL /* ctx */,
+      test_framework_skip_if_no_client_side_encryption,
+      test_framework_skip_if_max_wire_version_less_than_21,
+      // Remove skip_if_serverless once DRIVERS-2589 is resolved.
+      test_framework_skip_if_serverless,
+      test_framework_skip_if_single);
 
    TestSuite_AddFull (suite,
                       "/client_side_encryption/kms/callback",
@@ -5704,4 +7410,138 @@ test_client_side_encryption_install (TestSuite *suite)
                       NULL,
                       test_framework_skip_if_no_client_side_encryption,
                       test_framework_skip_if_max_wire_version_less_than_8);
+
+   TestSuite_AddFull (suite,
+                      "/client_side_encryption/auto_datakeys",
+                      test_auto_datakeys,
+                      NULL,
+                      NULL,
+                      NULL);
+
+   TestSuite_AddFull (
+      suite,
+      "/client_side_encryption/createEncryptedCollection/simple",
+      test_create_encrypted_collection_simple,
+      NULL,
+      NULL,
+      test_framework_skip_if_no_client_side_encryption,
+      test_framework_skip_if_max_wire_version_less_than_21,
+      // Remove skip_if_serverless once DRIVERS-2589 is resolved.
+      test_framework_skip_if_serverless,
+      test_framework_skip_if_single);
+
+   TestSuite_AddFull (
+      suite,
+      "/client_side_encryption/createEncryptedCollection/"
+      "missing-encryptedFields",
+      test_create_encrypted_collection_no_encryptedFields,
+      NULL,
+      NULL,
+      test_framework_skip_if_no_client_side_encryption,
+      test_framework_skip_if_max_wire_version_less_than_21,
+      // Remove skip_if_serverless once DRIVERS-2589 is resolved.
+      test_framework_skip_if_serverless,
+      test_framework_skip_if_single);
+   TestSuite_AddFull (
+      suite,
+      "/client_side_encryption/createEncryptedCollection/"
+      "bad-keyId",
+      test_create_encrypted_collection_bad_keyId,
+      NULL,
+      NULL,
+      test_framework_skip_if_no_client_side_encryption,
+      test_framework_skip_if_max_wire_version_less_than_21,
+      // Remove skip_if_serverless once DRIVERS-2589 is resolved.
+      test_framework_skip_if_serverless,
+      test_framework_skip_if_single);
+   TestSuite_AddFull (
+      suite,
+      "/client_side_encryption/createEncryptedCollection/insert",
+      test_create_encrypted_collection_insert,
+      NULL,
+      NULL,
+      test_framework_skip_if_no_client_side_encryption,
+      test_framework_skip_if_max_wire_version_less_than_21,
+      // Remove skip_if_serverless once DRIVERS-2589 is resolved.
+      test_framework_skip_if_serverless,
+      test_framework_skip_if_single);
+   TestSuite_AddFull (
+      suite,
+      "/client_side_encryption/bypass_mongocryptd_shared_library",
+      test_bypass_mongocryptd_shared_library,
+      NULL,
+      NULL,
+      test_framework_skip_if_no_client_side_encryption,
+      test_framework_skip_if_max_wire_version_less_than_17,
+      _skip_if_no_crypt_shared);
+
+   // Add test cases for prose test: 22. Range Explicit Encryption.
+   {
+      const char *rangeTypes[] = {
+         "DecimalNoPrecision",
+         "DecimalPrecision",
+         "DoubleNoPrecision",
+         "DoublePrecision",
+         "Date",
+         "Int",
+         "Long",
+      };
+
+      typedef struct {
+         const char *name;
+         TestFuncWC fn;
+      } rangeCase;
+
+      rangeCase rangeCases[] = {
+         {"case1", test_range_explicit_encryption_case1},
+         {"case2", test_range_explicit_encryption_case2},
+         {"case3", test_range_explicit_encryption_case3},
+         {"case4", test_range_explicit_encryption_case4},
+         {"case5", test_range_explicit_encryption_case5},
+         {"case6", test_range_explicit_encryption_case6},
+         {"case7", test_range_explicit_encryption_case7},
+         {"case8", test_range_explicit_encryption_case8},
+      };
+
+      for (size_t i = 0; i < sizeof rangeTypes / sizeof rangeTypes[0]; i++) {
+         for (size_t j = 0; j < sizeof rangeCases / sizeof rangeCases[0]; j++) {
+            const char *rangeType = rangeTypes[i];
+            rangeCase rc = rangeCases[j];
+
+            char *test_name = bson_strdup_printf (
+               "/client_side_encryption/range_explicit_encryption/%s/%s",
+               rc.name,
+               rangeType);
+
+            // Skip DecimalNoPrecision if not a replica set.
+            if (0 == strcmp (rangeType, "DecimalNoPrecision")) {
+               TestSuite_AddFull (
+                  suite,
+                  test_name,
+                  rc.fn,
+                  NULL /* dtor */,
+                  (void *) rangeTypes[i] /* ctx */,
+                  test_framework_skip_if_no_client_side_encryption,
+                  test_framework_skip_if_max_wire_version_less_than_21,
+                  // Remove skip_if_serverless once DRIVERS-2589 is resolved.
+                  test_framework_skip_if_serverless,
+                  test_framework_skip_if_not_replset);
+            } else {
+               TestSuite_AddFull (
+                  suite,
+                  test_name,
+                  rc.fn,
+                  NULL /* dtor */,
+                  (void *) rangeTypes[i] /* ctx */,
+                  test_framework_skip_if_no_client_side_encryption,
+                  test_framework_skip_if_max_wire_version_less_than_21,
+                  // Remove skip_if_serverless once DRIVERS-2589 is resolved.
+                  test_framework_skip_if_serverless,
+                  test_framework_skip_if_single);
+            }
+
+            bson_free (test_name);
+         }
+      }
+   }
 }

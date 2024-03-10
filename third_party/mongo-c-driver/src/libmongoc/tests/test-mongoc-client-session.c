@@ -196,7 +196,7 @@ _test_session_pool_timeout (bool pooled)
     * trigger discovery
     */
    server_id = mongoc_topology_select_server_id (
-      client->topology, MONGOC_SS_READ, NULL, NULL, &error);
+      client->topology, MONGOC_SS_READ, NULL, NULL, NULL, &error);
    ASSERT_OR_PRINT (server_id, error);
 
    /*
@@ -480,7 +480,7 @@ _test_mock_end_sessions (bool pooled)
    request_t *request;
    bool r;
 
-   server = mock_mongos_new (WIRE_VERSION_OP_MSG);
+   server = mock_mongos_new (WIRE_VERSION_MAX);
    mock_server_run (server);
 
    if (pooled) {
@@ -503,7 +503,7 @@ _test_mock_end_sessions (bool pooled)
 
    request = mock_server_receives_msg (
       server, 0, tmp_bson ("{'ping': 1, 'lsid': {'$exists': true}}"));
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    BSON_ASSERT (future_get_bool (future));
    future_destroy (future);
@@ -526,7 +526,7 @@ _test_mock_end_sessions (bool pooled)
 
    /* check that we got the expected endSessions cmd */
    request = mock_server_receives_msg (server, 0, expected_cmd);
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    future_wait (future);
    future_destroy (future);
 
@@ -560,7 +560,7 @@ test_mock_end_sessions_server_disconnect (void)
    future_t *future;
    uint16_t i;
 
-   server = mock_mongos_new (WIRE_VERSION_OP_MSG);
+   server = mock_mongos_new (WIRE_VERSION_MAX);
    mock_server_run (server);
 
    client =
@@ -806,6 +806,8 @@ test_end_sessions_pooled (void *ctx)
 static void
 send_ping (mongoc_client_t *client, mongoc_client_session_t *client_session)
 {
+   ASSERT (client);
+
    bson_t ping_cmd = BSON_INITIALIZER;
    bson_t opts = BSON_INITIALIZER;
    bson_error_t error;
@@ -971,14 +973,12 @@ _test_advance_operation_time (mongoc_client_session_t *cs,
       ASSERT_CMPUINT32 (new_t, ==, t);
       ASSERT_CMPUINT32 (new_i, ==, i);
    } else if (new_t == t && new_i == i) {
-      fprintf (stderr,
-               "Shouldn't have advanced from operationTime %" PRIu32
-               ", %" PRIu32 " to %" PRIu32 ", %" PRIu32 "\n",
-               old_t,
-               old_i,
-               t,
-               i);
-      abort ();
+      test_error ("Shouldn't have advanced from operationTime %" PRIu32
+                  ", %" PRIu32 " to %" PRIu32 ", %" PRIu32,
+                  old_t,
+                  old_i,
+                  t,
+                  i);
    }
 }
 
@@ -1076,8 +1076,7 @@ started (const mongoc_apm_command_started_t *event)
 
    if (test->acknowledged) {
       if (!bson_iter_init_find (&iter, cmd, "lsid")) {
-         fprintf (stderr, "no lsid sent with command %s\n", cmd_name);
-         abort ();
+         test_error ("no lsid sent with command %s", cmd_name);
       }
 
       bson_iter_bson (&iter, &lsid);
@@ -1085,17 +1084,13 @@ started (const mongoc_apm_command_started_t *event)
 
       if (test->expect_explicit_lsid) {
          if (!match_bson_with_ctx (&lsid, client_session_lsid, &ctx)) {
-            fprintf (stderr,
-                     "command %s should have used client session's lsid\n",
-                     cmd_name);
-            abort ();
+            test_error ("command %s should have used client session's lsid",
+                        cmd_name);
          }
       } else {
          if (match_bson_with_ctx (&lsid, client_session_lsid, &ctx)) {
-            fprintf (stderr,
-                     "command %s should not have used client session's lsid\n",
-                     cmd_name);
-            abort ();
+            test_error ("command %s should not have used client session's lsid",
+                        cmd_name);
          }
       }
 
@@ -1104,10 +1099,8 @@ started (const mongoc_apm_command_started_t *event)
          bson_copy_to (&lsid, &test->sent_lsid);
       } else {
          if (!match_bson_with_ctx (&lsid, &test->sent_lsid, &ctx)) {
-            fprintf (stderr,
-                     "command %s used different lsid than previous command\n",
-                     cmd_name);
-            abort ();
+            test_error ("command %s used different lsid than previous command",
+                        cmd_name);
          }
       }
    } else {
@@ -1117,8 +1110,7 @@ started (const mongoc_apm_command_started_t *event)
 
    has_cluster_time = bson_iter_init_find (&iter, cmd, "$clusterTime");
    if (test->acknowledged && !has_cluster_time) {
-      fprintf (stderr, "no $clusterTime sent with command %s\n", cmd_name);
-      abort ();
+      test_error ("no $clusterTime sent with command %s", cmd_name);
    }
 
    if (has_cluster_time) {
@@ -1153,8 +1145,7 @@ succeeded (const mongoc_apm_command_succeeded_t *event)
 
    has_cluster_time = bson_iter_init_find (&iter, reply, "$clusterTime");
    if (test->acknowledged && !has_cluster_time) {
-      fprintf (stderr, "no $clusterTime in reply to command %s\n", cmd_name);
-      abort ();
+      test_error ("no $clusterTime in reply to command %s", cmd_name);
    }
 
    if (strcmp (cmd_name, "endSessions") == 0) {
@@ -1311,10 +1302,8 @@ check_session_returned (session_test_t *test, const bson_t *lsid)
     * been used. It is expected behavior for found to be false if
     * ss->last_used_usec == SESSION_NEVER_USED */
    if (!check_state.found) {
-      fprintf (stderr,
-               "server session %s not returned to pool\n",
-               bson_as_json (lsid, NULL));
-      abort ();
+      test_error ("server session %s not returned to pool",
+                  bson_as_json (lsid, NULL));
    }
 }
 
@@ -1342,8 +1331,7 @@ last_non_getmore_cmd (session_test_t *test)
       }
    }
 
-   fprintf (stderr, "No commands besides getMore were recorded\n");
-   abort ();
+   test_error ("No commands besides getMore were recorded");
 }
 
 
@@ -1483,8 +1471,7 @@ check_cluster_time (session_test_t *test)
    capture_logs (true);
    if (_mongoc_cluster_time_greater (&test->received_cluster_time,
                                      session_time)) {
-      fprintf (stderr, "client session's cluster time is outdated\n");
-      abort ();
+      test_error ("client session's cluster time is outdated");
    }
 
    ASSERT_NO_CAPTURED_LOGS ("_mongoc_cluster_time_greater");
@@ -1597,16 +1584,15 @@ parse_reply_time (const bson_t *reply, op_time_t *op_time)
 }
 
 
-#define ASSERT_OP_TIMES_EQUAL(_a, _b)                             \
-   if ((_a).t != (_b).t || (_a).i != (_b).i) {                    \
-      fprintf (stderr,                                            \
-               #_a " (%d, %d) does not match " #_b " (%d, %d)\n", \
-               (_a).t,                                            \
-               (_a).i,                                            \
-               (_b).t,                                            \
-               (_b).i);                                           \
-      abort ();                                                   \
-   }
+#define ASSERT_OP_TIMES_EQUAL(_a, _b)                              \
+   if ((_a).t != (_b).t || (_a).i != (_b).i) {                     \
+      test_error (#_a " (%d, %d) does not match " #_b " (%d, %d)", \
+                  (_a).t,                                          \
+                  (_a).i,                                          \
+                  (_b).t,                                          \
+                  (_b).i);                                         \
+   } else                                                          \
+      ((void) 0)
 
 
 static void
@@ -1658,10 +1644,8 @@ _test_causal_consistency (session_test_fn_t test_fn, bool allow_read_concern)
       for (i = 0; i < test->cmds.len; i++) {
          cmd = _mongoc_array_index (&test->cmds, bson_t *, i);
          if (bson_has_field (cmd, "readConcern")) {
-            fprintf (stderr,
-                     "Command should not have included readConcern: %s\n",
-                     bson_as_json (cmd, NULL));
-            abort ();
+            test_error ("Command should not have included readConcern: %s",
+                        bson_as_json (cmd, NULL));
          }
       }
    }
@@ -1862,16 +1846,11 @@ test_drop_index (session_test_t *test)
    bson_error_t error;
    bool r;
 
-   /* create the index so that "dropIndexes" can succeed */
-   r = mongoc_database_write_command_with_opts (
-      test->session_db,
-      tmp_bson ("{'createIndexes': '%s',"
-                " 'indexes': [{'key': {'a': 1}, 'name': 'foo'}]}",
-                test->session_collection->collection),
-      &test->opts,
-      NULL,
-      &error);
-
+   mongoc_index_model_t *im = mongoc_index_model_new (
+      tmp_bson ("{'a': 1}"), tmp_bson ("{'name': 'foo'}"));
+   r = mongoc_collection_create_indexes_with_opts (
+      test->session_collection, &im, 1, &test->opts, NULL /* reply */, &error);
+   mongoc_index_model_destroy (im);
    ASSERT_OR_PRINT (r, error);
 
    test->succeeded = mongoc_collection_drop_index_with_opts (
@@ -2707,8 +2686,6 @@ _test_session_dirty_helper (bool retry_succeeds)
    bool ret;
    bson_error_t error;
    bson_t *failpoint_cmd;
-   int pooled_session_count_pre;
-   int pooled_session_count_post;
    int fail_count;
    mongoc_uri_t *uri;
 
@@ -2775,14 +2752,14 @@ _test_session_dirty_helper (bool retry_succeeds)
     * dirty */
    BSON_ASSERT (session->server_session->dirty);
 
-   pooled_session_count_pre =
+   const size_t pooled_session_count_pre =
       mongoc_server_session_pool_size (client->topology->session_pool);
    mongoc_client_session_destroy (session);
-   pooled_session_count_post =
+   const size_t pooled_session_count_post =
       mongoc_server_session_pool_size (client->topology->session_pool);
 
    /* Check that destroying in the session did not add it back to the pool. */
-   ASSERT_CMPINT (pooled_session_count_pre, ==, pooled_session_count_post);
+   ASSERT_CMPSIZE_T (pooled_session_count_pre, ==, pooled_session_count_post);
 
    mongoc_client_command_simple (
       client,
@@ -3014,7 +2991,7 @@ test_session_install (TestSuite *suite)
                         "/Session/watch",
                         test_watch,
                         true,
-                        test_framework_skip_if_not_rs_version_6);
+                        test_framework_skip_if_not_replset);
    add_session_test (suite, "/Session/aggregate", test_aggregate, true);
    add_session_test (suite, "/Session/create", test_create, false);
    add_session_test (

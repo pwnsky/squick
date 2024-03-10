@@ -3,6 +3,11 @@
 mongoc_index_opt_t
 ==================
 
+.. warning::
+   .. deprecated:: 1.8.0
+
+      This structure is deprecated and should not be used in new code. See :doc:`manage-collection-indexes`.
+
 Synopsis
 --------
 
@@ -29,17 +34,12 @@ Synopsis
      void *padding[4];
   } mongoc_index_opt_t;
 
-Deprecated
-----------
-
-This structure is deprecated and should not be used in new code. See :doc:`create-indexes`.
-
 Description
 -----------
 
 This structure contains the options that may be used for tuning a specific index.
 
-See the `createIndexes documentations <https://docs.mongodb.org/manual/reference/command/createIndexes/>`_ in the MongoDB manual for descriptions of individual options.
+See the `createIndexes documentations <https://www.mongodb.com/docs/manual/reference/command/createIndexes/>`_ in the MongoDB manual for descriptions of individual options.
 
 .. note::
 

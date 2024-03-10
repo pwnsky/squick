@@ -20,7 +20,6 @@
 #include <mongocxx/config/private/prelude.hh>
 
 namespace mongocxx {
-MONGOCXX_INLINE_NAMESPACE_BEGIN
 namespace assert {
 
 void matches(bsoncxx::types::bson_value::view actual,
@@ -30,7 +29,6 @@ void matches(bsoncxx::types::bson_value::view actual,
              bool is_array_of_root_docs = false);
 
 }  // namespace assert
-MONGOCXX_INLINE_NAMESPACE_END
 }  // namespace mongocxx
 
 #include <mongocxx/config/private/postlude.hh>

@@ -3,6 +3,11 @@
 mongoc_collection_stats()
 =========================
 
+.. warning::
+   .. deprecated:: 1.10.0
+
+      This helper function is deprecated and should not be used in new code. Use the `$collStats aggregation pipeline stage <https://www.mongodb.com/docs/manual/reference/operator/aggregation/collStats/>`_ with :symbol:`mongoc_collection_aggregate()` instead.
+
 Synopsis
 --------
 
@@ -14,17 +19,12 @@ Synopsis
                            bson_t *reply,
                            bson_error_t *error) BSON_GNUC_DEPRECATED;
 
-Deprecated
-----------
-
-This helper function is deprecated and should not be used in new code. Run the `collStats <https://docs.mongodb.com/manual/reference/command/collStats/>`_ command directly with :symbol:`mongoc_client_read_command_with_opts()` instead.
-
 Parameters
 ----------
 
 * ``collection``: A :symbol:`mongoc_collection_t`.
 * ``options``: An optional :symbol:`bson:bson_t` containing extra options to pass to the ``collStats`` command.
-* ``reply``: An uninitialized :symbol:`bson:bson_t` to store the result.
+* ``reply``: A |bson_t-opt-storage-ptr| to contain the results.
 * ``error``: An optional location for a :symbol:`bson_error_t <errors>` or ``NULL``.
 
 Description

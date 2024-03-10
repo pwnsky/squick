@@ -86,11 +86,13 @@ handle_abort (int signo)
 {
    BSON_UNUSED (signo);
    MONGOC_ERROR ("abort handler entered");
-   fprintf (stderr, "%s", test_diagnostics_error_string (NULL));
+   char *const msg = test_diagnostics_error_string (NULL);
+   fprintf (stderr, "%s", msg);
+   bson_free (msg);
 }
 
 void
-test_diagnostics_init ()
+test_diagnostics_init (void)
 {
    test_diagnostics_t *td = &diagnostics;
    memset (td, 0, sizeof (test_diagnostics_t));

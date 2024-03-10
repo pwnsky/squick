@@ -92,8 +92,8 @@ test_example_1 (mongoc_database_t *db)
    }
    /* End Example 1 */
    ASSERT_COUNT (1, collection);
-   /* Start Example 1 Post */
 done:
+   /* Start Example 1 Post */
    mongoc_collection_destroy (collection);
    /* End Example 1 Post */
 }
@@ -197,8 +197,8 @@ test_example_3 (mongoc_database_t *db)
    }
    /* End Example 3 */
    ASSERT_COUNT (4, collection);
-   /* Start Example 3 Post */
 done:
+   /* Start Example 3 Post */
    bson_destroy (&reply);
    mongoc_bulk_operation_destroy (bulk);
    mongoc_collection_destroy (collection);
@@ -311,8 +311,8 @@ test_example_6 (mongoc_database_t *db)
    }
    /* End Example 6 */
    ASSERT_COUNT (5, collection);
-   /* Start Example 6 Post */
 done:
+   /* Start Example 6 Post */
    bson_destroy (&reply);
    mongoc_bulk_operation_destroy (bulk);
    mongoc_collection_destroy (collection);
@@ -579,8 +579,8 @@ test_example_14 (mongoc_database_t *db)
    }
    /* End Example 14 */
 
-   /* Start Example 14 Post */
 done:
+   /* Start Example 14 Post */
    bson_destroy (&reply);
    mongoc_bulk_operation_destroy (bulk);
    mongoc_collection_destroy (collection);
@@ -816,8 +816,8 @@ test_example_20 (mongoc_database_t *db)
    }
    /* End Example 20 */
 
+done:   
    /* Start Example 20 Post */
-done:
    bson_destroy (&reply);
    mongoc_bulk_operation_destroy (bulk);
    mongoc_collection_destroy (collection);
@@ -1132,8 +1132,8 @@ test_example_29 (mongoc_database_t *db)
    }
    /* End Example 29 */
 
-   /* Start Example 29 Post */
 done:
+   /* Start Example 29 Post */
    bson_destroy (&reply);
    mongoc_bulk_operation_destroy (bulk);
    mongoc_collection_destroy (collection);
@@ -1383,8 +1383,8 @@ test_example_38 (mongoc_database_t *db)
    }
    /* End Example 38 */
 
-   /* Start Example 38 Post */
 done:
+   /* Start Example 38 Post */
    bson_destroy (&reply);
    mongoc_bulk_operation_destroy (bulk);
    mongoc_collection_destroy (collection);
@@ -1594,8 +1594,8 @@ test_example_42 (mongoc_database_t *db)
    }
    /* End Example 42 */
 
-   /* Start Example 42 Post */
 done:
+   /* Start Example 42 Post */
    bson_destroy (&reply);
    mongoc_bulk_operation_destroy (bulk);
    mongoc_collection_destroy (collection);
@@ -2092,8 +2092,8 @@ test_example_51 (mongoc_database_t *db)
    }
    /* End Example 51 */
 
-   /* Start Example 51 Post */
 done:
+   /* Start Example 51 Post */
    bson_destroy (&reply);
    mongoc_bulk_operation_destroy (bulk);
    mongoc_collection_destroy (collection);
@@ -2122,9 +2122,7 @@ test_example_52 (mongoc_database_t *db)
       "lastModified", BCON_BOOL (true),
       "}");
 
-   /* MONGOC_UPDATE_NONE means "no special options" */
-   r = mongoc_collection_update (collection, MONGOC_UPDATE_NONE, selector,
-                                 update, NULL, &error);
+   r = mongoc_collection_update_one(collection, selector, update, NULL, NULL, &error);
    bson_destroy (selector);
    bson_destroy (update);
 
@@ -2148,8 +2146,8 @@ test_example_52 (mongoc_database_t *db)
       mongoc_cursor_destroy (cursor);
       bson_destroy (filter);
    }
-   /* Start Example 52 Post */
 done:
+   /* Start Example 52 Post */
    mongoc_collection_destroy (collection);
    /* End Example 52 Post */
 }
@@ -2179,7 +2177,7 @@ test_example_53 (mongoc_database_t *db)
       "lastModified", BCON_BOOL (true),
       "}");
 
-   r = mongoc_collection_update (collection, MONGOC_UPDATE_MULTI_UPDATE, selector, update, NULL, &error);
+   r = mongoc_collection_update_many(collection, selector, update, NULL, NULL, &error);
    bson_destroy (selector);
    bson_destroy (update);
 
@@ -2206,8 +2204,8 @@ test_example_53 (mongoc_database_t *db)
       mongoc_cursor_destroy (cursor);
       bson_destroy (filter);
    }
-   /* Start Example 53 Post */
 done:
+   /* Start Example 53 Post */
    mongoc_collection_destroy (collection);
    /* End Example 53 Post */
 }
@@ -2238,7 +2236,7 @@ test_example_54 (mongoc_database_t *db)
       "]");
 
    /* MONGOC_UPDATE_NONE means "no special options" */
-   r = mongoc_collection_update (collection, MONGOC_UPDATE_NONE, selector, replacement, NULL, &error);
+   r = mongoc_collection_replace_one(collection, selector, replacement, NULL, NULL, &error);
    bson_destroy (selector);
    bson_destroy (replacement);
 
@@ -2269,8 +2267,8 @@ test_example_54 (mongoc_database_t *db)
       bson_destroy (opts);
       bson_destroy (filter);
    }
-   /* Start Example 54 Post */
 done:
+   /* Start Example 54 Post */
    mongoc_collection_destroy (collection);
    /* End Example 54 Post */
 }
@@ -2381,8 +2379,8 @@ test_example_55 (mongoc_database_t *db)
    }
    /* End Example 55 */
    ASSERT_COUNT (5, collection);
-   /* Start Example 55 Post */
 done:
+   /* Start Example 55 Post */
    bson_destroy (&reply);
    mongoc_bulk_operation_destroy (bulk);
    mongoc_collection_destroy (collection);
@@ -2411,8 +2409,8 @@ test_example_57 (mongoc_database_t *db)
    }
    /* End Example 57 */
    ASSERT_COUNT (3, collection);
-   /* Start Example 57 Post */
 done:
+   /* Start Example 57 Post */
    mongoc_collection_destroy (collection);
    /* End Example 57 Post */
 }
@@ -2439,8 +2437,8 @@ test_example_58 (mongoc_database_t *db)
    }
    /* End Example 58 */
    ASSERT_COUNT (2, collection);
-   /* Start Example 58 Post */
 done:
+   /* Start Example 58 Post */
    mongoc_collection_destroy (collection);
    /* End Example 58 Post */
 }
@@ -2467,12 +2465,373 @@ test_example_56 (mongoc_database_t *db)
    }
    /* End Example 56 */
    ASSERT_COUNT (0, collection);
-   /* Start Example 56 Post */
 done:
+   /* Start Example 56 Post */
    mongoc_collection_destroy (collection);
    /* End Example 56 Post */
 }
 
+
+/* clang-format on */
+
+static bool
+insert_pet (mongoc_collection_t *collection, bool is_adoptable)
+{
+   bson_t *doc = NULL;
+   bson_error_t error;
+   bool rc;
+
+   doc = BCON_NEW ("adoptable", BCON_BOOL (is_adoptable));
+
+   rc = mongoc_collection_insert_one (collection, doc, NULL, NULL, &error);
+   if (!rc) {
+      MONGOC_ERROR ("insert into pets.%s failed: %s",
+                    mongoc_collection_get_name (collection),
+                    error.message);
+      goto cleanup;
+   }
+
+cleanup:
+   bson_destroy (doc);
+   return rc;
+}
+
+
+static bool
+pet_setup (mongoc_collection_t *cats_collection,
+           mongoc_collection_t *dogs_collection)
+{
+   bool ok = true;
+
+   mongoc_collection_drop (cats_collection, NULL);
+   mongoc_collection_drop (dogs_collection, NULL);
+
+   ok = insert_pet (cats_collection, true);
+   if (!ok) {
+      goto done;
+   }
+
+   ok = insert_pet (dogs_collection, true);
+   if (!ok) {
+      goto done;
+   }
+
+   ok = insert_pet (dogs_collection, false);
+   if (!ok) {
+      goto done;
+   }
+done:
+   return ok;
+}
+
+/*
+ * Increment 'accumulator' by the amount of adoptable pets in the given
+ * collection.
+ */
+static bool
+accumulate_adoptable_count (const mongoc_client_session_t *cs,
+                            mongoc_collection_t *collection,
+                            int64_t *accumulator /* OUT */
+)
+{
+   bson_t *pipeline = NULL;
+   mongoc_cursor_t *cursor = NULL;
+   bool rc = false;
+   const bson_t *doc = NULL;
+   bson_error_t error;
+   bson_iter_t iter;
+   bson_t opts = BSON_INITIALIZER;
+
+   rc = mongoc_client_session_append (cs, &opts, &error);
+   if (!rc) {
+      MONGOC_ERROR ("could not apply session options: %s", error.message);
+      goto cleanup;
+   }
+
+   pipeline = BCON_NEW ("pipeline",
+                        "[",
+                        "{",
+                        "$match",
+                        "{",
+                        "adoptable",
+                        BCON_BOOL (true),
+                        "}",
+                        "}",
+                        "{",
+                        "$count",
+                        BCON_UTF8 ("adoptableCount"),
+                        "}",
+                        "]");
+
+   cursor = mongoc_collection_aggregate (
+      collection, MONGOC_QUERY_NONE, pipeline, &opts, NULL);
+   bson_destroy (&opts);
+
+   rc = mongoc_cursor_next (cursor, &doc);
+
+   if (mongoc_cursor_error (cursor, &error)) {
+      MONGOC_ERROR ("could not get adoptableCount: %s", error.message);
+      rc = false;
+      goto cleanup;
+   }
+
+   if (!rc) {
+      MONGOC_ERROR ("%s", "cursor has no results");
+      goto cleanup;
+   }
+
+   rc = bson_iter_init_find (&iter, doc, "adoptableCount");
+   if (rc) {
+      *accumulator += bson_iter_as_int64 (&iter);
+   } else {
+      MONGOC_ERROR ("%s", "missing key: 'adoptableCount'");
+      goto cleanup;
+   }
+
+cleanup:
+   bson_destroy (pipeline);
+   mongoc_cursor_destroy (cursor);
+   return rc;
+}
+
+/*
+ * JIRA: https://jira.mongodb.org/browse/DRIVERS-2181
+ */
+static void
+test_example_59 (mongoc_database_t *db)
+{
+   if (!test_framework_skip_if_no_txns ()) {
+      return;
+   }
+
+   mongoc_client_t *client = NULL;
+   client = test_framework_new_default_client ();
+
+   /* Start Snapshot Query Example 1 */
+   mongoc_client_session_t *cs = NULL;
+   mongoc_collection_t *cats_collection = NULL;
+   mongoc_collection_t *dogs_collection = NULL;
+   int64_t adoptable_pets_count = 0;
+   bson_error_t error;
+   mongoc_session_opt_t *session_opts;
+
+   cats_collection = mongoc_client_get_collection (client, "pets", "cats");
+   dogs_collection = mongoc_client_get_collection (client, "pets", "dogs");
+
+   /* Seed 'pets.cats' and 'pets.dogs' with example data */
+   if (!pet_setup (cats_collection, dogs_collection)) {
+      goto cleanup;
+   }
+
+   /* start a snapshot session */
+   session_opts = mongoc_session_opts_new ();
+   mongoc_session_opts_set_snapshot (session_opts, true);
+   cs = mongoc_client_start_session (client, session_opts, &error);
+   mongoc_session_opts_destroy (session_opts);
+   if (!cs) {
+      MONGOC_ERROR ("Could not start session: %s", error.message);
+      goto cleanup;
+   }
+
+   /*
+    * Perform the following aggregation pipeline, and accumulate the count in
+    * `adoptable_pets_count`.
+    *
+    *  adoptablePetsCount = db.cats.aggregate(
+    *      [ { "$match": { "adoptable": true } },
+    *        { "$count": "adoptableCatsCount" } ], session=s
+    *  ).next()["adoptableCatsCount"]
+    *
+    *  adoptablePetsCount += db.dogs.aggregate(
+    *      [ { "$match": { "adoptable": True} },
+    *        { "$count": "adoptableDogsCount" } ], session=s
+    *  ).next()["adoptableDogsCount"]
+    *
+    * Remember in order to apply the client session to
+    * this operation, you must append the client session to the options passed
+    * to `mongoc_collection_aggregate`, i.e.,
+    *
+    * mongoc_client_session_append (cs, &opts, &error);
+    * cursor = mongoc_collection_aggregate (
+    *    collection, MONGOC_QUERY_NONE, pipeline, &opts, NULL);
+    */
+   accumulate_adoptable_count (cs, cats_collection, &adoptable_pets_count);
+   accumulate_adoptable_count (cs, dogs_collection, &adoptable_pets_count);
+
+   printf ("there are %" PRId64 " adoptable pets\n", adoptable_pets_count);
+
+   /* End Snapshot Query Example 1 */
+
+   if (adoptable_pets_count != 2) {
+      MONGOC_ERROR (
+         "there should be exatly 2 adoptable_pets_count, found: %" PRId64,
+         adoptable_pets_count);
+   }
+
+   /* Start Snapshot Query Example 1 Post */
+cleanup:
+   mongoc_collection_destroy (dogs_collection);
+   mongoc_collection_destroy (cats_collection);
+   mongoc_client_session_destroy (cs);
+   mongoc_client_destroy (client);
+   /* End Snapshot Query Example 1 Post */
+}
+
+static bool
+retail_setup (mongoc_collection_t *sales_collection)
+{
+   bool ok = true;
+   bson_t *doc = NULL;
+   bson_error_t error;
+   struct timeval tv;
+   int64_t unix_time_now = 0;
+
+   if (bson_gettimeofday (&tv)) {
+      MONGOC_ERROR ("could not get time of day");
+      goto cleanup;
+   }
+   unix_time_now = 1000 * tv.tv_sec;
+
+   mongoc_collection_drop (sales_collection, NULL);
+
+   doc = BCON_NEW ("shoeType",
+                   BCON_UTF8 ("boot"),
+                   "price",
+                   BCON_INT64 (30),
+                   "saleDate",
+                   BCON_DATE_TIME (unix_time_now));
+
+   ok =
+      mongoc_collection_insert_one (sales_collection, doc, NULL, NULL, &error);
+   if (!ok) {
+      MONGOC_ERROR ("insert into retail.sales failed: %s", error.message);
+      goto cleanup;
+   }
+
+cleanup:
+   bson_destroy (doc);
+   return ok;
+}
+
+
+static void
+test_example_60 (mongoc_database_t *db)
+{
+   if (!test_framework_skip_if_no_txns ()) {
+      return;
+   }
+
+   mongoc_client_t *client = NULL;
+   client = test_framework_new_default_client ();
+
+   /* Start Snapshot Query Example 2 */
+   mongoc_client_session_t *cs = NULL;
+   mongoc_collection_t *sales_collection = NULL;
+   bson_error_t error;
+   mongoc_session_opt_t *session_opts;
+   bson_t *pipeline = NULL;
+   bson_t opts = BSON_INITIALIZER;
+   mongoc_cursor_t *cursor = NULL;
+   const bson_t *doc = NULL;
+   bool ok = true;
+   bson_iter_t iter;
+   int64_t total_sales = 0;
+
+   sales_collection = mongoc_client_get_collection (client, "retail", "sales");
+
+   /* seed 'retail.sales' with example data */
+   if (!retail_setup (sales_collection)) {
+      goto cleanup;
+   }
+
+   /* start a snapshot session */
+   session_opts = mongoc_session_opts_new ();
+   mongoc_session_opts_set_snapshot (session_opts, true);
+   cs = mongoc_client_start_session (client, session_opts, &error);
+   mongoc_session_opts_destroy (session_opts);
+   if (!cs) {
+      MONGOC_ERROR ("Could not start session: %s", error.message);
+      goto cleanup;
+   }
+
+   if (!mongoc_client_session_append (cs, &opts, &error)) {
+      MONGOC_ERROR ("could not apply session options: %s", error.message);
+      goto cleanup;
+   }
+
+   pipeline = BCON_NEW ("pipeline",
+                        "[",
+                        "{",
+                        "$match",
+                        "{",
+                        "$expr",
+                        "{",
+                        "$gt",
+                        "[",
+                        "$saleDate",
+                        "{",
+                        "$dateSubtract",
+                        "{",
+                        "startDate",
+                        "$$NOW",
+                        "unit",
+                        BCON_UTF8 ("day"),
+                        "amount",
+                        BCON_INT64 (1),
+                        "}",
+                        "}",
+                        "]",
+                        "}",
+                        "}",
+                        "}",
+                        "{",
+                        "$count",
+                        BCON_UTF8 ("totalDailySales"),
+                        "}",
+                        "]");
+
+   cursor = mongoc_collection_aggregate (
+      sales_collection, MONGOC_QUERY_NONE, pipeline, &opts, NULL);
+   bson_destroy (&opts);
+
+   ok = mongoc_cursor_next (cursor, &doc);
+
+   if (mongoc_cursor_error (cursor, &error)) {
+      MONGOC_ERROR ("could not get totalDailySales: %s", error.message);
+      goto cleanup;
+   }
+
+   if (!ok) {
+      MONGOC_ERROR ("%s", "cursor has no results");
+      goto cleanup;
+   }
+
+   ok = bson_iter_init_find (&iter, doc, "totalDailySales");
+   if (ok) {
+      total_sales = bson_iter_as_int64 (&iter);
+   } else {
+      MONGOC_ERROR ("%s", "missing key: 'totalDailySales'");
+      goto cleanup;
+   }
+
+   /* End Snapshot Query Example 2 */
+
+   if (total_sales != 1) {
+      MONGOC_ERROR ("there should be exactly 1 total_sales, found: %" PRId64,
+                    total_sales);
+   }
+
+   /* Start Snapshot Query Example 2 Post */
+cleanup:
+   mongoc_collection_destroy (sales_collection);
+   mongoc_client_session_destroy (cs);
+   mongoc_cursor_destroy (cursor);
+   bson_destroy (pipeline);
+   mongoc_client_destroy (client);
+   /* End Snapshot Query Example 2 Post */
+}
+
+/* clang-format off */
 
 typedef struct {
    bson_mutex_t lock;
@@ -2517,8 +2876,8 @@ test_sample_change_stream_command (sample_command_fn_t fn,
    bson_thread_t thread;
    int r;
 
-   /* change streams require a replica set running MongoDB 3.6+ */
-   if (test_framework_skip_if_not_rs_version_6 () &&
+   /* change streams require a replica set */
+   if (test_framework_skip_if_not_replset () &&
        test_framework_skip_if_slow ()) {
 
       /* separate client for the background thread */
@@ -2663,6 +3022,8 @@ test_sample_causal_consistency (mongoc_client_t *client)
    uint32_t increment;
    bson_error_t error;
    bool res;
+   
+   ASSERT (client);
 
    if (!test_framework_skip_if_no_txns ()) {
       return;
@@ -3056,22 +3417,6 @@ test_sample_run_command (mongoc_database_t *db)
    bson_destroy (&reply);
    /* End runCommand Example 1 */
 
-   /* Start runCommand Example 2 */
-   run_command = BCON_NEW ("collStats", BCON_UTF8 ("restaurants"));
-
-   r = mongoc_database_write_command_with_opts (
-      db, run_command, NULL /* opts */, &reply, &error);
-   bson_destroy (run_command);
-
-   if (!r) {
-      MONGOC_ERROR ("%s\n", error.message);
-   }
-
-   /* Do something with reply here */
-
-   bson_destroy (&reply);
-   /* End runCommand Example 2 */
-
    ASSERT_NO_CAPTURED_LOGS ("sample runCommand examples");
 }
 
@@ -3080,29 +3425,20 @@ test_sample_indexes (mongoc_database_t *db)
 {
    /* Start Index Example 1 */
    const char *collection_name = "records";
-   char *index_name;
-   bson_t *create_indexes;
    bson_t reply;
    bson_t keys;
+   bson_t *index_opts;
    bson_error_t error;
    bool r;
+   mongoc_collection_t *collection;
+   mongoc_index_model_t *im;
 
    bson_init (&keys);
    BSON_APPEND_INT32 (&keys, "score", 1);
-   index_name = mongoc_collection_keys_to_index_string (&keys);
-
-   create_indexes = BCON_NEW ("createIndexes", BCON_UTF8 (collection_name),
-                              "indexes", "[",
-                              "{",
-                              "key", BCON_DOCUMENT (&keys),
-                              "name", BCON_UTF8 (index_name),
-                              "}",
-                              "]");
-
-   r = mongoc_database_write_command_with_opts (
-      db, create_indexes, NULL /* opts */, &reply, &error);
-   bson_destroy (create_indexes);
-   bson_free(index_name);
+   collection = mongoc_database_get_collection (db, collection_name);
+   im = mongoc_index_model_new (&keys, NULL /* opts */);
+   r = mongoc_collection_create_indexes_with_opts (
+      collection, &im, 1, NULL /* opts */, &reply, &error);
 
    if (!r) {
       MONGOC_ERROR ("%s\n", error.message);
@@ -3112,32 +3448,29 @@ test_sample_indexes (mongoc_database_t *db)
 
    bson_destroy (&reply);
    bson_destroy (&keys);
+   mongoc_index_model_destroy (im);
+   mongoc_collection_destroy (collection);
    /* End Index Example 1 */
 
    /* Start Index Example 2 */
    collection_name = "restaurants";
+   collection = mongoc_database_get_collection (db, collection_name);
 
    bson_init (&keys);
    BSON_APPEND_INT32 (&keys, "cuisine", 1);
    BSON_APPEND_INT32 (&keys, "name", 1);
-   index_name = mongoc_collection_keys_to_index_string (&keys);
-   create_indexes = BCON_NEW ("createIndexes", BCON_UTF8 (collection_name),
-                              "indexes", "[",
-                              "{",
-                              "key", BCON_DOCUMENT (&keys),
-                              "partialFilterExpression", "{",
-                              "rating", "{",
-                              "$gt", BCON_INT32 (5),
-                              "}",
-                              "}",
-                              "name", BCON_UTF8 (index_name),
-                              "}",
-                              "]");
+   index_opts = BCON_NEW ("partialFilterExpression",
+                          "{",
+                          "rating",
+                          "{",
+                          "$gt",
+                          BCON_INT32 (5),
+                          "}",
+                          "}");
 
-   r = mongoc_database_write_command_with_opts (
-      db, create_indexes, NULL /* opts */, &reply, &error);
-   bson_destroy (create_indexes);
-   bson_free(index_name);
+   im = mongoc_index_model_new (&keys, index_opts);
+   r = mongoc_collection_create_indexes_with_opts (
+      collection, &im, 1, NULL /* opts */, &reply, &error);
 
    if (!r) {
       MONGOC_ERROR ("%s\n", error.message);
@@ -3146,7 +3479,10 @@ test_sample_indexes (mongoc_database_t *db)
    /* Do something with reply here */
 
    bson_destroy (&reply);
+   bson_destroy (index_opts);
    bson_destroy (&keys);
+   mongoc_index_model_destroy (im);
+   mongoc_collection_destroy (collection);
    /* End Index Example 2 */
 
    ASSERT_NO_CAPTURED_LOGS ("sample index examples");
@@ -3188,6 +3524,8 @@ insert_employee (mongoc_client_t *client, int employee)
    mongoc_collection_t *events;
    bson_error_t error;
    bool r;
+   
+   ASSERT (client);
 
    employees = mongoc_client_get_collection (client, "hr", "employees");
    mongoc_collection_drop (employees, NULL);
@@ -3383,6 +3721,8 @@ example_func (mongoc_client_t *client)
    bson_error_t error;
    bool r;
 
+   ASSERT (client);
+
    cs = mongoc_client_start_session (client, NULL, &error);
    if (!cs) {
       MONGOC_ERROR ("Could not start session: %s", error.message);
@@ -3404,6 +3744,8 @@ test_sample_txn_commands (mongoc_client_t *client)
 {
    mongoc_collection_t *employees;
    mongoc_collection_t *events;
+
+   ASSERT (client);
 
    if (!test_framework_skip_if_no_txns ()) {
       return;
@@ -3453,7 +3795,7 @@ callback (mongoc_client_session_t *session,
           bson_error_t *error);
 
 /* See additional usage of mongoc_client_session_with_transaction at
- * http://mongoc.org/libmongoc/1.15.3/mongoc_client_session_with_transaction.html
+ * https://www.mongoc.org/libmongoc/1.15.3/mongoc_client_session_with_transaction.html
  */
 /* Start Transactions withTxn API Example 1 */
 static bool
@@ -3616,6 +3958,8 @@ _test_sample_versioned_api_example_1 (void)
 
    mongoc_client_destroy (client);
    mongoc_server_api_destroy (server_api);
+
+   BSON_UNUSED (error);
 }
 
 static void
@@ -3650,6 +3994,8 @@ _test_sample_versioned_api_example_2 (void)
 
    mongoc_client_destroy (client);
    mongoc_server_api_destroy (server_api);
+
+   BSON_UNUSED (error);
 }
 
 static void
@@ -3684,6 +4030,8 @@ _test_sample_versioned_api_example_3 (void)
 
    mongoc_client_destroy (client);
    mongoc_server_api_destroy (server_api);
+
+   BSON_UNUSED (error);
 }
 
 static void
@@ -3718,6 +4066,8 @@ _test_sample_versioned_api_example_4 (void)
 
    mongoc_client_destroy (client);
    mongoc_server_api_destroy (server_api);
+
+   BSON_UNUSED (error);
 }
 
 static int64_t
@@ -3744,7 +4094,6 @@ _test_sample_versioned_api_example_5_6_7_8 (void)
    bson_t *docs[N_DOCS];
    int i;
    bson_t reply;
-   bson_t *cmd;
    int64_t count;
    bson_t *filter;
 
@@ -3853,16 +4202,33 @@ _test_sample_versioned_api_example_5_6_7_8 (void)
    ASSERT_OR_PRINT (ok, error);
    bson_destroy (&reply);
 
-   cmd = BCON_NEW ("count", "sales");
-   ok = mongoc_database_command_simple (
-      db, cmd, NULL /* read_prefs */, &reply, &error);
-   ASSERT_ERROR_CONTAINS (
-      error,
-      MONGOC_ERROR_SERVER,
-      323,
-      "Provided apiStrict:true, but the command count is not in API Version 1");
-   ASSERT (!ok);
-   bson_destroy (&reply);
+   {
+      const server_version_t version = test_framework_get_server_version ();
+
+      // count command was added to API version 1 in 6.0 and backported to 5.0.9
+      // and 5.3.2 (see SERVER-63850 and DRIVERS-2228). This test assumes count
+      // command is not in API version 1. Skip until examples are updated
+      // accordingly (see DRIVERS-1846).
+      const bool should_skip =
+         (version >= 106100100) ||                        // [6.0.0, inf)
+         (version >= 105103102 && version < 106100100) || // [5.3.2, 6.0.0)
+         (version >= 105100109 && version < 105101100);   // [5.0.9, 5.1.0)
+
+      if (!should_skip) {
+         bson_t *cmd = BCON_NEW ("count", "sales");
+         ok = mongoc_database_command_simple (
+            db, cmd, NULL /* read_prefs */, &reply, &error);
+         ASSERT_ERROR_CONTAINS (
+            error,
+            MONGOC_ERROR_SERVER,
+            323,
+            "Provided apiStrict:true, but the command count "
+            "is not in API Version 1");
+         ASSERT (!ok);
+         bson_destroy (&reply);
+         bson_destroy (cmd);
+      }
+   }
 #if 0
    /* This block not evaluated, but is inserted into documentation to represent the above reply.
     * Don't delete me! */
@@ -3890,7 +4256,6 @@ _test_sample_versioned_api_example_5_6_7_8 (void)
    /* End Versioned API Example 8 */
 
    bson_destroy (filter);
-   bson_destroy (cmd);
    for (i = 0; i < N_DOCS; i++) {
       bson_destroy (docs[i]);
    }
@@ -3977,15 +4342,14 @@ test_sample_commands (void)
    test_sample_command (test_example_57, 57, db, collection, false);
    test_sample_command (test_example_58, 58, db, collection, false);
    test_sample_command (test_example_56, 56, db, collection, true);
+   test_sample_command (test_example_59, 59, db, collection, true);
+   test_sample_command (test_example_60, 60, db, collection, true);
    test_sample_change_stream_command (test_example_change_stream, db);
    test_sample_causal_consistency (client);
    test_sample_aggregation (db);
    test_sample_indexes (db);
    test_sample_run_command (db);
-   /* TODO: until SERVER-46679 is resolved, skip on > 4.2 servers */
-   if (!test_framework_max_wire_version_at_least (WIRE_VERSION_4_4)) {
-      test_sample_txn_commands (client);
-   }
+   test_sample_txn_commands (client);
 
    if (test_framework_max_wire_version_at_least (WIRE_VERSION_4_9)) {
       test_sample_versioned_api ();

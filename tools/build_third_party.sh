@@ -17,145 +17,253 @@ hiredis_install=$third_party_path/build/hiredis/install
 build_type=Release
 sys=`uname -s`
 
-cd $third_party_path
-rm -rf ./build
+make_threads=$(nproc)
 
-mkdir -p build/include
-mkdir -p build/lib
-mkdir -p build/bin
-mkdir -p build/protobuf
-mkdir -p build/libevent
-mkdir -p build/zlib
-mkdir -p build/navigation
-mkdir -p build/mysql-connector-cpp
-mkdir -p build/mongo-c-driver
-mkdir -p build/mongo-cxx-driver
-mkdir -p build/hiredis
-mkdir -p build/redis-plus-plus
-mkdir -p build/clickhouse-cpp
+function log_error()
+{
+     echo -e "\e[1;41m Error: $1 \e[0m"
+     sleep 1
+}
 
-# build clickhouse
-cd $third_party_path
-cd build/clickhouse-cpp
-cmake ../../clickhouse-cpp -DBUILD_SHARED_LIBS=true -DCMAKE_INSTALL_PREFIX=install
-cmake --build . -j $(nproc)
-cmake --install . 
-cp install/lib/* ../lib
-cp -r install/include/* ../include
+function log_info()
+{
+    echo -e "\e[1;42m $1\e[0m"
+    sleep 1
+}
 
-# build hredis
-cd $third_party_path
-cd build/hiredis
-cmake ../../hiredis -DBUILD_SHARED_LIBS=true -DCMAKE_INSTALL_PREFIX=install
-cmake --build . -j $(nproc)
-cmake --install . 
-cp install/lib/* ../lib
-cp -r install/include/* ../include
+function log_debug()
+{
+    echo -e "\e[5;45m $1 \e[0m"
+    sleep 1
+}
 
-# build redis-plus-plus
-cd $third_party_path
-cd build/redis-plus-plus
-cmake ../../redis-plus-plus -DBUILD_SHARED_LIBS=true -DCMAKE_INSTALL_PREFIX=install -DCMAKE_PREFIX_PATH=$hiredis_install
-cmake --build . -j $(nproc)
-cmake --install . 
-cp install/lib/* ../lib
-cp -r install/include/* ../include
+function check_err()
+{
+    errno=$?
+    if [[ $errno != 0 ]];then
+        log_error "Has terminated process, The error number: $errno"
+        exit
+    else
+        log_info "No error"
+    fi
+}
 
-# build mongo-c-driver
-cd $third_party_path
-cd build/mongo-c-driver
-cmake ../../mongo-c-driver -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=$build_type
-cmake --build . -j $(nproc)
-cmake --install . 
-#cp install/* 
-cp install/lib/* ../lib
+function reset_env()
+{
+    log_debug "Reset build env ..."
+    
+    cd $third_party_path
+    rm -rf ./build
 
-
-# build mongo-cxx-driver
-cd $third_party_path
-cd build/mongo-cxx-driver
-cmake ../../mongo-cxx-driver -DCMAKE_CXX_STANDARD=17 -DCMAKE_PREFIX_PATH=$mongo_c_driver_install -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=$build_type
-cmake --build . -j $(nproc)
-cmake --install .
-cp -r install/include/bsoncxx/v_noabi/* ../include
-cp -r install/include/mongocxx/v_noabi/* ../include
-cp install/lib/* ../lib
+    mkdir -p build/include
+    mkdir -p build/lib
+    mkdir -p build/bin
+    mkdir -p build/protobuf
+    mkdir -p build/libevent
+    mkdir -p build/zlib
+    mkdir -p build/navigation
+    mkdir -p build/mysql-connector-cpp
+    mkdir -p build/mongo-c-driver
+    mkdir -p build/mongo-cxx-driver
+    mkdir -p build/hiredis
+    mkdir -p build/redis-plus-plus
+    mkdir -p build/clickhouse-cpp
+    check_err
+}
 
 
-# build libevent
-cd $third_party_path
-cd build/libevent
-cmake  ../../libevent
-cmake --build . -j $(nproc)
-mkdir -p ./install && make install DESTDIR=./install
-cp -r install/usr/local/include/* ../include
-#cp -r ./include/* ../include
-cp ./lib/* ../lib
+
+function build_clickhouse()
+{
+    log_debug "Rbuild clickhouse"
+    cd $third_party_path
+    cd build/clickhouse-cpp
+    cmake ../../clickhouse-cpp -DBUILD_SHARED_LIBS=true -DCMAKE_INSTALL_PREFIX=install
+    cmake --build . -j $make_threads
+    check_err
+    cmake --install . 
+    cp install/lib/* ../lib
+    cp -r install/include/* ../include
+}
 
 
-# build protobuf
-cd $third_party_path
-cd build/protobuf
-cmake ../../protobuf -Dprotobuf_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=true
-cmake --build . -j $(nproc)
-mkdir -p ./install && make install DESTDIR=./install
-cp -r install/usr/local/include/* ../include
-cp -r install/usr/local/bin/* ../bin
-cp -r install/usr/local/lib/* ../lib
-
-# build lua
-cd $third_party_path
-cd lua
-if [ $sys == "Darwin" ];then
-    make macosx
-    cp ./src/*.dylib ../build/lib
-else
-    make linux
-    cp ./src/*.so ../build/lib
-fi
-cp ./src/*.h ../build/include/
-cp ./src/*.hpp ../build/include/
-cp ./src/*.a ../build/lib
-
-# build mysql connector
-cd $third_party_path
-cd ./build/mysql-connector-cpp
-cmake ../../mysql-connector-cpp
-cmake --build . -j $(nproc)
-mkdir -p ./install && make install DESTDIR=./install
-cp -r install/usr/local/mysql/connector-c++-8.0.31/include/* ../include
-if [ $sys == "Darwin" ];then
-    cp libmysqlcppconn8.dylib ../lib/
-else
-    cp libmysqlcppconn8.so ../lib/
-fi
+function build_hredis()
+{
+    log_debug "build_hredis"
+    cd $third_party_path
+    cd build/hiredis
+    cmake ../../hiredis -DBUILD_SHARED_LIBS=true -DCMAKE_INSTALL_PREFIX=install
+    cmake --build . -j $make_threads
+    check_err
+    cmake --install . 
+    cp install/lib/* ../lib
+    cp -r install/include/* ../include
+}
 
 
-# build zlib
-cd $third_party_path
-cd build/zlib
-cmake  ../../zlib
-cmake --build . -j $(nproc)
-cp *.a $third_party_path/build/lib
-cp *.h $third_party_path/build/include
-if [ $sys == "Darwin" ];then
-    cp *.dylib $third_party_path/build/lib
-else
-    cp *.so $third_party_path/build/lib
-fi
+function build_redis_plus_plus()
+{
+    log_debug "build redis-plus-plus"
+    cd $third_party_path
+    cd build/redis-plus-plus
+    cmake ../../redis-plus-plus -DBUILD_SHARED_LIBS=true -DCMAKE_INSTALL_PREFIX=install -DCMAKE_PREFIX_PATH=$hiredis_install
+    cmake --build . -j $make_threads
+    check_err
+    cmake --install . 
+    cp install/lib/* ../lib
+    cp -r install/include/* ../include
+}
+
+function build_mongo_c_driver()
+{
+    log_debug "build mongo c driver"
+    cd $third_party_path
+    cd build/mongo-c-driver
+    cmake ../../mongo-c-driver -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=$build_type
+    cmake --build . -j $make_threads
+    check_err
+    cmake --install . 
+    cp install/lib/* ../lib
+}
 
 
-# build navigation
-cd $third_party_path
-cd build/navigation
-cmake  ../../recastnavigation
-cmake --build . -j $(nproc)
-cp *.a $third_party_path/build/lib
+function build_mongo_cxx_driver()
+{
+    log_debug "build mongo cxx driver"
+    cd $third_party_path
+    cd build/mongo-cxx-driver
+    cmake ../../mongo-cxx-driver -DCMAKE_CXX_STANDARD=17 -DCMAKE_PREFIX_PATH=$mongo_c_driver_install -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=$build_type
+    cmake --build . -j $make_threads
+    check_err
+    cmake --install .
+    cp -r install/include/bsoncxx/v_noabi/* ../include
+    cp -r install/include/mongocxx/v_noabi/* ../include
+    cp install/lib/* ../lib
+}
 
-cd $third_party_path
+
+function build_libevent()
+{
+    log_debug "build libevent"
+    cd $third_party_path
+    cd build/libevent
+    cmake  ../../libevent
+    cmake --build . -j $make_threads
+    check_err
+    mkdir -p ./install && make install DESTDIR=./install
+    cp -r install/usr/local/include/* ../include
+    #cp -r ./include/* ../include
+    cp ./lib/* ../lib
+}
+
+
+function build_protobuf()
+{
+    log_debug "build protobuf"
+    cd $third_party_path
+    cd build/protobuf
+    cmake ../../protobuf -Dprotobuf_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=true
+    cmake --build . -j $make_threads
+    check_err
+    mkdir -p ./install && make install DESTDIR=./install
+    cp -r install/usr/local/include/* ../include
+    cp -r install/usr/local/bin/* ../bin
+    cp -r install/usr/local/lib/* ../lib
+}
+
+
+function build_lua()
+{
+    log_debug "build lua"
+    cd $third_party_path
+    cd lua
+    if [ $sys == "Darwin" ];then
+        make macosx
+        cp ./src/*.dylib ../build/lib
+    else
+        make linux
+        cp ./src/*.so ../build/lib
+    fi
+    check_err
+    cp ./src/*.h ../build/include/
+    cp ./src/*.hpp ../build/include/
+    cp ./src/*.a ../build/lib
+}
+
+function build_mysql_connector()
+{
+    log_debug "build mysql connector"
+    cd $third_party_path
+    cd ./build/mysql-connector-cpp
+    cmake ../../mysql-connector-cpp
+    cmake --build . -j $make_threads
+    mkdir -p ./install && make install DESTDIR=./install
+    cp -r install/usr/local/mysql/connector-c++-8.0.31/include/* ../include
+    if [ $sys == "Darwin" ];then
+        cp libmysqlcppconn8.dylib ../lib/
+    else
+        cp libmysqlcppconn8.so ../lib/
+    fi
+}
+
+function build_zlib()
+{
+    log_debug "build zlib"
+    cd $third_party_path
+    cd build/zlib
+    cmake  ../../zlib
+    cmake --build . -j $make_threads
+    check_err
+    cp *.a $third_party_path/build/lib
+    cp *.h $third_party_path/build/include
+    if [ $sys == "Darwin" ];then
+        cp *.dylib $third_party_path/build/lib
+    else
+        cp *.so $third_party_path/build/lib
+    fi
+}
+
+
+function build_navigation()
+{
+    log_debug "build navigation"
+    cd $third_party_path
+    cd build/navigation
+    cmake  ../../recastnavigation
+    cmake --build . -j $make_threads
+    check_err
+    cp *.a $third_party_path/build/lib
+}
+
 # fix change mode
-if [ $sys == "Darwin" ];then
-    chmod +x $third_party_path/build/lib/*.dylib
-else
-    chmod +x $third_party_path/build/lib/*.so
-fi
+function chmod_lib()
+{
+    log_debug "chmod lib"
+    cd $third_party_path
+    if [ $sys == "Darwin" ];then
+        chmod +x $third_party_path/build/lib/*.dylib
+    else
+        chmod +x $third_party_path/build/lib/*.so
+    fi
+    check_err
+}
+
+function main()
+{
+    reset_env
+    build_clickhouse
+    build_hredis
+    build_redis_plus_plus
+    build_mongo_c_driver
+    build_mongo_cxx_driver
+    build_libevent
+    build_protobuf
+    build_lua
+    build_mysql_connector
+    build_zlib
+    build_navigation
+    chmod_lib
+    log_debug "All library builded!"
+}
+
+main

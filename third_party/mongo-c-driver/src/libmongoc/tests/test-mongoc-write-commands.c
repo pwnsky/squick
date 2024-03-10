@@ -54,8 +54,8 @@ test_split_insert (void)
       _mongoc_write_command_insert_append (&command, docs[i]);
    }
 
-   server_stream =
-      mongoc_cluster_stream_for_writes (&client->cluster, NULL, NULL, &error);
+   server_stream = mongoc_cluster_stream_for_writes (
+      &client->cluster, NULL, NULL, NULL, &error);
    ASSERT_OR_PRINT (server_stream, error);
    _mongoc_write_command_execute (&command,
                                   client,
@@ -125,8 +125,8 @@ test_invalid_write_concern (void)
    _mongoc_write_command_init_insert (
       &command, doc, NULL, write_flags, ++client->cluster.operation_id);
    _mongoc_write_result_init (&result);
-   server_stream =
-      mongoc_cluster_stream_for_writes (&client->cluster, NULL, NULL, &error);
+   server_stream = mongoc_cluster_stream_for_writes (
+      &client->cluster, NULL, NULL, NULL, &error);
    ASSERT_OR_PRINT (server_stream, error);
    _mongoc_write_command_execute (&command,
                                   client,
@@ -413,7 +413,7 @@ test_disconnect_mid_batch (void)
    /* Mock server recieves first insert. */
    request = mock_server_receives_request (server);
    BSON_ASSERT (request);
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
    request_destroy (request);
 
    BSON_ASSERT (!future_get_bool (future));
@@ -437,6 +437,8 @@ _configure_failpoint (mongoc_client_t *client,
 {
    bool ret;
    bson_error_t error;
+
+   ASSERT (client);
 
    ret = mongoc_client_command_simple (
       client,

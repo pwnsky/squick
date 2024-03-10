@@ -14,8 +14,8 @@
 
 #include "operations.hh"
 
-#include <catch.hpp>
 #include <sstream>
+#include <vector>
 
 #include <bsoncxx/document/value.hpp>
 #include <bsoncxx/json.hpp>
@@ -24,9 +24,11 @@
 #include <mongocxx/collection.hpp>
 #include <mongocxx/exception/logic_error.hpp>
 #include <mongocxx/test/spec/monitoring.hh>
+#include <third_party/catch/include/catch.hpp>
+
+#include <mongocxx/config/prelude.hpp>
 
 namespace mongocxx {
-MONGOCXX_INLINE_NAMESPACE_BEGIN
 
 using namespace bsoncxx;
 
@@ -114,6 +116,22 @@ options::find make_find_options(document::view arguments) {
     return options;
 }
 
+document::value bulk_write_result_to_document(const mongocxx::result::bulk_write& result) {
+    builder::basic::document upserted_ids_builder;
+    for (auto&& index_and_id : result.upserted_ids()) {
+        upserted_ids_builder.append(
+            kvp(std::to_string(index_and_id.first), index_and_id.second.get_int32().value));
+    }
+
+    return make_document(kvp("matchedCount", result.matched_count()),
+                         kvp("modifiedCount", result.matched_count()),
+                         kvp("deletedCount", result.deleted_count()),
+                         kvp("insertedCount", result.inserted_count()),
+                         kvp("upsertedCount", result.upserted_count()),
+                         kvp("insertedIds", make_document()),
+                         kvp("upsertedIds", upserted_ids_builder.extract()));
+}
+
 document::value find(collection& coll, client_session* session, document::view operation) {
     document::view arguments = operation["arguments"].get_document().value;
     document::value empty_filter = builder::basic::make_document();
@@ -170,11 +188,68 @@ document::value list_collections(entity::map& map,
     return result.extract();
 }
 
+document::value list_collection_names(entity::map& map,
+                                      client_session* session,
+                                      const std::string& object,
+                                      document::view op) {
+    const auto arguments = op["arguments"];
+    const auto empty_doc = make_document();
+
+    document::view filter;
+    if (const auto f = arguments["filter"]) {
+        filter = f.get_document().value;
+    } else {
+        filter = empty_doc;
+    }
+
+    auto cursor = session ? map.get_database(object).list_collection_names(*session, filter)
+                          : map.get_database(object).list_collection_names(filter);
+
+    builder::basic::document result;
+    result.append(builder::basic::kvp("result", [&cursor](builder::basic::sub_array array) {
+        for (auto&& document : cursor) {
+            array.append(document);
+        }
+    }));
+    return result.extract();
+}
+
 document::value list_databases(entity::map& map,
                                client_session* session,
-                               const std::string& object) {
-    auto cursor = session ? map.get_client(object).list_databases(*session)
-                          : map.get_client(object).list_databases();
+                               const std::string& object,
+                               document::view op) {
+    const auto arguments = op["arguments"];
+    const auto empty_doc = make_document();
+    const auto arguments_view = arguments ? arguments.get_document().value : empty_doc.view();
+
+    auto cursor = session ? map.get_client(object).list_databases(*session, arguments_view)
+                          : map.get_client(object).list_databases(arguments_view);
+
+    builder::basic::document result;
+    result.append(builder::basic::kvp("result", [&cursor](builder::basic::sub_array array) {
+        for (auto&& document : cursor) {
+            array.append(document);
+        }
+    }));
+    return result.extract();
+}
+
+document::value list_database_names(entity::map& map,
+                                    client_session* session,
+                                    const std::string& object,
+                                    document::view op) {
+    const auto arguments = op["arguments"];
+    const auto empty_doc = make_document();
+
+    document::view filter;
+    if (const auto f = arguments["filter"]) {
+        filter = f.get_document().value;
+    } else {
+        filter = empty_doc;
+    }
+
+    auto cursor = session ? map.get_client(object).list_database_names(*session, filter)
+                          : map.get_client(object).list_database_names(filter);
 
     builder::basic::document result;
     result.append(builder::basic::kvp("result", [&cursor](builder::basic::sub_array array) {
@@ -201,7 +276,7 @@ document::value list_indexes(entity::map& map, client_session* session, const st
 template <typename Model>
 void add_hint_to_model(Model model, document::view doc) {
     if (doc["hint"]) {
-        if (doc["hint"].type() == bsoncxx::v_noabi::type::k_string)
+        if (doc["hint"].type() == bsoncxx::type::k_string)
             model.hint(hint{doc["hint"].get_string().value});
         else
             model.hint(hint{doc["hint"].get_document().value});
@@ -233,7 +308,7 @@ T _build_update_model(document::view arguments) {
 
 template <typename Model>
 void set_hint(Model& model, const mongocxx::document::element& hint) {
-    if (hint.type() == bsoncxx::v_noabi::type::k_string) {
+    if (hint.type() == bsoncxx::type::k_string) {
         model.hint(mongocxx::hint(hint.get_string().value));
     } else {
         model.hint(mongocxx::hint(hint.get_document().value));
@@ -466,7 +541,7 @@ document::value replace_one(collection& coll, client_session* session, document:
     }
 
     if (const auto hint = arguments["hint"]) {
-        if (hint.type() == bsoncxx::v_noabi::type::k_string)
+        if (hint.type() == bsoncxx::type::k_string)
             options.hint(mongocxx::hint(hint.get_string().value));
         else
             options.hint(mongocxx::hint(hint.get_document().value));
@@ -549,6 +624,10 @@ document::value aggregate(Entity& entity, client_session* session, document::vie
 
     if (const auto comment = arguments["comment"]) {
         options.comment(comment.get_value());
+    }
+
+    if (const auto allow_disk_use = arguments["allowDiskUse"]) {
+        options.allow_disk_use(allow_disk_use.get_bool());
     }
 
     stdx::optional<cursor> result_cursor;
@@ -714,9 +793,12 @@ document::value fail_point(entity::map& map, spec::apm_checker& apm, document::v
     auto client_name = string::to_string(args["client"].get_string().value);
     auto& client = map.get_client(client_name);
 
+    // The test runner MUST also ensure that the `configureFailPoint` command is excluded from the
+    // list of observed command monitoring events for this client (if applicable).
+    apm.set_ignore_command_monitoring_event("configureFailPoint");
+
     client["admin"].run_command(args["failPoint"].get_document().value);
 
-    apm.set_ignore_command_monitoring_event("configureFailPoint");
     return make_document(kvp("uri", client.uri().to_string()),
                          kvp("failPoint", args["failPoint"]["configureFailPoint"].get_string()));
 }
@@ -742,7 +824,7 @@ document::value find_one_and_delete(collection& coll,
     }
 
     if (const auto hint = arguments["hint"]) {
-        if (hint.type() == bsoncxx::v_noabi::type::k_string)
+        if (hint.type() == bsoncxx::type::k_string)
             options.hint(mongocxx::hint(hint.get_string().value));
         else
             options.hint(mongocxx::hint(hint.get_document().value));
@@ -795,7 +877,7 @@ document::value find_one_and_replace(collection& coll,
     }
 
     if (const auto hint = arguments["hint"]) {
-        if (hint.type() == bsoncxx::v_noabi::type::k_string)
+        if (hint.type() == bsoncxx::type::k_string)
             options.hint(mongocxx::hint(hint.get_string().value));
         else
             options.hint(mongocxx::hint(hint.get_document().value));
@@ -865,7 +947,7 @@ document::value find_one_and_update(collection& coll,
     }
 
     if (const auto hint = arguments["hint"]) {
-        if (hint.type() == bsoncxx::v_noabi::type::k_string)
+        if (hint.type() == bsoncxx::type::k_string)
             options.hint(mongocxx::hint(hint.get_string().value));
         else
             options.hint(mongocxx::hint(hint.get_document().value));
@@ -1145,7 +1227,7 @@ document::value delete_one(collection& coll, client_session* session, document::
     }
 
     if (const auto hint = arguments["hint"]) {
-        if (hint.type() == bsoncxx::v_noabi::type::k_string)
+        if (hint.type() == bsoncxx::type::k_string)
             options.hint(mongocxx::hint(hint.get_string().value));
         else
             options.hint(mongocxx::hint(hint.get_document().value));
@@ -1190,7 +1272,7 @@ document::value delete_many(collection& coll, client_session* session, document:
     }
 
     if (const auto hint = arguments["hint"]) {
-        if (hint.type() == bsoncxx::v_noabi::type::k_string) {
+        if (hint.type() == bsoncxx::type::k_string) {
             options.hint(mongocxx::hint(hint.get_string().value));
         } else {
             options.hint(mongocxx::hint(hint.get_document().value));
@@ -1278,7 +1360,7 @@ document::value update_one(collection& coll, client_session* session, document::
     }
 
     if (const auto hint = arguments["hint"]) {
-        if (arguments["hint"].type() == bsoncxx::v_noabi::type::k_string)
+        if (arguments["hint"].type() == bsoncxx::type::k_string)
             options.hint(mongocxx::hint(hint.get_string().value));
         else
             options.hint(mongocxx::hint(hint.get_document().value));
@@ -1350,7 +1432,7 @@ document::value update_many(collection& coll, document::view operation) {
     }
 
     if (const auto hint = arguments["hint"]) {
-        if (hint.type() == bsoncxx::v_noabi::type::k_string)
+        if (hint.type() == bsoncxx::type::k_string)
             options.hint(mongocxx::hint(hint.get_string().value));
         else
             options.hint(mongocxx::hint(hint.get_document().value));
@@ -1436,7 +1518,7 @@ document::value count_documents(collection& coll,
     }
 
     if (const auto hint = arguments["hint"]) {
-        if (hint.type() == bsoncxx::v_noabi::type::k_string) {
+        if (hint.type() == bsoncxx::type::k_string) {
             options.hint(mongocxx::hint(hint.get_string().value));
         } else {
             options.hint(mongocxx::hint(hint.get_document().value));
@@ -1524,6 +1606,170 @@ document::value distinct(collection& coll, client_session* session, document::vi
     return result.extract();
 }
 
+document::value rewrap_many_datakey(entity::map& map,
+                                    const std::string& object,
+                                    document::view operation) {
+    auto filter = operation["arguments"]["filter"].get_document();
+
+    options::rewrap_many_datakey rewrap_opts;
+    std::string provider;
+    if (operation["arguments"]["opts"]["provider"]) {
+        provider = std::string(operation["arguments"]["opts"]["provider"].get_string().value);
+    }
+    rewrap_opts.provider(provider);
+
+    if (operation["arguments"]["opts"]["masterKey"]) {
+        auto master_key = operation["arguments"]["opts"]["masterKey"].get_document().view();
+        rewrap_opts.master_key(master_key);
+    }
+
+    client_encryption& client_encryption = map.get_client_encryption(object);
+    auto result = client_encryption.rewrap_many_datakey(filter.view(), rewrap_opts);
+
+    auto maybe_bulk_write = result.result();
+    if (maybe_bulk_write) {
+        auto bulk_write_result = maybe_bulk_write.value();
+        auto doc = make_document(
+            kvp("result",
+                make_document(
+                    kvp("bulkWriteResult", bulk_write_result_to_document(bulk_write_result)))));
+        return doc;
+    } else {
+        auto doc =
+            make_document(kvp("result", make_document(kvp("bulkWriteResult", types::b_null{}))));
+        return doc;
+    }
+}
+
+document::value delete_key(entity::map& map, const std::string& object, document::view operation) {
+    auto arguments = operation["arguments"].get_document().value;
+    auto key = arguments["id"].get_value();
+
+    client_encryption& client_encryption = map.get_client_encryption(object);
+    auto result = client_encryption.delete_key(key);
+
+    auto doc =
+        make_document(kvp("result", make_document(kvp("deletedCount", result.deleted_count()))));
+    return doc;
+}
+
+document::value get_key(entity::map& map, const std::string& object, document::view operation) {
+    auto arguments = operation["arguments"].get_document().value;
+    auto key = arguments["id"].get_value();
+
+    client_encryption& client_encryption = map.get_client_encryption(object);
+    auto result = client_encryption.get_key(key);
+
+    if (result) {
+        auto doc = make_document(kvp("result", *result));
+        return doc;
+    } else {
+        auto doc = make_document(kvp("result", types::b_null{}));
+        return doc;
+    }
+}
+
+document::value get_keys(entity::map& map, const std::string& object, document::view operation) {
+    (void)operation;
+    client_encryption& client_encryption = map.get_client_encryption(object);
+    auto cursor = client_encryption.get_keys();
+
+    return make_document(kvp("result", [&cursor](builder::basic::sub_array array) {
+        for (auto&& document : cursor) {
+            array.append(document);
+        }
+    }));
+}
+
+document::value create_data_key(entity::map& map,
+                                const std::string& object,
+                                document::view operation) {
+    std::string provider;
+    if (operation["arguments"]["kmsProvider"]) {
+        provider = std::string(operation["arguments"]["kmsProvider"].get_string().value);
+    }
+
+    options::data_key data_key_opts;
+    if (operation["arguments"]["opts"]["masterKey"]) {
+        auto master_key = operation["arguments"]["opts"]["masterKey"].get_document().value;
+        data_key_opts.master_key(master_key);
+    }
+    if (operation["arguments"]["opts"]["keyAltNames"]) {
+        std::vector<std::string> key_alt_names;
+        auto arr = operation["arguments"]["opts"]["keyAltNames"].get_array().value;
+        for (const auto& it : arr) {
+            key_alt_names.push_back(std::string(it.get_string().value));
+        }
+        data_key_opts.key_alt_names(key_alt_names);
+    }
+    if (operation["arguments"]["opts"]["keyMaterial"]) {
+        auto bin = operation["arguments"]["opts"]["keyMaterial"].get_binary();
+        std::vector<uint8_t> bytes(bin.bytes, bin.bytes + bin.size);
+        data_key_opts.key_material(bytes);
+    }
+
+    client_encryption& client_encryption = map.get_client_encryption(object);
+    auto result = client_encryption.create_data_key(provider, data_key_opts);
+
+    return make_document(kvp("result", result));
+}
+
+document::value add_key_alt_name(entity::map& map,
+                                 const std::string& object,
+                                 document::view operation) {
+    auto arguments = operation["arguments"].get_document().value;
+    auto id = arguments["id"].get_value();
+    std::string key_alt_name = std::string(arguments["keyAltName"].get_string().value);
+
+    client_encryption& client_encryption = map.get_client_encryption(object);
+    auto result = client_encryption.add_key_alt_name(id, key_alt_name);
+
+    if (result) {
+        auto doc = make_document(kvp("result", *result));
+        return doc;
+    } else {
+        auto doc = make_document(kvp("result", types::b_null{}));
+        return doc;
+    }
+}
+
+document::value get_key_by_alt_name(entity::map& map,
+                                    const std::string& object,
+                                    document::view operation) {
+    auto arguments = operation["arguments"].get_document().value;
+    std::string key_alt_name = std::string(arguments["keyAltName"].get_string().value);
+
+    client_encryption& client_encryption = map.get_client_encryption(object);
+    auto result = client_encryption.get_key_by_alt_name(key_alt_name);
+
+    if (result) {
+        auto doc = make_document(kvp("result", *result));
+        return doc;
+    } else {
+        auto doc = make_document(kvp("result", types::b_null{}));
+        return doc;
+    }
+}
+
+document::value remove_key_alt_name(entity::map& map,
+                                    const std::string& object,
+                                    document::view operation) {
+    auto arguments = operation["arguments"].get_document().value;
+    auto id = arguments["id"].get_value();
+    std::string key_alt_name = std::string(arguments["keyAltName"].get_string().value);
+
+    client_encryption& client_encryption = map.get_client_encryption(object);
+    auto result = client_encryption.remove_key_alt_name(id, key_alt_name);
+
+    if (result) {
+        auto doc = make_document(kvp("result", *result));
+        return doc;
+    } else {
+        auto doc = make_document(kvp("result", types::b_null{}));
+        return doc;
+    }
+}
+
 document::value create_find_cursor(entity::map& map,
                                    const std::string& object,
                                    client_session* session,
@@ -1547,6 +1793,96 @@ document::value create_find_cursor(entity::map& map,
         map.insert(key, std::move(cursor));
     }
 
+    return make_document();
+}
+
+document::value create_search_index(collection& coll, document::view operation) {
+    const auto arguments = operation["arguments"];
+    const auto raw_model = arguments["model"];
+    const auto name = raw_model["name"];
+    const auto definition = raw_model["definition"].get_document().value;
+
+    const auto model = name ? search_index_model(name.get_string().value, definition)
+                            : search_index_model(definition);
+
+    return make_document(kvp("result", coll.search_indexes().create_one(model)));
+}
+
+document::value create_search_indexes(collection& coll, document::view operation) {
+    auto arguments = operation["arguments"];
+
+    auto raw_models = arguments["models"].get_array().value;
+    std::vector<search_index_model> models;
+
+    for (auto&& m : raw_models) {
+        search_index_model model = m["name"]
+                                       ? search_index_model(m["name"].get_string().value,
+                                                            m["definition"].get_document().value)
+                                       : search_index_model(m["definition"].get_document().value);
+        models.push_back(model);
+    }
+
+    std::vector<std::string> created_indexes = coll.search_indexes().create_many(models);
+
+    builder::basic::array result;
+    for (auto s : created_indexes) {
+        result.append(s);
+    }
+
+    return make_document(kvp("result", result.view()));
+}
+
+document::value drop_search_index(collection& coll, document::view operation) {
+    auto arguments = operation["arguments"];
+
+    auto name = arguments["name"].get_string().value;
+
+    coll.search_indexes().drop_one(name);
+
+    // no return value from drop_one
+    return make_document();
+}
+
+document::value list_search_indexes(collection& coll, document::view operation) {
+    auto arguments = operation["arguments"];
+    options::aggregate options;
+    if (arguments["aggregationOptions"]) {
+        const auto aggregation_options = arguments["aggregationOptions"].get_document().view();
+        for (auto&& element : aggregation_options) {
+            if (element.key() == stdx::string_view("batchSize")) {
+                options.batch_size(element.get_int32().value);
+            } else {
+                throw std::logic_error{"unsupported aggregateOptions field: " +
+                                       std::string(element.key())};
+            }
+        }
+    }
+
+    cursor c = arguments["name"]
+                   ? coll.search_indexes().list(arguments["name"].get_string().value, options)
+                   : coll.search_indexes().list(options);
+
+    // we must loop over the resulting cursor to trigger server events for the spec tests
+    auto result = bsoncxx::builder::basic::document{};
+    result.append(
+        bsoncxx::builder::basic::kvp("result", [&c](bsoncxx::builder::basic::sub_array array) {
+            for (auto&& document : c) {
+                array.append(document);
+            }
+        }));
+
+    return result.extract();
+}
+
+document::value update_search_index(collection& coll, document::view operation) {
+    auto arguments = operation["arguments"];
+
+    auto name = arguments["name"].get_string().value;
+    auto definition = arguments["definition"].get_document().value;
+
+    coll.search_indexes().update_one(name, definition);
+
+    // no return value from update_one
     return make_document();
 }
 
@@ -1627,6 +1963,36 @@ document::value operations::run(entity::map& entity_map,
         auto key = string::to_string(op["arguments"]["client"].get_string().value);
         return fail_point(entity_map, apm_map[key], op_view);
     }
+    if (name == "targetedFailPoint") {
+        REQUIRE(object == "testRunner");
+
+        const auto arguments = op_view["arguments"];
+
+        const auto fail_point = arguments["failPoint"].get_document().value;
+        REQUIRE(!fail_point.empty());
+
+        auto* const session_ptr = get_session(op_view, entity_map);
+        REQUIRE(session_ptr);
+        auto& session = *session_ptr;
+        const auto server_id = session.server_id();
+
+        // Test runners MUST error if the session is not pinned to a mongos server at the time
+        // this operation is executed.
+        if (server_id == 0) {
+            FAIL("session object is not pinned to a mongos server");
+        }
+
+        auto& client = session.client();
+
+        // If the driver exposes an API to target a specific server for a command, the test runner
+        // SHOULD use the client entity associated with the session to execute the
+        // configureFailPoint command.
+        client["admin"].run_command(fail_point, server_id);
+
+        return make_document(kvp("uri", client.uri().to_string()),
+                             kvp("failPoint", fail_point["configureFailPoint"].get_string()),
+                             kvp("serverId", static_cast<std::int64_t>(server_id)));
+    }
     if (name == "findOneAndDelete")
         return find_one_and_delete(
             entity_map.get_collection(object), get_session(op_view, entity_map), op_view);
@@ -1639,8 +2005,14 @@ document::value operations::run(entity::map& entity_map,
     if (name == "listCollections") {
         return list_collections(entity_map, get_session(op_view, entity_map), object, op_view);
     }
+    if (name == "listCollectionNames") {
+        return list_collection_names(entity_map, get_session(op_view, entity_map), object, op_view);
+    }
     if (name == "listDatabases") {
-        return list_databases(entity_map, get_session(op_view, entity_map), object);
+        return list_databases(entity_map, get_session(op_view, entity_map), object, op_view);
+    }
+    if (name == "listDatabaseNames") {
+        return list_database_names(entity_map, get_session(op_view, entity_map), object, op_view);
     }
     if (name == "listIndexes") {
         return list_indexes(entity_map, get_session(op_view, entity_map), object);
@@ -1698,6 +2070,18 @@ document::value operations::run(entity::map& entity_map,
         auto session_name = string::to_string(op["arguments"]["session"].get_string().value);
         auto& session = entity_map.get_client_session(session_name);
         return assert_session_transaction_state(session, op_view);
+    }
+    if (name == "assertSessionPinned") {
+        auto& session = entity_map.get_client_session(
+            string::to_string(op["arguments"]["session"].get_string().value));
+        REQUIRE(session.server_id() != 0);
+        return make_document();
+    }
+    if (name == "assertSessionUnpinned") {
+        auto& session = entity_map.get_client_session(
+            string::to_string(op["arguments"]["session"].get_string().value));
+        REQUIRE(session.server_id() == 0);
+        return make_document();
     }
     if (name == "dropCollection") {
         auto coll_name = string::to_string(op["arguments"]["collection"].get_string().value);
@@ -1855,9 +2239,57 @@ document::value operations::run(entity::map& entity_map,
         auto& coll = entity_map.get_collection(object);
         return distinct(coll, get_session(op_view, entity_map), op_view);
     }
+    if (name == "rewrapManyDataKey") {
+        return rewrap_many_datakey(entity_map, object, op_view);
+    }
+    if (name == "deleteKey") {
+        return delete_key(entity_map, object, op_view);
+    }
+    if (name == "getKey") {
+        return get_key(entity_map, object, op_view);
+    }
+    if (name == "getKeys") {
+        return get_keys(entity_map, object, op_view);
+    }
+    if (name == "createDataKey") {
+        return create_data_key(entity_map, object, op_view);
+    }
+    if (name == "addKeyAltName") {
+        return add_key_alt_name(entity_map, object, op_view);
+    }
+    if (name == "getKeyByAltName") {
+        return get_key_by_alt_name(entity_map, object, op_view);
+    }
+    if (name == "removeKeyAltName") {
+        return remove_key_alt_name(entity_map, object, op_view);
+    }
+    if (name == "createSearchIndex") {
+        auto& coll = entity_map.get_collection(object);
+
+        return create_search_index(coll, op_view);
+    }
+    if (name == "createSearchIndexes") {
+        auto& coll = entity_map.get_collection(object);
+
+        return create_search_indexes(coll, op_view);
+    }
+    if (name == "dropSearchIndex") {
+        auto& coll = entity_map.get_collection(object);
+
+        return drop_search_index(coll, op_view);
+    }
+    if (name == "listSearchIndexes") {
+        auto& coll = entity_map.get_collection(object);
+
+        return list_search_indexes(coll, op_view);
+    }
+    if (name == "updateSearchIndex") {
+        auto& coll = entity_map.get_collection(object);
+
+        return update_search_index(coll, op_view);
+    }
 
     throw std::logic_error{"unsupported operation: " + name};
 }
 
-MONGOCXX_INLINE_NAMESPACE_END
 }  // namespace mongocxx

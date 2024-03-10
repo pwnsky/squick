@@ -44,10 +44,9 @@ check_operation_ids (const bson_t *events)
          if (first_operation_id == -1) {
             first_operation_id = operation_id;
          } else if (operation_id != first_operation_id) {
-            MONGOC_ERROR (
+            test_error (
                "%s sent wrong operation_id",
                bson_lookup_utf8 (&event, "command_started_event.command_name"));
-            abort ();
          }
       }
    }
@@ -144,8 +143,7 @@ test_get_error (void)
       client, "db", tmp_bson ("{'foo': 1}"), NULL, NULL, NULL);
    request = mock_server_receives_msg (
       server, MONGOC_MSG_NONE, tmp_bson ("{'$db': 'db', 'foo': 1}"));
-   mock_server_replies_simple (request,
-                               "{'ok': 0, 'errmsg': 'foo', 'code': 42}");
+   reply_to_request_simple (request, "{'ok': 0, 'errmsg': 'foo', 'code': 42}");
    ASSERT (!future_get_bool (future));
    ASSERT_ERROR_CONTAINS (error, MONGOC_ERROR_QUERY, 42, "foo");
 
@@ -685,13 +683,13 @@ _test_query_operation_id (bool pooled)
 
    future = future_cursor_next (cursor, &doc);
    request = mock_server_receives_request (server);
-   mock_server_replies_to_find (request,
-                                MONGOC_QUERY_NONE,
-                                123 /* cursor id */,
-                                1,
-                                "db.collection",
-                                "{}",
-                                true);
+   reply_to_op_msg_request (request,
+                            MONGOC_MSG_NONE,
+                            tmp_bson ("{'ok': 1,"
+                                      " 'cursor': {"
+                                      "    'id': {'$numberLong': '123'},"
+                                      "    'ns': 'db.collection',"
+                                      "    'firstBatch': [{}]}}"));
 
    ASSERT (future_get_bool (future));
    future_destroy (future);
@@ -702,8 +700,7 @@ _test_query_operation_id (bool pooled)
 
    future = future_cursor_next (cursor, &doc);
    request = mock_server_receives_request (server);
-   mock_server_replies_simple (request,
-                               "{'ok': 0, 'code': 42, 'errmsg': 'bad!'}");
+   reply_to_request_simple (request, "{'ok': 0, 'code': 42, 'errmsg': 'bad!'}");
 
    ASSERT (!future_get_bool (future));
    future_destroy (future);
@@ -849,6 +846,8 @@ static void
 set_cmd_test_callbacks (mongoc_client_t *client, void *context)
 {
    mongoc_apm_callbacks_t *callbacks;
+
+   ASSERT (client);
 
    callbacks = mongoc_apm_callbacks_new ();
    mongoc_apm_set_command_started_cb (callbacks, cmd_started_cb);
@@ -1115,8 +1114,7 @@ test_command_failed_reply_mock (void)
 
    future = future_cursor_next (cursor, &doc);
    request = mock_server_receives_request (server);
-   mock_server_replies_simple (request,
-                               "{'ok': 0, 'code': 42, 'errmsg': 'bad!'}");
+   reply_to_request_simple (request, "{'ok': 0, 'code': 42, 'errmsg': 'bad!'}");
 
    ASSERT (!future_get_bool (future));
    future_destroy (future);
@@ -1173,12 +1171,11 @@ test_command_failed_reply_hangup (void)
 
    future = future_cursor_next (cursor, &doc);
    request = mock_server_receives_request (server);
-   mock_server_replies_simple (request,
-                               "{'ok': 0, 'code': 42, 'errmsg': 'bad!'}");
+   reply_to_request_simple (request, "{'ok': 0, 'code': 42, 'errmsg': 'bad!'}");
 
    ASSERT (!future_get_bool (future));
    future_destroy (future);
-   mock_server_hangs_up (request);
+   reply_to_request_with_hang_up (request);
    request_destroy (request);
 
    ASSERT_MATCH (&test.reply, "{}");
@@ -1293,7 +1290,7 @@ _test_service_id (bool is_loadbalanced)
    if (is_loadbalanced) {
       request = mock_server_receives_any_hello_with_match (
          server, "{'loadBalanced': true}", "{'loadBalanced': true}");
-      mock_server_replies_simple (
+      reply_to_request_simple (
          request,
          tmp_str ("{'ismaster': true,"
                   " 'minWireVersion': %d,"
@@ -1307,18 +1304,18 @@ _test_service_id (bool is_loadbalanced)
          server,
          "{'loadBalanced': { '$exists': false }}",
          "{'loadBalanced': { '$exists': false }}");
-      mock_server_replies_simple (request,
-                                  tmp_str ("{'ismaster': true,"
-                                           " 'minWireVersion': %d,"
-                                           " 'maxWireVersion': %d,"
-                                           " 'msg': 'isdbgrid'}",
-                                           WIRE_VERSION_MIN,
-                                           WIRE_VERSION_5_0));
+      reply_to_request_simple (request,
+                               tmp_str ("{'ismaster': true,"
+                                        " 'minWireVersion': %d,"
+                                        " 'maxWireVersion': %d,"
+                                        " 'msg': 'isdbgrid'}",
+                                        WIRE_VERSION_MIN,
+                                        WIRE_VERSION_5_0));
    }
    request_destroy (request);
 
    request = mock_server_receives_msg (server, 0, tmp_bson ("{'ping': 1}"));
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
 
    ASSERT_OR_PRINT (future_get_bool (future), error);
    future_destroy (future);
@@ -1331,8 +1328,8 @@ _test_service_id (bool is_loadbalanced)
                                           &error);
 
    request = mock_server_receives_msg (server, 0, tmp_bson ("{'ping': 1}"));
-   mock_server_replies_simple (
-      request, "{'ok': 0, 'code': 8, 'errmsg': 'UnknownError'}");
+   reply_to_request_simple (request,
+                            "{'ok': 0, 'code': 8, 'errmsg': 'UnknownError'}");
    request_destroy (request);
 
    ASSERT (!future_get_bool (future));

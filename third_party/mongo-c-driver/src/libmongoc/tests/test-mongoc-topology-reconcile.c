@@ -45,10 +45,9 @@ has_server_description (const mongoc_topology_t *topology,
    mc_shared_tpld td = mc_tpld_take_ref (topology);
    const mongoc_set_t *servers = mc_tpld_servers_const (td.ptr);
    bool found = false;
-   int i;
    const mongoc_server_description_t *sd;
 
-   for (i = 0; i < (int) servers->items_len; i++) {
+   for (size_t i = 0; i < servers->items_len; i++) {
       sd = mongoc_set_get_item_const (servers, i);
       if (!strcmp (sd->host.host_and_port, host_and_port)) {
          found = true;
@@ -69,6 +68,8 @@ selects_server (mongoc_client_t *client,
    bson_error_t error;
    mongoc_server_description_t *sd;
    bool result;
+
+   ASSERT (client);
 
    sd = mongoc_topology_select (
       client->topology, MONGOC_SS_READ, read_prefs, NULL, &error);
@@ -250,14 +251,14 @@ _test_topology_reconcile_sharded (bool pooled)
 
    /* mongos */
    request = mock_server_receives_any_hello (mongos);
-   mock_server_replies_simple (request,
-                               tmp_str ("{'ok': 1,"
-                                        " 'isWritablePrimary': true,"
-                                        " 'minWireVersion': %d,"
-                                        " 'maxWireVersion': %d,"
-                                        " 'msg': 'isdbgrid'}",
-                                        WIRE_VERSION_MIN,
-                                        WIRE_VERSION_MAX));
+   reply_to_request_simple (request,
+                            tmp_str ("{'ok': 1,"
+                                     " 'isWritablePrimary': true,"
+                                     " 'minWireVersion': %d,"
+                                     " 'maxWireVersion': %d,"
+                                     " 'msg': 'isdbgrid'}",
+                                     WIRE_VERSION_MIN,
+                                     WIRE_VERSION_MAX));
 
    request_destroy (request);
 
@@ -279,7 +280,7 @@ _test_topology_reconcile_sharded (bool pooled)
                           mock_server_get_host_and_port (mongos),
                           mock_server_get_host_and_port (secondary));
 
-   mock_server_replies_simple (request, secondary_response);
+   reply_to_request_simple (request, secondary_response);
 
    request_destroy (request);
 
@@ -534,7 +535,7 @@ test_topology_reconcile_retire_single (void)
       client, "admin", tmp_bson ("{'ping': 1}"), NULL, NULL, NULL, &error);
    request = mock_server_receives_msg (
       primary, MONGOC_QUERY_NONE, tmp_bson ("{'ping': 1}"));
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
 
    BSON_ASSERT (!has_server_description (
@@ -649,7 +650,7 @@ test_topology_reconcile_add_single (void)
       client, "admin", tmp_bson ("{'ping': 1}"), NULL, NULL, NULL, &error);
    request = mock_server_receives_msg (
       primary, MONGOC_QUERY_NONE, tmp_bson ("{'ping': 1}"));
-   mock_server_replies_ok_and_destroys (request);
+   reply_to_request_with_ok_and_destroy (request);
    ASSERT_OR_PRINT (future_get_bool (future), error);
 
    /* added server description */

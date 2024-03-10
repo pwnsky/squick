@@ -45,8 +45,7 @@ session_from_name (json_test_ctx_t *ctx, const char *session_name)
    } else if (!strcmp (session_name, "session1")) {
       return ctx->sessions[1];
    } else {
-      MONGOC_ERROR ("Unrecognized session name: %s", session_name);
-      abort ();
+      test_error ("Unrecognized session name: %s", session_name);
    }
 }
 
@@ -141,7 +140,9 @@ static void
 start_thread (json_test_worker_thread_t *wt)
 {
    wt->shutdown_requested = false;
-   mcommon_thread_create (&wt->thread, json_test_worker_thread_run, wt);
+   int ret =
+      mcommon_thread_create (&wt->thread, json_test_worker_thread_run, wt);
+   ASSERT_CMPINT (0, ==, ret);
 }
 
 static void
@@ -175,6 +176,8 @@ json_test_ctx_init (json_test_ctx_t *ctx,
    char *session_opts_path;
    int i;
    bson_error_t error;
+
+   ASSERT (client);
 
    memset (ctx, 0, sizeof (*ctx));
 
@@ -301,7 +304,7 @@ convert_bulk_write_result (const bson_t *doc, bson_t *r)
       } else if (BSON_ITER_IS_KEY (&iter, "upsertedCount")) {
          BSON_APPEND_VALUE (r, "nUpserted", bson_iter_value (&iter));
       } else if (BSON_ITER_IS_KEY (&iter, "upsertedIds")) {
-         bson_t upserted;
+         bson_array_builder_t *upserted;
          bson_iter_t inner;
          uint32_t i = 0;
 
@@ -314,26 +317,22 @@ convert_bulk_write_result (const bson_t *doc, bson_t *r)
          }
 
          if (i) {
-            i = 0;
             ASSERT (bson_iter_recurse (&iter, &inner));
-            BSON_APPEND_ARRAY_BEGIN (r, "upserted", &upserted);
+            BSON_APPEND_ARRAY_BUILDER_BEGIN (r, "upserted", &upserted);
 
             while (bson_iter_next (&inner)) {
                bson_t upsert;
-               const char *keyptr = NULL;
-               char key[12];
                int64_t index;
 
-               bson_uint32_to_string (i++, &keyptr, key, sizeof key);
                index = bson_ascii_strtoll (bson_iter_key (&inner), NULL, 10);
 
-               BSON_APPEND_DOCUMENT_BEGIN (&upserted, keyptr, &upsert);
+               bson_array_builder_append_document_begin (upserted, &upsert);
                BSON_APPEND_INT32 (&upsert, "index", (int32_t) index);
                BSON_APPEND_VALUE (&upsert, "_id", bson_iter_value (&inner));
-               bson_append_document_end (&upserted, &upsert);
+               bson_array_builder_append_document_end (upserted, &upsert);
             }
 
-            bson_append_array_end (r, &upserted);
+            bson_append_array_builder_end (r, upserted);
          }
       } else if (BSON_ITER_IS_KEY (&iter, "insertedIds")) {
          /* tests expect insertedIds, but they're optional and we omit them */
@@ -794,7 +793,6 @@ add_request_to_bulk (mongoc_bulk_operation_t *bulk,
          bulk, &filter, &update, &opts, error);
    } else {
       test_error ("unrecognized request name %s", name);
-      abort ();
    }
 
    bson_destroy (&opts);
@@ -957,7 +955,6 @@ single_write (mongoc_collection_t *collection,
          collection, &filter, &update, &opts, reply, &error);
    } else {
       test_error ("unrecognized request name %s", name);
-      abort ();
    }
 
    value_init_from_doc (&value, reply);
@@ -1768,7 +1765,7 @@ list_databases (mongoc_client_t *client,
    mongoc_cursor_t *cursor;
    bson_t opts;
 
-   BSON_ASSERT (client);
+   ASSERT (client);
    bson_init (&opts);
    append_session (session, &opts);
 
@@ -1793,7 +1790,7 @@ list_database_names (mongoc_client_t *client,
    bson_t opts;
    bson_error_t error;
 
-   BSON_ASSERT (client);
+   ASSERT (client);
    bson_init (&opts);
    append_session (session, &opts);
 
@@ -2008,7 +2005,6 @@ create_index (mongoc_database_t *db,
    bson_t keys;
    const char *name;
    bson_t opts = BSON_INITIALIZER;
-   bson_t *create_indexes;
    bson_error_t error;
    bool r;
 
@@ -2024,23 +2020,13 @@ create_index (mongoc_database_t *db,
    name = bson_lookup_utf8 (&args, "name");
    COPY_EXCEPT ("keys", "name");
 
-   create_indexes = BCON_NEW ("createIndexes",
-                              BCON_UTF8 (collection->collection),
-                              "indexes",
-                              "[",
-                              "{",
-                              "key",
-                              BCON_DOCUMENT (&keys),
-                              "name",
-                              BCON_UTF8 (name),
-                              "}",
-                              "]");
-
-   r = mongoc_database_write_command_with_opts (
-      db, create_indexes, &opts, NULL, &error);
+   mongoc_index_model_t *im =
+      mongoc_index_model_new (&keys, tmp_bson ("{'name': '%s'}", name));
+   r = mongoc_collection_create_indexes_with_opts (
+      collection, &im, 1, &opts, NULL /* reply */, &error);
+   mongoc_index_model_destroy (im);
 
    bson_destroy (&opts);
-   bson_destroy (create_indexes);
 
    check_result (test, operation, r, NULL, &error);
 
@@ -2059,6 +2045,8 @@ collection_exists (mongoc_client_t *client, const bson_t *operation)
    mongoc_database_t *db;
    bool found = false;
    uint32_t i;
+
+   ASSERT (client);
 
    bson_lookup_doc (operation, "arguments", &args);
    database_name = bson_lookup_utf8 (&args, "database");
@@ -2099,6 +2087,8 @@ index_exists (mongoc_client_t *client, const bson_t *operation)
    const bson_t *doc;
    bool found = false;
 
+   ASSERT (client);
+
    bson_lookup_doc (operation, "arguments", &args);
    database_name = bson_lookup_utf8 (&args, "database");
    collection_name = bson_lookup_utf8 (&args, "collection");
@@ -2126,12 +2116,11 @@ index_exists (mongoc_client_t *client, const bson_t *operation)
 static uint32_t
 _get_total_pool_cleared_event (json_test_ctx_t *ctx)
 {
-   uint32_t i;
    uint32_t total = 0;
    mc_shared_tpld td = mc_tpld_take_ref (ctx->client->topology);
 
    /* Go get total generation counts. */
-   for (i = 0; i < mc_tpld_servers_const (td.ptr)->items_len; i++) {
+   for (size_t i = 0u; i < mc_tpld_servers_const (td.ptr)->items_len; i++) {
       const mongoc_server_description_t *sd;
 
       sd = mongoc_set_get_item_const (mc_tpld_servers_const (td.ptr), i);
@@ -2147,24 +2136,22 @@ _get_total_pool_cleared_event (json_test_ctx_t *ctx)
 static void
 wait_for_event (json_test_ctx_t *ctx, const bson_t *operation)
 {
-   const char *event_name;
-   int64_t count;
-   uint64_t expires_us;
    bool satisfied = false;
    int64_t measured = 0;
    int64_t total = 0;
 
-   event_name = bson_lookup_utf8 (operation, "arguments.event");
-   count = bson_lookup_int32 (operation, "arguments.count");
-   expires_us = bson_get_monotonic_time () + WAIT_FOR_EVENT_TIMEOUT_MS * 1000;
-   while (!satisfied && bson_get_monotonic_time () < expires_us) {
-      int64_t diff;
+   const char *const event_name =
+      bson_lookup_utf8 (operation, "arguments.event");
+   const int32_t count = bson_lookup_int32 (operation, "arguments.count");
+   const int64_t expires_us =
+      bson_get_monotonic_time () + WAIT_FOR_EVENT_TIMEOUT_MS * 1000;
 
+   while (!satisfied && bson_get_monotonic_time () < expires_us) {
       if (0 == strcmp (event_name, "ServerMarkedUnknownEvent")) {
          bson_mutex_lock (&ctx->mutex);
          measured = ctx->measured_ServerMarkedUnknownEvent;
          total = ctx->total_ServerMarkedUnknownEvent;
-         diff = total - measured;
+         const int64_t diff = total - measured;
          if (diff >= count) {
             /* "count" events were accounted for in the test. There may be more
              * later. */
@@ -2174,9 +2161,9 @@ wait_for_event (json_test_ctx_t *ctx, const bson_t *operation)
          bson_mutex_unlock (&ctx->mutex);
       } else if (0 == strcmp (event_name, "PoolClearedEvent")) {
          bson_mutex_lock (&ctx->mutex);
-         total = _get_total_pool_cleared_event (ctx);
+         total = (int64_t) _get_total_pool_cleared_event (ctx);
          measured = ctx->measured_PoolClearedEvent;
-         diff = total - measured;
+         const int64_t diff = total - measured;
          if (diff >= count) {
             /* "count" events were accounted for in the test. There may be more
              * later. */
@@ -2191,35 +2178,35 @@ wait_for_event (json_test_ctx_t *ctx, const bson_t *operation)
          _mongoc_usleep (WAIT_FOR_EVENT_TICK_MS * 1000);
       }
    }
+
    if (!satisfied) {
-      test_error ("did not see enough %s events after 10s. %d total occurred. "
-                  "%d accounted for. But %d more expected",
+      test_error ("did not see enough %s events after 10s. %" PRId64
+                  " total occurred. %" PRId64 " accounted for. But %" PRId32
+                  " more expected",
                   event_name,
-                  (int) total,
-                  (int) measured,
-                  (int) count);
+                  total,
+                  measured,
+                  count);
    }
 }
 
 static void
 wait_for_primary_change (json_test_ctx_t *ctx, const bson_t *operation)
 {
-   uint64_t expires_us;
    bool satisfied = false;
    int64_t measured = 0;
    int64_t total = 0;
-   uint32_t timeout_ms;
 
-   timeout_ms = bson_lookup_int32 (operation, "arguments.timeoutMS");
-   expires_us = bson_get_monotonic_time () + timeout_ms * 1000;
+   const int32_t timeout_ms =
+      bson_lookup_int32 (operation, "arguments.timeoutMS");
+   const int64_t expires_us = bson_get_monotonic_time () + timeout_ms * 1000;
+
    while (!satisfied && bson_get_monotonic_time () < expires_us) {
-      int64_t diff;
-
       bson_mutex_lock (&ctx->mutex);
 
       total = ctx->total_PrimaryChangedEvent;
       measured = ctx->measured_PrimaryChangedEvent;
-      diff = total - measured;
+      const int64_t diff = total - measured;
       if (diff >= 1) {
          /* 1 event accounted for. There may be more later. */
          ctx->measured_PrimaryChangedEvent++;
@@ -2231,35 +2218,37 @@ wait_for_primary_change (json_test_ctx_t *ctx, const bson_t *operation)
          _mongoc_usleep (10 * 1000);
       }
    }
+
    if (!satisfied) {
-      test_error (
-         "did not see any primary change events after %dms. %d total occurred. "
-         "%d accounted for.",
-         timeout_ms,
-         (int) total,
-         (int) measured);
+      test_error ("did not see any primary change events after %" PRId32
+                  "ms. %" PRId64 " total occurred. "
+                  "%" PRId64 " accounted for.",
+                  timeout_ms,
+                  total,
+                  measured);
    }
 }
 
 static void
 assert_event_count (json_test_ctx_t *ctx, const bson_t *operation)
 {
-   const char *event_name;
-   uint32_t count;
-   uint32_t total = 0;
+   int64_t total = 0;
 
-   event_name = bson_lookup_utf8 (operation, "arguments.event");
-   count = bson_lookup_int32 (operation, "arguments.count");
+   const char *const event_name =
+      bson_lookup_utf8 (operation, "arguments.event");
+   const int32_t count = bson_lookup_int32 (operation, "arguments.count");
 
    if (0 == strcmp (event_name, "ServerMarkedUnknownEvent")) {
       total = ctx->total_ServerMarkedUnknownEvent;
    } else if (0 == strcmp (event_name, "PoolClearedEvent")) {
-      total = _get_total_pool_cleared_event (ctx);
+      total = (int64_t) _get_total_pool_cleared_event (ctx);
    } else {
       test_error ("Unknown event: %s", event_name);
    }
+
    if (count != total) {
-      test_error ("event count %s mismatched. Expected %d, but have %d",
+      test_error ("event count %s mismatched. Expected %" PRId32
+                  ", but have %" PRId64,
                   event_name,
                   count,
                   total);
