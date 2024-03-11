@@ -8,23 +8,23 @@
 mkdir -p ../bin
 sys=`uname -s`
 if [ $sys == "Darwin" ];then
-echo "Mac runtime init"
-cp ../third_party/build/lib/*.dylib ../bin
-cd ../bin
-ln -s libmysqlcppconn8.dylib libmysqlcppconn8.2.dylib
+    echo "Mac runtime init"
+    cp ../third_party/build/lib/*.dylib ../bin
+    cd ../bin
+    ln -s libmysqlcppconn8.dylib libmysqlcppconn8.2.dylib
 else
-echo "Linux runtime init"
-# for linux
-cp ../third_party/build/lib/*.so ../bin
-cd ../bin
-ln -s libprotobuf.so libprotobuf.so.32
-ln -s libmysqlcppconn8.so libmysqlcppconn8.so.2
-ln -s libmongocxx.so libmongocxx.so._noabi
-ln -s libbsoncxx.so libbsoncxx.so._noabi
-ln -s libmongoc-1.0.so libmongoc-1.0.so.0
-ln -s libbson-1.0.so libbson-1.0.so.0
-ln -s libhiredis.so libhiredis.so.1.1.0
-ln -s libredis++.so libredis++.so.1
+    echo "Linux runtime init"
+    # for linux
+    cp ../third_party/build/lib/*.so ../bin
+    cd ../bin
+    ln -sf libprotobuf.so libprotobuf.so.32
+    ln -sf libmysqlcppconn8.so libmysqlcppconn8.so.2
+    ln -sf libmongocxx.so libmongocxx.so._noabi
+    ln -sf libbsoncxx.so libbsoncxx.so._noabi
+    ln -sf libmongoc-1.0.so libmongoc-1.0.so.0
+    ln -sf libbson-1.0.so libbson-1.0.so.0
+    ln -sf libhiredis.so libhiredis.so.1.1.0
+    ln -sf libredis++.so libredis++.so.1
 fi
 
 

@@ -14,5 +14,8 @@ cd ${project_path}
 mkdir -p "${build_path}/sqkctl"
 cd "${build_path}/sqkctl"
 pwd
+
+log_info "Start to build sqkctl tools"
+
 cmake ${project_path}/src/tools/sqkctl
-make -j $(nproc)
+time make -j $(nproc)

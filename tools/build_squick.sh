@@ -8,17 +8,24 @@
 source source/build.sh
 
 # 将Proto文件生成代码
+log_info "Generate protocol c++ files from proto files"
 cd ${project_path}/tools
-bash ./proto2code.sh
+time bash ./proto2code.sh
+check_err
 
 # 生成配置文件
+log_info "Generate configure files"
 cd ${project_path}/tools/
-bash ./generate_config.sh
+time bash ./generate_config.sh
+check_err
 
 # 初始化第三方.so
+log_info "Init runtime env"
 cd ${project_path}/tools/
-bash ./init_runtime_dll.sh
+time bash ./init_runtime_dll.sh
+check_err
 
+log_info "Start to build squick"
 build_squick() {
 	cd ${project_path}
 	mkdir -p "${build_path}"
@@ -35,4 +42,5 @@ build_squick() {
 
 # build
 time build_squick $@
-
+check_err
+log_info "All builded"
