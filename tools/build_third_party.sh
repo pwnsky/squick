@@ -9,44 +9,12 @@
 #cd protobuf-21.6
 
 # for docker env
+source ./source/build.sh
 git config --global --add safe.directory /mnt
 
 third_party_path=`pwd`/../third_party
 mongo_c_driver_install=$third_party_path/build/mongo-c-driver/install
 hiredis_install=$third_party_path/build/hiredis/install
-build_type=Release
-sys=`uname -s`
-
-make_threads=$(nproc)
-
-function log_error()
-{
-     echo -e "\e[1;41m Error: $1 \e[0m"
-     sleep 1
-}
-
-function log_info()
-{
-    echo -e "\e[1;42m $1\e[0m"
-    sleep 1
-}
-
-function log_debug()
-{
-    echo -e "\e[5;45m $1 \e[0m"
-    sleep 1
-}
-
-function check_err()
-{
-    errno=$?
-    if [[ $errno != 0 ]];then
-        log_error "Has terminated process, The error number: $errno"
-        exit
-    else
-        log_info "No error"
-    fi
-}
 
 function reset_env()
 {

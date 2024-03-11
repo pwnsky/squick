@@ -16,7 +16,6 @@ rm -rf ./bin
 rm -rf ./tools/config_generator
 rm -rf ./data
 
-#rm -rf ./deploy/config/ini/*
 rm -rf ./deploy/*.log
 rm -rf ./deploy/data/logs
 rm -rf ./deploy/data/www
@@ -26,6 +25,3 @@ rm -rf ./src/squick/struct/*.pb.cc
 rm -rf ./src/squick/struct/protocol_define.h
 rm -rf ./third_party/build
 
-#cd ./src/www/admin
-#bash clean.sh
-#cd ..

@@ -49,9 +49,8 @@ fi
 
 if [ $DISTRO == "Debian" ] || [ $DISTRO == "Ubuntu" ] || [ $DISTRO == "Raspbian" ]; then
     $sudo apt-get update
-    $sudo apt-get -y git cmake unzip automake make g++ libtool libreadline-dev libncurses5-dev pkg-config libssl-dev
-    $sudo apt-get -y install nodejs npm # nodejs for compile www admin
-    $sudo apt-get -y install libjsoncpp-dev uuid-dev zlib1g-dev # drogon project 
+    $sudo apt-get -y git cmake unzip automake make g++ libtool pkg-config
+    $sudo apt-get -y install libreadline-dev libssl-dev libncurses5-dev
     
 elif [ $DISTRO == "CentOS" ] || [ $DISTRO == "RHEL" ] || [ $DISTRO == "Fedora" ]  || [ $DISTRO == "Aliyun" ]; then
     $sudo yum -y install cmake unzip automake make
@@ -60,7 +59,6 @@ elif [ $DISTRO == "CentOS" ] || [ $DISTRO == "RHEL" ] || [ $DISTRO == "Fedora" ]
     $sudo yum -y install readline-devel
     $sudo yum -y install ncurses-devel
     $sudo yum -y install pkg-config
-    $sudo yum -y install nodejs npm
 else # arch
     $sudo pacman -Sy cmake unzip automake make
     $sudo pacman -S g++
@@ -68,5 +66,4 @@ else # arch
     $sudo pacman -S libreadline
     $sudo pacman -S libncurses
     $sudo pacman -S pkg-config
-    $sudo pacman -S nodejs npm
 fi
