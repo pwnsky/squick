@@ -51,6 +51,8 @@ set(SQUICK_BUILD_PLUGIN_SERVER_PATH ${SolutionDir}/bin/plugin/node)
 set(SQUICK_BUILD_PLUGIN_EXTEND_PATH ${SolutionDir}/bin/plugin/extend)
 # 测试插件路径
 set(SQUICK_BUILD_PLUGIN_TESTER_PATH ${SolutionDir}/bin/plugin/tester)
+# Tutorial plugins build path
+set(SQUICK_BUILD_PLUGIN_TUTORIAL_PATH ${SolutionDir}/bin/plugin/tutorial)
 
 include_directories(
 	${SolutionDir}
@@ -113,6 +115,7 @@ add_subdirectory(squick)
 add_subdirectory(node)
 add_subdirectory(tools/tester)
 add_subdirectory(tools/sqkcli)
+add_subdirectory(tutorial)
 
 if( EXTRA STREQUAL "EXTRA" )
 	

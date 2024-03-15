@@ -1,7 +1,7 @@
 
 
 #include "plugin.h"
-#include "hello_http_server_module.h"
+#include "http_module.h"
 
 SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){
 

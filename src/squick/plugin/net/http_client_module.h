@@ -25,6 +25,7 @@ class HttpClientModule : public IHttpClientModule {
     virtual int Post(const std::string &strUri, const std::string &strData, std::string &strResData);
     virtual int Post(const std::string &strUri, const std::map<std::string, std::string> &xHeaders, const std::string &strData, std::string &strResData);
 
+
     // actually, sync get method
     // WebStatus
     virtual int Get(const std::string &strUri, std::string &strResData);
