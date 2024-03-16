@@ -301,6 +301,64 @@ bool HttpClient::DoGet(const std::string &strUri, HTTP_RESP_FUNCTOR_PTR pCB, con
     return MakeRequest(strUri, pCB, "", xHeaders, HttpType::SQUICK_HTTP_REQ_GET, memo);
 }
 
+reqid_t HttpClient::GenerateRequestID() {
+    last_req_id_++;
+    if (last_req_id_ > 0xffffffffffff) {
+        last_req_id_ = 0;
+    }
+    return last_req_id_;
+}
+
+Awaitable<HttpClientResponseData> HttpClient::Get(const std::string& url, const std::map<std::string, std::string>& xHeaders, const Guid id) {
+    HTTP_RESP_FUNCTOR_PTR pd(
+        new HTTP_RESP_FUNCTOR(std::bind(&HttpClient::CoroutineResponseHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+    auto req_id = GenerateRequestID();
+    Awaitable<HttpClientResponseData> awaitbale;
+    awaitbale.data_.req_id = req_id;
+    awaitbale.handler_ = std::bind(&HttpClient::CoroutineBinder, this, placeholders::_1);
+    MakeRequest(url, pd, "", xHeaders, HttpType::SQUICK_HTTP_REQ_GET, "", Guid(0, req_id));
+    return awaitbale;
+}
+
+void HttpClient::CoroutineBinder(Awaitable<HttpClientResponseData>* awaitble) {
+    if (awaitble == nullptr) {
+        dout << "awaitble is nullptr\n";
+        return;
+    }
+    reqid_t req_id = awaitble->data_.req_id;
+    auto iter = co_awaitbles_.find(req_id);
+    if (iter == co_awaitbles_.end()) {
+        co_awaitbles_[req_id] = awaitble;
+    }
+    else {
+        dout << "CoroutineBinder: same req id in a map, req id: " << req_id
+            << " address: " << awaitble->coro_handle_.address() << std::endl;
+    }
+}
+
+void HttpClient::CoroutineResponseHandler(const Guid id, const int state_code, const std::string& strRespData, const std::string& strMemoData) {
+    dout << "CoroutineResponseHandler: \n";
+    reqid_t req_id = id.nData64;
+    auto iter = co_awaitbles_.find(req_id);
+    if (iter == co_awaitbles_.end()) {
+        dout << "CoroutineBinder: Not find req id in a map, req id: " << req_id << std::endl;
+        return;
+    }
+    auto awaitble = iter->second;
+    awaitble->data_.error = 0;
+    awaitble->data_.content = strRespData;
+    awaitble->data_.state_code = state_code;
+    dout << "CoroutineResponseHandler: coroutineid: " << awaitble->coro_handle_.address() << endl;
+
+    // resume coroutine
+    if (!awaitble->coro_handle_.done()) {
+        awaitble->coro_handle_.resume();
+    }
+
+    // remove request infos
+    co_awaitbles_.erase(iter);
+}
+
 bool HttpClient::DoPost(const std::string &strUri, const std::string &strPostData, const std::string &strMemoData, HTTP_RESP_FUNCTOR_PTR pCB,
                         const std::map<std::string, std::string> &xHeaders, const Guid id) {
     return MakeRequest(strUri, pCB, strPostData, xHeaders, HttpType::SQUICK_HTTP_REQ_POST, strMemoData);

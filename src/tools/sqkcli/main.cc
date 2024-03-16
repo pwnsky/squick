@@ -29,18 +29,16 @@ int main(int argc, char *argv[]) {
 
     if (argc == 1) // 如果没加参数运行
     {
-        /*
-        std::cout << "<<  Squick  Help >>\n"
-                "Usage: plugin=plugin_file server=server_name id=server_id [-d]\n"
-                "Introduce:\n"
-                "       plugin: Set your plugin file to load\n"
-                "       server: Your server name, logger module will use it to log\n"
-                "       id    : Set your server id, using it to load server configure informations\n"
-                "       -d    : Run server in background\n"
-                "Examples: ./squick plugin=test.xml server=defualt id=1\n";
-        "\n";*/
-
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=tester test=proxy id=100000")));
+        // std::cout << "<<  Sqkcli  Help >>\n"
+        //         "Usage: plugin=plugin_file server=server_name id=server_id [-d]\n"
+        //         "Introduce:\n"
+        //         "       plugin: Set your plugin file to load\n"
+        //         "       server: Your server name, logger module will use it to log\n"
+        //         "       id    : Set your server id, using it to load server configure informations\n"
+        //         "       -d    : Run server in background\n"
+        //         "Examples: ./squick plugin=test.xml server=defualt id=1\n";
+        // "\n";
+        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=sqkcli test=proxy id=100000")));
     } else {
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList)));
     }

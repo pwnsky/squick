@@ -50,7 +50,9 @@ set(SQUICK_BUILD_PLUGIN_SERVER_PATH ${SolutionDir}/bin/plugin/node)
 # 拓展插件路径
 set(SQUICK_BUILD_PLUGIN_EXTEND_PATH ${SolutionDir}/bin/plugin/extend)
 # 测试插件路径
-set(SQUICK_BUILD_PLUGIN_TESTER_PATH ${SolutionDir}/bin/plugin/tester)
+set(SQUICK_BUILD_PLUGIN_SQKCLI_PATH ${SolutionDir}/bin/plugin/sqkcli)
+# Tutorial plugins build path
+set(SQUICK_BUILD_PLUGIN_TUTORIAL_PATH ${SolutionDir}/bin/plugin/tutorial)
 
 include_directories(
 	${SolutionDir}
@@ -111,8 +113,8 @@ add_definitions(-D_X64 -D_CONSOLE -DSQUICK_DYNAMIC_PLUGIN -DSQUICK_ENABLE_SSL)
 add_subdirectory(struct)
 add_subdirectory(squick)
 add_subdirectory(node)
-add_subdirectory(tools/tester)
 add_subdirectory(tools/sqkcli)
+add_subdirectory(tutorial)
 
 if( EXTRA STREQUAL "EXTRA" )
 	

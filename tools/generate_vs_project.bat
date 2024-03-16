@@ -16,3 +16,4 @@ cmake %project_path%\src -DMODE=dev
 
 rem Project has generated at %build_path%
 explorer ..\cache
+pause

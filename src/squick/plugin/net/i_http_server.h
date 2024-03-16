@@ -16,6 +16,7 @@
 
 #include "i_net.h"
 #include <squick/core/platform.h>
+#include "coroutine.h"
 
 #if PLATFORM == PLATFORM_WIN
 #include <fcntl.h>
@@ -51,6 +52,16 @@ enum HttpType {
     SQUICK_HTTP_REQ_PATCH = 1 << 8
 };
 
+enum class HttpContentType {
+    Html,Css, JavaScript,
+    Json, Text,
+    FontWoff, FontWoff2,
+    Mp3,
+    XMsvideo,
+    jpeg, Png, XIcon,
+    Binary,
+};
+
 class HttpRequest {
   public:
     HttpRequest(const int64_t index) {
@@ -84,6 +95,9 @@ typedef std::shared_ptr<HTTP_RECEIVE_FUNCTOR> HTTP_RECEIVE_FUNCTOR_PTR;
 
 typedef std::function<WebStatus(std::shared_ptr<HttpRequest> req)> HTTP_FILTER_FUNCTOR;
 typedef std::shared_ptr<HTTP_FILTER_FUNCTOR> HTTP_FILTER_FUNCTOR_PTR;
+
+typedef std::function<Coroutine<bool>(std::shared_ptr<HttpRequest> req)> HTTP_RECEIVE_CORO_FUNCTOR;
+typedef std::shared_ptr<HTTP_RECEIVE_CORO_FUNCTOR> HTTP_RECEIVE_CORO_FUNCTOR_PTR;
 
 class IHttpServer {
   public:

@@ -147,12 +147,13 @@ function build_lua()
     cd lua
     if [ $sys == "Darwin" ];then
         make macosx
+        check_err
         cp ./src/*.dylib ../build/lib
     else
         make linux
+        check_err
         cp ./src/*.so ../build/lib
     fi
-    check_err
     cp ./src/*.h ../build/include/
     cp ./src/*.hpp ../build/include/
     cp ./src/*.a ../build/lib
@@ -214,7 +215,6 @@ function chmod_lib()
     else
         chmod +x $third_party_path/build/lib/*.so
     fi
-    check_err
 }
 
 function main()

@@ -87,7 +87,7 @@ bool GameplayManagerModule::GameplayDestroy(int id) {
 }
 
 bool GameplayManagerModule::GameplayPlayerQuit(const Guid &player) {
-    dout << "玩家: " << player.ToString() << " quit \n";
+    dout << "Player: " << player.ToString() << " quit \n";
     //int id = m_player_manager_->GetPlayerGameplayID(player);
     int id = -1;
 
@@ -104,10 +104,10 @@ bool GameplayManagerModule::GameplayPlayerQuit(const Guid &player) {
                 return GameplayDestroy(id);
             }
         } else {
-            dout << "该玩家没有在游戏对局中" << std::endl;
+            dout << "This player not in game." << std::endl;
         }
     } else {
-        dout << "该玩家没有在游戏对局中" << std::endl;
+        dout << "This player not in game." << std::endl;
     }
     return false;
 }

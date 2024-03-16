@@ -118,6 +118,10 @@ bool HttpClientModule::DoPost(const std::string &strUri, const std::map<std::str
     return m_pHttpClient->DoPost(strUri, strPostData, strMemo, pCB, xHeaders.size() == 0 ? m_xDefaultHttpHeaders : xHeaders, aid);
 }
 
+Awaitable<HttpClientResponseData> HttpClientModule::Get(const std::string& strUri, const std::map<std::string, std::string>& xHeaders) {
+    return m_pHttpClient->Get(strUri, xHeaders);
+}
+
 void HttpClientModule::CallBack(const Guid id, const int state_code, const std::string &strRespData) {
     std::shared_ptr<RespData> xRespData = mxRespDataMap.GetElement(id);
     if (xRespData) {

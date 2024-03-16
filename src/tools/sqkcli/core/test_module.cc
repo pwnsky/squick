@@ -12,11 +12,11 @@ bool TestModule::Awake() {
     for (auto it : xModules) {
         IModule *pModule = it;
         IModule *pTestModule = pm_->FindTestModule(pModule->name);
-        std::cout << "尝试查找：" << pModule->name << std::endl;
+        //std::cout << "尝试查找：" << pModule->name << std::endl;
         if (nullptr != pTestModule) {
             pTestModule->Awake();
         } else {
-            std::cout << "查找模块出错，为空" << std::endl;
+            //std::cout << "查找模块出错，为空" << std::endl;
         }
     }
 

@@ -3,7 +3,7 @@
 #define MD5_HPP
 
 // Github: https://github.com/ulwanski/md5
-#define _CRT_SECURE_NO_WARNINGS
+// #define _CRT_SECURE_NO_WARNINGS
 
 #include <string>
 #include <cstring>
