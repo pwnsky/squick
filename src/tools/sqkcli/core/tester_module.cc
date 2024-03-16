@@ -15,7 +15,6 @@ bool TesterModule::Start() {
     m_class_ = pm_->FindModule<IClassModule>();
     m_net_client_ = pm_->FindModule<INetClientModule>();
 
-
     return true;
 }
 
