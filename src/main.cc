@@ -42,6 +42,38 @@ void PrintLogo() {
     std::cout << "Version: " << SQUICK_VERSION << "\nGithub : https://github.com/pwnsky/squick\n\n";
 }
 
+// Just for debug or dev
+void DefaultStartUp(std::string strArgvList, std::vector<std::shared_ptr<PluginServer>> &serverList) {
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=master id=1")));
+
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=world id=100")));
+    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=world id=101"))); // 区服2
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=db_proxy id=300")));
+
+    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=db_proxy id=301"))); // 区服2
+
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=login id=2")));
+
+    // Lobby
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1000")));
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1001")));
+    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1002")));
+
+    // Game
+    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=3000")));
+    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=3001")));
+    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game_mgr id=2000")));
+
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=500")));
+    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=501")));
+
+    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=502"))); // 区服2
+}
+
+void TutorialStartUp(std::string strArgvList, std::vector<std::shared_ptr<PluginServer>>& serverList) {
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=tutorial/http")));
+}
+
 int main(int argc, char *argv[]) {
     // std::cout << "__cplusplus:" << __cplusplus << std::endl;
 
@@ -66,37 +98,14 @@ int main(int argc, char *argv[]) {
         std::cout << "<<  Squick  Help >>\n"
                 "Usage: plugin=plugin_file server=server_name id=server_id [-d]\n"
                 "Introduce:\n"
-                "       plugin: Set your plugin file to load\n"
-                "       server: Your server name, logger module will use it to log\n"
+                "       type: Set your plugin file to load and this is your server name, logger module will use it to log\n"
                 "       id    : Set your server id, using it to load server configure informations\n"
                 "       -d    : Run server in background\n"
-                "Examples: ./squick plugin=test.xml server=defualt id=1\n";
+                "Examples: ./squick type=test.xml server=defualt id=1\n";
         "\n";*/
 
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=master id=1")));
-        
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=world id=100")));
-        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=world id=101"))); // 区服2
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=db_proxy id=300")));
-
-        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=db_proxy id=301"))); // 区服2
-
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=login id=2"))); 
-        
-        // Lobby
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1000")));
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1001")));
-        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1002")));
-
-        // Game
-        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=3000")));
-        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=3001")));
-        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game_mgr id=2000")));
-
-        serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=500")));
-        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=501")));
-
-        //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=502"))); // 区服2
+        DefaultStartUp(strArgvList, serverList);
+        //TutorialStartUp(strArgvList, serverList);
     } else {
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList)));
     }

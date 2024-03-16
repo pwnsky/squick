@@ -6,6 +6,9 @@
 #include "i_http_server.h"
 #include <squick/core/i_module.h>
 #include <squick/core/platform.h>
+#include "coroutine.h"
+
+#define HTTP_SERVER_COROTINE_MAX_SURVIVAL_TIME 10
 
 class IHttpServerModule : public IModule {
   public:
@@ -17,6 +20,14 @@ class IHttpServerModule : public IModule {
                            bool (BaseType::*handleReceiver)(std::shared_ptr<HttpRequest> req)) {
         HTTP_RECEIVE_FUNCTOR functor = std::bind(handleReceiver, pBase, std::placeholders::_1);
         HTTP_RECEIVE_FUNCTOR_PTR functorPtr(new HTTP_RECEIVE_FUNCTOR(functor));
+        return AddMsgCB(strPath, eRequestType, functorPtr);
+    }
+
+    template <typename BaseType>
+    bool AddRequestHandler(const std::string& strPath, const HttpType eRequestType, BaseType* pBase,
+        Coroutine<bool> (BaseType::* handleReceiver)(std::shared_ptr<HttpRequest> req)) {
+        HTTP_RECEIVE_CORO_FUNCTOR functor = std::bind(handleReceiver, pBase, std::placeholders::_1);
+        HTTP_RECEIVE_CORO_FUNCTOR_PTR functorPtr(new HTTP_RECEIVE_CORO_FUNCTOR(functor));
         return AddMsgCB(strPath, eRequestType, functorPtr);
     }
 
@@ -44,6 +55,7 @@ class IHttpServerModule : public IModule {
     virtual bool AddMiddlewareCB(const HTTP_FILTER_FUNCTOR_PTR& cb) = 0;
   private:
     virtual bool AddMsgCB(const std::string &strPath, const HttpType eRequestType, const HTTP_RECEIVE_FUNCTOR_PTR &cb) = 0;
+    virtual bool AddMsgCB(const std::string& strPath, const HttpType eRequestType, const HTTP_RECEIVE_CORO_FUNCTOR_PTR& cb) = 0;
     virtual bool AddFilterCB(const std::string &strPath, const HTTP_FILTER_FUNCTOR_PTR &cb) = 0;
 };
 #endif

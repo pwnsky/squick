@@ -7,6 +7,13 @@ class IHttpClientModule : public IModule {
   public:
     virtual ~IHttpClientModule(){};
 
+    // C++20 coroutine function
+    virtual Awaitable<HttpClientResponseData> CoGet(const std::string& strUri) {
+        const std::map<std::string, std::string> xHeaders;
+        return Get(strUri, xHeaders);
+    }
+    virtual Awaitable<HttpClientResponseData> Get(const std::string& strUri, const std::map<std::string, std::string>& xHeaders) = 0;
+
     template <typename BaseType>
     bool DoGet(const std::string &strUri, BaseType *pBase,
                void (BaseType::*handleReceiver)(const Guid id, const int state_code, const std::string &strRespData)) {
@@ -67,7 +74,7 @@ class IHttpClientModule : public IModule {
     virtual int Get(const std::string &strUri, std::string &strResData) = 0;
     virtual int Get(const std::string &strUri, const std::map<std::string, std::string> &xHeaders, std::string &strResData) = 0;
 
-  protected:
+protected:
     virtual bool DoGet(const std::string &strUrl, const std::map<std::string, std::string> &xHeaders, HTTP_RESP_FUNCTOR_PTR pCB) = 0;
 
     virtual bool DoPost(const std::string &strUrl, const std::map<std::string, std::string> &xHeaders, const std::string &strPostData,

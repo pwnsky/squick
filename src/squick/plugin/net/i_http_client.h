@@ -18,6 +18,7 @@
 
 #include "i_net.h"
 #include <squick/core/platform.h>
+#include "coroutine.h"
 
 #if PLATFORM == PLATFORM_WIN
 #include <fcntl.h>
@@ -44,6 +45,15 @@
 
 typedef std::function<void(const Guid id, const int state_code, const std::string &strRespData, const std::string &strMemoData)> HTTP_RESP_FUNCTOR;
 typedef std::shared_ptr<HTTP_RESP_FUNCTOR> HTTP_RESP_FUNCTOR_PTR;
+typedef long int reqid_t;
+
+struct HttpClientResponseData {
+    reqid_t req_id;
+    int error;
+    int state_code;
+    std::string header;
+    std::string content;
+};
 
 class IHttpClient {
   public:
@@ -59,6 +69,8 @@ class IHttpClient {
 
     virtual bool DoPost(const std::string &strUri, const std::string &strPostData, const std::string &strMemoData, HTTP_RESP_FUNCTOR_PTR pCB,
                         const std::map<std::string, std::string> &xHeaders, const Guid id = Guid()) = 0;
+
+    virtual Awaitable<HttpClientResponseData> Get(const std::string& url, const std::map<std::string, std::string>& xHeaders, const Guid id = Guid()) = 0;
 };
 
 #endif

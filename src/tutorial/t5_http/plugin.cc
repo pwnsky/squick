@@ -2,21 +2,12 @@
 
 #include "plugin.h"
 #include "http_module.h"
+namespace tutorial {
+	SQUICK_EXPORT void SquickPluginLoad(IPluginManager* pm) { CREATE_PLUGIN(pm, Plugin) };
+	SQUICK_EXPORT void SquickPluginUnload(IPluginManager* pm) { DESTROY_PLUGIN(pm, Plugin) };
 
-SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){
-
-    CREATE_PLUGIN(pm, Tutorial5)
-
-};
-
-SQUICK_EXPORT void SquickPluginUnload(IPluginManager *pm){DESTROY_PLUGIN(pm, Tutorial5)};
-
-//////////////////////////////////////////////////////////////////////////
-
-const int Tutorial5::GetPluginVersion() { return 0; }
-
-const std::string Tutorial5::GetPluginName() { return GET_CLASS_NAME(Tutorial5); }
-
-void Tutorial5::Install() { REGISTER_MODULE(pm_, IHelloWorld5, HelloWorld5) }
-
-void Tutorial5::Uninstall() { UNREGISTER_MODULE(pm_, IHelloWorld5, HelloWorld5) }
+	const int Plugin::GetPluginVersion() { return 0; }
+	const std::string Plugin::GetPluginName() { return GET_CLASS_NAME(Plugin); }
+	void Plugin::Install() { REGISTER_MODULE(pm_, IHttpModule, HttpModule) }
+	void Plugin::Uninstall() { UNREGISTER_MODULE(pm_, IHttpModule, HttpModule) }
+}

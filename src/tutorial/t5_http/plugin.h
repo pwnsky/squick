@@ -1,15 +1,13 @@
 #pragma once
 
 #include <squick/core/base.h>
-
-class Tutorial5 : public IPlugin {
+namespace tutorial {
+class Plugin : public IPlugin {
   public:
-    Tutorial5(IPluginManager *p) { pm_ = p; }
+      Plugin(IPluginManager *p) { pm_ = p; }
     virtual const int GetPluginVersion();
-
     virtual const std::string GetPluginName();
-
     virtual void Install();
-
     virtual void Uninstall();
 };
+}

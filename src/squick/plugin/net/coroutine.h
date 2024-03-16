@@ -1,3 +1,5 @@
+#pragma once
+
 #include <coroutine>
 #include <iostream>
 #include <functional>
@@ -20,12 +22,15 @@ public:
         }
     };
     using handle_type = std::coroutine_handle<promise_type>;
-    explicit Coroutine(handle_type handle) : coro_handle_(handle) { started_time_ = time(nullptr); }
+    explicit Coroutine(handle_type handle) : coro_handle_(handle) { start_time_ = time(nullptr); }
     ~Coroutine() {}
     handle_type GetHandle() const {
         return coro_handle_;
     }
-    time_t started_time_ = 0;
+    time_t GetStartTime(){
+        return start_time_;
+    }
+    time_t start_time_ = 0;
 private:
     handle_type coro_handle_;
 };
@@ -35,12 +40,11 @@ class Awaitable {
 public:
     bool await_ready() { return false; }
     void await_suspend(std::coroutine_handle<> h) {
-        coroutine_handle_ = h;
-        handler_.operator()(req_id, this);
+        coro_handle_ = h;
+        handler_.operator()(this);
     }
-    T* await_resume() { return data_; }
-    T* data_ = nullptr;
-    int req_id = 0;
-    std::function< void(const int req_id, Awaitable<T>* awaitable)> handler_;
-    std::coroutine_handle<> coroutine_handle_;
+    T await_resume() { return data_; }
+    T data_;
+    std::function< void(Awaitable<T>* awaitable)> handler_;
+    std::coroutine_handle<> coro_handle_;
 };

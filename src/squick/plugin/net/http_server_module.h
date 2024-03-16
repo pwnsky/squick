@@ -8,6 +8,8 @@
 #include <squick/core/base.h>
 #include <squick/plugin/log/i_log_module.h>
 
+#include <list>
+
 class HttpServerModule : public IHttpServerModule {
 
   public:
@@ -26,16 +28,21 @@ class HttpServerModule : public IHttpServerModule {
     virtual bool OnReceiveNetPack(std::shared_ptr<HttpRequest> req);
     virtual WebStatus OnFilterPack(std::shared_ptr<HttpRequest> req);
     virtual bool AddMsgCB(const std::string &strCommand, const HttpType eRequestType, const HTTP_RECEIVE_FUNCTOR_PTR &cb);
+    virtual bool AddMsgCB(const std::string& strCommand, const HttpType eRequestType, const HTTP_RECEIVE_CORO_FUNCTOR_PTR& cb);
     virtual bool AddFilterCB(const std::string &strCommand, const HTTP_FILTER_FUNCTOR_PTR &cb);
     virtual bool AddMiddlewareCB(const HTTP_FILTER_FUNCTOR_PTR& cb);
+    int FixCoroutines(time_t now_time);
 
   private:
     IHttpServer *m_pHttpServer;
     ILogModule *m_log_;
 
     MapEx<HttpType, std::map<std::string, HTTP_RECEIVE_FUNCTOR_PTR>> mMsgCBMap;
+    MapEx<HttpType, std::map<std::string, HTTP_RECEIVE_CORO_FUNCTOR_PTR>> coro_funcs_;
     std::map<std::string, HTTP_FILTER_FUNCTOR_PTR> mMsgFliterMap;
 
+    list<Coroutine<bool>> coroutines_;
     HTTP_RECEIVE_FUNCTOR_PTR mComMsgCBList;
     HTTP_FILTER_FUNCTOR_PTR middleware_ = nullptr;
+    time_t last_check_coroutines_time_ = 0;
 };
