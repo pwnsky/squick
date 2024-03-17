@@ -1,29 +1,82 @@
 
+#include "redis_module.h"
 
-#include "redis_tester.h"
-#include <assert.h>
+bool HelloWorld7::Start() {
+    mxRedisClient.Connect("127.0.0.1", 6379, "pwnsky");
+    return true;
+}
 
-RedisTester::RedisTester(const std::string &ip, int port, const std::string &auth) { mxRedisClient.Connect(ip, port, auth); }
+bool HelloWorld7::AfterStart() { return true; }
 
-bool RedisTester::RunTester() {
-    if (!mxRedisClient.GetAuthKey().empty() && !mxRedisClient.AUTH(mxRedisClient.GetAuthKey())) {
-        printf("password error!\n");
-        return true;
+bool HelloWorld7::Update() {
+    mxRedisClient.Update();
+
+    if (mxRedisClient.IsConnect()) {
+        if (!mxRedisClient.GetAuthKey().empty() && !mxRedisClient.AUTH(mxRedisClient.GetAuthKey())) {
+            printf("password error!\n");
+        }
+        mxRedisClient.FLUSHALL();
+
+        static bool tested = false;
+        if (!tested) {
+            tested = true;
+
+            Performance performance;
+            mxRedisClient.SET("testkey", "123456");
+            std::string data;
+            mxRedisClient.GET("testkey", data);
+
+            performance.CheckTimePoint();
+            std::cout << "cost1: " << performance.TimeScope() << " ==> " << data << std::endl;
+
+            TestPerformance();
+
+            ////////
+            /*
+TestKey();
+TestString();
+TestList();
+TestHash();
+TestSet();
+TestSort();
+TestPubSub();
+            */
+        }
     }
-
-    mxRedisClient.FLUSHDB();
-    TestKey();
-    TestString();
-    TestList();
-    TestHash();
-    TestSet();
-    TestSort();
-    TestPubSub();
 
     return true;
 }
 
-bool RedisTester::Test_1() {
+bool HelloWorld7::BeforeDestory() {
+
+    std::cout << "Hello, world2, BeforeDestory" << std::endl;
+
+    return true;
+}
+
+bool HelloWorld7::Destory() {
+
+    std::cout << "Hello, world2, Destory" << std::endl;
+
+    return true;
+}
+
+bool HelloWorld7::TestPerformance() {
+    Performance performance;
+
+    // 20W
+    int64_t num = 200000;
+    for (int i = 0; i < num; ++i) {
+        mxRedisClient.SET("testkey", "123456");
+    }
+
+    performance.CheckTimePoint();
+    std::cout << num << " requests, cost: " << performance.TimeScope() << " QPS ==> " << (num / performance.TimeScope()) * 1000 << std::endl;
+
+    return true;
+}
+
+bool HelloWorld7::Test_1() {
     int64_t num;
     mxRedisClient.INCRBY("12123ddddd", 13, num);
     mxRedisClient.INCRBY("12123ddddd", 13, num);
@@ -31,7 +84,7 @@ bool RedisTester::Test_1() {
     return true;
 }
 
-void RedisTester::TestHash() {
+void HelloWorld7::TestHash() {
     int64_t nnn;
     assert(mxRedisClient.HINCRBY("12123ddd121wssdsdsdd", "121212", 13, nnn) == true);
     assert(nnn == 13);
@@ -130,7 +183,7 @@ void RedisTester::TestHash() {
     }
 }
 
-void RedisTester::TestKey() {
+void HelloWorld7::TestKey() {
     int64_t nnn;
     assert(mxRedisClient.INCRBY("12123ddddd", 13, nnn) == true);
     assert(nnn == 13);
@@ -141,7 +194,7 @@ void RedisTester::TestKey() {
     assert(mxRedisClient.SETNX("12123dd323123ddd", "121212") == false);
     assert(mxRedisClient.SETNX("124422dd1212", "121212") == true);
 
-    std::string strKey = "RedisTester::TestKey";
+    std::string strKey = "NFRedisTester::TestKey";
     std::string strValue = "1232321123r34234";
 
     assert(mxRedisClient.SET(strKey, strValue) == true);
@@ -167,7 +220,7 @@ void RedisTester::TestKey() {
     assert(mxRedisClient.TYPE(strKey) == "none");
 }
 
-void RedisTester::TestList() {
+void HelloWorld7::TestList() {
     /*
     std::shared_ptr<NFRedisResult> RPUSHX(const std::string& key, const std::string& value);
 
@@ -250,7 +303,7 @@ void RedisTester::TestList() {
     assert(values.size() == strList.size() + 1);
 }
 
-void RedisTester::TestSet() {
+void HelloWorld7::TestSet() {
     struct A {
         int a = 100;
         short b = 200;
@@ -267,9 +320,9 @@ void RedisTester::TestSet() {
     assert(pa->a == 100 && pa->b == 200);
 }
 
-void RedisTester::TestSort() {}
+void HelloWorld7::TestSort() {}
 
-void RedisTester::TestString() {
+void HelloWorld7::TestString() {
     std::string strKey11 = "TestString1112121";
     std::string strValu11e = "111";
 
@@ -342,8 +395,4 @@ void RedisTester::TestString() {
     }
 }
 
-void RedisTester::TestPubSub() {}
-
-void RedisTester::Update() { mxRedisClient.Update(); }
-
-bool RedisTester::IsConnect() { return mxRedisClient.IsConnect(); }
+void HelloWorld7::TestPubSub() {}

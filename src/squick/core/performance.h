@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <time.h>
-
+#include <squick/core/base.h>
 class Performance {
   private:
     int64_t time = 0;

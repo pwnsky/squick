@@ -79,7 +79,7 @@ int HttpClientModule::Post(const std::string &strUri, const std::map<std::string
 
     std::shared_ptr<RespData> xRespData = mxRespDataMap.GetElement(id);
     while (!xRespData->resp) {
-        NFSLEEP(1);
+        SQUICK_SLEEP(1);
     }
 
     strResData = xRespData->strRespData;
@@ -100,7 +100,7 @@ int HttpClientModule::Get(const std::string &strUri, const std::map<std::string,
 
     std::shared_ptr<RespData> xRespData = mxRespDataMap.GetElement(id);
     while (!xRespData->resp) {
-        NFSLEEP(1);
+        SQUICK_SLEEP(1);
     }
 
     strResData = xRespData->strRespData;

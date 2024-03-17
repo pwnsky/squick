@@ -308,15 +308,15 @@ typedef int64_t socket_t;
 #define ELPP_DISABLE_DEFAULT_CRASH_HANDLING
 
 #if PLATFORM == PLATFORM_WIN
-#define NFSPRINTF sprintf_s
-#define NFSTRICMP stricmp
-#define NFSLEEP(s) Sleep(s) // millisecond
-#define NFGetPID() lexical_cast<std::string>(getpid())
+#define SQUICK_SPRINTF sprintf_s
+#define SQUICK_STRICMP stricmp
+#define SQUICK_SLEEP(s) Sleep(s) // millisecond
+#define SQUICK_GetPID() lexical_cast<std::string>(getpid())
 #else
-#define NFSPRINTF snprintf
-#define NFSTRICMP strcasecmp
-#define NFSLEEP(s) usleep(s * 1000) // millisecond
-#define NFGetPID() lexical_cast<std::string>(getpid())
+#define SQUICK_SPRINTF snprintf
+#define SQUICK_STRICMP strcasecmp
+#define SQUICK_SLEEP(s) usleep(s * 1000) // millisecond
+#define SQUICK_GetPID() lexical_cast<std::string>(getpid())
 #endif
 
 #if PLATFORM == PLATFORM_WIN

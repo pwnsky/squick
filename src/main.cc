@@ -71,7 +71,8 @@ void DefaultStartUp(std::string strArgvList, std::vector<std::shared_ptr<PluginS
 }
 
 void TutorialStartUp(std::string strArgvList, std::vector<std::shared_ptr<PluginServer>>& serverList) {
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=tutorial/http")));
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=tutorial/t1_plugin")));
+    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=tutorial/t5_http")));
 }
 
 int main(int argc, char *argv[]) {
@@ -96,7 +97,7 @@ int main(int argc, char *argv[]) {
     {
         /*
         std::cout << "<<  Squick  Help >>\n"
-                "Usage: plugin=plugin_file server=server_name id=server_id [-d]\n"
+                "Usage: type=server_type id=server_id [-d]\n"
                 "Introduce:\n"
                 "       type: Set your plugin file to load and this is your server name, logger module will use it to log\n"
                 "       id    : Set your server id, using it to load server configure informations\n"
