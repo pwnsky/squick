@@ -1,5 +1,3 @@
-
-
 #include "lua_script_module.h"
 #include "lua_pb_module.h"
 #include "plugin.h"
@@ -50,14 +48,8 @@ bool LuaScriptModule::Awake() {
 
     LuaPBModule *p = (LuaPBModule *)(m_pLuaPBModule);
     p->SetLuaState(mLuaContext.state());
-
     Register();
-//#ifdef SQUICK_DEV
     scriptPath = "../src/lua";
-//#else
-//    scriptPath = pm_->GetConfigPath() + "/lua";
-//#endif
-
     std::string strRootFile = scriptPath + "/main.lua";
 
     TRY_LOAD_SCRIPT_FLE(strRootFile.c_str());

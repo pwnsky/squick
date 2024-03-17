@@ -21,7 +21,6 @@ class EventModule : public IEventModule {
                                 const int64_t reason);
     int OnPropertyStrCallBackEvent(const Guid &self, const std::string &propertyName, const SquickData &oldVarList, const SquickData &newVarList,
                                    const int64_t reason);
-
     int OnHeartBeat(const Guid &self, const std::string &heartBeat, const float time, const int count);
 
   protected:

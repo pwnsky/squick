@@ -1,5 +1,3 @@
-
-
 #include "redis_tester.h"
 #include <assert.h>
 

@@ -1,24 +1,15 @@
-#include "threadpool_module.h"
+#include "thread_module.h"
 #include <squick/core/queue.h>
 #include <struct/struct.h>
 #include <third_party/concurrentqueue/concurrentqueue.h>
 
-bool HelloWorld4Module::Start() {
-    m_pActorModule = pm_->FindModule<IActorModule>();
+bool ThreadModule::Start() {
     m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
-
     return true;
 }
 
-void HelloWorld4Module::RequestAsyEnd(ActorMessage &actorMessage) {
-    // std::cout << "Main thread: " << std::this_thread::get_id() << " Actor: " << actorMessage.id.ToString() << " MsgID: " << actorMessage.msg_id << " Data:"
-    // << actorMessage.data << std::endl;
-}
-
-bool HelloWorld4Module::AfterStart() {
+bool ThreadModule::AfterStart() {
     std::cout << "Hello, world4, AfterStart, Main thread: " << std::this_thread::get_id() << std::endl;
-
-    ///////////////////////////
     std::cout << "start Benchmarks " << std::endl;
     // 100M
     int messageCount = 1000000;
@@ -169,37 +160,6 @@ bool HelloWorld4Module::AfterStart() {
             std::cout << "end Benchmarks, cost: " << timeCost << "ms for " << messageCount << ", qps: " << (messageCount / timeCost) * 1000 << std::endl;
         }
     }
-
-    // actor test
-    {
-        std::cout << "Test for actor mode" << std::endl;
-        int64_t timeStart = SquickGetTimeMS();
-
-        auto actorID1 = m_pActorModule->RequireActor();
-        m_pActorModule->AddComponent<HttpComponent>(actorID1->ID());
-
-        for (int i = 0; i < 5; ++i) {
-            m_pActorModule->AddEndFunc(i, this, &HelloWorld4Module::RequestAsyEnd);
-        }
-
-        for (int i = 5; i < 10; ++i) {
-            m_pActorModule->AddEndFunc(i, [](ActorMessage &actorMessage) -> void {
-                // std::cout << "example 2 AddEndFunc " << actorMessage.id.ToString() << " MSGID: " << actorMessage.msg_id << std::endl;
-            });
-        }
-
-        for (int i = 0; i < messageCount; ++i) {
-            m_pActorModule->SendMsgToActor(actorID1->ID(), Guid(), i, "test");
-            // m_pActorModule->SendMsgToActor(actorID1, i, std::to_string(i*i));
-        }
-
-        int64_t timeEnd = SquickGetTimeMS();
-        int64_t timeCost = timeEnd - timeStart;
-        if (timeCost > 0) {
-            std::cout << "end Benchmarks, cost: " << timeCost << "ms for " << messageCount << ", qps: " << (messageCount / timeCost) * 1000 << std::endl;
-        }
-    }
-
     std::cout << "Hello, world4, AfterStart end" << std::endl;
     return true;
 }

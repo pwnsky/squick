@@ -1,12 +1,6 @@
-
-
-#ifndef SQUICK_INTF_ACTOR_MODULE_H
-#define SQUICK_INTF_ACTOR_MODULE_H
-
+#pragma once
 #include "i_component_module.h"
 #include <squick/core/i_module.h>
-
-///////////////////////////////////////////////////
 
 class IActorModule : public IModule {
   public:
@@ -40,17 +34,13 @@ class IActorModule : public IModule {
         return AddEndFunc(subMessageID, functorPtr_end);
     }
 
-    virtual std::shared_ptr<IActor> RequireActor() = 0;
+    virtual std::shared_ptr<IActor> CreateActor() = 0;
     virtual std::shared_ptr<IActor> GetActor(const Guid nActorIndex) = 0;
     virtual bool ReleaseActor(const Guid nActorIndex) = 0;
-
     virtual bool SendMsgToActor(const Guid actorIndex, const Guid who, const int eventID, const std::string &data, const std::string &arg = "") = 0;
 
     // only be called by actor's processor
     virtual bool AddResult(const ActorMessage &message) = 0;
-
   protected:
     virtual bool AddEndFunc(const int subMessageID, ACTOR_PROCESS_FUNCTOR_PTR functorPtr_end) = 0;
 };
-
-#endif

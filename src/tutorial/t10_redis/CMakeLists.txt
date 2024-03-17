@@ -1,6 +1,0 @@
-set(ProjectName "tutorial_t10_redis")
-file(GLOB soruces *.cc)
-file(GLOB headers *.h)
-add_library(${ProjectName} SHARED ${soruces} ${headers})
-LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "tutorial" ${SQUICK_BUILD_PLUGIN_TUTORIAL_PATH} "t10_redis")

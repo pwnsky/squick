@@ -21,19 +21,13 @@ class Class : public IClass {
     Class(const std::string &className) {
         mParentClass = NULL;
         mClassName = className;
-
         mPropertyManager = std::shared_ptr<IPropertyManager>(new PropertyManager(Guid()));
         mRecordManager = std::shared_ptr<IRecordManager>(new RecordManager(Guid()));
     }
-
     virtual ~Class() { ClearAll(); }
-
     virtual std::shared_ptr<IPropertyManager> GetPropertyManager() { return mPropertyManager; }
-
     virtual std::shared_ptr<IRecordManager> GetRecordManager() { return mRecordManager; }
-
     virtual bool AddClassCallBack(const CLASS_EVENT_FUNCTOR_PTR &cb) { return mClassEventInfo.Add(cb); }
-
     virtual bool DoEvent(const Guid &objectID, const CLASS_OBJECT_EVENT classEvent, const DataList &valueList) {
         CLASS_EVENT_FUNCTOR_PTR cb;
         bool bRet = mClassEventInfo.First(cb);
@@ -42,42 +36,30 @@ class Class : public IClass {
 
             bRet = mClassEventInfo.Next(cb);
         }
-
         return true;
     }
 
     void SetParent(std::shared_ptr<IClass> pClass) { mParentClass = pClass; }
-
     std::shared_ptr<IClass> GetParent() { return mParentClass; }
-
     void SetTypeName(const char *strType) { mType = strType; }
-
     const std::string &GetTypeName() { return mType; }
-
     const std::string &GetClassName() { return mClassName; }
-
     const bool AddId(std::string &strId) {
         mIdList.push_back(strId);
         return true;
     }
-
     const std::vector<std::string> &GetIDList() { return mIdList; }
-
     void SetInstancePath(const std::string &strPath) { mClassInstancePath = strPath; }
-
     const std::string &GetInstancePath() { return mClassInstancePath; }
 
   private:
     std::shared_ptr<IPropertyManager> mPropertyManager;
     std::shared_ptr<IRecordManager> mRecordManager;
-
     std::shared_ptr<IClass> mParentClass;
     std::string mType;
     std::string mClassName;
     std::string mClassInstancePath;
-
     std::vector<std::string> mIdList;
-
     List<CLASS_EVENT_FUNCTOR_PTR> mClassEventInfo;
 };
 
@@ -92,7 +74,6 @@ class ClassModule : public IClassModule {
     virtual bool Awake() override;
     virtual bool Start() override;
     virtual bool AfterStart() override;
-
     virtual bool Destory() override;
 
     virtual bool Load() override;
@@ -107,7 +88,6 @@ class ClassModule : public IClassModule {
 
     virtual std::shared_ptr<IPropertyManager> GetClassPropertyManager(const std::string &className) override;
     virtual std::shared_ptr<IRecordManager> GetClassRecordManager(const std::string &className) override;
-
     virtual bool AddClass(const std::string &className, const std::string &strParentName) override;
 
   protected:
@@ -117,7 +97,6 @@ class ClassModule : public IClassModule {
     virtual bool AddComponents(rapidxml::xml_node<> *pRecordRootNode, std::shared_ptr<IClass> pClass);
     virtual bool AddClassInclude(const char *pstrClassFilePath, std::shared_ptr<IClass> pClass);
     virtual bool AddClass(const char *pstrClassFilePath, std::shared_ptr<IClass> pClass);
-
     virtual bool Load(rapidxml::xml_node<> *attrNode, std::shared_ptr<IClass> pParentClass);
 
   protected:
@@ -126,7 +105,6 @@ class ClassModule : public IClassModule {
         std::thread::id threadID;
         ClassModule *classModule;
     };
-
     std::vector<ThreadClassModule> mThreadClasses;
 
   protected:

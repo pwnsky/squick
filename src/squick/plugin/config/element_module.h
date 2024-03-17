@@ -1,6 +1,4 @@
-
-#ifndef SQUICK_ELEMENT_MODULE_H
-#define SQUICK_ELEMENT_MODULE_H
+#pragma once
 
 #include "i_class_module.h"
 #include "i_element_module.h"
@@ -107,5 +105,3 @@ class ElementModule : public IElementModule, MapEx<std::string, ElementConfigInf
     bool mbLoaded;
     bool mbBackup = false;
 };
-
-#endif

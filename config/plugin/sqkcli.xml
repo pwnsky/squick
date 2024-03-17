@@ -4,6 +4,6 @@
 		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />
 		
-		<Plugin Name="tester/core" />
+		<Plugin Name="sqkcli/core" />
 	</Tester>
 </XML>

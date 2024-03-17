@@ -3,9 +3,7 @@
 #include <squick/core/base.h>
 namespace tutorial {
 
-class ISimpleModule : public IModule {
-public:
-};
+class ISimpleModule : public IModule {};
 
 class SimpleModule : public ISimpleModule {
 public:

@@ -61,6 +61,7 @@ bool LogModule::Awake() {
 
     el::Configuration *pConfiguration = conf.get(el::Level::Debug, el::ConfigurationType::Filename);
     if (pConfiguration == nullptr) {
+        std::cout << "Warnning: Use default log config, config/log/default.conf \n";
         conf = el::Configurations(GetConfigPath("Default"));
         pConfiguration = conf.get(el::Level::Debug, el::ConfigurationType::Filename);
     }
@@ -146,22 +147,6 @@ bool LogModule::Log(const SQUICK_LOG_LEVEL nll, const char *format, ...) {
     }
 
     std::cout << termcolor::reset;
-
-    return true;
-}
-
-bool LogModule::LogRecord(const SQUICK_LOG_LEVEL nll, const Guid ident, const std::string &recordName, const std::string &strDesc, const char *func, int line) {
-    /*
-    std::ostringstream os;
-    auto record = m_kernel_->FindRecord(ident, recordName);
-    if (record) {
-
-        if (line > 0) {
-            Log(nll, "[RECORD] Indent[%s] Record[%s] %s %s %d", ident.ToString().c_str(), recordName.c_str(), record->ToString().c_str(), func, line);
-        } else {
-            Log(nll, "[RECORD] Indent[%s] Record[%s] %s", ident.ToString().c_str(), recordName.c_str(), record->ToString().c_str());
-        }
-    }*/
 
     return true;
 }

@@ -1,4 +1,4 @@
-#include "net_module.h"
+#include "rpc_module.h"
 
 namespace tutorial {
 bool SimpleModule::Start() {

@@ -1,5 +1,3 @@
-
-
 #include "plugin.h"
 #include "actor_module.h"
 #include <squick/core/i_module.h>

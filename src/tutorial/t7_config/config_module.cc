@@ -1,4 +1,4 @@
-#include "net_module.h"
+#include "config_module.h"
 
 namespace tutorial {
 bool SimpleModule::Start() {

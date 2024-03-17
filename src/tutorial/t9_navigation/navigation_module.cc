@@ -1,13 +1,6 @@
 
 #include "navigation_module.h"
 
-bool HelloWorld6::Start() {
-
-    std::cout << "Hello, world, Start" << std::endl;
-
-    return true;
-}
-
 bool HelloWorld6::AfterStart() {
     m_pNavigationModule = pm_->FindModule<INavigationModule>();
 
@@ -24,5 +17,3 @@ bool HelloWorld6::AfterStart() {
     }
     return true;
 }
-
-bool HelloWorld6::Update() { return true; }

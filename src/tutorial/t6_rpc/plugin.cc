@@ -1,5 +1,5 @@
 #include "plugin.h"
-#include "net_module.h"
+#include "rpc_module.h"
 namespace tutorial {
     SQUICK_EXPORT void SquickPluginLoad(IPluginManager* pm) { CREATE_PLUGIN(pm, Plugin) };
     SQUICK_EXPORT void SquickPluginUnload(IPluginManager* pm) { DESTROY_PLUGIN(pm, Plugin) };
