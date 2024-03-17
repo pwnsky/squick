@@ -1,0 +1,5 @@
+<XML>
+	<Tutorial>
+		<Plugin Name="tutorial/t1_plugin" />
+	</Tutorial>
+</XML>

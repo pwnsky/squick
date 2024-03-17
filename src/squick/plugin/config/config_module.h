@@ -1,6 +1,4 @@
-
-#ifndef SQUICK_COMMONCONFIG_MODULE_H
-#define SQUICK_COMMONCONFIG_MODULE_H
+#pragma once
 
 #include "i_common_config_module.h"
 #include <squick/core/i_plugin_manager.h>
@@ -17,7 +15,6 @@ class ConfigModule : public ICommonConfigModule {
                 SQUICK_StrTo(*pStr, nData);
                 return nData;
             }
-
             return 0;
         }
 
@@ -26,7 +23,6 @@ class ConfigModule : public ICommonConfigModule {
             if (pStr) {
                 return *pStr;
             }
-
             return NULL_STR;
         }
     };
@@ -59,5 +55,3 @@ class ConfigModule : public ICommonConfigModule {
   private:
     MapEx<std::string, CStructInfo> mmData; // strStructName<-->CStructInfo
 };
-
-#endif

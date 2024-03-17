@@ -1,4 +1,3 @@
-
 #include "actor_module.h"
 
 ActorModule::ActorModule(IPluginManager *p) {
@@ -29,14 +28,12 @@ bool ActorModule::Destory() { return true; }
 bool ActorModule::Update() {
     UpdateEvent();
     UpdateResultEvent();
-
     return true;
 }
 
-std::shared_ptr<IActor> ActorModule::RequireActor() {
+std::shared_ptr<IActor> ActorModule::CreateActor() {
     std::shared_ptr<IActor> pActor = std::shared_ptr<IActor>(new Actor(m_kernel_->CreateGUID(), this));
     mxActorMap.insert(std::map<Guid, std::shared_ptr<IActor>>::value_type(pActor->ID(), pActor));
-
     return pActor;
 }
 
@@ -45,7 +42,6 @@ std::shared_ptr<IActor> ActorModule::GetActor(const Guid nActorIndex) {
     if (it != mxActorMap.end()) {
         return it->second;
     }
-
     return nullptr;
 }
 
@@ -91,16 +87,13 @@ bool ActorModule::SendMsgToActor(const Guid actorIndex, const Guid who, const in
     std::shared_ptr<IActor> pActor = GetActor(actorIndex);
     if (nullptr != pActor) {
         ActorMessage xMessage;
-
         xMessage.id = who;
         xMessage.index = index++;
         xMessage.data = data;
         xMessage.msg_id = eventID;
         xMessage.arg = arg;
-
         return this->SendMsgToActor(actorIndex, xMessage);
     }
-
     return false;
 }
 
@@ -108,14 +101,14 @@ bool ActorModule::ReleaseActor(const Guid nActorIndex) {
     auto it = mxActorMap.find(nActorIndex);
     if (it != mxActorMap.end()) {
         mxActorMap.erase(it);
-
         return true;
     }
-
     return false;
 }
 
-bool ActorModule::AddEndFunc(const int subMessageID, ACTOR_PROCESS_FUNCTOR_PTR functorPtr_end) { return mxEndFunctor.AddElement(subMessageID, functorPtr_end); }
+bool ActorModule::AddEndFunc(const int subMessageID, ACTOR_PROCESS_FUNCTOR_PTR functorPtr_end) {
+    return mxEndFunctor.AddElement(subMessageID, functorPtr_end);
+}
 
 bool ActorModule::SendMsgToActor(const Guid actorIndex, const ActorMessage &message) {
     auto it = mxActorMap.find(actorIndex);
@@ -123,6 +116,5 @@ bool ActorModule::SendMsgToActor(const Guid actorIndex, const ActorMessage &mess
         // std::cout << "send message " << message.msg_id << " to " << actorIndex.ToString() << " and msg index is " << message.index << std::endl;
         return it->second->SendMsg(message);
     }
-
     return false;
 }

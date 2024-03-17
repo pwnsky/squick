@@ -1,6 +1,6 @@
-set(ProjectName "tutorial_http")
+set(ProjectName "tutorial_t5_http")
 file(GLOB soruces *.cc)
 file(GLOB headers *.h)
 add_library(${ProjectName} SHARED ${soruces} ${headers})
 LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "tutorial/http" ${SQUICK_BUILD_PLUGIN_TUTORIAL_PATH} "http")
+SquickOut(${ProjectName} "tutorial" ${SQUICK_BUILD_PLUGIN_TUTORIAL_PATH} "t5_http")

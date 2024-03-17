@@ -1,5 +1,3 @@
-
-
 #include "actor.h"
 #include <squick/core/i_plugin_manager.h>
 
@@ -19,18 +17,14 @@ bool Actor::Update() {
         // must make sure that only one thread running this function at the same time
         // mxProcessFunctor is not thread-safe
         ACTOR_PROCESS_FUNCTOR_PTR xBeginFunctor = mxProcessFunctor.GetElement(messageObject.msg_id);
-
         if (xBeginFunctor != nullptr) {
             // std::cout << ID().ToString() << " received message " << messageObject.msg_id << " and msg index is " << messageObject.index << " totaly msg
             // count: " << mMessageQueue.size_approx() << std::endl;
-
             xBeginFunctor->operator()(messageObject);
-
             // return the result to the main thread
             m_pActorModule->AddResult(messageObject);
         }
     }
-
     return true;
 }
 
@@ -40,15 +34,12 @@ bool Actor::AddComponent(std::shared_ptr<IComponent> component) {
     if (!mComponent.ExistElement(component->GetComponentName())) {
         mComponent.AddElement(component->GetComponentName(), component);
         component->SetActor(std::shared_ptr<IActor>(this));
-
         component->Awake();
         component->Start();
         component->AfterStart();
         component->ReadyUpdate();
-
         return true;
     }
-
     return false;
 }
 
@@ -62,12 +53,10 @@ bool Actor::SendMsg(const ActorMessage &message) { return mMessageQueue.Push(mes
 
 bool Actor::SendMsg(const int eventID, const std::string &data, const std::string &arg) {
     static ActorMessage xMessage;
-
     xMessage.id = this->id;
     xMessage.msg_id = eventID;
     xMessage.data = data;
     xMessage.arg = arg;
-
     return SendMsg(xMessage);
 }
 

@@ -1,0 +1,6 @@
+set(ProjectName "tutorial_t1_plugin")
+file(GLOB soruces *.cc)
+file(GLOB headers *.h)
+add_library(${ProjectName} SHARED ${soruces} ${headers})
+LinkSquick(${ProjectName})
+SquickOut(${ProjectName} "tutorial" ${SQUICK_BUILD_PLUGIN_TUTORIAL_PATH} "t1_plugin")

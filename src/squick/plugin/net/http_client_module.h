@@ -9,22 +9,16 @@
 class HttpClientModule : public IHttpClientModule {
   public:
     HttpClientModule(IPluginManager *p);
-
     virtual ~HttpClientModule();
-
     virtual bool Start();
-
     virtual bool AfterStart();
-
     virtual bool Update();
-
     virtual bool Destory();
 
     // actually, sync post method
     // WebStatus
     virtual int Post(const std::string &strUri, const std::string &strData, std::string &strResData);
     virtual int Post(const std::string &strUri, const std::map<std::string, std::string> &xHeaders, const std::string &strData, std::string &strResData);
-
 
     // actually, sync get method
     // WebStatus

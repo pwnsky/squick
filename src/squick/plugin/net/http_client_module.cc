@@ -11,7 +11,6 @@ HttpClientModule::HttpClientModule(IPluginManager *p) {
     m_xDefaultHttpHeaders["Connection"] = "close";
     // evhttp_add_header(output_headers, "Connection", "keep-alive");
     m_xDefaultHttpHeaders["Content-Type"] = "text/plain;text/html;application/x-www-form-urlencoded;charset=utf-8";
-    // m_xDefaultHttpHeaders["Content-Type"] = "text/plain;text/html;application/x-www-form-urlencoded;charset=utf-8";
     m_xDefaultHttpHeaders["User-Agent"] = DEFAULT_USER_AGENT;
     m_xDefaultHttpHeaders["Cache-Control"] = "no-cache";
 }
@@ -79,7 +78,7 @@ int HttpClientModule::Post(const std::string &strUri, const std::map<std::string
 
     std::shared_ptr<RespData> xRespData = mxRespDataMap.GetElement(id);
     while (!xRespData->resp) {
-        NFSLEEP(1);
+        SQUICK_SLEEP(1);
     }
 
     strResData = xRespData->strRespData;
@@ -100,7 +99,7 @@ int HttpClientModule::Get(const std::string &strUri, const std::map<std::string,
 
     std::shared_ptr<RespData> xRespData = mxRespDataMap.GetElement(id);
     while (!xRespData->resp) {
-        NFSLEEP(1);
+        SQUICK_SLEEP(1);
     }
 
     strResData = xRespData->strRespData;

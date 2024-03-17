@@ -1,6 +1,6 @@
 # Squick
 
-A highly scalable, high-performance, high-availability, cross-platform (Windows, Linux, MacOS) server-side framework. This framework is co-written using C++23 and Lua languages, and the framework is split into the kernel layer, node layer and business layer to improve the scalability and maintainability of the program. Split business functions to run on different nodes to achieve decoupling of different functions and efficient utilization of resources. Using dynamic load balancing algorithms, tasks can be effectively distributed among different nodes to ensure system stability and performance.
+A highly scalable, high-performance, high-availability, cross-platform (Windows, Linux, MacOS) server-side framework. This framework is co-written using C++23 and Lua languages, surport c++ & lua coroutine feature, and the framework is split into the kernel layer, node layer and business layer to improve the scalability and maintainability of the program. Split business functions to run on different nodes to achieve decoupling of different functions and efficient utilization of resources. Using dynamic load balancing algorithms, tasks can be effectively distributed among different nodes to ensure system stability and performance.
 
 **Unity SDK**:  [squick-unity-sdk](https://github.com/pwnsky/squick-unity-sdk)
 

@@ -2,6 +2,8 @@
 
 #include "third_party/common/lexical_cast.hpp"
 #include <squick/core/platform.h>
+#include <string>
+#include <vector>
 
 #if PLATFORM != PLATFORM_WIN
 #include <dirent.h>

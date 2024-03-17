@@ -13,7 +13,7 @@ class IRedisClient {
     virtual ~IRedisClient() {}
 
     virtual bool Connect(const std::string &ip, const int port, const std::string &auth) = 0;
-
+    virtual bool IsConnect() = 0;
     virtual bool Enable() = 0;
     virtual bool Authed() = 0;
     virtual bool Busy() = 0;

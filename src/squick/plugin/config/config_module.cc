@@ -1,5 +1,3 @@
-
-
 #include "config_module.h"
 #include "third_party/rapidxml/rapidxml_utils.hpp"
 

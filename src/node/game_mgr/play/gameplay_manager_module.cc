@@ -131,7 +131,7 @@ void GameplayManagerModule::OnRecv(const socket_t sock, const int msg_id, const 
     rpc::MsgBase xMsg;
     if (!xMsg.ParseFromArray(msg, len)) {
         char szData[MAX_PATH] = {0};
-        NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
+        SQUICK_SPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
         return;
     }
 

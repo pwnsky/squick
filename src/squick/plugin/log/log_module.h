@@ -21,9 +21,6 @@ class LogModule : public ILogModule {
 
     ///////////////////////////////////////////////////////////////////////
     virtual void LogStack();
-
-    virtual bool LogRecord(const SQUICK_LOG_LEVEL nll, const Guid ident, const std::string &recordName, const std::string &strDesc = "", const char *func = "",
-                           int line = 0);
     virtual bool LogObject(const SQUICK_LOG_LEVEL nll, const Guid ident, const std::string &strDesc, const char *func = "", int line = 0);
 
     virtual bool LogDebug(const std::string &strLog, const char *func = "", int line = 0);

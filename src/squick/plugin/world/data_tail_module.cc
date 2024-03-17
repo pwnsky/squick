@@ -13,7 +13,6 @@ bool DataTailModule::Start() {
     m_element_ = pm_->FindModule<IElementModule>();
     m_class_ = pm_->FindModule<IClassModule>();
     m_log_ = pm_->FindModule<ILogModule>();
-
     return true;
 }
 
@@ -116,8 +115,7 @@ void DataTailModule::LogObjectData(const Guid &self) {
                     for (int j = 0; j < xDataList.GetCount(); ++j) {
                         stream << " [" << j << "] " << xDataList.ToString(j);
                     }
-
-                    m_log_->LogRecord(ILogModule::SQUICK_LOG_LEVEL::NLL_DEBUG_NORMAL, self, xRecord->GetName(), stream.str(), __FUNCTION__, __LINE__);
+                    m_log_->LogDebug(stream);
                 }
             }
 

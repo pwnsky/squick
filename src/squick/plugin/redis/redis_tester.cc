@@ -1,5 +1,3 @@
-
-
 #include "redis_tester.h"
 #include <assert.h>
 
@@ -156,7 +154,7 @@ void RedisTester::TestKey() {
 
     assert(mxRedisClient.EXPIRE(strKey, 2) == true);
 
-    NFSLEEP(3000);
+    SQUICK_SLEEP(3000);
     std::string strGET;
     assert(mxRedisClient.GET(strKey, strGET) == false);
     assert(strGET == "");
