@@ -2,6 +2,7 @@
 
 #include <squick/core/base.h>
 #include <squick/plugin/actor/export.h>
+#include <thread>
 
 namespace tutorial {
 	class HttpComponent : public IComponent {
