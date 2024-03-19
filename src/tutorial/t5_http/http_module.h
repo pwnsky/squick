@@ -23,6 +23,7 @@ namespace tutorial {
         bool ClientSyncGet(std::shared_ptr<HttpRequest> req);
         Coroutine<bool> ClientAsyncGet(std::shared_ptr<HttpRequest> req);
         bool ClientAsyncGet2(std::shared_ptr<HttpRequest> req);
+        Coroutine<bool> ClientAsyncPost(std::shared_ptr<HttpRequest> req);
 
         bool PostListener(std::shared_ptr<HttpRequest> req);
         bool ClientPostSelf(std::shared_ptr<HttpRequest> req);

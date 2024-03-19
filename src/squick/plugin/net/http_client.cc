@@ -309,7 +309,7 @@ reqid_t HttpClient::GenerateRequestID() {
     return last_req_id_;
 }
 
-Awaitable<HttpClientResponseData> HttpClient::Get(const std::string& url, const std::map<std::string, std::string>& xHeaders, const Guid id) {
+Awaitable<HttpClientResponseData> HttpClient::CoGet(const std::string& url, const std::map<std::string, std::string>& xHeaders) {
     HTTP_RESP_FUNCTOR_PTR pd(
         new HTTP_RESP_FUNCTOR(std::bind(&HttpClient::CoroutineResponseHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
     auto req_id = GenerateRequestID();
@@ -317,6 +317,17 @@ Awaitable<HttpClientResponseData> HttpClient::Get(const std::string& url, const 
     awaitbale.data_.req_id = req_id;
     awaitbale.handler_ = std::bind(&HttpClient::CoroutineBinder, this, placeholders::_1);
     MakeRequest(url, pd, "", xHeaders, HttpType::SQUICK_HTTP_REQ_GET, "", Guid(0, req_id));
+    return awaitbale;
+}
+Awaitable<HttpClientResponseData> HttpClient::CoPost(const std::string &url, const std::string &strPostData, const std::string &strMemoData,
+                                                     const std::map<std::string, std::string> &xHeaders) {
+    HTTP_RESP_FUNCTOR_PTR pd(
+    new HTTP_RESP_FUNCTOR(std::bind(&HttpClient::CoroutineResponseHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+    auto req_id = GenerateRequestID();
+    Awaitable<HttpClientResponseData> awaitbale;
+    awaitbale.data_.req_id = req_id;
+    awaitbale.handler_ = std::bind(&HttpClient::CoroutineBinder, this, placeholders::_1);
+    MakeRequest(url, pd, strPostData, xHeaders, HttpType::SQUICK_HTTP_REQ_POST, strMemoData, Guid(0, req_id));
     return awaitbale;
 }
 
