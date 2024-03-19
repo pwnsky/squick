@@ -6,11 +6,12 @@ RUN apt update
 RUN apt-get install -y git cmake make g++
 RUN apt-get install -y libtool libreadline-dev libncurses-dev pkg-config libssl-dev
 RUN apt-get install -y python3
-
 # Build Squick c++ source code
 RUN cd ~ && git clone https://github.com/pwnsky/squick.git
 
 WORKDIR ~/squick
-RUN cd tools && chmod +x *.sh
-RUN cd tools && ./build_third_party.sh && ./build_sqkctl.sh && ./build_squick.sh
-RUN ./generate_deploy.sh
+RUN cd ~/squick/tools && chmod +x *.sh
+RUN cd ~/squick/tools && ./build_third_party.sh
+RUN cd ~/squick/tools && ./build_sqkctl.sh
+RUN cd ~/squick/tools && ./build_squick.sh
+RUN cd ~/squick/tools && ./generate_deploy.sh

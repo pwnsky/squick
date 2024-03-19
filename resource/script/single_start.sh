@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #export LC_ALL="C"
-#ulimit -c unlimited
+ulimit -c unlimited
 #source /etc/profile
 
 cd bin
