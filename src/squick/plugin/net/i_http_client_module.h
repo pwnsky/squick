@@ -10,10 +10,16 @@ class IHttpClientModule : public IModule {
     // C++20 coroutine function
     virtual Awaitable<HttpClientResponseData> CoGet(const std::string& strUri) {
         const std::map<std::string, std::string> xHeaders;
-        return Get(strUri, xHeaders);
+        return CoGet(strUri, xHeaders);
     }
-    virtual Awaitable<HttpClientResponseData> Get(const std::string& strUri, const std::map<std::string, std::string>& xHeaders) = 0;
-
+    virtual Awaitable<HttpClientResponseData> CoGet(const std::string& strUri, const std::map<std::string, std::string>& xHeaders) = 0;
+    virtual Awaitable<HttpClientResponseData> CoPost(const std::string& strUri, const std::string& strPostData, const std::string& strMemo = "") {
+        const std::map<std::string, std::string> xHeaders;
+        return CoPost(strUri, xHeaders, strPostData, strMemo);
+    }
+    virtual Awaitable<HttpClientResponseData> CoPost(const std::string& strUri, const std::map<std::string, std::string>& xHeaders,
+                                                   const std::string& strPostData, const std::string& strMemo = "") = 0;
+    
     template <typename BaseType>
     bool DoGet(const std::string &strUri, BaseType *pBase,
                void (BaseType::*handleReceiver)(const Guid id, const int state_code, const std::string &strRespData)) {

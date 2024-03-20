@@ -117,8 +117,13 @@ bool HttpClientModule::DoPost(const std::string &strUri, const std::map<std::str
     return m_pHttpClient->DoPost(strUri, strPostData, strMemo, pCB, xHeaders.size() == 0 ? m_xDefaultHttpHeaders : xHeaders, aid);
 }
 
-Awaitable<HttpClientResponseData> HttpClientModule::Get(const std::string& strUri, const std::map<std::string, std::string>& xHeaders) {
-    return m_pHttpClient->Get(strUri, xHeaders);
+Awaitable<HttpClientResponseData> HttpClientModule::CoGet(const std::string& strUri, const std::map<std::string, std::string>& xHeaders) {
+    return m_pHttpClient->CoGet(strUri, xHeaders);
+}
+
+Awaitable<HttpClientResponseData> HttpClientModule::CoPost(const std::string& strUri, const std::map<std::string, std::string>& xHeaders,
+                                                     const std::string& strPostData, const std::string& strMemo) {
+    return m_pHttpClient->CoPost(strUri, strPostData, strMemo, xHeaders);
 }
 
 void HttpClientModule::CallBack(const Guid id, const int state_code, const std::string &strRespData) {

@@ -22,6 +22,7 @@ namespace tutorial {
         m_http_server_->AddRequestHandler("/client/sync_get", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::ClientSyncGet);
         m_http_server_->AddRequestHandler("/client/async_get", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::ClientAsyncGet);
         m_http_server_->AddRequestHandler("/client/async_get_2", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::ClientAsyncGet2);
+        m_http_server_->AddRequestHandler("/client/async_post", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::ClientAsyncPost);
 
         m_http_server_->AddRequestHandler("/post_listener", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::PostListener);
         m_http_server_->AddRequestHandler("/client/post_self", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::ClientPostSelf);
@@ -71,6 +72,14 @@ namespace tutorial {
         return true;
     }
 
+    Coroutine<bool> HttpModule::ClientAsyncPost(std::shared_ptr<HttpRequest> req) {
+        std::cout << "You use await to async request another server: method POST\n";
+        auto data = co_await m_http_client_->CoPost("http://127.0.0.1:8080/post_listener", "hello???");
+        m_http_server_->ResponseMsg(req, data.content, WebStatus::WEB_OK);
+        std::cout << "You get content: " << data.content << "\n";
+        co_return;
+    }
+
     bool HttpModule::ShowRequestInfo(std::shared_ptr<HttpRequest> req) {
         std::cout << "url: " << req->url << std::endl;
         std::cout << "path: " << req->path << std::endl;
@@ -98,7 +107,7 @@ namespace tutorial {
 
     bool HttpModule::PostListener(std::shared_ptr<HttpRequest> req) {
         std::cout << "PostListener: Post data: " << req->body << endl;
-        m_http_server_->ResponseMsg(req, "PostListener has received!", WebStatus::WEB_OK);
+        m_http_server_->ResponseMsg(req, "PostListener has received!: " + req->body, WebStatus::WEB_OK);
         return true;
     }
 

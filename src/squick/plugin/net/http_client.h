@@ -84,8 +84,9 @@ class HttpClient : public IHttpClient {
     virtual bool DoPost(const std::string &strUri, const std::string &strPostData, const std::string &strMemoData, HTTP_RESP_FUNCTOR_PTR pCB,
                         const std::map<std::string, std::string> &xHeaders, const Guid id = Guid());
 
-    virtual Awaitable<HttpClientResponseData> Get(const std::string& url, const std::map<std::string, std::string>& xHeaders, const Guid id = Guid()) override;
-
+    virtual Awaitable<HttpClientResponseData> CoGet(const std::string& url, const std::map<std::string, std::string>& xHeaders) override;
+    virtual Awaitable<HttpClientResponseData> CoPost(const std::string &url, const std::string &strPostData, const std::string &strMemoData,
+                                                     const std::map<std::string, std::string> &xHeaders) override;
   private:
     static void OnHttpReqDone(struct evhttp_request *req, void *ctx);
     void CoroutineBinder(Awaitable<HttpClientResponseData>* http_await);

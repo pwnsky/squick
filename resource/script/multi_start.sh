@@ -6,7 +6,7 @@
 # Description: Start servers for devlopment debug
 
 #export LC_ALL="C"
-#ulimit -c unlimited
+ulimit -c unlimited
 #source /etc/profile
 squick_bin_path=./bin
 cd $squick_bin_path

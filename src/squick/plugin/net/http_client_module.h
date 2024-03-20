@@ -29,8 +29,8 @@ class HttpClientModule : public IHttpClientModule {
     virtual bool DoPost(const std::string& strUri, const std::map<std::string, std::string>& xHeaders, const std::string& strPostData,
         HTTP_RESP_FUNCTOR_PTR pCB, const std::string& strMemo = "");
 
-    virtual Awaitable<HttpClientResponseData> Get(const std::string& strUri, const std::map<std::string, std::string>& xHeaders);
-    //virtual bool DoCoPost(const std::string& strUri, const std::map<std::string, std::string>& xHeaders, const std::string& strPostData, const std::string& strMemo = "");
+    virtual Awaitable<HttpClientResponseData> CoGet(const std::string& strUri, const std::map<std::string, std::string>& xHeaders);
+    virtual Awaitable<HttpClientResponseData> CoPost(const std::string& strUri, const std::map<std::string, std::string>& xHeaders, const std::string& strPostData, const std::string& strMemo = "");
   private:
 
     Guid GenRequestGUID();

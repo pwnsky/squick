@@ -70,7 +70,10 @@ class IHttpClient {
     virtual bool DoPost(const std::string &strUri, const std::string &strPostData, const std::string &strMemoData, HTTP_RESP_FUNCTOR_PTR pCB,
                         const std::map<std::string, std::string> &xHeaders, const Guid id = Guid()) = 0;
 
-    virtual Awaitable<HttpClientResponseData> Get(const std::string& url, const std::map<std::string, std::string>& xHeaders, const Guid id = Guid()) = 0;
+    virtual Awaitable<HttpClientResponseData> CoGet(const std::string& url, const std::map<std::string, std::string>& xHeaders) = 0;
+    virtual Awaitable<HttpClientResponseData> CoPost(const std::string &url, const std::string &strPostData, const std::string &strMemoData,
+                                                     const std::map<std::string, std::string> &xHeaders) = 0;
+
 };
 
 #endif

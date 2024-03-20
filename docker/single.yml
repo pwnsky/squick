@@ -1,0 +1,20 @@
+version: '3.5'
+services:
+  master:
+    build:
+      context: .
+    image: i0gan/squick:1.1
+    user: root
+    restart: always
+    ports:
+      - 80:4000
+    environment:
+      - UPLOAD_FOLDER=/var/uploads
+    networks:
+      default:
+      internal:
+
+networks:
+    default:
+    internal:
+        internal: true
