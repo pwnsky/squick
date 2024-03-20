@@ -48,7 +48,7 @@ jobs:
         run: |
           cd tools && ./generate_deploy.sh
           cd ../deploy
-          tree
+          ls -al
           
       - name: Geneating deploy files for windows
         if: matrix.os == 'windows-latest'
@@ -56,4 +56,4 @@ jobs:
           cd tools
           .\generate_deploy.bat
           cd ..\deploy
-          tree
+          dir
