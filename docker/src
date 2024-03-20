@@ -1,0 +1,23 @@
+# cd {squick_project}
+# docker build . -t i0gan/squick_src:1.1 -f ./docker/src
+# docker run -it --name squick i0gan/squick_src:1.1
+FROM ubuntu:22.04
+
+# Set env
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install build enviroment for squick
+RUN apt update && apt install -y git cmake make g++
+RUN apt install -y libtool libreadline-dev libncurses-dev pkg-config libssl-dev
+RUN apt install -y dos2unix python3 vim
+
+# Build Squick c++ source code
+# RUN cd / && git clone https://github.com/pwnsky/squick.git
+COPY . /squick
+WORKDIR /squick
+RUN cd tools && chmod +x *.sh && dos2unix *.sh
+RUN cd tools/source && chmod +x *.sh && dos2unix *.sh
+RUN cd resource/script && chmod +x *.sh && dos2unix *.sh
+RUN cd tools && bash ./build_all.sh
+RUN cd tools && bash ./generate_deploy.sh
+CMD cd deploy && bash ./single_start.sh

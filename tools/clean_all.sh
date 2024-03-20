@@ -13,15 +13,15 @@ rm -rf ./deploy/config/struct/*
 rm -rf ./deploy/config/proto/*
 
 rm -rf ./bin
-rm -rf ./tools/config_generator
+rm -rf ./tools/bin
 rm -rf ./data
 
 rm -rf ./deploy/*.log
 rm -rf ./deploy/data/logs
 rm -rf ./deploy/data/www
-rm -rf ./src/squick/struct/*.cs
-rm -rf ./src/squick/struct/*.pb.h
-rm -rf ./src/squick/struct/*.pb.cc
-rm -rf ./src/squick/struct/protocol_define.h
+rm -rf ./src/struct/*.cs
+rm -rf ./src/struct/*.pb.h
+rm -rf ./src/struct/*.pb.cc
+rm -rf ./src/struct/protocol_define.h
 rm -rf ./third_party/build
 
