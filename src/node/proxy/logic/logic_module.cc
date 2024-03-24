@@ -17,12 +17,44 @@ bool LogicModule::AfterStart() {
     m_log_ = pm_->FindModule<ILogModule>();
     m_schedule_ = pm_->FindModule<IScheduleModule>();
     m_node_ = pm_->FindModule<node::INodeModule>();
+    m_ws_ = pm_->FindModule<IWSModule>();
 
     m_net_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_HEARTBEAT, this, &LogicModule::OnHeartbeat);
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnect);
     m_net_->AddReceiveCallBack(rpc::TestRPC::REQ_TEST_PROXY, this, &LogicModule::OnReqTestProxy);
+
+    m_ws_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnWS);
+
+    m_ws_->Startialization(100, 8888);
+    m_ws_->AddEventCallBack(this, &LogicModule::OnWebSocketClientEvent);
     return true;
+}
+
+void LogicModule::OnWebSocketClientEvent(socket_t sockIndex, const SQUICK_NET_EVENT eEvent, INet* pNet)
+{
+    if (eEvent & SQUICK_NET_EVENT_EOF)
+    {
+        m_log_->LogInfo(Guid(0, sockIndex), "websocket NF_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
+    } else if (eEvent & SQUICK_NET_EVENT_ERROR)
+    {
+        m_log_->LogInfo(Guid(0, sockIndex), "websocket NF_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
+    } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT)
+    {
+        m_log_->LogInfo(Guid(0, sockIndex), "websocket NF_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
+    }else if (eEvent & SQUICK_NET_EVENT_CONNECTED)
+    {
+        m_log_->LogInfo(Guid(0, sockIndex), "websocket NF_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
+    }
+}
+
+void LogicModule::OnWS(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    dout << "On Websocket: " << std::string(msg, len) << endl;
+    dout << "Websocket recived size: " << len << endl;
+    rpc::AckConnectProxy ack;
+    ack.set_code(0);
+    m_ws_->SendMsgPB(rpc::ProxyRPC::ACK_CONNECT_PROXY, ack, sock);
+    return;
 }
 
 void LogicModule::OnClientDisconnected(const socket_t sock) {

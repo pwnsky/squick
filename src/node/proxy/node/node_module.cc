@@ -14,6 +14,9 @@ bool NodeModule::AfterStart() {
     AddServer(ServerType::ST_LOBBY);
     AddServer(ServerType::ST_LOGIN);
     AddServer(ServerType::ST_WORLD);
+
+    // ws
+    
     return true;
 }
 

@@ -38,6 +38,9 @@ class LogicModule : public ILogicModule {
     int ForwardToClient(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     int OnHeatbeatCheck(const Guid &self, const std::string &heartBeat, const float time, const int count);
 
+    void OnWS(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnWebSocketClientEvent(socket_t sockIndex, const SQUICK_NET_EVENT eEvent, INet* pNet);
+
     
 
     // MapEx<Guid, socket_t> mxClientIdent; // player ident
@@ -79,6 +82,7 @@ class LogicModule : public ILogicModule {
     IClassModule *m_class_;
     IScheduleModule *m_schedule_;
     INetModule *m_net_;
+    IWSModule* m_ws_;
     INetClientModule *m_net_client_;
     node::INodeModule *m_node_;
 
