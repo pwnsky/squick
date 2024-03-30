@@ -115,10 +115,8 @@ class PluginManager : public IPluginManager {
     virtual std::vector<ReplaceContent> GetFileReplaceContents(const std::string &fileName) override;
 
   protected:
-    bool CheckStaticPlugin();
     bool LoadPluginLibrary(const std::string &pluginDLLName);
     bool UnLoadPluginLibrary(const std::string &pluginDLLName);
-    bool UnLoadStaticPlugin(const std::string &pluginDLLName);
 
   private:
     int appID = 0;

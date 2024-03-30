@@ -29,21 +29,7 @@ bool HttpModule::AfterStart() {
     //m_http_server_->AddNetFilter("/area/list", this, &HttpModule::OnFilter);
     //m_http_server_->AddNetFilter("/area/enter", this, &HttpModule::OnFilter);
 
-    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
-    if (xLogicClass) {
-        const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
-        for (int i = 0; i < strIdList.size(); ++i) {
-            const std::string &strId = strIdList[i];
-
-            int web_port = m_element_->GetPropertyInt32(strId, excel::Server::WebPort());
-            int nWebServerAppID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            // webserver only run one instance in each server
-            if (pm_->GetAppID() == nWebServerAppID && web_port > 0) {
-                m_http_server_->StartServer(web_port);
-                break;
-            }
-        }
-    }
+    m_http_server_->StartServer(pm_->GetArg("web_port=", 80));
 
     return true;
 }

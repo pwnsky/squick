@@ -32,6 +32,27 @@ class INodeBaseModule : public IModule {
         return true;
     }
 
+    static std::string EnumNodeTypeToString(ServerType type)
+    {
+        return "";
+    }
+
+    static ServerType StringNodeTypeToEnum(const std::string& type)
+    {
+        if (type == "master") return ServerType::ST_MASTER;
+        else if (type == "login") return ServerType::ST_LOGIN;
+        else if (type == "world") return ServerType::ST_WORLD;
+        else if (type == "db_proxy") return ServerType::ST_DB_PROXY;
+        else if (type == "proxy") return ServerType::ST_PROXY;
+        else if (type == "lobby") return ServerType::ST_LOBBY;
+        else if (type == "game_mgr") return ServerType::ST_GAME_MGR;
+        else if (type == "game") return ServerType::ST_GAME;
+        else if (type == "micro") return ServerType::ST_MICRO;
+        else if (type == "cdn") return ServerType::ST_CDN;
+        else if (type == "robot") return ServerType::ST_ROBOT;
+        return ServerType::ST_NONE;
+    }
+
     virtual bool Listen() {
         
         m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REGISTER, this, &INodeBaseModule::OnReqRegister);
@@ -41,46 +62,37 @@ class INodeBaseModule : public IModule {
         m_net_->AddEventCallBack(this, &INodeBaseModule::OnServerSocketEvent);
         m_net_->ExpandBufferSize();
 
-        std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
-        if (xLogicClass) {
-            const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
-            for (int i = 0; i < strIdList.size(); ++i) {
-                const std::string &strId = strIdList[i];
-                const int id = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-                if (pm_->GetAppID() == id) {
-                    ServerInfo s;
-                    s.info->set_id(id);
-                    s.info->set_key(m_element_->GetPropertyString(strId, excel::Server::Key()));
-                    s.info->set_type(m_element_->GetPropertyInt32(strId, excel::Server::Type()));
-                    s.info->set_port(m_element_->GetPropertyInt32(strId, excel::Server::Port()));
-                    s.info->set_max_online(m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline()));
-                    s.info->set_cpu_count(m_element_->GetPropertyInt32(strId, excel::Server::CpuCount()));
-                    s.info->set_name(m_element_->GetPropertyString(strId, excel::Server::ID()));
-                    s.info->set_ip(m_element_->GetPropertyString(strId, excel::Server::IP()));
-                    s.info->set_public_ip(m_element_->GetPropertyString(strId, excel::Server::PublicIP()));
-                    s.info->set_area(m_element_->GetPropertyInt32(strId, excel::Server::Area()));
-                    s.info->set_cpu_count(m_element_->GetPropertyInt32(strId, excel::Server::CpuCount()));
-                    s.type = ServerInfo::Type::Self;
-                    s.info->set_update_time(SquickGetTimeS());
-                    pm_->SetAppType(s.info->type());
-                    pm_->SetArea(s.info->area());
-                    servers_[pm_->GetAppID()] = s;
+        ServerInfo s;
+        s.info->set_id(pm_->GetArg("id=", 0));
+        //s.info->set_key("key");
+        std::string name = pm_->GetArg("type=", "squick_node") + pm_->GetArg("id=", "0");
+        s.info->set_type(StringNodeTypeToEnum(pm_->GetArg("type=", "squick_node")));
+        s.info->set_port(pm_->GetArg("port=", 10000));
+        //s.info->set_max_online(m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline()));
+        //s.info->set_cpu_count(m_element_->GetPropertyInt32(strId, excel::Server::CpuCount()));
+        s.info->set_name(name);
+        s.info->set_ip(pm_->GetArg("ip=", "127.0.0.1"));
+        s.info->set_public_ip(pm_->GetArg("public_ip=", "127.0.0.1"));
+        s.info->set_area(pm_->GetArg("area=", 0));
+        //s.info->set_cpu_count(m_element_->GetPropertyInt32(strId, excel::Server::CpuCount()));
+        s.type = ServerInfo::Type::Self;
+        s.info->set_update_time(SquickGetTimeS());
+        pm_->SetAppType(s.info->type());
+        pm_->SetArea(s.info->area());
+        servers_[pm_->GetAppID()] = s;
 
-                    int nRet = m_net_->Startialization(s.info->max_online(), s.info->port(), s.info->cpu_count());
+        int nRet = m_net_->Startialization(s.info->max_online(), s.info->port(), s.info->cpu_count());
 
-                    std::ostringstream log;
-                    log << "Node Listen at 0.0.0.0:" << s.info->port() << " Name: " << s.info->name();
-                    m_log_->LogDebug(NULL_OBJECT, log, __FUNCTION__, __LINE__);
+        std::ostringstream log;
+        log << "Node Listen at 0.0.0.0:" << s.info->port() << " Name: " << s.info->name();
+        m_log_->LogDebug(NULL_OBJECT, log, __FUNCTION__, __LINE__);
 
-                    if (nRet < 0) {
-                        std::ostringstream strLog;
-                        strLog << "Cannot init server net, Port = " << s.info->port();
-                        m_log_->LogError(NULL_OBJECT, strLog, __FUNCTION__, __LINE__);
-                        SQUICK_ASSERT(nRet, "Cannot init server net", __FILE__, __FUNCTION__);
-                        exit(0);
-                    }
-                }
-            }
+        if (nRet < 0) {
+            std::ostringstream strLog;
+            strLog << "Cannot init server net, Port = " << s.info->port();
+            m_log_->LogError(NULL_OBJECT, strLog, __FUNCTION__, __LINE__);
+            SQUICK_ASSERT(nRet, "Cannot init server net", __FILE__, __FUNCTION__);
+            exit(0);
         }
         return true;
     }

@@ -18,24 +18,7 @@ bool HttpModule::AfterStart() {
     m_http_server_->AddRequestHandler("/status", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnCommandQuery);
 
     //m_http_server_->AddNetFilter("/status", this, &HttpModule::OnFilter);
-
-    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
-    if (xLogicClass) {
-        const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
-        for (int i = 0; i < strIdList.size(); ++i) {
-            const std::string &strId = strIdList[i];
-
-            int nJsonPort = m_element_->GetPropertyInt32(strId, excel::Server::WebPort());
-            int nWebServerAppID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-
-            // webserver only run one instance in each server
-            if (pm_->GetAppID() == nWebServerAppID) {
-                m_http_server_->StartServer(nJsonPort);
-
-                break;
-            }
-        }
-    }
+    m_http_server_->StartServer(pm_->GetArg("web_port=", 8888));
 
     return true;
 }
