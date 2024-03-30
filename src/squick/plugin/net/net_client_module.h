@@ -24,7 +24,7 @@ class NetClientModule : public INetClientModule {
 
     virtual bool Update();
 
-    virtual void AddServer(const ConnectData &xInfo);
+    virtual void AddNode(const ConnectData &xInfo);
 
     virtual unsigned int ExpandBufferSize(const unsigned int size = 1024 * 1024 * 20) override;
 

@@ -5,8 +5,7 @@
 namespace world::node {
 bool NodeModule::AfterStart() {
 	Listen();
-
-	AddServer(ServerType::ST_MASTER);
+	ConnectToMaster();
 
 	return true;
 }

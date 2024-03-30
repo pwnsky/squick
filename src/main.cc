@@ -46,28 +46,15 @@ void PrintLogo() {
 void DefaultStartUp(std::string strArgvList, std::vector<std::shared_ptr<PluginServer>> &serverList) {
     serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=master id=1 area=0 ip=127.0.0.1 port=10001 web_port=8888")));
 
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=world id=100 area=0 ip=127.0.0.1 port=10101 master=127.0.0.1:10001")));
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=world id=101"))); // 区服2
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=db_proxy id=300 area=0 ip=127.0.0.1 port=10201 master=127.0.0.1:10001")));
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=world id=100 area=0 ip=127.0.0.1 port=10101 master_ip=127.0.0.1 master_port=10001")));
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=db_proxy id=300 area=0 ip=127.0.0.1 port=10201 master_ip=127.0.0.1 master_port=10001")));
 
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=db_proxy id=301"))); // 区服2
-
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=login id=2 area=0 ip=127.0.0.1 port=10301 web_port=80 master=127.0.0.1:10001")));
-
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=login id=2 area=0 ip=127.0.0.1 port=10301 web_port=80 master_ip=127.0.0.1 master_port=10001")));
     // Lobby
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1000 area=0 ip=127.0.0.1 port=10401 master=127.0.0.1:10001")));
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1001 area=0 ip=127.0.0.1 port=10402 master=127.0.0.1:10001")));
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1002")));
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1000 area=0 ip=127.0.0.1 port=10401 master_ip=127.0.0.1 master_port=10001")));
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1001 area=0 ip=127.0.0.1 port=10402 master_ip=127.0.0.1 master_port=10001")));
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=500 area=0 ip=127.0.0.1 port=10501 master_ip=127.0.0.1 master_port=10001")));
 
-    // Game
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=3000")));
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=3001")));
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game_mgr id=2000")));
-
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=500 area=0 ip=127.0.0.1 port=10501 master=127.0.0.1:10001")));
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=501")));
-
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=502"))); // 区服2
 }
 
 void TutorialStartUp(std::string strArgvList, std::vector<std::shared_ptr<PluginServer>>& serverList) {

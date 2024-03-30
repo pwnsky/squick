@@ -81,8 +81,8 @@ public:
     virtual void RemoveReceiveCallBack(const ServerType eType, const uint16_t msg_id) = 0;
     ////////////////////////////////////////////////////////////////////////////////
 
-    virtual void AddServer(const ConnectData& xInfo) = 0;
-    virtual unsigned int ExpandBufferSize(const unsigned int size = 1024 * 1024 * 20) = 0;
+    virtual void AddNode(const ConnectData& xInfo) = 0;
+    virtual unsigned int ExpandBufferSize(const unsigned int size = 1024 * 1024) = 0;
 
     ////////////////////////////////////////////////////////////////////////////////
     virtual void SendByServerID(const int serverID, const uint16_t msg_id, const std::string& strData) = 0;

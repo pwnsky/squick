@@ -55,12 +55,6 @@ struct ServerInfo {
         fd = 0;
         info = NULL;
     }
-    enum class Type {
-        Unknowing,
-        Child,
-        Parrent,
-        Self,
-    };
 
     enum class Status { 
         Unknowing,
@@ -68,7 +62,6 @@ struct ServerInfo {
         Connected,
         Disconnected,
     };
-    Type type = ServerInfo::Type::Child;
     Status status = ServerInfo::Status::Unknowing;
     socket_t fd;
     std::shared_ptr<rpc::Server> info;

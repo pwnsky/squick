@@ -49,7 +49,7 @@ void NetClientModule::RemoveReceiveCallBack(const ServerType eType, const uint16
     }
 }
 
-void NetClientModule::AddServer(const ConnectData &xInfo) { mxTempNetList.push_back(xInfo); }
+void NetClientModule::AddNode(const ConnectData &xInfo) { mxTempNetList.push_back(xInfo); }
 
 unsigned int NetClientModule::ExpandBufferSize(const unsigned int size) {
     if (size > 0) {

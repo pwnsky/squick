@@ -4,8 +4,10 @@
 namespace lobby::node {
 bool NodeModule::AfterStart() {
     Listen();
-    AddServer(ServerType::ST_WORLD);
-    AddServer(ServerType::ST_DB_PROXY);
+    //AddServer(ServerType::ST_WORLD);
+    //AddServer(ServerType::ST_DB_PROXY);
+
+    ConnectToMaster();
     return true;
 }
 

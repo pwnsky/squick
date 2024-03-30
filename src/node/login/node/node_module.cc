@@ -11,7 +11,7 @@ bool NodeModule::BeforeDestory() { return true; }
 bool NodeModule::AfterStart() {
     m_net_->AddReceiveCallBack(this, &NodeModule::InvalidMessage);
     Listen();
-    AddServer(ServerType::ST_MASTER);
+    ConnectToMaster();
     return true;
 }
 

@@ -34,7 +34,7 @@ void Net::conn_writecb(struct bufferevent *bev, void *user_data) {
 void Net::conn_eventcb(struct bufferevent *bev, short events, void *user_data) {
     NetObject *pObject = (NetObject *)user_data;
     Net *pNet = (Net *)pObject->GetNet();
-    //dout << "网络事件 : Thread ID = " << std::this_thread::get_id() << " FD = " << pObject->GetRealFD() << " Event ID =" << events;
+    //dout << "网络事件 : Thread ID = " << std::this_thread::get_id() << " FD = " << pObject->GetRealFD() << " Event ID =" << events
     //           << std::endl;
     if (events & BEV_EVENT_CONNECTED) {
         // must to set it's state before the "EventCB" functional be called[maybe user will send msg in the callback function]
@@ -249,7 +249,6 @@ bool Net::SendMsg(const char *msg, const size_t len, const socket_t sock) {
             bufferevent *bev = (bufferevent *)pNetObject->GetUserData();
             if (NULL != bev) {
                 bufferevent_write(bev, msg, len);
-
                 mnSendMsgTotal++;
                 return true;
             }
@@ -285,7 +284,7 @@ bool Net::CloseNetObject(const socket_t sock) {
 // 拆包
 bool Net::Dismantle(NetObject *pObject) {
     bool bNeedDismantle = false;
-
+    
     int len = pObject->GetBuffLen();
     if (len >= IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
         rpcHead xHead;

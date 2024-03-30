@@ -8,7 +8,6 @@ bool TesterModule::Start() {
 
     std::cout << "Squick Tester\n";
     
-
     m_net_ = pm_->FindModule<INetModule>();
     m_log_ = pm_->FindModule<ILogModule>();
     m_element_ = pm_->FindModule<IElementModule>();
@@ -104,7 +103,7 @@ bool TesterModule::AddServer(ServerType type) {
                 s.ip = ip;
                 s.port = nPort;
                 s.name = strId;
-                m_net_client_->AddServer(s);
+                m_net_client_->AddNode(s);
                 return true;
             }
         }

@@ -8,7 +8,7 @@ namespace db_proxy::node {
 bool NodeModule::AfterStart() {
     
     Listen();
-    AddServer(ServerType::ST_WORLD);
+    ConnectToMaster();
     return true;
 }
 
