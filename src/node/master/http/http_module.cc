@@ -24,7 +24,6 @@ bool HttpModule::AfterStart() {
 }
 
 bool HttpModule::Update() {
-    // std::cout << "ookkkkk" << std::endl;
     m_http_server_->Update();
     return true;
 }
