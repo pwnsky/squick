@@ -67,41 +67,39 @@ class INodeBaseModule : public IModule {
         return ServerType::ST_NONE;
     }
 
-    virtual bool Listen() {
-        m_net_->AddReceiveCallBack(rpc::NodeRPC::NN_REQ_NODE_REGISTER, this, &INodeBaseModule::OnReqRegister);
-        m_net_->AddReceiveCallBack(rpc::NodeRPC::NN_REQ_NODE_UNREGISTER, this, &INodeBaseModule::OnServerUnRegistered);
-        
+    virtual bool Listen() {        
         m_net_->AddReceiveCallBack(this, &INodeBaseModule::InvalidMessage);
         m_net_->AddEventCallBack(this, &INodeBaseModule::OnServerSocketEvent);
         m_net_->ExpandBufferSize();
 
-        ServerInfo s;
-        s.info->set_id(pm_->GetArg("id=", 0));
+        
+        node_info_.info->set_id(pm_->GetArg("id=", 0));
         std::string name = pm_->GetArg("type=", "proxy") + pm_->GetArg("id=", "0");
-        s.info->set_type(StringNodeTypeToEnum(pm_->GetArg("type=", "proxy")));
-        s.info->set_port(pm_->GetArg("port=", 10000));
+        node_info_.info->set_type(StringNodeTypeToEnum(pm_->GetArg("type=", "proxy")));
+        node_info_.info->set_port(pm_->GetArg("port=", 10000));
 
-        s.info->set_name(name);
-        s.info->set_ip(pm_->GetArg("ip=", "127.0.0.1"));
-        s.info->set_public_ip(pm_->GetArg("public_ip=", "127.0.0.1"));
-        s.info->set_area(pm_->GetArg("area=", 0));
-        s.info->set_update_time(SquickGetTimeS());
-        s.info->set_max_online(10000);
-        s.info->set_cpu_count(8);
-        pm_->SetAppType(s.info->type());
-        pm_->SetArea(s.info->area());
+        node_info_.info->set_name(name);
+        node_info_.info->set_ip(pm_->GetArg("ip=", "127.0.0.1"));
+        node_info_.info->set_public_ip(pm_->GetArg("public_ip=", "127.0.0.1"));
+        node_info_.info->set_area(pm_->GetArg("area=", 0));
+        node_info_.info->set_update_time(SquickGetTimeS());
+        node_info_.info->set_max_online(10000);
+        node_info_.info->set_cpu_count(8);
 
-        servers_[pm_->GetAppID()] = s;
+        pm_->SetAppType(node_info_.info->type());
+        pm_->SetArea(node_info_.info->area());
 
-        int nRet = m_net_->Startialization(s.info->max_online(), s.info->port(), s.info->cpu_count());
+        //servers_[pm_->GetAppID()] = s;
+
+        int nRet = m_net_->Startialization(node_info_.info->max_online(), node_info_.info->port(), node_info_.info->cpu_count());
 
         std::ostringstream log;
-        log << "Node Listen at 0.0.0.0:" << s.info->port() << " Name: " << s.info->name();
+        log << "Node Listen at 0.0.0.0:" << node_info_.info->port() << " Name: " << node_info_.info->name();
         m_log_->LogDebug(NULL_OBJECT, log, __FUNCTION__, __LINE__);
 
         if (nRet < 0) {
             std::ostringstream strLog;
-            strLog << "Cannot init server net, Port = " << s.info->port();
+            strLog << "Cannot init server net, Port = " << node_info_.info->port();
             m_log_->LogError(NULL_OBJECT, strLog, __FUNCTION__, __LINE__);
             SQUICK_ASSERT(nRet, "Cannot init server net", __FILE__, __FUNCTION__);
             exit(0);
@@ -110,27 +108,19 @@ class INodeBaseModule : public IModule {
     }
 
     // Add upper server
-    bool ConnectToMaster() {
+    bool AddNodesByType(const vector<int> &types) {
         m_net_client_->AddEventCallBack(ST_MASTER, this, &INodeBaseModule::OnClientSocketEvent);
-        //m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::ServerRPC::SERVER_ADD, this, &INodeBaseModule::OnDynamicServerAdd);
-        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::NodeRPC::NN_ACK_NODE_REGISTER, this, &INodeBaseModule::OnAckRegister);
+        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::MasterRPC::NN_NTF_NODE_ADD, this, &INodeBaseModule::OnNnNtfNodeAdd);
+        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::MasterRPC::NN_NTF_NODE_REMOVE, this, &INodeBaseModule::OnNnNtfNodeRemove);
+        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::MasterRPC::NN_ACK_NODE_REGISTER, this, &INodeBaseModule::OnNnAckNodeRegister);
         m_net_client_->ExpandBufferSize();
         bool ret = false;
-
-        // 增加同一区服的，如果是Master或Login，不用校验区服
-        
-        ServerInfo info;
-        info.status = ServerInfo::Status::Connecting;
-        info.info->set_port(pm_->GetArg("master_port=", 10001));
-        info.info->set_name("master");
-        info.info->set_ip(pm_->GetArg("master_ip=", "127.0.0.1"));
-        info.info->set_id(DEFAULT_MASTER_ID);
-        servers_[DEFAULT_MASTER_ID] = info;
         ConnectData s;
+        s.listen_types = types;
         s.id = DEFAULT_MASTER_ID;
         s.type = StringNodeTypeToEnum("master");
-        s.ip = info.info->ip();
-        s.port = info.info->port();
+        s.ip = pm_->GetArg("master_ip=", "127.0.0.1");
+        s.port = pm_->GetArg("master_port=", 10001);
         s.name = "master";
         std::ostringstream log;
         log << "Node Connect to " << s.name << " host " << s.ip << ":" << s.port << " cur_area: " << pm_->GetArg("area=", 0) << std::endl;
@@ -144,12 +134,12 @@ class INodeBaseModule : public IModule {
     // Add upper server
     void OnDynamicServerAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
         string guid;
-        rpc::ServerList req;
-        if (!INetModule::ReceivePB(msg_id, msg, len, req, guid)) {
+        rpc::NnNtfNodeAdd ntf;
+        if (!INetModule::ReceivePB(msg_id, msg, len, ntf, guid)) {
             return;
         }
-        for (int i = 0; i < req.list_size(); ++i) {
-            const rpc::Server &sd = req.list(i);
+        for (int i = 0; i < ntf.node_list().size(); ++i) {
+            const rpc::Server &sd = ntf.node_list(i);
             // type
             ConnectData s;
             s.id = sd.id();
@@ -173,20 +163,16 @@ class INodeBaseModule : public IModule {
 
     // Report to upper server
     void UpdateState() {
-        auto iter = servers_.find(pm_->GetAppID());
-        if (iter == servers_.end()) {
-            m_log_->LogDebug("No self node info");
-            return;
-        }
-        iter->second.info->set_update_time(SquickGetTimeS());
-        iter->second.info->set_workload(workload_);
+
+        node_info_.info->set_update_time(SquickGetTimeS());
+        node_info_.info->set_workload(workload_);
         // Update status to master
         if (pm_->GetAppType() != ST_MASTER) {
             rpc::NnNtfNodeReport req;
             req.set_id(pm_->GetAppID());
             auto s = req.add_list();
-            *s = *iter->second.info;
-            m_net_client_->SendPBByID(DEFAULT_MASTER_ID, rpc::NodeRPC::NN_NTF_NODE_REPORT, req);
+            *s = *node_info_.info.get();
+            m_net_client_->SendPBByID(DEFAULT_MASTER_ID, rpc::MasterRPC::NN_NTF_NODE_REPORT, req);
         }
     }
 
@@ -223,13 +209,12 @@ class INodeBaseModule : public IModule {
         }
         else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
             m_log_->LogInfo(Guid(0, sock), "Net Client: SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
-            ReqRegister(pNet);
+            
+            OnUpperNodeConnected(pNet);
         }
     }
 
-    void ReqRegister(INet* pNet) {
-        rpc::NnReqNodeRegister req;
-        req.set_id(pm_->GetAppID());
+    void OnUpperNodeConnected(INet* pNet) {
         std::shared_ptr<ConnectData> ts = m_net_client_->GetServerNetInfo(pNet);
         if (ts == nullptr) {
             ostringstream msg;
@@ -237,45 +222,17 @@ class INodeBaseModule : public IModule {
             m_log_->LogWarning(msg, __FUNCTION__, __LINE__);
             return;
         }
-        auto s = req.add_list();
-        *s = *servers_[pm_->GetAppID()].info.get();
-        m_net_client_->SendPBByID(ts->id, rpc::NodeRPC::NN_REQ_NODE_REGISTER, req);
+        ts->state = ConnectDataState::NORMAL;
+
+        // target type only master can register
+        if (ts->type != ST_MASTER) return;
+        rpc::NnReqNodeRegister req;
+        *req.mutable_node() = *node_info_.info.get();
+        m_net_client_->SendPBByID(ts->id, rpc::MasterRPC::NN_REQ_NODE_REGISTER, req);
         m_log_->LogInfo(Guid(0, pm_->GetAppID()), ts->name, "Register");
     }
-
-    virtual void OnReqRegister(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        string nPlayerID;
-        rpc::NnReqNodeRegister req;
-        if (!m_net_->ReceivePB(msg_id, msg, len, req, nPlayerID)) {
-            return;
-        }
-        rpc::NnAckNodeRegister ack;
-        do {
-            auto& cs = servers_[pm_->GetAppID()];
-            ack.set_code(0);
-            for (auto s : req.list()) {
-                if (s.id() == pm_->GetAppID()) {
-                    continue;
-                }
-                if (s.id() == req.id()) {
-
-                }
-                ServerInfo info;
-                info.fd = sock;
-                *info.info = s;
-                servers_[s.id()] = info;
-            }
-
-            auto iter = servers_.find(req.id());
-            if (iter != servers_.end()) {
-                iter->second.status = ServerInfo::Status::Connected;
-            }
-        } while (false);
-        m_net_->SendMsgPB(rpc::NodeRPC::NN_ACK_NODE_REGISTER, ack, sock);
-    }
     
-    // 注册响应
-    virtual void OnAckRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    void OnNnAckNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
         string guid;
         rpc::NnAckNodeRegister ack;
         if (!m_net_->ReceivePB(msg_id, msg, len, ack, guid)) {
@@ -283,9 +240,9 @@ class INodeBaseModule : public IModule {
         }
 
         if (ack.code() == 0) {
-            auto iter = servers_.find(ack.id());
-            if (iter != servers_.end()) {
-                iter->second.status = ServerInfo::Status::Connected;
+            for (auto &new_node : ack.node_add_list()) {
+                
+                // 增加服务器
             }
         }
         else {
@@ -293,46 +250,25 @@ class INodeBaseModule : public IModule {
         }
     }
 
-    virtual void OnServerUnRegistered(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        string nPlayerID;
-        rpc::ServerList sl;
-        if (!m_net_->ReceivePB(msg_id, msg, len, sl, nPlayerID)) {
-            return;
-        }
+    // Add node ntf
+    void OnNnNtfNodeAdd(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
 
-        for (int i = 0; i < sl.list_size(); ++i) {
-            const rpc::Server &s = sl.list(i);
-            int id = s.id();
-            auto iter = servers_.find(id);
-            if (iter != servers_.end()) {
-                servers_.erase(iter);
-            }
-            m_log_->LogInfo(Guid(0, s.id()), s.name(), " UnRegistered");
-        }
     }
-    
-    public:
-        virtual int GetLoadBanlanceNode(ServerType type) {
-        int node_id = -1;
-        int min_workload = 99999;
-        for (auto& iter : servers_) {
-            auto server = iter.second;
-            if (server.info->type() == type && server.info->area() == pm_->GetArea()) {
-                if (min_workload > server.info->workload()) {
-                    node_id = iter.first;
-                }
-            }
-        }
-        if (node_id == -1) {
-            return -1;
-        }
-        return node_id;
+
+    bool AddNodes() {
+
+    }
+
+    // Add node ntf
+    void OnNnNtfNodeRemove(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+
+    }
+
+    bool RemoveNodes() {
+
     }
 
     public:
-
-    // 服务表
-    map<int, ServerInfo> servers_;
     
     IElementModule *m_element_;
     IClassModule *m_class_;
@@ -341,6 +277,7 @@ class INodeBaseModule : public IModule {
     INetClientModule *m_net_client_;
 
   private:
+    ServerInfo node_info_;
     time_t last_report_time_ = 0;
     time_t last_update_time_ = 0;
     int workload_;

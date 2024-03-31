@@ -10,10 +10,54 @@ bool NodeModule::Destory() { return true; }
 
 bool NodeModule::AfterStart() {
     
-    m_net_->AddReceiveCallBack(rpc::NodeRPC::NN_NTF_NODE_REPORT, this, &NodeModule::OnReport);
+    m_net_->AddReceiveCallBack(rpc::MasterRPC::NN_REQ_NODE_REGISTER, this, &NodeModule::OnNnReqNodeRegister);
+    m_net_->AddReceiveCallBack(rpc::MasterRPC::NN_REQ_NODE_UNREGISTER, this, &NodeModule::OnNnReqNodeUnregistered);
+    m_net_->AddReceiveCallBack(rpc::MasterRPC::NN_NTF_NODE_REPORT, this, &NodeModule::OnReport);
     Listen();
     
     return true;
+}
+
+void NodeModule::OnNnReqNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    string nPlayerID;
+    rpc::NnReqNodeRegister req;
+    if (!m_net_->ReceivePB(msg_id, msg, len, req, nPlayerID)) {
+        return;
+    }
+    rpc::NnAckNodeRegister ack;
+    ack.set_code(1);
+    do {
+        auto& cs = servers_[pm_->GetAppID()];
+        
+        auto& new_node = req.node();
+
+        if (new_node.id() == pm_->GetAppID()) {
+            break;
+        }
+        ServerInfo info;
+        info.fd = sock;
+        info.status = ServerInfo::Status::Connected;
+        *info.info = new_node;
+        servers_[new_node.id()] = info;
+
+        ack.set_code(0);
+    } while (false);
+    m_net_->SendMsgPB(rpc::MasterRPC::NN_ACK_NODE_REGISTER, ack, sock);
+}
+
+void NodeModule::OnNnReqNodeUnregistered(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    string guid;
+    rpc::NnReqNodeUnregister req;
+    if (!m_net_->ReceivePB(msg_id, msg, len, req, guid)) {
+        return;
+    }
+    
+    int id = req.id();
+    auto iter = servers_.find(id);
+    if (iter != servers_.end()) {
+        servers_.erase(iter);
+    }
+    //m_log_->LogInfo(Guid(0, id, s.name(), " UnRegistered");
 }
 
 // Master
@@ -47,6 +91,24 @@ void NodeModule::OnReport(const socket_t sock, const int msg_id, const char* msg
             servers_[s.id()] = info;
         }
     } while (false);
+}
+
+
+int NodeModule::GetLoadBanlanceNode(ServerType type) {
+    int node_id = -1;
+    int min_workload = 99999;
+    for (auto& iter : servers_) {
+        auto server = iter.second;
+        if (server.info->type() == type && server.info->area() == pm_->GetArea()) {
+            if (min_workload > server.info->workload()) {
+                node_id = iter.first;
+            }
+        }
+    }
+    if (node_id == -1) {
+        return -1;
+    }
+    return node_id;
 }
 
 // 获取服务状态

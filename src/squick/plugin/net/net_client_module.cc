@@ -214,6 +214,11 @@ void NetClientModule::SendPBToAllNodeByType(const ServerType eType, const uint16
     }
 }
 
+Awaitable<NetClientResponseData>  NetClientModule::RequestByID(const int serverID, const uint16_t msg_id, const std::string& strData, int ack_msg_id) {
+    Awaitable<NetClientResponseData> a;
+    return a;
+}
+
 std::shared_ptr<ConnectData> NetClientModule::GetServerNetInfo(const ServerType eType) {
     std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
     if (xConnectDataMap) {

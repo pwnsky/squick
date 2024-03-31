@@ -4,6 +4,7 @@
 #include <iostream>
 #include <squick/core/consistent_hash.h>
 #include <squick/core/i_module.h>
+#include "coroutine.h"
 
 enum ConnectDataState {
     DISCONNECT,
@@ -31,7 +32,17 @@ struct ConnectData {
     ConnectDataState state;
     INT64 last_time;
     std::shared_ptr<INetModule> net_module;
+    std::vector<int> listen_types;
     // net handler
+};
+
+struct NetClientResponseData {
+    reqid_t req_id;
+    int req_msg_id;
+    int ack_msg_id;
+    socket_t sock;
+    char* data;
+    size_t length;
 };
 
 class INetClientModule : public IModule {
@@ -92,6 +103,8 @@ public:
     virtual void SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message& xData, const string id = "") = 0;
     virtual void SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message& xData, const string id = "") = 0;
     ////////////////////////////////////////////////////////////////////////////////
+    // coroutine
+    virtual Awaitable<NetClientResponseData>  RequestByID(const int serverID, const uint16_t msg_id, const std::string& strData, int ack_msg_id) = 0;
 
     virtual MapEx<int, ConnectData>& GetServerList() = 0;
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const ServerType eType) = 0;

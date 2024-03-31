@@ -5,8 +5,9 @@
 namespace world::node {
 bool NodeModule::AfterStart() {
 	Listen();
-	ConnectToMaster();
 
+	vector<int> node_types = {};
+	AddNodesByType(node_types);
 	return true;
 }
 bool NodeModule::Destory() { return true; }

@@ -35,7 +35,8 @@ class NetClientModule : public INetClientModule {
     virtual void SendToAllNodeByType(const ServerType eType, const uint16_t msg_id, const std::string &strData, const string guid = "") override;
     virtual void SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message &xData, const string guid = "") override;
     virtual void SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid = "") override;
-
+    // coroutine
+    virtual Awaitable<NetClientResponseData>  RequestByID(const int serverID, const uint16_t msg_id, const std::string& strData, int ack_msg_id) override;
 
     virtual MapEx<int, ConnectData> &GetServerList();
 

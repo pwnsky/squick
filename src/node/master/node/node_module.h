@@ -17,6 +17,13 @@ class NodeModule : public INodeModule {
     map<int, ServerInfo>& GetServers();
 
     void OnReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnNnReqNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnNnReqNodeUnregistered(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+
+    int GetLoadBanlanceNode(ServerType type);
+private:
+    // 服务表
+    map<int, ServerInfo> servers_;
 };
 
 } // namespace master::server

@@ -300,7 +300,8 @@ bool LogicModule::TryEnter(string guid) {
     if (client == clients_.end()) {
         return false;
     }
-    int lobby_id = m_node_->GetLoadBanlanceNode(ServerType::ST_LOBBY);
+    //int lobby_id = m_node_->GetLoadBanlanceNode(ServerType::ST_LOBBY);
+    int lobby_id = 0;
     if (lobby_id == -1) {
         return false;
     }

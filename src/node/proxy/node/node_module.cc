@@ -11,7 +11,9 @@ bool NodeModule::AfterStart() {
     m_net_client_->AddReceiveCallBack(ServerType::ST_LOBBY, this, &NodeModule::Transport);
     m_net_client_->AddReceiveCallBack(ServerType::ST_LOGIN, rpc::LoginRPC::ACK_PROXY_CONNECT_VERIFY, this, &NodeModule::OnAckProxyConnectVerify);
     m_net_client_->AddReceiveCallBack(ServerType::ST_LOBBY, rpc::PlayerEventRPC::PLAYER_BIND_EVENT, this, &NodeModule::PlayerBindEvent);
-    ConnectToMaster();
+    
+    vector<int> node_types = { ServerType::ST_WORLD, ServerType::ST_LOBBY };
+    AddNodesByType(node_types);
 
     // ws
     

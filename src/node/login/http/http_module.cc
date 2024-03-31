@@ -222,9 +222,11 @@ string HttpModule::MakeToken(string account_id) {
 }
 
 bool HttpModule::OnWorldList(std::shared_ptr<HttpRequest> req) {
+    
     AckWorldList ack;
+    /*
     auto &servers = m_node_->GetServers();
-
+    
     for (auto &iter : servers) {
         auto &server = iter.second;
         if (server.info->type() == ServerType::ST_WORLD) {
@@ -236,12 +238,14 @@ bool HttpModule::OnWorldList(std::shared_ptr<HttpRequest> req) {
             ack.world.push_back(world);
         }
     }
-
+    */
     ack.code = IResponse::SUCCESS;
     ack.msg = "";
     ajson::string_stream rep_ss;
     ajson::save_to(rep_ss, ack);
+    
     return m_http_server_->ResponseMsg(req, rep_ss.str(), WebStatus::WEB_OK);
+    
 }
 
 bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
@@ -252,7 +256,7 @@ bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
     std::string account_id = info["account_id"];
     ajson::load_from_buff(req, request->body.c_str());
     do {
-
+        /*
         // 判断world id是否存在
         auto &servers = m_node_->GetServers();
         auto witer = servers.find(req.world_id);
@@ -265,12 +269,14 @@ bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
             ack.code = IResponse::QEUEST_ERROR;
             break;
         }
+        */
 
         // 获取区服id
         
         // 选择一个workload最小的proxy给客户端
 
         // find a server
+        /*
         int min_proxy_id = -1;
         int min_workload = 99999;
         for (auto &iter : servers) {
@@ -307,15 +313,14 @@ bool HttpModule::OnWorldEnter(std::shared_ptr<HttpRequest> request) {
         m_redis_->HashSet(account_id, "proxy_key", key);
         m_redis_->HashSet(account_id, "proxy_limit_time", to_string(86400));
         m_redis_->HashSet(account_id, "world_id", to_string(req.world_id));
+
+        */
     } while (false);
 
     ajson::string_stream rep_ss;
     ajson::save_to(rep_ss, ack);
     return m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
 }
-
-
-
 
 void HttpModule::PrintRequest(std::shared_ptr<HttpRequest> req) {
     std::cout << "OnFilter: " << std::endl;

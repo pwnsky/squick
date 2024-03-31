@@ -43,7 +43,7 @@
 
 typedef std::function<void(const Guid id, const int state_code, const std::string &strRespData, const std::string &strMemoData)> HTTP_RESP_FUNCTOR;
 typedef std::shared_ptr<HTTP_RESP_FUNCTOR> HTTP_RESP_FUNCTOR_PTR;
-typedef long int reqid_t;
+
 
 struct HttpClientResponseData {
     reqid_t req_id;

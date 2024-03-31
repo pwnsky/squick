@@ -1,0 +1,95 @@
+// 描述: 登录验证
+// 使用: 服务器, 客户端
+syntax = "proto3";
+package rpc;
+
+import "base.proto";
+// Master RPC 500 ~ 1000
+enum MasterRPC {
+    MASTER_RPC_NONE = 0;
+    NN_REQ_NODE_REGISTER = 500;
+    NN_ACK_NODE_REGISTER = 501;
+
+    NN_REQ_NODE_UNREGISTER = 502;
+    NN_ACK_NODE_UNREGISTER = 503;
+
+    NN_REQ_MIN_WORKLOAD_NODE_INFO = 504;
+    NN_ACK_MIN_WORKLOAD_NODE_INFO = 505;
+
+    NN_REQ_NODE_INFO = 506;
+    NN_ACK_NODE_INFO = 507;
+
+    NN_NTF_NODE_REPORT = 508; // Report node state to master
+    NN_NTF_NODE_ADD = 509;    // new node will ntf
+    NN_NTF_NODE_REMOVE = 510; // remove node will ntf
+}
+
+enum ServerState {
+    ServerCrash = 0;
+    ServerNormal = 1;
+    ServerBusy = 2;
+    ServerFrie = 3;
+}
+
+message Server {
+    int32 id = 1;
+    bytes name = 2;
+    bytes ip = 3;
+    int32 port = 4;
+    int32 max_online = 5;
+    int32 cpu_count = 6;
+    ServerState state = 7;
+    int32 type = 8;
+    int32 area = 9; // 区
+    int32 connections = 10;
+    int32 workload = 11;
+    bytes key = 12; //密钥
+    bytes public_ip = 13;
+    int32 update_time = 14; // 更新时间
+}
+
+//message ServerList { repeated Server list = 1; }
+
+message NnReqNodeRegister {
+    repeated int32 listen_type_list = 1; // set bind type, When new same type node connect to master, it will ntf self node.
+    Server node = 2;
+}
+
+message NnAckNodeRegister {
+    int32 code = 1;
+    repeated Server node_add_list = 2;
+}
+
+message NnNtfNodeAdd {
+    repeated Server node_list = 1;
+}
+
+message NnNtfNodeRemove {
+    repeated Server node_list = 1;
+}
+
+message NnNtfNodeReport {
+    int32 id = 1;
+    repeated Server list = 2;
+}
+
+message NnReqNodeInfo {
+    repeated int32 id_list = 1;
+}
+
+message NnAckNodeInfo {
+    repeated Server list = 1;
+}
+
+message NnReqMinWorkloadNodeInfo {
+    repeated int32 type_list = 1;
+}
+
+message NnAckMinWorkloadNodeInfo {
+    repeated Server list = 1;
+}
+
+
+message NnReqNodeUnregister { int32 id = 1; }
+
+message NnAckNodeUnregister { int32 code = 1; }

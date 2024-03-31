@@ -17,5 +17,6 @@
 #include "micro.pb.h"
 #include "proxy.pb.h"
 #include "node.pb.h"
+#include "master.pb.h"
 #include "world.pb.h"
 #include "test.pb.h"
