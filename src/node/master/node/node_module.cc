@@ -10,8 +10,43 @@ bool NodeModule::Destory() { return true; }
 
 bool NodeModule::AfterStart() {
     
+    m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REPORT, this, &NodeModule::OnReport);
     Listen();
+    
     return true;
+}
+
+// Master
+void NodeModule::OnReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    
+    string guid;
+    rpc::ReqReport req;
+    if (!INetModule::ReceivePB(msg_id, msg, len, req, guid)) {
+        return;
+    }
+
+    do {
+        for (auto s : req.list()) {
+            if (s.id() == pm_->GetAppID() || s.id() == 0) {
+                continue;
+            }
+            auto iter = servers_.find(s.id());
+            if (iter != servers_.end()) {
+                if (iter->second.info->update_time() >= s.update_time()) {
+                    continue;
+                }
+                *iter->second.info = s;
+                continue;
+            }
+
+            // New
+            ServerInfo info;
+            info.fd = 0;
+            info.status = ServerInfo::Status::Unknowing;
+            *info.info = s;
+            servers_[s.id()] = info;
+        }
+    } while (false);
 }
 
 // 获取服务状态
@@ -35,6 +70,7 @@ std::string NodeModule::GetServersStatus() {
         n["port"] = sd->port();
         n["cpu_count"] = sd->cpu_count();
         n["status"] = sd->state();
+        n["workload"] = sd->workload();
         n["update_time"] = sd->update_time();
         statusRoot["node_list"][to_string(sd->id())] = n;
     }

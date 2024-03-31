@@ -9,6 +9,8 @@
 #include <squick/plugin/net/export.h>
 #include <struct/struct.h>
 
+#define DEFAULT_MASTER_ID 1
+
 class INodeBaseModule : public IModule {
   public:
     virtual bool Awake() final { return true; }
@@ -24,12 +26,24 @@ class INodeBaseModule : public IModule {
     }
 
     virtual bool Update() override final {
+        // calc work load
+        CalcWorkLoad();
         if (last_report_time_ + 3 > pm_->GetNowTime()) {
             return true;
         }
+        if (last_report_time_ > 0) {
+            UpdateState();
+        }
         last_report_time_ = pm_->GetNowTime();
-        ReqServerReport();
         return true;
+    }
+
+    inline void CalcWorkLoad() {
+        // handle time * 100 + m_net connections + m_net_client connections
+        time_t now_time = SquickGetTimeMS();
+        // The first update will int overflow, but who care?
+        workload_ = (now_time - last_update_time_) * 100;
+        last_update_time_ = now_time;
     }
 
     static std::string EnumNodeTypeToString(ServerType type)
@@ -56,15 +70,15 @@ class INodeBaseModule : public IModule {
     virtual bool Listen() {
         m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REGISTER, this, &INodeBaseModule::OnReqRegister);
         m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_UNREGISTER, this, &INodeBaseModule::OnServerUnRegistered);
-        m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REPORT, this, &INodeBaseModule::OnReqServerReport);
+        
         m_net_->AddReceiveCallBack(this, &INodeBaseModule::InvalidMessage);
         m_net_->AddEventCallBack(this, &INodeBaseModule::OnServerSocketEvent);
         m_net_->ExpandBufferSize();
 
         ServerInfo s;
         s.info->set_id(pm_->GetArg("id=", 0));
-        std::string name = pm_->GetArg("type=", "squick_node") + pm_->GetArg("id=", "0");
-        s.info->set_type(StringNodeTypeToEnum(pm_->GetArg("type=", "squick_node")));
+        std::string name = pm_->GetArg("type=", "proxy") + pm_->GetArg("id=", "0");
+        s.info->set_type(StringNodeTypeToEnum(pm_->GetArg("type=", "proxy")));
         s.info->set_port(pm_->GetArg("port=", 10000));
 
         s.info->set_name(name);
@@ -98,23 +112,22 @@ class INodeBaseModule : public IModule {
     // Add upper server
     bool ConnectToMaster() {
         m_net_client_->AddEventCallBack(ST_MASTER, this, &INodeBaseModule::OnClientSocketEvent);
-        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::ServerRPC::SERVER_ADD, this, &INodeBaseModule::OnDynamicServerAdd);
+        //m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::ServerRPC::SERVER_ADD, this, &INodeBaseModule::OnDynamicServerAdd);
         m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::ServerRPC::ACK_REGISTER, this, &INodeBaseModule::OnAckRegister);
-        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::ServerRPC::ACK_REPORT, this, &INodeBaseModule::OnAckServerReport);
         m_net_client_->ExpandBufferSize();
         bool ret = false;
 
         // 增加同一区服的，如果是Master或Login，不用校验区服
-        int default_id = 1;
+        
         ServerInfo info;
         info.status = ServerInfo::Status::Connecting;
         info.info->set_port(pm_->GetArg("master_port=", 10001));
         info.info->set_name("master");
         info.info->set_ip(pm_->GetArg("master_ip=", "127.0.0.1"));
-        info.info->set_id(default_id);
-        servers_[default_id] = info;
+        info.info->set_id(DEFAULT_MASTER_ID);
+        servers_[DEFAULT_MASTER_ID] = info;
         ConnectData s;
-        s.id = default_id;
+        s.id = DEFAULT_MASTER_ID;
         s.type = StringNodeTypeToEnum("master");
         s.ip = info.info->ip();
         s.port = info.info->port();
@@ -127,9 +140,6 @@ class INodeBaseModule : public IModule {
     }
 
     void InvalidMessage(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) { printf("Net || umsg_id=%d\n", msg_id); }
-
-
-    void LogServerInfo(const std::string &strServerInfo) { m_log_->LogInfo(Guid(), strServerInfo, ""); }
 
     // Add upper server
     void OnDynamicServerAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
@@ -163,112 +173,38 @@ class INodeBaseModule : public IModule {
     }
 
     // Report to upper server
-    void ReqServerReport() {
-        dout << "report ...\n";
+    void UpdateState() {
         rpc::ReqReport req;
         req.set_id(pm_->GetAppID());
-        // 更新自己的时间
         auto iter = servers_.find(pm_->GetAppID());
+        if (iter == servers_.end()) {
+            m_log_->LogDebug("No self node info");
+            return;
+        }
         iter->second.info->set_update_time(SquickGetTimeS());
-        
-        // 将下游服务和自己全部注册更新到上游
-    }
-
-    virtual void OnReqServerReport(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        string guid;
-        rpc::ReqReport req;
-        if (!INetModule::ReceivePB(msg_id, msg, len, req, guid)) {
-            return;
-        }
-        rpc::AckReport ack;
-        do {
-            ack.set_code(0);
-            for (auto s : req.list()) {
-                if (s.id() == pm_->GetAppID() || s.id() == 0) { // 排除自己和比当前时间更新晚的和排除异常的
-                    continue;
-                }
-                auto iter = servers_.find(s.id());
-                if (iter != servers_.end()) {
-                   if (iter->second.info->update_time() >= s.update_time()) {
-                        continue;
-                   }
-                   *iter->second.info = s;
-                   continue;
-                }
-
-                // 新增
-                ServerInfo info;
-                info.fd = 0;
-                info.status = ServerInfo::Status::Unknowing;
-                *info.info = s;
-                servers_[s.id()] = info;
-            }
-            
-            int area = servers_[req.id()].info->area();
-            // 更新下游状态, area 为 0 的有权拉取所有，其他的只能拉取自己区域的和0区域的
-            for (auto sv : servers_) {
-                if (sv.first == 0 || sv.second.info->id() == 0) {
-                    continue;
-                }
-                if (area == 0 || sv.second.info->area() == area || sv.second.info->area() == 0) {
-                    auto s = ack.add_list();
-                    *s = *sv.second.info.get();
-                }
-            }
-        } while (false);
-        
-        m_net_->SendMsgPB(rpc::ServerRPC::ACK_REPORT, ack, sock);
-    }
-
-    virtual void OnAckServerReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-        
-        string guid;
-        rpc::AckReport ack;
-        if (!m_net_->ReceivePB(msg_id, msg, len, ack, guid)) {
-            return;
-        }
-
-        ostringstream s;
-        s << "Ack ServerReport from: " << guid << " pulled: " << ack.list().size();
-        m_log_->LogDebug(s);
-
-        if (ack.code() == 0) {
-            for (auto s : ack.list()) {
-                auto iter = servers_.find(s.id());
-                if (iter != servers_.end()) {
-                    if (iter->second.info->update_time() >= s.update_time()) {
-                        continue;
-                    }
-                    *iter->second.info = s;
-                    continue;
-                }
-                
-                // 新增
-                ServerInfo info;
-                info.fd = 0;
-                info.status = ServerInfo::Status::Unknowing;
-                *info.info = s;
-                servers_[s.id()] = info;
-            }
-        }
-        else {
-            dout << "更新失败!";
+        iter->second.info->set_workload(workload_);
+        // Update status to master
+        if (pm_->GetAppType() != ST_MASTER) {
+            rpc::ReqReport req;
+            auto s = req.add_list();
+            *s = *iter->second.info;
+            m_net_client_->SendToServerByPB(DEFAULT_MASTER_ID, rpc::ServerRPC::REQ_REPORT, req);
         }
     }
 
     // 作为服务的监听socket状态事件
     void OnServerSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
         if (eEvent & SQUICK_NET_EVENT_EOF) {
-            m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
+            m_log_->LogInfo(Guid(0, sock), "Net Server: SQUICK_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
             OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
-            m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
+            m_log_->LogInfo(Guid(0, sock), "Net Server: SQUICK_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
             OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
-            m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
+            m_log_->LogInfo(Guid(0, sock), "Net Server: SQUICK_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
             OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
-            m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
+            m_log_->LogInfo(Guid(0, sock), "Net Server: SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
             OnClientConnected(sock);
         }
     }
@@ -279,16 +215,16 @@ class INodeBaseModule : public IModule {
     // 作为客户端连接socket事件
     void OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet) {
         if (eEvent & SQUICK_NET_EVENT_EOF) {
-            m_log_->LogWarning(Guid(0, sock), "SQUICK_NET_EVENT_EOF", __FUNCTION__, __LINE__);
+            m_log_->LogWarning(Guid(0, sock), "Net Client: SQUICK_NET_EVENT_EOF", __FUNCTION__, __LINE__);
         }
         else if (eEvent & SQUICK_NET_EVENT_ERROR) {
-            m_log_->LogError(Guid(0, sock), "SQUICK_NET_EVENT_ERROR", __FUNCTION__, __LINE__);
+            m_log_->LogError(Guid(0, sock), "Net Client: SQUICK_NET_EVENT_ERROR", __FUNCTION__, __LINE__);
         }
         else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
-            m_log_->LogError(Guid(0, sock), "SQUICK_NET_EVENT_TIMEOUT", __FUNCTION__, __LINE__);
+            m_log_->LogError(Guid(0, sock), "Net Client: SQUICK_NET_EVENT_TIMEOUT", __FUNCTION__, __LINE__);
         }
         else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
-            m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
+            m_log_->LogInfo(Guid(0, sock), "Net Client: SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
             ReqRegister(pNet);
         }
     }
@@ -304,17 +240,10 @@ class INodeBaseModule : public IModule {
             m_log_->LogWarning(msg, __FUNCTION__, __LINE__);
             return;
         }
-        req.set_key("no passowrd");
-
-        // 将自己注册到上游
         auto s = req.add_list();
         *s = *servers_[pm_->GetAppID()].info.get();
-        dout << "register: " << s->id() << endl;
         m_net_client_->SendToServerByPB(ts->id, rpc::ServerRPC::REQ_REGISTER, req);
-
-        dout << pm_->GetAppName() << " 请求连接 " << ts->name <<  " target_id" << ts->id << "\n";
         m_log_->LogInfo(Guid(0, pm_->GetAppID()), ts->name, "Register");
-
     }
 
     virtual void OnReqRegister(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
@@ -328,7 +257,7 @@ class INodeBaseModule : public IModule {
             auto& cs = servers_[pm_->GetAppID()];
             ack.set_code(0);
             for (auto s : req.list()) {
-                if (s.id() == pm_->GetAppID()) { // 排除自己
+                if (s.id() == pm_->GetAppID()) {
                     continue;
                 }
                 if (s.id() == req.id()) {
@@ -340,7 +269,6 @@ class INodeBaseModule : public IModule {
                 servers_[s.id()] = info;
             }
 
-            // 标识为子节点
             auto iter = servers_.find(req.id());
             if (iter != servers_.end()) {
                 iter->second.status = ServerInfo::Status::Connected;
@@ -438,6 +366,8 @@ class INodeBaseModule : public IModule {
 
   private:
     time_t last_report_time_ = 0;
+    time_t last_update_time_ = 0;
+    int workload_;
 
   protected:
 };

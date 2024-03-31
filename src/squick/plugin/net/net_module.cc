@@ -292,8 +292,8 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const std::string &strData, con
 INet *NetModule::GetNet() { return m_pNet; }
 
 void NetModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    m_log_->LogInfo(pm_->GetAppName() + std::to_string(pm_->GetAppID()) + " NetModule::OnReceiveNetPack " +
-    std::to_string(msg_id), __FILE__, __LINE__);
+    //m_log_->LogInfo(pm_->GetAppName() + std::to_string(pm_->GetAppID()) + " NetModule::OnReceiveNetPack " +
+    //std::to_string(msg_id), __FILE__, __LINE__);
 
     Performance performance;
 

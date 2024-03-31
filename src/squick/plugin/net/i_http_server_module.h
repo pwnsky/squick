@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_INTF_HTTP_NET_MODULE_H
-#define SQUICK_INTF_HTTP_NET_MODULE_H
+#pragma once
 
 #include "i_http_server.h"
 #include <squick/core/i_module.h>
@@ -58,4 +55,3 @@ class IHttpServerModule : public IModule {
     virtual bool AddMsgCB(const std::string& strPath, const HttpType eRequestType, const HTTP_RECEIVE_CORO_FUNCTOR_PTR& cb) = 0;
     virtual bool AddFilterCB(const std::string &strPath, const HTTP_FILTER_FUNCTOR_PTR &cb) = 0;
 };
-#endif

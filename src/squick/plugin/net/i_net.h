@@ -1,6 +1,4 @@
-
-#ifndef SQUICK_INTF_NET_H
-#define SQUICK_INTF_NET_H
+#pragma once
 
 #include <cassert>
 #include <cerrno>
@@ -37,8 +35,6 @@
 #include <unistd.h>
 
 #endif
-
-#pragma pack(push, 1)
 
 enum SQUICK_NET_EVENT {
     SQUICK_NET_EVENT_EOF = 0x10,
@@ -336,7 +332,3 @@ class INet {
 
     virtual bool Log(int severity, const char *msg) = 0;
 };
-
-#pragma pack(pop)
-
-#endif

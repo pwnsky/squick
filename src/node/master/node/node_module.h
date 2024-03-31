@@ -15,6 +15,8 @@ class NodeModule : public INodeModule {
     virtual void LogSend(const char *str) {}
     virtual std::string GetServersStatus();
     map<int, ServerInfo>& GetServers();
+
+    void OnReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
 };
 
 } // namespace master::server
