@@ -6,6 +6,6 @@ package rpc;
 // GameLobbyRPC RPC 15000 ~ 16000
 enum MicroRPC {
     MICRO_RPC_NONE = 0;
-    REQ_CHAT = 1;
-    ACK_CHAT = 2;
+    CN_REQ_CHAT = 1;
+    NC_ACK_CHAT = 2;
 }

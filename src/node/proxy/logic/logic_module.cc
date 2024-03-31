@@ -8,7 +8,10 @@ bool LogicModule::Start() { return true; }
 
 bool LogicModule::Destory() { return true; }
 
-bool LogicModule::Update() { return true; }
+bool LogicModule::Update() {
+
+    return true;
+}
 
 bool LogicModule::AfterStart() {
     m_class_ = pm_->FindModule<IClassModule>();
@@ -23,6 +26,7 @@ bool LogicModule::AfterStart() {
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_HEARTBEAT, this, &LogicModule::OnHeartbeat);
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnectWithTcp);
     m_net_->AddReceiveCallBack(rpc::TestRPC::REQ_TEST_PROXY, this, &LogicModule::OnReqTestProxy);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, this, &LogicModule::OnNnAckMinWorkloadNodeInfo);
     m_ws_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnectWithWS);
     m_ws_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
 
@@ -51,13 +55,13 @@ void LogicModule::OnWebSocketClientEvent(socket_t sock, const SQUICK_NET_EVENT e
     }
 }
 
-void LogicModule::OnWS(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    dout << "On Websocket: " << std::string(msg, len) << endl;
-    dout << "Websocket recived size: " << len << endl;
-    rpc::AckConnectProxy ack;
-    ack.set_code(0);
-    m_ws_->SendMsgPB(rpc::ProxyRPC::ACK_CONNECT_PROXY, ack, sock);
-    return;
+// request per 5 sec
+void LogicModule::NnReqMinWorkloadNodeInfo() {
+
+}
+
+void LogicModule::OnNnAckMinWorkloadNodeInfo(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+
 }
 
 void LogicModule::OnClientDisconnected(const socket_t sock) {
@@ -315,8 +319,9 @@ bool LogicModule::TryEnter(string guid) {
     return true;
 }
 
-void LogicModule::OnReqConnectWithTcp(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+Coroutine<bool> LogicModule::OnReqConnectWithTcp(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     OnReqConnect(ProtocolType::Tcp, sock, msg_id, msg, len);
+    co_return;
 }
 
 void LogicModule::OnReqConnectWithWS(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {

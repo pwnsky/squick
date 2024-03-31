@@ -12,6 +12,9 @@
 #include <squick/core/vector4.h>
 #include <squick/plugin/log/i_log_module.h>
 #include <struct/struct.h>
+#include "coroutine.h"
+
+#define NET_COROTINE_MAX_SURVIVAL_TIME 10
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -136,6 +139,15 @@ class INetModule : public IModule {
         return AddReceiveCallBack(functorPtr);
     }
 
+    template <typename BaseType>
+    bool AddReceiveCallBack(const int msg_id, BaseType* pBase, Coroutine<bool> (BaseType::* handleReceiver)(const socket_t, const int, const char*, const uint32_t)) {
+        NET_CORO_RECEIVE_FUNCTOR functor = 
+            std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+        NET_CORO_RECEIVE_FUNCTOR_PTR functorPtr(new NET_CORO_RECEIVE_FUNCTOR(functor));
+
+        return AddReceiveCallBack(msg_id, functorPtr);
+    }
+
     template <typename BaseType> bool AddEventCallBack(BaseType *pBase, void (BaseType::*handler)(const socket_t, const SQUICK_NET_EVENT, INet *)) {
         NET_EVENT_FUNCTOR functor = std::bind(handler, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
         NET_EVENT_FUNCTOR_PTR functorPtr(new NET_EVENT_FUNCTOR(functor));
@@ -223,6 +235,7 @@ class INetModule : public IModule {
     virtual void RemoveReceiveCallBack(const int msg_id) = 0;
 
     virtual bool AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb) = 0;
+    virtual bool AddReceiveCallBack(const int msg_id, const NET_CORO_RECEIVE_FUNCTOR_PTR& cb) = 0;
 
     virtual bool AddReceiveCallBack(const NET_RECEIVE_FUNCTOR_PTR &cb) = 0;
 

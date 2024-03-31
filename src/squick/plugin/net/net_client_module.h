@@ -5,10 +5,9 @@
 #include <squick/core/consistent_hash.h>
 #include <squick/core/i_plugin_manager.h>
 #include <squick/core/queue.h>
-#include <squick/plugin/log/i_log_module.h>
+#include <squick/plugin/log/export.h>
 
 #include "i_net_client_module.h"
-#include "i_net_module.h"
 
 class NetClientModule : public INetClientModule {
   public:

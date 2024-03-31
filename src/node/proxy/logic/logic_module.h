@@ -23,21 +23,23 @@ class LogicModule : public ILogicModule {
     virtual bool Start();
     virtual bool Destory();
     virtual bool Update();
-
     virtual bool AfterStart();
 
   protected:
     void OnOtherMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    
     void OnHeartbeat(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     void OnReqTestProxy(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
 
-    void OnReqConnectWithTcp(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    Coroutine<bool> OnReqConnectWithTcp(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     void OnReqConnectWithWS(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
     void OnReqConnect(ProtocolType type, const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
 
     virtual void OnAckConnectVerify(const int msg_id, const char *msg, const uint32_t len) override;
     void OnReqEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    
+    void NnReqMinWorkloadNodeInfo();
+    void OnNnAckMinWorkloadNodeInfo(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+
     bool TryEnter(string guid);
     int EnterSuccessEvent(const string account_id, const string player_id);
     bool SendToPlayer(string player_id, const int msg_id, const string& data);
@@ -58,8 +60,6 @@ class LogicModule : public ILogicModule {
         PlayerNotEneter,
         PlayerHeatbeatTimeout,
     };
-
-
 
     struct KeepAlive {
         ProtocolType protocol_type = ProtocolType::Tcp;
@@ -88,6 +88,8 @@ class LogicModule : public ILogicModule {
     };
 
     map<INT64, Session> sessions_;
+
+    map<int, int> min_workload_nodes_; // min workload nodes, key: node type, value: node id
 
   protected:
     ILogModule *m_log_;

@@ -13,7 +13,7 @@
 #include <memory>
 #include <squick/core/guid.h>
 #include <vector>
-
+#include "coroutine.h"
 #if PLATFORM == PLATFORM_WIN
 #include <WinSock2.h>
 #elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_LINUX || PLATFORM == PLATFORM_ANDROID
@@ -200,6 +200,9 @@ typedef std::shared_ptr<NET_EVENT_FUNCTOR> NET_EVENT_FUNCTOR_PTR;
 
 typedef std::function<void(int severity, const char *msg)> NET_EVENT_LOG_FUNCTOR;
 typedef std::shared_ptr<NET_EVENT_LOG_FUNCTOR> NET_EVENT_LOG_FUNCTOR_PTR;
+
+typedef std::function<Coroutine<bool>(const socket_t sock, const int msg_id, const char* msg, const uint32_t len)> NET_CORO_RECEIVE_FUNCTOR;
+typedef std::shared_ptr<NET_CORO_RECEIVE_FUNCTOR> NET_CORO_RECEIVE_FUNCTOR_PTR;
 
 class NetObject {
   public:
