@@ -26,7 +26,7 @@ bool LogicModule::AfterStart() {
     m_ws_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnectWithWS);
     m_ws_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
 
-    m_ws_->Startialization(100, 8888);
+    m_ws_->Startialization(DEFAULT_NODE_MAX_SERVER_CONNECTION, pm_->GetArg("ws_port=", 10502));
     m_ws_->AddEventCallBack(this, &LogicModule::OnWebSocketClientEvent);
     return true;
 }

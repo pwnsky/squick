@@ -30,7 +30,7 @@ class HttpModule : public IHttpModule {
     virtual bool Update();
 
   protected:
-    bool OnLogin(std::shared_ptr<HttpRequest> request);
+    Coroutine<bool>  OnLogin(std::shared_ptr<HttpRequest> request);
     bool OnWorldList(std::shared_ptr<HttpRequest> request);
     bool OnWorldEnter(std::shared_ptr<HttpRequest> request);
     WebStatus Middleware(std::shared_ptr<HttpRequest> request);

@@ -13,6 +13,7 @@ bool NetClientModule::Start() {
 
     for (int i = 0; i < ServerType::ST_MAX; ++i) {
         INetClientModule::AddEventCallBack((ServerType)i, this, &NetClientModule::OnSocketEvent);
+        INetClientModule::AddReceiveCallBack((ServerType)i, this, &NetClientModule::OnAckHandler);
     }
     return true;
 }
@@ -100,12 +101,12 @@ bool NetClientModule::IsConnected(const int node_id) {
     return false;
 }
 
-bool NetClientModule::SendByID(const int serverID, const uint16_t msg_id, const std::string &strData, const string guid) {
+bool NetClientModule::SendByID(const int serverID, const uint16_t msg_id, const std::string &strData, const string guid, reqid_t req_id) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(serverID);
     if (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule.get()) {
-            if (!pNetModule->SendMsg(msg_id, strData, 0, guid)) {
+            if (!pNetModule->SendMsg(msg_id, strData, 0, guid, req_id)) {
                 std::ostringstream stream;
                 stream << " SendMsgWithOutHead failed " << serverID;
                 stream << " msg id " << msg_id;
@@ -157,12 +158,12 @@ void NetClientModule::SendToAllNodeByType(const ServerType eType, const uint16_t
     }
 }
 
-bool NetClientModule::SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid) {
+bool NetClientModule::SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid, reqid_t req_id) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(serverID);
     if (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule) {
-            if (!pNetModule->SendMsgPB(msg_id, xData, 0, guid)) {
+            if (!pNetModule->SendMsgPB(msg_id, xData, 0, guid, req_id)) {
                 std::ostringstream stream;
                 stream << " SendMsgPB failed " << pServer->id;
                 stream << " msg id " << msg_id;
@@ -214,9 +215,86 @@ void NetClientModule::SendPBToAllNodeByType(const ServerType eType, const uint16
     }
 }
 
-Awaitable<NetClientResponseData>  NetClientModule::RequestByID(const int serverID, const uint16_t msg_id, const std::string& strData, int ack_msg_id) {
-    Awaitable<NetClientResponseData> a;
-    return a;
+Awaitable<NetClientResponseData>  NetClientModule::Request(const int node_id, const uint16_t msg_id, const std::string& data, int ack_msg_id) {
+    Awaitable<NetClientResponseData> awaitbale;
+
+    auto req_id = GenerateRequestID();
+    awaitbale.data_.error = true;
+    awaitbale.data_.req_id = req_id;
+    awaitbale.handler_ = std::bind(&NetClientModule::CoroutineBinder, this, placeholders::_1);
+    // send
+    SendByID(node_id, msg_id, data, "", req_id);
+    return awaitbale;
+}
+
+Awaitable<NetClientResponseData>  NetClientModule::RequestPB(const int node_id, const uint16_t msg_id, const google::protobuf::Message& pb, int ack_msg_id) {
+    Awaitable<NetClientResponseData> awaitbale;
+
+    auto req_id = GenerateRequestID();
+    awaitbale.data_.error = true;
+    awaitbale.data_.req_id = req_id;
+    awaitbale.handler_ = std::bind(&NetClientModule::CoroutineBinder, this, placeholders::_1);
+    // send
+    SendPBByID(node_id, msg_id, pb, "", req_id);
+    return awaitbale;
+}
+
+void NetClientModule::CoroutineBinder(Awaitable<NetClientResponseData>* awaitble) {
+    if (awaitble == nullptr) {
+        dout << "awaitble is nullptr\n";
+        return;
+    }
+    reqid_t req_id = awaitble->data_.req_id;
+    auto iter = co_awaitbles_.find(req_id);
+    if (iter == co_awaitbles_.end()) {
+        co_awaitbles_[req_id] = awaitble;
+    }
+    else {
+        dout << "CoroutineBinder: same req id in a map, req id: " << req_id
+            << " address: " << awaitble->coro_handle_.address() << std::endl;
+    }
+}
+
+reqid_t NetClientModule::GenerateRequestID() {
+    last_req_id_++;
+    if (last_req_id_ > 0xffffffffffff) {
+        last_req_id_ = 1;
+    }
+    return last_req_id_;
+}
+
+void NetClientModule::OnAckHandler(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    rpc::MsgBase msg_base;
+    if (!msg_base.ParseFromArray(msg, len)) {
+        return;
+    }
+    reqid_t req_id = msg_base.req_id();
+    if (req_id == 0) return;
+
+    auto iter = co_awaitbles_.find(req_id);
+    if (iter == co_awaitbles_.end()) {
+        dout << "CoroutineBinder: Not find req id in a map, req id: " << req_id << std::endl;
+        return;
+    }
+
+    auto awaitbale = iter->second;
+    awaitbale->data_.error = false;
+    awaitbale->data_.ack_msg_id = msg_id;
+    awaitbale->data_.data = msg;
+    awaitbale->data_.length = len;
+    dout << "CoroutineResponseHandler: coroutineid: " << awaitbale->coro_handle_.address() << endl;
+
+    // resume coroutine
+    if (!awaitbale->coro_handle_.done()) {
+        awaitbale->coro_handle_.resume();
+    }
+
+    // remove request infos
+    co_awaitbles_.erase(iter);
+    
+    //dout << "client recived msg_id: [" << msg_id << "] req_id[" << msg_base.req_id() << "] msg: " << msg <<  endl;
+
+    return;
 }
 
 std::shared_ptr<ConnectData> NetClientModule::GetServerNetInfo(const ServerType eType) {

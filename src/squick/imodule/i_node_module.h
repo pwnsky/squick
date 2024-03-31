@@ -9,7 +9,9 @@
 #include <squick/plugin/net/export.h>
 #include <struct/struct.h>
 
-#define DEFAULT_MASTER_ID 1
+#define DEFAULT_NODE_MASTER_ID 1
+#define DEFAULT_NODE_CPUT_COUNT 100
+#define DEFAULT_NODE_MAX_SERVER_CONNECTION 100000
 
 class INodeBaseModule : public IModule {
   public:
@@ -46,6 +48,19 @@ class INodeBaseModule : public IModule {
 
     static std::string EnumNodeTypeToString(ServerType type)
     {
+        switch (type) {
+        case ServerType::ST_MASTER: return "master";
+        case ServerType::ST_LOGIN: return "login";
+        case ServerType::ST_WORLD: return "world";
+        case ServerType::ST_DB_PROXY: return "db_proxy";
+        case ServerType::ST_PROXY: return "proxy";
+        case ServerType::ST_LOBBY: return "lobby";
+        case ServerType::ST_GAME_MGR: return "game_mgr";
+        case ServerType::ST_GAME: return "game";
+        case ServerType::ST_MICRO: return "micro";
+        case ServerType::ST_CDN: return "cdn";
+        case ServerType::ST_ROBOT: return "robot";
+        }
         return "";
     }
 
@@ -70,7 +85,6 @@ class INodeBaseModule : public IModule {
         m_net_->AddEventCallBack(this, &INodeBaseModule::OnServerSocketEvent);
         m_net_->ExpandBufferSize();
 
-        
         node_info_.info->set_id(pm_->GetArg("id=", 0));
         std::string name = pm_->GetArg("type=", "proxy") + pm_->GetArg("id=", "0");
         node_info_.info->set_type(StringNodeTypeToEnum(pm_->GetArg("type=", "proxy")));
@@ -81,8 +95,8 @@ class INodeBaseModule : public IModule {
         node_info_.info->set_public_ip(pm_->GetArg("public_ip=", "127.0.0.1"));
         node_info_.info->set_area(pm_->GetArg("area=", 0));
         node_info_.info->set_update_time(SquickGetTimeS());
-        node_info_.info->set_max_online(10000);
-        node_info_.info->set_cpu_count(8);
+        node_info_.info->set_max_online(DEFAULT_NODE_MAX_SERVER_CONNECTION);
+        node_info_.info->set_cpu_count(DEFAULT_NODE_CPUT_COUNT);
 
         pm_->SetAppType(node_info_.info->type());
         pm_->SetArea(node_info_.info->area());
@@ -115,7 +129,7 @@ class INodeBaseModule : public IModule {
         bool ret = false;
         node_info_.listen_types = types;
         ConnectData s;
-        s.id = DEFAULT_MASTER_ID;
+        s.id = DEFAULT_NODE_MASTER_ID;
         s.type = StringNodeTypeToEnum("master");
         s.ip = pm_->GetArg("master_ip=", "127.0.0.1");
         s.port = pm_->GetArg("master_port=", 10001);
@@ -170,7 +184,7 @@ class INodeBaseModule : public IModule {
             req.set_id(pm_->GetAppID());
             auto s = req.add_list();
             *s = *node_info_.info.get();
-            m_net_client_->SendPBByID(DEFAULT_MASTER_ID, rpc::MasterRPC::NN_NTF_NODE_REPORT, req);
+            m_net_client_->SendPBByID(DEFAULT_NODE_MASTER_ID, rpc::MasterRPC::NN_NTF_NODE_REPORT, req);
         }
     }
 
@@ -247,7 +261,7 @@ class INodeBaseModule : public IModule {
             AddNodes(ack.node_add_list());
         }
         else {
-            dout << "注册失败!";
+            m_log_->LogError(Guid(0, pm_->GetAppID()), "Register faild!");
         }
     }
 

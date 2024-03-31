@@ -117,7 +117,7 @@ bool NetModule::SendMsgToAllClientWithOutHead(const int msg_id, const std::strin
     return bRet;
 }
 
-bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const string guid) {
+bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const string guid, reqid_t req_id) {
     rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
@@ -129,7 +129,7 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
     }
 
     xMsg.set_guid(guid);
-
+    xMsg.set_req_id(req_id);
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
         std::ostringstream stream;
@@ -143,10 +143,11 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
     return SendMsgWithOutHead(msg_id, msg, sock);
 }
 
-bool NetModule::SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const string guid) {
+bool NetModule::SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const string guid, reqid_t req_id) {
     rpc::MsgBase xMsg;
     xMsg.set_msg_data(xData.data(), xData.length());
     xMsg.set_guid(guid);
+    xMsg.set_req_id(req_id);
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
         std::ostringstream stream;
@@ -156,7 +157,6 @@ bool NetModule::SendMsg(const uint16_t msg_id, const std::string &xData, const s
 
         return false;
     }
-
     return SendMsgWithOutHead(msg_id, msg, sock);
 }
 

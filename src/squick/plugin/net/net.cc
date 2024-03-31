@@ -501,12 +501,11 @@ bool Net::Log(int severity, const char *msg) {
     return true;
 }
 
-// 发送带有头部的消息
+// Rpc send
 bool Net::SendMsgWithOutHead(const int16_t msg_id, const char *msg, const size_t len, const socket_t sock /*= 0*/) {
     std::string strOutData;
     int nAllLen = EnCode(msg_id, msg, len, strOutData);
     if (nAllLen == len + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
-
         return SendMsg(strOutData.c_str(), strOutData.length(), sock);
     }
 

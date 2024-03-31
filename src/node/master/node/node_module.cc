@@ -69,8 +69,6 @@ void NodeModule::OnNnReqNodeRegister(const socket_t sock, const int msg_id, cons
     NtfSubscribNode(new_node_id);
 }
 
-
-
 void NodeModule::AddSubscribeNode(int new_node_id, vector<int> types) {
     for (auto t : types) {
         if (t != 0) {
@@ -164,9 +162,29 @@ void NodeModule::OnNnNtfNodeReport(const socket_t sock, const int msg_id, const 
 }
 
 void NodeModule::OnNnReqMinWorkNodeInfo(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-
+    rpc::NnReqMinWorkloadNodeInfo req;
+    rpc::NnAckMinWorkloadNodeInfo ack;
+    string guid;
+    
+    rpc::MsgBase msg_base;
+    if (!msg_base.ParseFromArray(msg, len)) {
+        return;
+    }
+    if (!req.ParseFromString(msg_base.msg_data())) {
+        return;
+    }
+    dout << "find ....\n";
+    for (auto type : req.type_list()) {
+        int id = GetLoadBanlanceNode((ServerType)type);
+        if (id == -1) continue;
+        dout << " added min id: " << id << endl;
+        auto p = ack.add_list();
+        auto iter = node_map_.find(id);
+        *p = *iter->second.info;
+    }
+    reqid_t req_id = msg_base.req_id();
+    m_net_->SendMsgPB(rpc::MasterRPC::NN_ACK_MIN_WORKLOAD_NODE_INFO, ack, sock, "", req_id);
 }
-
 
 int NodeModule::GetLoadBanlanceNode(ServerType type) {
     int node_id = -1;
@@ -207,6 +225,7 @@ std::string NodeModule::GetServersStatus() {
         n["cpu_count"] = sd->cpu_count();
         n["status"] = sd->state();
         n["workload"] = sd->workload();
+        n["max_online"] = sd->max_online();
         n["update_time"] = sd->update_time();
         statusRoot["node_list"][to_string(sd->id())] = n;
     }

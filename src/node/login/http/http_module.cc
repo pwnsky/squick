@@ -58,7 +58,7 @@ Guid HttpModule::CreatePlayerGUID() {
     return xID;
 }
 
-bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
+Coroutine<bool>  HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
     std::string res_str;
     ReqLogin req;
     AckLogin ack;
@@ -83,7 +83,23 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
                 break;
             }
 #endif
+            // test
+            dout << "async query.... master ...";
+            rpc::NnReqMinWorkloadNodeInfo req;
+            req.add_type_list(ST_PROXY);
+            auto data = co_await m_net_client_->RequestPB(DEFAULT_NODE_MASTER_ID, rpc::MasterRPC::NN_REQ_MIN_WORKLOAD_NODE_INFO, req, rpc::MasterRPC::NN_ACK_MIN_WORKLOAD_NODE_INFO);
+            if (data.error) {
+                co_return;
+            }
 
+            string guid;
+            rpc::NnAckMinWorkloadNodeInfo ack;
+            if (!INetModule::ReceivePB(data.ack_msg_id, data.data, data.length, ack, guid)) {
+                co_return;
+            }
+            dout << "master response.... min proxy id: " << ack.list()[0].id() << " name: " << ack.list()[0].name() << endl;
+            
+            /*
             if (!m_mysql_->IsHave("account", req.account)) {
                 dout << "AccountPasswordLogin 注册账号: account: " << req.account << " " << req.password << std::endl;
                 // 注册该账号
@@ -98,6 +114,7 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
                     ack.msg = "server error, this player is not exsited!\n";
                 }
             }
+            */
         } else if (req.type == LoginType::PhonePasswordLogin) {
         }
         dout << "AccountPasswordLogin: account: " << req.account << " " << req.password << "  AccountID: " << account_id << std::endl;
@@ -111,12 +128,14 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
 
         time_t login_time = SquickGetTimeS();
 
+        /*
         // 缓存到redis
         m_redis_->HashSet(account_id, "account", req.account);
         m_redis_->HashSet(account_id, "token", token);
         m_redis_->HashSet(account_id, "account_id", account_id);
         m_redis_->HashSet(account_id, "login_limit_time", std::to_string(1209600)); // 14天
         m_redis_->HashSet(account_id, "login_time", std::to_string(login_time));
+         */
 
         json j;
         j["account"] = req.account;
@@ -132,7 +151,8 @@ bool HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
 
     ajson::save_to(rep_ss, ack);
     
-    return m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
+    m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
+    co_return;
 }
 
 nlohmann::json HttpModule::GetUser(std::shared_ptr<HttpRequest> req) {

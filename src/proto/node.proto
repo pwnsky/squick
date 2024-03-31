@@ -6,10 +6,11 @@ import "base.proto";
 
 // only be used in inner node
 message MsgBase {
-    int32 id = 1;
-    bytes guid = 2;
-    bytes msg_data = 3;
-    repeated bytes broadcast = 4;
+    int32 id = 1; // node id
+    bytes guid = 2; // player guid
+    bytes msg_data = 3; // data
+    repeated bytes broadcast = 4; // broadcast guid list
+    int64 req_id = 5; // request id
 }
 
 // Node RPC 0 ~ 500

@@ -40,12 +40,16 @@ message Server {
     int32 cpu_count = 6;
     ServerState state = 7;
     int32 type = 8;
-    int32 area = 9; // 区
+    int32 area = 9;
     int32 connections = 10;
     int32 workload = 11;
-    bytes key = 12; //密钥
+    bytes key = 12;
     bytes public_ip = 13;
-    int32 update_time = 14; // 更新时间
+    int32 update_time = 14;
+    repeated int32 added_node_id_list = 15;
+    int32 ws_port = 16;
+    int32 http_port = 17;
+    int32 https_port = 18;
 }
 
 //message ServerList { repeated Server list = 1; }
