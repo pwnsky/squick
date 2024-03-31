@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_UDP_SERVER_MODULE_H
-#define SQUICK_UDP_SERVER_MODULE_H
+#pragma once
 
 #include "net_module.h"
 #include <event.h>
@@ -75,5 +72,3 @@ class UDPModule : public IUDPModule {
 
     ILogModule *m_log_;
 };
-
-#endif

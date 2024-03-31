@@ -8,7 +8,8 @@ namespace db_proxy::node {
 bool NodeModule::AfterStart() {
     
     Listen();
-    AddServer(ServerType::ST_WORLD);
+    vector<int> node_types = { ServerType::ST_WORLD };
+    AddNodesByType(node_types);
     return true;
 }
 

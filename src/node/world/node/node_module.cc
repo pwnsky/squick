@@ -6,8 +6,8 @@ namespace world::node {
 bool NodeModule::AfterStart() {
 	Listen();
 
-	AddServer(ServerType::ST_MASTER);
-
+	vector<int> node_types = {};
+	AddNodesByType(node_types);
 	return true;
 }
 bool NodeModule::Destory() { return true; }

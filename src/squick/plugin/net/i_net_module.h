@@ -55,12 +55,6 @@ struct ServerInfo {
         fd = 0;
         info = NULL;
     }
-    enum class Type {
-        Unknowing,
-        Child,
-        Parrent,
-        Self,
-    };
 
     enum class Status { 
         Unknowing,
@@ -68,10 +62,10 @@ struct ServerInfo {
         Connected,
         Disconnected,
     };
-    Type type = ServerInfo::Type::Child;
     Status status = ServerInfo::Status::Unknowing;
     socket_t fd;
     std::shared_ptr<rpc::Server> info;
+    vector<int> listen_types;
 };
 
 class INetModule : public IModule {
@@ -237,12 +231,9 @@ class INetModule : public IModule {
     virtual bool Update() = 0;
 
     virtual bool SendMsgWithOutHead(const int msg_id, const std::string &msg, const socket_t sock) = 0;
-
     virtual bool SendMsgToAllClientWithOutHead(const int msg_id, const std::string &msg) = 0;
-
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) = 0;
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const string nPlayer) = 0;
-    virtual bool SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const string guid) = 0;
+    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const string guid = "", reqid_t req_id = 0) = 0;
+    virtual bool SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const string guid = "", reqid_t req_id = 0) = 0;
 
     virtual bool SendMsgPBToAllClient(const uint16_t msg_id, const google::protobuf::Message &xData) = 0;
 

@@ -47,6 +47,7 @@ static constexpr size_t PAYLOAD_MIN_LEN = 125;
 static constexpr size_t PAYLOAD_MID_LEN = 126;
 static constexpr size_t PAYLOAD_MAX_LEN = 127;
 static constexpr size_t FIN_FRAME_FLAG = 0x80; // 1 0 0 0 0 0 0 0
+#define MAX_PACKAGE_SIZE 8096
 
 WSModule::WSModule(IPluginManager *p) {
     is_update_ = true;
@@ -510,6 +511,10 @@ std::error_code WSModule::DecodeFrame(const socket_t sock, NetObject *pNetObject
     default:
         reallen = fh.payload_len;
         break;
+    }
+
+    if (reallen > MAX_PACKAGE_SIZE) {
+        return make_error_code(websocket::error::ws_bad_size);
     }
 
     if (size < need + reallen) {

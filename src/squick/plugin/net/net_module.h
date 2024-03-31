@@ -38,8 +38,8 @@ class NetModule : public INetModule {
     virtual bool SendMsgToAllClientWithOutHead(const int msg_id, const std::string &msg);
 
     virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock);
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const string id);
-    virtual bool SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const string id);
+    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const string guid = "", reqid_t req_id = 0);
+    virtual bool SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const string guid = "", reqid_t req_id = 0);
 
     virtual bool SendMsgPBToAllClient(const uint16_t msg_id, const google::protobuf::Message &xData);
 

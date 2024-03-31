@@ -61,6 +61,7 @@ class IWSModule : public IModule {
     virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) = 0;
     virtual bool SendMsg(const std::string &msg, const socket_t sock, const bool text = true) = 0;
     virtual bool SendMsgToAllClient(const std::string &msg, const bool text = true) = 0;
+    virtual bool SendMsgWithOutHead(const int16_t msg_id, const char* msg, const size_t len, const socket_t sock) = 0;
 
     virtual INet *GetNet() = 0;
 };

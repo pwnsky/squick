@@ -15,51 +15,39 @@ class NetClientModule : public INetClientModule {
     NetClientModule(IPluginManager *p);
 
     virtual bool Start();
-
     virtual bool AfterStart();
-
     virtual bool BeforeDestory();
-
     virtual bool Destory();
-
     virtual bool Update();
 
-    virtual void AddServer(const ConnectData &xInfo);
-
+    virtual void AddNode(const ConnectData &xInfo);
     virtual unsigned int ExpandBufferSize(const unsigned int size = 1024 * 1024 * 20) override;
-
     virtual int AddReceiveCallBack(const ServerType eType, NET_RECEIVE_FUNCTOR_PTR functorPtr);
-
     virtual int AddReceiveCallBack(const ServerType eType, const uint16_t msg_id, NET_RECEIVE_FUNCTOR_PTR functorPtr);
-
     virtual int AddEventCallBack(const ServerType eType, NET_EVENT_FUNCTOR_PTR functorPtr);
-
     virtual void RemoveReceiveCallBack(const ServerType eType, const uint16_t msg_id);
 
     ////////////////////////////////////////////////////////////////////////////////
+    virtual bool IsConnected(const int node_id) override;
+    virtual bool SendByID(const int serverID, const uint16_t msg_id, const std::string &strData, const string guid = "", reqid_t req_id = 0) override;
+    virtual bool SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message& xData, const string guid = "", reqid_t req_id = 0) override;
+    virtual void SendToAllNode(const uint16_t msg_id, const std::string &strData, const string guid) override;
+    virtual void SendToAllNodeByType(const ServerType eType, const uint16_t msg_id, const std::string &strData, const string guid = "") override;
+    virtual void SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message &xData, const string guid = "") override;
+    virtual void SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid = "") override;
+    
+    // coroutine
+    virtual Awaitable<NetClientResponseData>  Request(const int node_id, const uint16_t msg_id, const std::string& data, int ack_msg_id) override;
+    virtual Awaitable<NetClientResponseData>  RequestPB(const int node_id, const uint16_t msg_id, const google::protobuf::Message& pb, int ack_msg_id) override;
 
-    virtual void SendByServerID(const int serverID, const uint16_t msg_id, const std::string &strData);
-    virtual void SendByServerID(const int serverID, const uint16_t msg_id, const std::string &strData, const string guid);
-
-    virtual void SendToAllServer(const uint16_t msg_id, const std::string &strData);
-    virtual void SendToAllServer(const uint16_t msg_id, const std::string &strData, const string guid);
-
-    virtual void SendToAllServer(const ServerType eType, const uint16_t msg_id, const std::string &strData);
-    virtual void SendToAllServer(const ServerType eType, const uint16_t msg_id, const std::string &strData, const string guid);
-
-    virtual void SendToServerByPB(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData);
-    virtual void SendToServerByPB(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid);
-
-    virtual void SendToAllServerByPB(const uint16_t msg_id, const google::protobuf::Message &xData, const string id);
-    virtual void SendToAllServerByPB(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid);
-
+    void CoroutineBinder(Awaitable<NetClientResponseData>* awaitble);
+    reqid_t GenerateRequestID();
+    void OnAckHandler(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
 
     virtual MapEx<int, ConnectData> &GetServerList();
 
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const ServerType eType);
-
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const int serverID);
-
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const INet *pNet);
 
   protected:
@@ -101,4 +89,7 @@ class NetClientModule : public INetClientModule {
     MapEx<int, CallBack> mxCallBack;
 
     ILogModule *m_log_;
+
+    reqid_t  last_req_id_ = 0;
+    std::map<reqid_t, Awaitable<NetClientResponseData>*> co_awaitbles_;
 };

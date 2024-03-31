@@ -17,12 +17,47 @@ bool LogicModule::AfterStart() {
     m_log_ = pm_->FindModule<ILogModule>();
     m_schedule_ = pm_->FindModule<IScheduleModule>();
     m_node_ = pm_->FindModule<node::INodeModule>();
+    m_ws_ = pm_->FindModule<IWSModule>();
 
     m_net_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_HEARTBEAT, this, &LogicModule::OnHeartbeat);
-    m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnect);
+    m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnectWithTcp);
     m_net_->AddReceiveCallBack(rpc::TestRPC::REQ_TEST_PROXY, this, &LogicModule::OnReqTestProxy);
+    m_ws_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnectWithWS);
+    m_ws_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
+
+    m_ws_->Startialization(DEFAULT_NODE_MAX_SERVER_CONNECTION, pm_->GetArg("ws_port=", 10502));
+    m_ws_->AddEventCallBack(this, &LogicModule::OnWebSocketClientEvent);
     return true;
+}
+
+void LogicModule::OnWebSocketClientEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet)
+{
+    if (eEvent & SQUICK_NET_EVENT_EOF)
+    {
+        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
+        OnClientDisconnected(sock);
+    } else if (eEvent & SQUICK_NET_EVENT_ERROR)
+    {
+        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
+        OnClientDisconnected(sock);
+    } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT)
+    {
+        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
+        OnClientDisconnected(sock);
+    }else if (eEvent & SQUICK_NET_EVENT_CONNECTED)
+    {
+        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
+    }
+}
+
+void LogicModule::OnWS(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    dout << "On Websocket: " << std::string(msg, len) << endl;
+    dout << "Websocket recived size: " << len << endl;
+    rpc::AckConnectProxy ack;
+    ack.set_code(0);
+    m_ws_->SendMsgPB(rpc::ProxyRPC::ACK_CONNECT_PROXY, ack, sock);
+    return;
 }
 
 void LogicModule::OnClientDisconnected(const socket_t sock) {
@@ -67,7 +102,7 @@ void LogicModule::OnClientDisconnected(const socket_t sock) {
                             return;
                         }
 
-                        m_net_client_->SendByServerID(nGameID, rpc::PlayerEventRPC::PLAYER_LEAVE_EVENT, msg);
+                        m_net_client_->SendByID(nGameID, rpc::PlayerEventRPC::PLAYER_LEAVE_EVENT, msg);
 
                         // 断开该掉连接
                         m_net_->GetNet()->CloseNetObject(sock);
@@ -107,7 +142,13 @@ bool LogicModule::SendToPlayer(string player_id, const int msg_id, const string 
         string account_id = players_[player_id];
         auto& client = clients_[account_id];
         dout << " SendToPlayer: " << player_id << " msg_id: " << msg_id << " socks: " << client.sock << std::endl;
-        m_net_->SendMsgWithOutHead(msg_id, data, client.sock);
+        if (client.protocol_type == ProtocolType::Tcp) {
+            m_net_->SendMsgWithOutHead(msg_id, data, client.sock);
+        }
+        else if (client.protocol_type == ProtocolType::WS) {
+            m_ws_->SendMsgWithOutHead(msg_id, data.data(), data.size(), client.sock);
+        }
+        
         ret = true;
     }
     catch (...) {
@@ -123,7 +164,13 @@ int LogicModule::EnterSuccessEvent(const string account_id, const string player_
 
     auto iter = clients_.find(account_id);
     if (iter != clients_.end()) {
-        NetObject *obj = m_net_->GetNet()->GetNetObject(iter->second.sock);
+        NetObject* obj = nullptr;
+        if (iter->second.protocol_type == ProtocolType::Tcp) {
+            obj = m_net_->GetNet()->GetNetObject(iter->second.sock);
+        }else if (iter->second.protocol_type == ProtocolType::WS) {
+            obj = m_ws_->GetNet()->GetNetObject(iter->second.sock);
+        }
+        
         if (obj) {
             obj->SetPlayerID(player_id);
             players_[player_id] = account_id;
@@ -132,13 +179,23 @@ int LogicModule::EnterSuccessEvent(const string account_id, const string player_
 
             dout << " EnterSuccessEvent account_guid: " << account_id << " player_id: " << player_id << std::endl;
         }
-        m_net_->SendMsgWithOutHead(rpc::PlayerRPC::ACK_PLAYER_ONLINE, "", obj->GetRealFD());
+
+        if (iter->second.protocol_type == ProtocolType::Tcp) {
+            m_net_->SendMsgWithOutHead(rpc::PlayerRPC::ACK_PLAYER_ONLINE, "", obj->GetRealFD());
+        }else if (iter->second.protocol_type == ProtocolType::WS) {
+            m_ws_->SendMsgWithOutHead(rpc::PlayerRPC::ACK_PLAYER_ONLINE, "", 0,  obj->GetRealFD());
+        }
+        
     }
     return 0;
 }
 
 void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     NetObject *obj = m_net_->GetNet()->GetNetObject(sock);
+    if (!obj) {
+        obj = m_ws_->GetNet()->GetNetObject(sock);
+    }
+
     if (!obj) {
         return;
     }
@@ -173,7 +230,7 @@ void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const ch
     // 根据ID 来转发至不同服务器
     if (msg_id >= 12000 && msg_id < 30000) {
         // 转发到Lobby
-        m_net_client_->SendByServerID(lobby_id, msg_id, pak);
+        m_net_client_->SendByID(lobby_id, msg_id, pak);
     } else if (msg_id >= 10000 && msg_id < 32000) {
 
     } else if (msg_id >= 30000 && msg_id < 32000) {
@@ -192,9 +249,14 @@ void LogicModule::OnHeartbeat(const socket_t sock, const int msg_id, const char 
         auto iter = clients_.find(pNetObject->GetAccountID());
         if (iter != clients_.end()) {
             iter->second.last_ping = SquickGetTimeMS();
+            if (iter->second.protocol_type == ProtocolType::Tcp) {
+                m_net_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_HEARTBEAT, msgData, sock);
+            }
+            else if(iter->second.protocol_type == ProtocolType::WS){
+                m_ws_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_HEARTBEAT, msgData.data(), msgData.size(), sock);
+            }
         }
     }
-    m_net_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_HEARTBEAT, msgData, sock);
 }
 
 void LogicModule::OnReqTestProxy(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -238,7 +300,8 @@ bool LogicModule::TryEnter(string guid) {
     if (client == clients_.end()) {
         return false;
     }
-    int lobby_id = m_node_->GetLoadBanlanceNode(ServerType::ST_LOBBY);
+    //int lobby_id = m_node_->GetLoadBanlanceNode(ServerType::ST_LOBBY);
+    int lobby_id = 0;
     if (lobby_id == -1) {
         return false;
     }
@@ -247,16 +310,32 @@ bool LogicModule::TryEnter(string guid) {
     event.set_account_id(client->second.account_id);
     event.set_ip(client->second.ip);
     event.set_proxy_id(pm_->GetAppID());
-    m_net_client_->SendToServerByPB(lobby_id, rpc::PlayerEventRPC::PLAYER_ENTER_EVENT, event);
+    m_net_client_->SendPBByID(lobby_id, rpc::PlayerEventRPC::PLAYER_ENTER_EVENT, event);
     client->second.lobby_id = lobby_id;
     return true;
 }
 
-void LogicModule::OnReqConnect(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
+void LogicModule::OnReqConnectWithTcp(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    OnReqConnect(ProtocolType::Tcp, sock, msg_id, msg, len);
+}
+
+void LogicModule::OnReqConnectWithWS(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    OnReqConnect(ProtocolType::WS, sock, msg_id, msg, len);
+}
+
+void LogicModule::OnReqConnect(ProtocolType type, const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    NetObject* pNetObject = nullptr;
+    if (type == ProtocolType::Tcp) {
+        pNetObject = m_net_->GetNet()->GetNetObject(sock);
+    }
+    else if (type == ProtocolType::WS) {
+        pNetObject = m_ws_->GetNet()->GetNetObject(sock);
+    }
+
     if (!pNetObject) {
         return;
     }
+
 
     rpc::ReqConnectProxy req;
     if (!req.ParseFromArray(msg, len)) {
@@ -269,9 +348,11 @@ void LogicModule::OnReqConnect(const socket_t sock, const int msg_id, const char
     s.time = SquickGetTimeMS();
     s.sock = sock;
     s.ip = pNetObject->GetIP();
+    s.protocol_type = type;
     sessions_[sock] = s;
     m_node_->OnReqProxyConnectVerify(sock, req.account_id(), req.key());
 }
+
 
 void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const uint32_t len) {
     string tmp;
@@ -292,7 +373,13 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
     // remove sessoin
     sessions_.erase(iter);
 
-    NetObject *net = m_net_->GetNet()->GetNetObject(s.sock);
+    NetObject* net = nullptr;
+    if (s.protocol_type == ProtocolType::Tcp) {
+        net = m_net_->GetNet()->GetNetObject(s.sock);
+    }else if (s.protocol_type == ProtocolType::WS) {
+        net = m_ws_->GetNet()->GetNetObject(s.sock);
+    }
+    
     if (!net) {
         dout << "No this sock: " << s.sock << std::endl;
         return;
@@ -305,7 +392,7 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
             // kick off old connection;
             rpc::AckKickOff k;
             k.set_time(SquickGetTimeMS());
-            m_net_->SendMsgPB(rpc::ProxyRPC::ACK_KICK_OFF, k, iter2->second.sock);
+            //m_net_->SendMsgPB(rpc::ProxyRPC::ACK_KICK_OFF, k, iter2->second.sock);
             return;
         }
         
@@ -313,13 +400,21 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
         net->SetConnectKeyState(1);
         rpc::AckConnectProxy ack;
         ack.set_code(0);
-        m_net_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_CONNECT_PROXY, ack.SerializeAsString(), s.sock);
+        if (s.protocol_type == ProtocolType::Tcp) {
+            m_net_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_CONNECT_PROXY, ack.SerializeAsString(), s.sock);
+        }
+        else if (s.protocol_type == ProtocolType::WS) {
+            auto send = ack.SerializeAsString();
+            m_ws_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_CONNECT_PROXY, send.data(), send.size(), s.sock);;
+        }
+        
         auto &client = clients_[s.account_id];
         client.sock = s.sock;
         client.last_ping = SquickGetTimeMSEx();
         client.account_id = s.account_id;
         client.account = data.account();
         client.world_id = data.world_id();
+        client.protocol_type = s.protocol_type;
         client.ip = s.ip;
 
         // 增加schecdule

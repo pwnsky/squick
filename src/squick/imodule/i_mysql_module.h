@@ -17,8 +17,6 @@ namespace imodule {
     public:
         virtual bool Start() override {
             m_log_ = pm_->FindModule<ILogModule>();
-            m_class_ = pm_->FindModule<IClassModule>();
-            m_element_ = pm_->FindModule<IElementModule>();
             return true;
         }
         virtual bool Destory() override  {
@@ -70,6 +68,7 @@ namespace imodule {
             return true;
         };
         virtual bool AfterStart() override {
+            /*
             std::shared_ptr<IClass> iclass = m_class_->GetElement(excel::DB::ThisName());
             if (iclass) {
                 const std::vector<std::string>& strIdList = iclass->GetIDList();
@@ -85,7 +84,7 @@ namespace imodule {
                         break;
                     }
                 }
-            }
+            }*/
             return true;
         };
 
@@ -132,9 +131,6 @@ namespace imodule {
         bool is_connected_ = false;
 
         ILogModule* m_log_;
-        IClassModule* m_class_;
-        IElementModule* m_element_;
-
     private:
     };
 

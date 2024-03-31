@@ -8,9 +8,6 @@
 #include <squick/plugin/net/export.h>
 #include <struct/struct.h>
 #include <third_party/nlohmann/json.hpp>
-
-#include <node/login/mysql/i_mysql_module.h>
-#include <node/login/redis/i_redis_module.h>
 #include <node/login/node/i_node_module.h>
 #include <map>
 #include <unordered_map>
@@ -30,16 +27,13 @@ class HttpModule : public IHttpModule {
     virtual bool Update();
 
   protected:
-    bool OnLogin(std::shared_ptr<HttpRequest> request);
-    bool OnWorldList(std::shared_ptr<HttpRequest> request);
-    bool OnWorldEnter(std::shared_ptr<HttpRequest> request);
+    Coroutine<bool>  OnLogin(std::shared_ptr<HttpRequest> request);
     WebStatus Middleware(std::shared_ptr<HttpRequest> request);
     nlohmann::json GetUser(std::shared_ptr<HttpRequest> request);
     bool CheckAuth(const std::string &guid, const std::string &token);
-    
-
-    bool OnGetCDN(std::shared_ptr<HttpRequest> request);
     void PrintRequest(std::shared_ptr<HttpRequest> req);
+
+    void SetToken(const std::string& account_id, const std::string& user_token);
 
   private:
     string MakeToken(string sguid);
@@ -47,10 +41,8 @@ class HttpModule : public IHttpModule {
     INetClientModule *m_net_client_;
     IHttpServerModule *m_http_server_;
     node::INodeModule *m_node_;
-    IClassModule *m_class_;
-    IElementModule *m_element_;
-    redis::IRedisModule *m_redis_;
-    mysql::IMysqlModule *m_mysql_;
+private:
+    std::map<std::string, std::string> auth_token_;
 
   private:
     int player_index = 0;

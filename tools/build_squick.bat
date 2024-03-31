@@ -19,4 +19,4 @@ rem cmake
 cd %build_path%\
 echo %project_path%
 cmake %project_path%\src -DMODE=dev
-cmake --build .
+cmake --build . -j8

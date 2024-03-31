@@ -1,8 +1,8 @@
 #pragma once
 
-#include <squick/imodule/i_player_node_module.h>
+#include <squick/imodule/i_node_module.h>
 namespace lobby::node {
-class INodeModule : public IPlayerNodeModule {
+class INodeModule : public INodeBaseModule {
   public:
 };
 

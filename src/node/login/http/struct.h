@@ -60,38 +60,11 @@ class AckLogin : public IResponse {
     string token;   // 该token可用于RPC或http的token
     string account_id;    // 账号ID
     int limit_time; // token过期倒计时
-};
 
-AJSON(AckLogin, code, msg, token, account_id, limit_time)
-
-class ReqWorldEnter : public IRequest {
-  public:
-    int world_id;
-};
-AJSON(ReqWorldEnter, world_id)
-
-class AckWorldEnter : public IResponse {
-  public:
-    string account_id;
     string key;
     string ip;
     int port;
-    int world_id;
-    int limit_time;
-};
-AJSON(AckWorldEnter, code, msg, account_id, key, ip, port, world_id, limit_time)
-
-class AckWorldList : public IResponse {
-  public:
-    class World {
-      public:
-        int id;
-        std::string name;
-        rpc::ServerState state;
-        int count;
-    };
-    std::list<World> world;
+    int ws_port;
 };
 
-AJSON(AckWorldList::World, id, name, state, count)
-AJSON(AckWorldList, code, msg, world)
+AJSON(AckLogin, code, msg, token, account_id, limit_time, key, ip, port, ws_port)

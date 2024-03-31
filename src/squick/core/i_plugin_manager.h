@@ -124,6 +124,28 @@ class IPluginManager {
     virtual void SetArgs(const std::vector<std::string>& id) = 0;
 
     virtual std::string FindParameterValue(const std::string& header) = 0;
+    
+    int GetArg(const std::string& header, int default_value) {
+        std::string value = FindParameterValue(header);
+        int ret_value;
+        if (value.empty()) {
+            ret_value = default_value;
+        } else {
+            ret_value = atoi(value.c_str());
+        }
+        return ret_value;
+    }
+
+    std::string GetArg(const std::string& header, const std::string &default_value) {
+        std::string value = FindParameterValue(header);
+        std::string ret_value;
+        if (value.empty()) {
+            ret_value = default_value;
+        } else {
+            ret_value = value;
+        }
+        return ret_value;
+    }
 
     virtual int GetAppType() const = 0;
     virtual void SetAppType(const int type) = 0;

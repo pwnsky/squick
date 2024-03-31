@@ -9,14 +9,16 @@
 #include <squick/plugin/net/export.h>
 #include <struct/struct.h>
 
+#define DEFAULT_NODE_MASTER_ID 1
+#define DEFAULT_NODE_CPUT_COUNT 100
+#define DEFAULT_NODE_MAX_SERVER_CONNECTION 100000
+
 class INodeBaseModule : public IModule {
   public:
     virtual bool Awake() final { return true; }
     virtual bool Start() override final {
         m_net_ = pm_->FindModule<INetModule>();
         m_log_ = pm_->FindModule<ILogModule>();
-        m_element_ = pm_->FindModule<IElementModule>();
-        m_class_ = pm_->FindModule<IClassModule>();
         m_net_client_ = pm_->FindModule<INetClientModule>();
         is_update_ = true;
 
@@ -24,146 +26,142 @@ class INodeBaseModule : public IModule {
     }
 
     virtual bool Update() override final {
+        // calc work load
+        CalcWorkLoad();
         if (last_report_time_ + 3 > pm_->GetNowTime()) {
             return true;
         }
+        if (last_report_time_ > 0) {
+            UpdateState();
+        }
         last_report_time_ = pm_->GetNowTime();
-        ReqServerReport();
         return true;
     }
 
-    virtual bool Listen() {
-        
-        m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REGISTER, this, &INodeBaseModule::OnReqRegister);
-        m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_UNREGISTER, this, &INodeBaseModule::OnServerUnRegistered);
-        m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REPORT, this, &INodeBaseModule::OnReqServerReport);
+    inline void CalcWorkLoad() {
+        // handle time * 100 + m_net connections + m_net_client connections
+        time_t now_time = SquickGetTimeMS();
+        // The first update will int overflow, but who care?
+        workload_ = (now_time - last_update_time_) * 100;
+        last_update_time_ = now_time;
+    }
+
+    static std::string EnumNodeTypeToString(ServerType type)
+    {
+        switch (type) {
+        case ServerType::ST_MASTER: return "master";
+        case ServerType::ST_LOGIN: return "login";
+        case ServerType::ST_WORLD: return "world";
+        case ServerType::ST_DB_PROXY: return "db_proxy";
+        case ServerType::ST_PROXY: return "proxy";
+        case ServerType::ST_LOBBY: return "lobby";
+        case ServerType::ST_GAME_MGR: return "game_mgr";
+        case ServerType::ST_GAME: return "game";
+        case ServerType::ST_MICRO: return "micro";
+        case ServerType::ST_CDN: return "cdn";
+        case ServerType::ST_ROBOT: return "robot";
+        }
+        return "";
+    }
+
+    static ServerType StringNodeTypeToEnum(const std::string& type)
+    {
+        if (type == "master") return ServerType::ST_MASTER;
+        else if (type == "login") return ServerType::ST_LOGIN;
+        else if (type == "world") return ServerType::ST_WORLD;
+        else if (type == "db_proxy") return ServerType::ST_DB_PROXY;
+        else if (type == "proxy") return ServerType::ST_PROXY;
+        else if (type == "lobby") return ServerType::ST_LOBBY;
+        else if (type == "game_mgr") return ServerType::ST_GAME_MGR;
+        else if (type == "game") return ServerType::ST_GAME;
+        else if (type == "micro") return ServerType::ST_MICRO;
+        else if (type == "cdn") return ServerType::ST_CDN;
+        else if (type == "robot") return ServerType::ST_ROBOT;
+        return ServerType::ST_NONE;
+    }
+
+    virtual bool Listen() {        
         m_net_->AddReceiveCallBack(this, &INodeBaseModule::InvalidMessage);
         m_net_->AddEventCallBack(this, &INodeBaseModule::OnServerSocketEvent);
         m_net_->ExpandBufferSize();
 
-        std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
-        if (xLogicClass) {
-            const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
-            for (int i = 0; i < strIdList.size(); ++i) {
-                const std::string &strId = strIdList[i];
-                const int id = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-                if (pm_->GetAppID() == id) {
-                    ServerInfo s;
-                    s.info->set_id(id);
-                    s.info->set_key(m_element_->GetPropertyString(strId, excel::Server::Key()));
-                    s.info->set_type(m_element_->GetPropertyInt32(strId, excel::Server::Type()));
-                    s.info->set_port(m_element_->GetPropertyInt32(strId, excel::Server::Port()));
-                    s.info->set_max_online(m_element_->GetPropertyInt32(strId, excel::Server::MaxOnline()));
-                    s.info->set_cpu_count(m_element_->GetPropertyInt32(strId, excel::Server::CpuCount()));
-                    s.info->set_name(m_element_->GetPropertyString(strId, excel::Server::ID()));
-                    s.info->set_ip(m_element_->GetPropertyString(strId, excel::Server::IP()));
-                    s.info->set_public_ip(m_element_->GetPropertyString(strId, excel::Server::PublicIP()));
-                    s.info->set_area(m_element_->GetPropertyInt32(strId, excel::Server::Area()));
-                    s.info->set_cpu_count(m_element_->GetPropertyInt32(strId, excel::Server::CpuCount()));
-                    s.type = ServerInfo::Type::Self;
-                    s.info->set_update_time(SquickGetTimeS());
-                    pm_->SetAppType(s.info->type());
-                    pm_->SetArea(s.info->area());
-                    servers_[pm_->GetAppID()] = s;
+        node_info_.info->set_id(pm_->GetArg("id=", 0));
+        std::string name = pm_->GetArg("type=", "proxy") + pm_->GetArg("id=", "0");
+        node_info_.info->set_type(StringNodeTypeToEnum(pm_->GetArg("type=", "proxy")));
+        node_info_.info->set_port(pm_->GetArg("port=", 10000));
 
-                    int nRet = m_net_->Startialization(s.info->max_online(), s.info->port(), s.info->cpu_count());
+        node_info_.info->set_name(name);
+        node_info_.info->set_ip(pm_->GetArg("ip=", "127.0.0.1"));
+        node_info_.info->set_public_ip(pm_->GetArg("public_ip=", "127.0.0.1"));
+        node_info_.info->set_area(pm_->GetArg("area=", 0));
+        node_info_.info->set_update_time(SquickGetTimeS());
+        node_info_.info->set_max_online(DEFAULT_NODE_MAX_SERVER_CONNECTION);
+        node_info_.info->set_cpu_count(DEFAULT_NODE_CPUT_COUNT);
 
-                    std::ostringstream log;
-                    log << "Node Listen at 0.0.0.0:" << s.info->port() << " Name: " << s.info->name();
-                    m_log_->LogDebug(NULL_OBJECT, log, __FUNCTION__, __LINE__);
+        pm_->SetAppType(node_info_.info->type());
+        pm_->SetArea(node_info_.info->area());
 
-                    if (nRet < 0) {
-                        std::ostringstream strLog;
-                        strLog << "Cannot init server net, Port = " << s.info->port();
-                        m_log_->LogError(NULL_OBJECT, strLog, __FUNCTION__, __LINE__);
-                        SQUICK_ASSERT(nRet, "Cannot init server net", __FILE__, __FUNCTION__);
-                        exit(0);
-                    }
-                }
-            }
+        //servers_[pm_->GetAppID()] = s;
+
+        int nRet = m_net_->Startialization(node_info_.info->max_online(), node_info_.info->port(), node_info_.info->cpu_count());
+
+        std::ostringstream log;
+        log << "Node Listen at 0.0.0.0:" << node_info_.info->port() << " Name: " << node_info_.info->name();
+        m_log_->LogDebug(NULL_OBJECT, log, __FUNCTION__, __LINE__);
+
+        if (nRet < 0) {
+            std::ostringstream strLog;
+            strLog << "Cannot init server net, Port = " << node_info_.info->port();
+            m_log_->LogError(NULL_OBJECT, strLog, __FUNCTION__, __LINE__);
+            SQUICK_ASSERT(nRet, "Cannot init server net", __FILE__, __FUNCTION__);
+            exit(0);
         }
         return true;
     }
 
     // Add upper server
-    bool AddServer(ServerType type) {
-        m_net_client_->AddEventCallBack(type, this, &INodeBaseModule::OnClientSocketEvent);
-        m_net_client_->AddReceiveCallBack(type, rpc::ServerRPC::SERVER_ADD, this, &INodeBaseModule::OnDynamicServerAdd);
-        m_net_client_->AddReceiveCallBack(type, rpc::ServerRPC::ACK_REGISTER, this, &INodeBaseModule::OnAckRegister);
-        m_net_client_->AddReceiveCallBack(type, rpc::ServerRPC::ACK_REPORT, this, &INodeBaseModule::OnAckServerReport);
+    bool AddNodesByType(const vector<int> &types) {
+        m_net_client_->AddEventCallBack(ST_MASTER, this, &INodeBaseModule::OnClientSocketEvent);
+        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::MasterRPC::NN_NTF_NODE_ADD, this, &INodeBaseModule::OnNnNtfNodeAdd);
+        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::MasterRPC::NN_NTF_NODE_REMOVE, this, &INodeBaseModule::OnNnNtfNodeRemove);
+        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::MasterRPC::NN_ACK_NODE_REGISTER, this, &INodeBaseModule::OnNnAckNodeRegister);
         m_net_client_->ExpandBufferSize();
         bool ret = false;
-        std::shared_ptr<IClass> config = m_class_->GetElement(excel::Server::ThisName());
-        if (config) {
-            const std::vector<std::string>& list = config->GetIDList();
-            const int cur_area = pm_->GetArea();
-            for (auto k : list) {
-                const int server_type = m_element_->GetPropertyInt32(k, excel::Server::Type());
-                const int area = m_element_->GetPropertyInt32(k, excel::Server::Area());
-
-                if (server_type == type) {
-                    // 增加同一区服的，如果是Master或Login，不用校验区服
-                    if (type == ServerType::ST_MASTER || type == ServerType::ST_LOGIN || area == cur_area) {
-                        int id = m_element_->GetPropertyInt32(k, excel::Server::ServerID());
-                        ServerInfo info;
-
-                        info.type = ServerInfo::Type::Parrent; // 标识该节点为父节点
-                        info.status = ServerInfo::Status::Connecting;
-                        info.info->set_port(m_element_->GetPropertyInt32(k, excel::Server::Port()));
-                        info.info->set_name(m_element_->GetPropertyString(k, excel::Server::ID()));
-                        info.info->set_ip(m_element_->GetPropertyString(k, excel::Server::IP()));
-                        info.info->set_id(id);
-                        servers_[id] = info;
-
-                        ConnectData s;
-                        s.id = id;
-                        s.type = (ServerType)server_type;
-                        s.ip = info.info->ip();
-                        s.port = info.info->port();
-                        s.name = k;
-
-                        std::ostringstream log;
-                        log << "Node Connect to " << s.name  << " host " << s.ip << ":" << s.port << " cur_area: " << cur_area << " target area:" << area << std::endl;
-                        m_log_->LogDebug(NULL_OBJECT, log, __FUNCTION__, __LINE__);
-                        m_net_client_->AddServer(s);
-                        ret = true;
-                    }
-                }
-            }
-        }
-        return ret;
+        node_info_.listen_types = types;
+        ConnectData s;
+        s.id = DEFAULT_NODE_MASTER_ID;
+        s.type = StringNodeTypeToEnum("master");
+        s.ip = pm_->GetArg("master_ip=", "127.0.0.1");
+        s.port = pm_->GetArg("master_port=", 10001);
+        s.name = "master";
+        std::ostringstream log;
+        log << "Node Connect to " << s.name << " host " << s.ip << ":" << s.port << " cur_area: " << pm_->GetArg("area=", 0) << std::endl;
+        m_log_->LogDebug(NULL_OBJECT, log, __FUNCTION__, __LINE__);
+        m_net_client_->AddNode(s);
+        return true;
     }
 
     void InvalidMessage(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) { printf("Net || umsg_id=%d\n", msg_id); }
 
-
-    void LogServerInfo(const std::string &strServerInfo) { m_log_->LogInfo(Guid(), strServerInfo, ""); }
-
     // Add upper server
     void OnDynamicServerAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
         string guid;
-        rpc::ServerList req;
-        if (!INetModule::ReceivePB(msg_id, msg, len, req, guid)) {
+        rpc::NnNtfNodeAdd ntf;
+        if (!INetModule::ReceivePB(msg_id, msg, len, ntf, guid)) {
             return;
         }
-        for (int i = 0; i < req.list_size(); ++i) {
-            const rpc::Server &sd = req.list(i);
+        for (int i = 0; i < ntf.node_list().size(); ++i) {
+            const rpc::Server &sd = ntf.node_list(i);
             // type
             ConnectData s;
             s.id = sd.id();
             s.ip = sd.ip();
             s.port = sd.port();
             s.name = sd.name();
-            s.work_load = sd.cpu_count();
             s.type = (ServerType)sd.type();
-            m_net_client_->AddServer(s);
+            m_net_client_->AddNode(s);
         }
     }
-    
-    
-
-
-
     //////////////////////////// PRIVATE ////////////////////////////
   private:
     // 热加载配置文件
@@ -175,138 +173,34 @@ class INodeBaseModule : public IModule {
 
     }
 
-    virtual void OnServerRefreshed(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    }
-
     // Report to upper server
-    void ReqServerReport() {
-        rpc::ReqReport req;
-        req.set_id(pm_->GetAppID());
-        // 更新自己的时间
-        auto iter = servers_.find(pm_->GetAppID());
-        iter->second.info->set_update_time(SquickGetTimeS());
-        
-        // 将下游服务和自己全部注册更新到上游
-        for (auto sv : servers_) {
-            if (sv.second.info->area() == pm_->GetArea()) {
-                if (sv.second.type == ServerInfo::Type::Child || sv.second.type != ServerInfo::Type::Parrent) {
-                    auto s = req.add_list();
-                    *s = *sv.second.info.get();
-                }
-            }
-        }
-        for (auto sv : servers_) {
-            //m_log_->LogWarning("ReqServerReport to " + to_string(sv.second.info->id()));
-            if (sv.second.type == ServerInfo::Type::Parrent && sv.second.status == ServerInfo::Status::Connected) {
-                if (sv.second.info->area() == pm_->GetArea() ||
-                    sv.second.info->type() == ServerType::ST_LOGIN ||
-                    sv.second.info->type() == ServerType::ST_MASTER ) {
-                    ostringstream s;
-                    //s << "ReqServerReport to " << sv.second.info->id() << " push: " << req.list().size();
-                    //m_log_->LogWarning(s);
-                    m_net_client_->SendToServerByPB(sv.second.info->id(), rpc::REQ_REPORT, req);
-                }
-            }
-        }
-    }
+    void UpdateState() {
 
-    virtual void OnReqServerReport(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        string guid;
-        rpc::ReqReport req;
-        if (!INetModule::ReceivePB(msg_id, msg, len, req, guid)) {
-            return;
-        }
-        rpc::AckReport ack;
-        do {
-            ack.set_code(0);
-            for (auto s : req.list()) {
-                if (s.id() == pm_->GetAppID() || s.id() == 0) { // 排除自己和比当前时间更新晚的和排除异常的
-                    continue;
-                }
-                auto iter = servers_.find(s.id());
-                if (iter != servers_.end()) {
-                   if (iter->second.info->update_time() >= s.update_time()) {
-                        continue;
-                   }
-                   *iter->second.info = s;
-                   continue;
-                }
-
-                // 新增
-                ServerInfo info;
-                info.fd = 0;
-                info.status = ServerInfo::Status::Unknowing;
-                info.type = ServerInfo::Type::Unknowing;
-                *info.info = s;
-                servers_[s.id()] = info;
-            }
-            
-            int area = servers_[req.id()].info->area();
-            // 更新下游状态, area 为 0 的有权拉取所有，其他的只能拉取自己区域的和0区域的
-            for (auto sv : servers_) {
-                if (sv.first == 0 || sv.second.info->id() == 0) {
-                    continue;
-                }
-                if (area == 0 || sv.second.info->area() == area || sv.second.info->area() == 0) {
-                    auto s = ack.add_list();
-                    *s = *sv.second.info.get();
-                }
-            }
-        } while (false);
-        
-        m_net_->SendMsgPB(rpc::ServerRPC::ACK_REPORT, ack, sock);
-    }
-
-    virtual void OnAckServerReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-        
-        string guid;
-        rpc::AckReport ack;
-        if (!m_net_->ReceivePB(msg_id, msg, len, ack, guid)) {
-            return;
-        }
-
-        ostringstream s;
-        //s << "Ack ServerReport from: " << guid.ToString() << " pulled: " << ack.list().size();
-        //m_log_->LogDebug(s);
-
-        if (ack.code() == 0) {
-            for (auto s : ack.list()) {
-                auto iter = servers_.find(s.id());
-                if (iter != servers_.end()) {
-                    if (iter->second.info->update_time() >= s.update_time()) {
-                        continue;
-                    }
-                    *iter->second.info = s;
-                    continue;
-                }
-                
-                // 新增
-                ServerInfo info;
-                info.fd = 0;
-                info.status = ServerInfo::Status::Unknowing;
-                info.type = ServerInfo::Type::Unknowing;
-                *info.info = s;
-                servers_[s.id()] = info;
-            }
-        }
-        else {
-            dout << "更新失败!";
+        node_info_.info->set_update_time(SquickGetTimeS());
+        node_info_.info->set_workload(workload_);
+        // Update status to master
+        if (pm_->GetAppType() != ST_MASTER) {
+            rpc::NnNtfNodeReport req;
+            req.set_id(pm_->GetAppID());
+            auto s = req.add_list();
+            *s = *node_info_.info.get();
+            m_net_client_->SendPBByID(DEFAULT_NODE_MASTER_ID, rpc::MasterRPC::NN_NTF_NODE_REPORT, req);
         }
     }
 
     // 作为服务的监听socket状态事件
     void OnServerSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
         if (eEvent & SQUICK_NET_EVENT_EOF) {
-            m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
+            m_log_->LogInfo(Guid(0, sock), "Net Server: SQUICK_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
             OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
-            m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
+            m_log_->LogInfo(Guid(0, sock), "Net Server: SQUICK_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
             OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
-            m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
+            m_log_->LogInfo(Guid(0, sock), "Net Server: SQUICK_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
             OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
-            m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
+            m_log_->LogInfo(Guid(0, sock), "Net Server: SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
             OnClientConnected(sock);
         }
     }
@@ -317,25 +211,22 @@ class INodeBaseModule : public IModule {
     // 作为客户端连接socket事件
     void OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet) {
         if (eEvent & SQUICK_NET_EVENT_EOF) {
-            m_log_->LogWarning(Guid(0, sock), "SQUICK_NET_EVENT_EOF", __FUNCTION__, __LINE__);
+            m_log_->LogWarning(Guid(0, sock), "Net Client: SQUICK_NET_EVENT_EOF", __FUNCTION__, __LINE__);
         }
         else if (eEvent & SQUICK_NET_EVENT_ERROR) {
-            m_log_->LogError(Guid(0, sock), "SQUICK_NET_EVENT_ERROR", __FUNCTION__, __LINE__);
+            m_log_->LogError(Guid(0, sock), "Net Client: SQUICK_NET_EVENT_ERROR", __FUNCTION__, __LINE__);
         }
         else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
-            m_log_->LogError(Guid(0, sock), "SQUICK_NET_EVENT_TIMEOUT", __FUNCTION__, __LINE__);
+            m_log_->LogError(Guid(0, sock), "Net Client: SQUICK_NET_EVENT_TIMEOUT", __FUNCTION__, __LINE__);
         }
         else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
-            m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
-            ReqRegister(pNet);
+            m_log_->LogInfo(Guid(0, sock), "Net Client: SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
+            
+            OnUpperNodeConnected(pNet);
         }
     }
 
-
-    // 向连接的服务注册自己
-    void ReqRegister(INet* pNet) {
-        rpc::ReqRegisterServer req;
-        req.set_id(pm_->GetAppID());
+    void OnUpperNodeConnected(INet* pNet) {
         std::shared_ptr<ConnectData> ts = m_net_client_->GetServerNetInfo(pNet);
         if (ts == nullptr) {
             ostringstream msg;
@@ -343,175 +234,80 @@ class INodeBaseModule : public IModule {
             m_log_->LogWarning(msg, __FUNCTION__, __LINE__);
             return;
         }
-        req.set_key("no passowrd");
-        // 取出即将连接服务器的密钥
-        std::shared_ptr<IClass> config = m_class_->GetElement(excel::Server::ThisName());
-        if (config) {
-            const std::vector<std::string>& idx_list = config->GetIDList();
+        ts->state = ConnectDataState::NORMAL;
 
-            for (auto& idx : idx_list) {
-                int id = m_element_->GetPropertyInt32(idx, excel::Server::ServerID());
-                if (id == ts->id) {
-                    string key = m_element_->GetPropertyString(idx, excel::Server::Key());
-                    req.set_key(key);
-                    break;
-                }
-            }
+        // target type only master can register
+        if (ts->type != ST_MASTER) return;
+        
+        rpc::NnReqNodeRegister req;
+        *req.mutable_node() = *node_info_.info.get();
+        
+        for (auto type : node_info_.listen_types) {
+            req.add_listen_type_list(type);
         }
 
-        // 将下游服务和自己全部注册到上游
-        for (auto sv : servers_) {
-            if ( (sv.second.type == ServerInfo::Type::Child || sv.second.type == ServerInfo::Type::Self)&&
-                sv.second.status == ServerInfo::Status::Connected &&
-                sv.second.info->area() == pm_->GetArea()) {
-                    auto s = req.add_list();
-                    *s = *sv.second.info.get();
-            }
-        }
-
-
-        m_net_client_->SendToServerByPB(ts->id, rpc::ServerRPC::REQ_REGISTER, req);
-        //dout << pm_->GetAppName() << " 请求连接 " << ts->name << "\n";
-        //m_log_->LogInfo(Guid(0, pm_->GetAppID()), s->name(), "Register");
-
-    }
-
-    virtual void OnReqRegister(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        string nPlayerID;
-        rpc::ReqRegisterServer req;
-        if (!m_net_->ReceivePB(msg_id, msg, len, req, nPlayerID)) {
-            return;
-        }
-        rpc::AckRegisterServer ack;
-        do {
-            auto& cs = servers_[pm_->GetAppID()];
-            // 验证key
-            if (req.key() != cs.info->key()) {
-                dout << " 校验key失败: req key" << req.key() << "  our key" << cs.info->key() << "\n";
-                ack.set_code(1);
-                break;
-            }
-
-            ack.set_code(0);
-            for (auto s : req.list()) {
-                if (s.id() == pm_->GetAppID()) { // 排除自己
-                    continue;
-                }
-                if (s.id() == req.id()) {
-
-                }
-                ServerInfo info;
-                info.fd = sock;
-                *info.info = s;
-                servers_[s.id()] = info;
-            }
-
-            // 标识为子节点
-            auto iter = servers_.find(req.id());
-            if (iter != servers_.end()) {
-                iter->second.status = ServerInfo::Status::Connected;
-                iter->second.type = ServerInfo::Type::Child;
-            }
-            
-            int area = servers_[req.id()].info->area();
-            for (auto sv : servers_) {
-                if (area == 0 || sv.second.info->area() == area || sv.second.info->area() == 0) {
-                    auto s = ack.add_list();
-                    *s = *sv.second.info.get();
-                }
-            }
-        } while (false);
-        m_net_->SendMsgPB(rpc::ACK_REGISTER, ack, sock);
+        m_net_client_->SendPBByID(ts->id, rpc::MasterRPC::NN_REQ_NODE_REGISTER, req);
+        m_log_->LogInfo(Guid(0, pm_->GetAppID()), ts->name, "Register");
     }
     
-    // 注册响应
-    virtual void OnAckRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    void OnNnAckNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
         string guid;
-        rpc::AckRegisterServer ack;
+        rpc::NnAckNodeRegister ack;
         if (!m_net_->ReceivePB(msg_id, msg, len, ack, guid)) {
             return;
         }
 
         if (ack.code() == 0) {
-            for (auto s : ack.list()) {
-                if (s.id() == pm_->GetAppID()) { // 排除自己
-                    continue;
-                }
-                auto iter = servers_.find(s.id());
-                if (iter == servers_.end()) {
-                    ServerInfo info;
-                    info.fd = 0;
-                    info.status = ServerInfo::Status::Unknowing;
-                    info.type = ServerInfo::Type::Unknowing;
-                    *info.info = s;
-                    servers_[s.id()] = info;
-                }
-                else {
-                    if (iter->second.type == ServerInfo::Type::Parrent) {
-                        iter->second.status = ServerInfo::Status::Connected;
-                    }
-                    *iter->second.info = s;
-                }
-            }
+            AddNodes(ack.node_add_list());
         }
         else {
-            dout << "注册失败!";
+            m_log_->LogError(Guid(0, pm_->GetAppID()), "Register faild!");
         }
     }
 
-    virtual void OnServerUnRegistered(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        string nPlayerID;
-        rpc::ServerList sl;
-        if (!m_net_->ReceivePB(msg_id, msg, len, sl, nPlayerID)) {
+    // Add node ntf
+    void OnNnNtfNodeAdd(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+        string guid;
+        rpc::NnNtfNodeAdd ntf;
+        if (!m_net_->ReceivePB(msg_id, msg, len, ntf, guid)) {
             return;
         }
-
-        for (int i = 0; i < sl.list_size(); ++i) {
-            const rpc::Server &s = sl.list(i);
-            int id = s.id();
-            auto iter = servers_.find(id);
-            if (iter != servers_.end()) {
-                servers_.erase(iter);
-            }
-            m_log_->LogInfo(Guid(0, s.id()), s.name(), " UnRegistered");
-        }
+        AddNodes(ntf.node_list(), true);
     }
 
-    virtual void OnReqManager(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    
+    bool AddNodes(const google::protobuf::RepeatedPtrField<rpc::Server>& list, bool from_ntf = false) {
+        for (auto n : list) {
+            dout << "Add node from master, is_ntf: " << from_ntf << " cmd, current: " << node_info_.info->name() << " add " << n.name() << endl;
+            ConnectData s;
+            s.id = n.id();
+            s.ip = n.ip();
+            s.port = n.port();
+            s.name = n.name();
+            s.type = (ServerType)n.type();
+            m_net_client_->AddNode(s);
+        }
+        return true;
     }
-    
-    public:
-        virtual int GetLoadBanlanceNode(ServerType type) {
-        int node_id = -1;
-        int min_workload = 99999;
-        for (auto& iter : servers_) {
-            auto server = iter.second;
-            if (server.info->type() == type && server.info->area() == pm_->GetArea()) {
-                if (min_workload > server.info->workload()) {
-                    node_id = iter.first;
-                }
-            }
-        }
-        if (node_id == -1) {
-            return -1;
-        }
-        return node_id;
+
+    // Add node ntf
+    void OnNnNtfNodeRemove(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+
+    }
+
+    bool RemoveNodes() {
+
     }
 
     public:
-
-    // 服务表
-    map<int, ServerInfo> servers_;
-    
-    IElementModule *m_element_;
-    IClassModule *m_class_;
     ILogModule *m_log_;
     INetModule *m_net_;
     INetClientModule *m_net_client_;
+    ServerInfo node_info_;
 
   private:
     time_t last_report_time_ = 0;
+    time_t last_update_time_ = 0;
+    int workload_;
 
   protected:
 };

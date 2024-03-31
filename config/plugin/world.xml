@@ -1,8 +1,8 @@
 <XML>
 	<World>
 		<Plugin Name="core/net" />
-		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />
+        <Plugin Name="core/config" />
 		<Plugin Name="core/world" />
 		<Plugin Name="core/lua" />
 		

@@ -1,6 +1,4 @@
-
-#ifndef SQUICK_INTF_NET_H
-#define SQUICK_INTF_NET_H
+#pragma once
 
 #include <cassert>
 #include <cerrno>
@@ -38,8 +36,6 @@
 
 #endif
 
-#pragma pack(push, 1)
-
 enum SQUICK_NET_EVENT {
     SQUICK_NET_EVENT_EOF = 0x10,
     SQUICK_NET_EVENT_ERROR = 0x20,
@@ -64,7 +60,7 @@ struct IMsgHead {
 
     virtual void SetBodyLength(uint32_t length) = 0;
 
-    static int64_t SQUICK_HTONLL(int64_t nData) {
+    static uint64_t SQUICK_HTONLL(uint64_t nData) {
 #if PLATFORM == PLATFORM_WIN
         return htonll(nData);
 #elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS
@@ -74,7 +70,7 @@ struct IMsgHead {
 #endif
     }
 
-    static int64_t SQUICK_NTOHLL(int64_t nData) {
+    static uint64_t SQUICK_NTOHLL(uint64_t nData) {
 #if PLATFORM == PLATFORM_WIN
         return ntohll(nData);
 #elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS
@@ -86,7 +82,7 @@ struct IMsgHead {
 #endif
     }
 
-    static int32_t SQUICK_HTONL(int32_t nData) {
+    static uint32_t SQUICK_HTONL(uint32_t nData) {
 #if PLATFORM == PLATFORM_WIN
         return htonl(nData);
 #elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS
@@ -96,7 +92,7 @@ struct IMsgHead {
 #endif
     }
 
-    static int32_t SQUICK_NTOHL(int32_t nData) {
+    static uint32_t SQUICK_NTOHL(uint32_t nData) {
 #if PLATFORM == PLATFORM_WIN
         return ntohl(nData);
 #elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS
@@ -108,7 +104,7 @@ struct IMsgHead {
 #endif
     }
 
-    static int16_t SQUICK_HTONS(int16_t nData) {
+    static uint16_t SQUICK_HTONS(uint16_t nData) {
 #if PLATFORM == PLATFORM_WIN
         return htons(nData);
 #elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS
@@ -118,7 +114,7 @@ struct IMsgHead {
 #endif
     }
 
-    static int16_t SQUICK_NTOHS(int16_t nData) {
+    static uint16_t SQUICK_NTOHS(uint16_t nData) {
 #if PLATFORM == PLATFORM_WIN
         return ntohs(nData);
 #elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_APPLE_IOS
@@ -336,7 +332,3 @@ class INet {
 
     virtual bool Log(int severity, const char *msg) = 0;
 };
-
-#pragma pack(pop)
-
-#endif

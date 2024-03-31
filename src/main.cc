@@ -42,37 +42,23 @@ void PrintLogo() {
     std::cout << "Version: " << SQUICK_VERSION << "\nGithub : https://github.com/pwnsky/squick\n\n";
 }
 
+void AddPluginServer(std::vector<std::shared_ptr<PluginServer>> &serverList, const std::string arg) {
+    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(arg)));
+}
 // Just for debug or dev
 void DefaultStartUp(std::string strArgvList, std::vector<std::shared_ptr<PluginServer>> &serverList) {
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=master id=1")));
-
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=world id=100")));
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=world id=101"))); // 区服2
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=db_proxy id=300")));
-
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=db_proxy id=301"))); // 区服2
-
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=login id=2")));
-
-    // Lobby
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1000")));
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1001")));
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=lobby id=1002")));
-
-    // Game
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=3000")));
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game id=3001")));
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=game_mgr id=2000")));
-
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=500")));
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=501")));
-
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=proxy id=502"))); // 区服2
+    AddPluginServer(serverList, "type=master id=1 area=0 ip=127.0.0.1 port=10001 http_port=8888");
+    AddPluginServer(serverList, "type=world id=100 area=0 ip=127.0.0.1 port=10101 master_ip=127.0.0.1 master_port=10001");
+    AddPluginServer(serverList, "type=db_proxy id=300 area=0 ip=127.0.0.1 port=10201 master_ip=127.0.0.1 master_port=10001");
+    AddPluginServer(serverList, "type=login id=2 area=0 ip=127.0.0.1 port=10301 web_port=80 master_ip=127.0.0.1 master_port=10001");
+    AddPluginServer(serverList, "type=lobby id=1000 area=0 ip=127.0.0.1 port=10401 master_ip=127.0.0.1 master_port=10001");
+    AddPluginServer(serverList, "type=lobby id=1001 area=0 ip=127.0.0.1 port=10402 master_ip=127.0.0.1 master_port=10001");
+    AddPluginServer(serverList, "type=proxy id=500 area=0 ip=127.0.0.1 port=10501 ws_port=10502 master_ip=127.0.0.1 master_port=10001");
 }
 
 void TutorialStartUp(std::string strArgvList, std::vector<std::shared_ptr<PluginServer>>& serverList) {
-    serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=tutorial/t1_plugin")));
-    //serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList + " type=tutorial/t5_http")));
+    AddPluginServer(serverList, "type=tutorial/t1_plugin");
+    AddPluginServer(serverList, "type=tutorial/t5_http");
 }
 
 int main(int argc, char *argv[]) {
@@ -93,20 +79,30 @@ int main(int argc, char *argv[]) {
 
     PrintLogo();
 
-    if (argc == 1) // 如果没加参数运行
+    if (argc == 1)
     {
-        /*
-        std::cout << "<<  Squick  Help >>\n"
-                "Usage: type=server_type id=server_id [-d]\n"
-                "Introduce:\n"
-                "       type: Set your plugin file to load and this is your server name, logger module will use it to log\n"
-                "       id    : Set your server id, using it to load server configure informations\n"
-                "       -d    : Run server in background\n"
-                "Examples: ./squick type=test.xml server=defualt id=1\n";
-        "\n";*/
-
+        
+#ifdef SQUICK_DEV
         DefaultStartUp(strArgvList, serverList);
         //TutorialStartUp(strArgvList, serverList);
+#else
+        std::cout << "<<  Squick  Help >>\n"
+                "Squick args usage:\n"
+                "       type: Set your plugin file to load and this is your server name, logger module will use it to log\n"
+                "       -d    : Run squick in background\n"
+                "       id    : Set your node id, using it to load server configure informations\n"
+                "       type  : node type to run\n"
+                "       area  : The current node area\n"
+                "       ip    : The current node network ip\n"
+                "       port  : The current node network port\n"
+                "       public_ip    : The current node network public ip\n"
+                "       http_port    : The current node http port\n"
+                "       https_port   : The current node https port\n"
+                "       master_ip    : The master network ip for node connection\n"
+                "       master_port  : The master network port for node connection\n"
+                "Examples: ./squick type=master id=1 area=0 ip=127.0.0.1 port=10001 http_port=8888\n";
+        "\n";
+#endif // DEBUG
     } else {
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList)));
     }

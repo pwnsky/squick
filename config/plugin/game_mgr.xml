@@ -1,7 +1,6 @@
 <XML>
     <GameMgr>
 		<Plugin Name="core/net" />
-		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />
 		
 		<Plugin Name="node/game_mgr/node" />

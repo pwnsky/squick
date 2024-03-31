@@ -1,6 +1,4 @@
-
-#ifndef SQUICK_INTF_ELEMENTINFO_MODULE_H
-#define SQUICK_INTF_ELEMENTINFO_MODULE_H
+#pragma once
 
 #include <iostream>
 #include <squick/core/data_list.h>
@@ -35,4 +33,3 @@ class IElementModule : public IModule {
     virtual const std::vector<std::string> GetListByProperty(const std::string &className, const std::string &propertyName, const INT64 nValue) = 0;
     virtual const std::vector<std::string> GetListByProperty(const std::string &className, const std::string &propertyName, const std::string &nValue) = 0;
 };
-#endif

@@ -37,8 +37,6 @@ class RedisModule : public IRedisModule {
 
   protected:
     INT64 mLastCheckTime;
-    IClassModule *m_class_;
-    IElementModule *m_element_;
     ILogModule *m_log_;
 
     ConsistentHashMapEx<std::string, IRedisClient> mdriver;

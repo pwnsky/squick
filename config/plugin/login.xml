@@ -1,15 +1,11 @@
 <XML>
     <Login>
 		<Plugin Name="core/net" />
-		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />
-		<Plugin Name="core/redis" />
 
 		<Plugin Name="node/login/node" />
 		<Plugin Name="node/login/logic" />
 		<Plugin Name="node/login/http" />
-		<Plugin Name="node/login/redis" />
-		<Plugin Name="node/login/mysql" />
 	</Login>
 
 </XML>

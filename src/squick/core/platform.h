@@ -262,6 +262,7 @@ typedef int8_t NFINT8;
 typedef uint64_t NFUINT64;
 typedef int64_t INT64;
 typedef int64_t socket_t;
+typedef int64_t reqid_t;
 
 #if PLATFORM == PLATFORM_WIN
 #include <crtdbg.h>

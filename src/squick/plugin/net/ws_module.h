@@ -1,6 +1,4 @@
-
-#ifndef SQUICK_WS_SERVER_MODULE_H
-#define SQUICK_WS_SERVER_MODULE_H
+#pragma once
 
 #include "i_ws_module.h"
 #include "net_module.h"
@@ -70,5 +68,3 @@ class WSModule : public IWSModule {
 
     ILogModule *m_log_;
 };
-
-#endif

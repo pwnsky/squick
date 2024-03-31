@@ -4,8 +4,9 @@
 namespace lobby::node {
 bool NodeModule::AfterStart() {
     Listen();
-    AddServer(ServerType::ST_WORLD);
-    AddServer(ServerType::ST_DB_PROXY);
+
+    vector<int> node_types = { ServerType::ST_WORLD, ServerType::ST_DB_PROXY, ServerType::ST_LOBBY };
+    AddNodesByType(node_types);
     return true;
 }
 

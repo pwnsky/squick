@@ -10,7 +10,7 @@
 #include "i_plugin_manager.h"
 #include <iostream>
 
-#define SQUICK_VERSION "1.0.1"
+#define SQUICK_VERSION "1.0.2"
 #define SERVER_NAME "Squick/" SQUICK_VERSION
 
 enum ServerType {

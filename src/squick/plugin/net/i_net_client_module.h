@@ -4,6 +4,7 @@
 #include <iostream>
 #include <squick/core/consistent_hash.h>
 #include <squick/core/i_module.h>
+#include "coroutine.h"
 
 enum ConnectDataState {
     DISCONNECT,
@@ -21,18 +22,26 @@ struct ConnectData {
         type = ST_NONE;
         state = ConnectDataState::DISCONNECT;
         last_time = 0;
-        work_load = 0;
     }
 
     int id;
     ServerType type;
     std::string ip;
     int port;
-    int work_load;
     std::string name;
     ConnectDataState state;
     INT64 last_time;
     std::shared_ptr<INetModule> net_module;
+};
+
+struct NetClientResponseData {
+    bool error;
+    reqid_t req_id;
+    int req_msg_id;
+    int ack_msg_id;
+    socket_t sock;
+    const char* data;
+    size_t length;
 };
 
 class INetClientModule : public IModule {
@@ -81,25 +90,21 @@ public:
     virtual void RemoveReceiveCallBack(const ServerType eType, const uint16_t msg_id) = 0;
     ////////////////////////////////////////////////////////////////////////////////
 
-    virtual void AddServer(const ConnectData& xInfo) = 0;
-    virtual unsigned int ExpandBufferSize(const unsigned int size = 1024 * 1024 * 20) = 0;
+    virtual void AddNode(const ConnectData& xInfo) = 0;
+    virtual unsigned int ExpandBufferSize(const unsigned int size = 1024 * 1024) = 0;
 
     ////////////////////////////////////////////////////////////////////////////////
-    virtual void SendByServerID(const int serverID, const uint16_t msg_id, const std::string& strData) = 0;
-    virtual void SendByServerID(const int serverID, const uint16_t msg_id, const std::string& strData, const string id) = 0;
-
-    virtual void SendToAllServer(const uint16_t msg_id, const std::string& strData) = 0;
-    virtual void SendToAllServer(const uint16_t msg_id, const std::string& strData, const string id) = 0;
-
-    virtual void SendToAllServer(const ServerType eType, const uint16_t msg_id, const std::string& strData) = 0;
-    virtual void SendToAllServer(const ServerType eType, const uint16_t msg_id, const std::string& strData, const string id) = 0;
-
-    virtual void SendToServerByPB(const int serverID, const uint16_t msg_id, const google::protobuf::Message& xData) = 0;
-    virtual void SendToServerByPB(const int serverID, const uint16_t msg_id, const google::protobuf::Message& xData, const string id) = 0;
-
-    virtual void SendToAllServerByPB(const uint16_t msg_id, const google::protobuf::Message& xData, const string id) = 0;
-    virtual void SendToAllServerByPB(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message& xData, const string id) = 0;
+    virtual bool IsConnected(const int node_id) = 0;
+    virtual bool SendByID(const int serverID, const uint16_t msg_id, const std::string& strData, const string guid = "", reqid_t req_id = 0) = 0;
+    virtual bool SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message& xData, const string guid = "", reqid_t req_id = 0) = 0;
+    virtual void SendToAllNode(const uint16_t msg_id, const std::string& strData, const string guid = "") = 0;
+    virtual void SendToAllNodeByType(const ServerType eType, const uint16_t msg_id, const std::string& strData, const string guid = "") = 0;
+    virtual void SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message& xData, const string id = "") = 0;
+    virtual void SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message& xData, const string guid = "") = 0;
     ////////////////////////////////////////////////////////////////////////////////
+    // coroutine
+    virtual Awaitable<NetClientResponseData>  Request(const int serverID, const uint16_t msg_id, const std::string& data, int ack_msg_id) = 0;
+    virtual Awaitable<NetClientResponseData>  RequestPB(const int node_id, const uint16_t msg_id, const google::protobuf::Message& pb, int ack_msg_id) = 0;
 
     virtual MapEx<int, ConnectData>& GetServerList() = 0;
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const ServerType eType) = 0;
