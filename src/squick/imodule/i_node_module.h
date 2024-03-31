@@ -302,9 +302,9 @@ class INodeBaseModule : public IModule {
     ILogModule *m_log_;
     INetModule *m_net_;
     INetClientModule *m_net_client_;
+    ServerInfo node_info_;
 
   private:
-    ServerInfo node_info_;
     time_t last_report_time_ = 0;
     time_t last_update_time_ = 0;
     int workload_;

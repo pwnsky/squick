@@ -12,9 +12,11 @@ bool NodeModule::AfterStart() {
     m_net_client_->AddReceiveCallBack(ServerType::ST_LOGIN, rpc::LoginRPC::ACK_PROXY_CONNECT_VERIFY, this, &NodeModule::OnAckProxyConnectVerify);
     m_net_client_->AddReceiveCallBack(ServerType::ST_LOBBY, rpc::PlayerEventRPC::PLAYER_BIND_EVENT, this, &NodeModule::PlayerBindEvent);
     
-    vector<int> node_types = { ServerType::ST_WORLD, ServerType::ST_LOBBY };
-    AddNodesByType(node_types);
 
+    node_info_.info->set_ws_port(pm_->GetArg("ws_port=", 10502));
+
+    vector<int> node_types = { ServerType::ST_WORLD, ServerType::ST_LOGIN, ServerType::ST_LOBBY };
+    AddNodesByType(node_types);
     // ws
     
     return true;
@@ -33,11 +35,12 @@ void NodeModule::PlayerBindEvent(const socket_t sock, const int msg_id, const ch
     m_logic_->EnterSuccessEvent(event.account_id(), event.player_id());
 }
 
-bool NodeModule::OnReqProxyConnectVerify(INT64 session, const std::string& guid, const std::string& key) {
+bool NodeModule::OnReqProxyConnectVerify(INT64 session, const std::string& account_id, const std::string& key) {
     rpc::ReqConnectProxyVerify req;
     req.set_session(session);
     req.set_key(key);
-    req.set_guid(guid);
+    req.set_guid(account_id);
+    // send rand id
     m_net_client_->SendPBToAllNodeByType(ServerType::ST_LOGIN, rpc::LoginRPC::REQ_PROXY_CONNECT_VERIFY, req);
     return true;
 }

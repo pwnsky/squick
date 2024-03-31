@@ -227,6 +227,10 @@ std::string NodeModule::GetServersStatus() {
         n["workload"] = sd->workload();
         n["max_online"] = sd->max_online();
         n["update_time"] = sd->update_time();
+        n["ws_port"] = sd->ws_port();
+        n["http_port"] = sd->http_port();
+        n["https_port"] = sd->https_port();
+
         statusRoot["node_list"][to_string(sd->id())] = n;
     }
     return statusRoot.dump();

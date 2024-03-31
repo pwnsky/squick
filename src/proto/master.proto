@@ -93,7 +93,6 @@ message NnAckMinWorkloadNodeInfo {
     repeated Server list = 1;
 }
 
-
 message NnReqNodeUnregister { int32 id = 1; }
 
 message NnAckNodeUnregister { int32 code = 1; }

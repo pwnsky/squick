@@ -6,7 +6,6 @@
 #include <squick/plugin/net/export.h>
 
 #include "i_logic_module.h"
-#include <node/login/redis/i_redis_module.h>
 
 namespace login::logic {
 class LogicModule : public ILogicModule {
@@ -22,8 +21,6 @@ class LogicModule : public ILogicModule {
 
   protected:
     INetModule *m_net_;
-    redis::IRedisModule *m_redis_;
-
   private:
 };
 
