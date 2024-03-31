@@ -65,6 +65,7 @@ struct ServerInfo {
     Status status = ServerInfo::Status::Unknowing;
     socket_t fd;
     std::shared_ptr<rpc::Server> info;
+    vector<int> listen_types;
 };
 
 class INetModule : public IModule {

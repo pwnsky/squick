@@ -22,8 +22,6 @@ bool RedisModule::Start() {
 bool RedisModule::Destory() { return true; }
 
 bool RedisModule::AfterStart() {
-    m_class_ = pm_->FindModule<IClassModule>();
-    m_element_ = pm_->FindModule<IElementModule>();
     m_log_ = pm_->FindModule<ILogModule>();
 
     /*

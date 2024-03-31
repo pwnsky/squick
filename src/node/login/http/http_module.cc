@@ -7,8 +7,6 @@ namespace login::http {
 bool HttpModule::Start() {
     m_http_server_ = pm_->FindModule<IHttpServerModule>();
     m_node_ = pm_->FindModule<node::INodeModule>();
-    m_class_ = pm_->FindModule<IClassModule>();
-    m_element_ = pm_->FindModule<IElementModule>();
     m_net_client_ = pm_->FindModule<INetClientModule>();
     m_mysql_ = pm_->FindModule<mysql::IMysqlModule>();
     m_redis_ = pm_->FindModule<redis::IRedisModule>();

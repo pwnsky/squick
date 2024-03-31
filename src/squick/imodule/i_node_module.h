@@ -17,8 +17,6 @@ class INodeBaseModule : public IModule {
     virtual bool Start() override final {
         m_net_ = pm_->FindModule<INetModule>();
         m_log_ = pm_->FindModule<ILogModule>();
-        m_element_ = pm_->FindModule<IElementModule>();
-        m_class_ = pm_->FindModule<IClassModule>();
         m_net_client_ = pm_->FindModule<INetClientModule>();
         is_update_ = true;
 
@@ -115,8 +113,8 @@ class INodeBaseModule : public IModule {
         m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::MasterRPC::NN_ACK_NODE_REGISTER, this, &INodeBaseModule::OnNnAckNodeRegister);
         m_net_client_->ExpandBufferSize();
         bool ret = false;
+        node_info_.listen_types = types;
         ConnectData s;
-        s.listen_types = types;
         s.id = DEFAULT_MASTER_ID;
         s.type = StringNodeTypeToEnum("master");
         s.ip = pm_->GetArg("master_ip=", "127.0.0.1");
@@ -226,8 +224,14 @@ class INodeBaseModule : public IModule {
 
         // target type only master can register
         if (ts->type != ST_MASTER) return;
+        
         rpc::NnReqNodeRegister req;
         *req.mutable_node() = *node_info_.info.get();
+        
+        for (auto type : node_info_.listen_types) {
+            req.add_listen_type_list(type);
+        }
+
         m_net_client_->SendPBByID(ts->id, rpc::MasterRPC::NN_REQ_NODE_REGISTER, req);
         m_log_->LogInfo(Guid(0, pm_->GetAppID()), ts->name, "Register");
     }
@@ -240,10 +244,7 @@ class INodeBaseModule : public IModule {
         }
 
         if (ack.code() == 0) {
-            for (auto &new_node : ack.node_add_list()) {
-                
-                // 增加服务器
-            }
+            AddNodes(ack.node_add_list());
         }
         else {
             dout << "注册失败!";
@@ -252,11 +253,26 @@ class INodeBaseModule : public IModule {
 
     // Add node ntf
     void OnNnNtfNodeAdd(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-
+        string guid;
+        rpc::NnNtfNodeAdd ntf;
+        if (!m_net_->ReceivePB(msg_id, msg, len, ntf, guid)) {
+            return;
+        }
+        AddNodes(ntf.node_list(), true);
     }
 
-    bool AddNodes() {
-
+    bool AddNodes(const google::protobuf::RepeatedPtrField<rpc::Server>& list, bool from_ntf = false) {
+        for (auto n : list) {
+            dout << "Add node from master, is_ntf: " << from_ntf << " cmd, current: " << node_info_.info->name() << " add " << n.name() << endl;
+            ConnectData s;
+            s.id = n.id();
+            s.ip = n.ip();
+            s.port = n.port();
+            s.name = n.name();
+            s.type = (ServerType)n.type();
+            m_net_client_->AddNode(s);
+        }
+        return true;
     }
 
     // Add node ntf
@@ -269,9 +285,6 @@ class INodeBaseModule : public IModule {
     }
 
     public:
-    
-    IElementModule *m_element_;
-    IClassModule *m_class_;
     ILogModule *m_log_;
     INetModule *m_net_;
     INetClientModule *m_net_client_;

@@ -17,8 +17,6 @@ namespace imodule {
     public:
         virtual bool Start() override {
             m_log_ = pm_->FindModule<ILogModule>();
-            m_class_ = pm_->FindModule<IClassModule>();
-            m_element_ = pm_->FindModule<IElementModule>();
             return true;
         }
         virtual bool Destory() override  {
@@ -133,9 +131,6 @@ namespace imodule {
         bool is_connected_ = false;
 
         ILogModule* m_log_;
-        IClassModule* m_class_;
-        IElementModule* m_element_;
-
     private:
     };
 

@@ -47,8 +47,6 @@ class HttpModule : public IHttpModule {
     INetClientModule *m_net_client_;
     IHttpServerModule *m_http_server_;
     node::INodeModule *m_node_;
-    IClassModule *m_class_;
-    IElementModule *m_element_;
     redis::IRedisModule *m_redis_;
     mysql::IMysqlModule *m_mysql_;
 

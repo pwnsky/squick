@@ -32,8 +32,6 @@ struct ConnectData {
     ConnectDataState state;
     INT64 last_time;
     std::shared_ptr<INetModule> net_module;
-    std::vector<int> listen_types;
-    // net handler
 };
 
 struct NetClientResponseData {

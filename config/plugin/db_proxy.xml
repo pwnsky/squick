@@ -1,7 +1,6 @@
 <XML>
 	<DbProxy>
 		<Plugin Name="core/net" />
-		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />
 		
 		<Plugin Name="node/db_proxy/node" />

@@ -1,7 +1,6 @@
 <XML>
     <Login>
 		<Plugin Name="core/net" />
-		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />
 		<Plugin Name="core/redis" />
 

@@ -10,8 +10,6 @@ public:
 	virtual bool Start() final {
 		m_net_ = pm_->FindModule<INetModule>();
 		m_log_ = pm_->FindModule<ILogModule>();
-		m_class_ = pm_->FindModule<IClassModule>();
-		m_element_ = pm_->FindModule<IElementModule>();
 		return true;
 	}
 
@@ -81,7 +79,5 @@ public:
 	DbType db_type_ = DbType::None;
 	
 	INetModule* m_net_;
-	IClassModule* m_class_;
-	IElementModule* m_element_;
 	ILogModule* m_log_;
 };
