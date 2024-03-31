@@ -17,9 +17,12 @@ public:
 
 	bool InitConnectDataFromConfig(DbType type) {
 		db_type_ = type;
-		shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::DB::ThisName());
+		
+		
 		string real_id;
 		vector<string> db_list;
+		/*
+		* shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::DB::ThisName());
 		if (xLogicClass) {
 			const vector<string>& id_list = xLogicClass->GetIDList();
 			for (int i = 0; i < id_list.size(); ++i) {
@@ -29,20 +32,22 @@ public:
 					db_list.push_back(id);
 				}
 			}
-		}
+		}*/
 
 		if (db_list.size() <= 0) {
-			false;
+			return false;
 		}
 
 		srand(time(0));
 		int idx = rand() % db_list.size();
 		real_id = db_list[idx];
 		
+		/*
 		ip_ = m_element_->GetPropertyString(real_id, excel::DB::IP());
 		port_ = m_element_->GetPropertyInt32(real_id, excel::DB::Port());
 		user_ = m_element_->GetPropertyString(real_id, excel::DB::User());
 		password_ = m_element_->GetPropertyString(real_id, excel::DB::Auth());
+		*/
 		return true;
 	}
 

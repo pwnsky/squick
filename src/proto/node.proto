@@ -1,0 +1,93 @@
+// 描述: 各服务器之间的通信RPC
+// 使用: 服务器,客户端
+syntax = "proto3";
+package rpc;
+import "base.proto";
+
+// only be used in inner node
+message MsgBase {
+    int32 id = 1;
+    bytes guid = 2;
+    bytes msg_data = 3;
+    repeated bytes broadcast = 4;
+}
+
+// Node RPC 0 ~ 500
+enum NodeRPC {
+    SERVER_RPC_NONE = 0;
+
+    NN_REQ_NODE_REGISTER = 1;
+    NN_ACK_NODE_REGISTER = 2;
+
+    NN_REQ_NODE_UNREGISTER = 3;
+    NN_ACK_NODE_UNREGISTER = 4;
+
+    NN_REQ_NODE_INFO = 5;
+    NN_ACK_NODE_INFO = 6;
+
+    NN_NTF_NODE_REPORT = 10; // 服务端报告服务状态
+
+    NN_NTF_NODE_CLOSE_SOCKET = 100; // want to close some one
+    NN_NTF_NODE_ADD = 101;
+
+    NN_NTF_NODE_HEARTBEAT = 103; // 服务端之间心跳包
+}
+
+enum ServerState {
+    ServerCrash = 0;
+    ServerNormal = 1;
+    ServerBusy = 2;
+    ServerFrie = 3;
+}
+
+message Server {
+    int32 id = 1;
+    bytes name = 2;
+    bytes ip = 3;
+    int32 port = 4;
+    int32 max_online = 5;
+    int32 cpu_count = 6;
+    ServerState state = 7;
+    int32 type = 8;
+    int32 area = 9; // 区
+    int32 connections = 10;
+    int32 workload = 11;
+    bytes key = 12; //密钥
+    bytes public_ip = 13;
+    int32 update_time = 14; // 更新时间
+    repeated int32 parent_list = 15; // 父节点
+    repeated int32 child_list = 16; // 子节点
+}
+
+
+message NnReqNodeRegister {
+    int32 id = 1;
+    bytes key = 2;
+    repeated Server list = 3;
+}
+
+message NnAckNodeRegister {
+    int32 code = 1;
+    int32 id = 2;
+}
+
+message NnNtfNodeReport {
+    int32 id = 1;
+    repeated Server list = 2;
+}
+
+message ServerList { repeated Server list = 1; }
+
+message NnReqNodeInfo {
+    repeated int32 id_list = 1;
+}
+
+message NnAckNodeInfo {
+    repeated ServerList list = 1;
+}
+
+message NnReqNodeUnregister {}
+
+message NnAckNodeUnregister { int32 code = 1; }
+
+message NnNtfNodeHeartBeat { int32 count = 1; }

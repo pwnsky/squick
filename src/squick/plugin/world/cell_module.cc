@@ -20,6 +20,7 @@ bool CellModule::AfterStart() {
     m_kernel_->AddClassCallBack(excel::Player::ThisName(), this, &CellModule::OnObjectEvent);
 
     // NF SYNC
+    /*X
     bool bCell = false;
     std::shared_ptr<IClass> xServerLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xServerLogicClass) {
@@ -34,7 +35,7 @@ bool CellModule::AfterStart() {
                 break;
             }
         }
-    }
+    }ntf
 
     if (!bCell) {
         return true;

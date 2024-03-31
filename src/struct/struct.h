@@ -16,6 +16,6 @@
 #include "login.pb.h"
 #include "micro.pb.h"
 #include "proxy.pb.h"
-#include "server.pb.h"
+#include "node.pb.h"
 #include "world.pb.h"
 #include "test.pb.h"

@@ -6,7 +6,6 @@ NetClientModule::NetClientModule(IPluginManager *p) {
     is_update_ = true;
     mnBufferSize = 0;
     pm_ = p;
-    mnLastActionTime = GetPluginManager()->GetNowTime();
 }
 
 bool NetClientModule::Start() {
@@ -27,15 +26,6 @@ bool NetClientModule::Destory() { return true; }
 bool NetClientModule::Update() {
     ProcessUpdate();
     ProcessAddNetConnect();
-
-    if (mnLastActionTime + 10 > GetPluginManager()->GetNowTime()) {
-        return true;
-    }
-
-    mnLastActionTime = GetPluginManager()->GetNowTime();
-
-    // LogServerInfo();
-
     return true;
 }
 
@@ -100,28 +90,17 @@ int NetClientModule::AddEventCallBack(const ServerType eType, NET_EVENT_FUNCTOR_
     xCallBack->mxEventCallBack.push_back(functorPtr);
     return 0;
 }
-
-void NetClientModule::SendByServerID(const int serverID, const uint16_t msg_id, const std::string &strData) {
-    std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(serverID);
+bool NetClientModule::IsConnected(const int node_id) {
+    std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(node_id);;
     if (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
-        if (pNetModule.get()) {
-            if (!pNetModule->SendMsgWithOutHead(msg_id, strData, 0)) {
-                std::ostringstream stream;
-                stream << " SendMsgWithOutHead failed " << serverID;
-                stream << " msg id " << msg_id;
-                m_log_->LogError(stream, __FUNCTION__, __LINE__);
-            }
+        if (pServer->state == ConnectDataState::NORMAL) {
+            return true;
         }
-    } else {
-        std::ostringstream stream;
-        stream << " can't find the server " << serverID;
-        stream << " msg id " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
     }
+    return false;
 }
 
-void NetClientModule::SendByServerID(const int serverID, const uint16_t msg_id, const std::string &strData, const string guid) {
+bool NetClientModule::SendByID(const int serverID, const uint16_t msg_id, const std::string &strData, const string guid) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(serverID);
     if (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
@@ -131,6 +110,7 @@ void NetClientModule::SendByServerID(const int serverID, const uint16_t msg_id, 
                 stream << " SendMsgWithOutHead failed " << serverID;
                 stream << " msg id " << msg_id;
                 m_log_->LogError(stream, __FUNCTION__, __LINE__);
+                return false;
             }
         }
     } else {
@@ -138,27 +118,12 @@ void NetClientModule::SendByServerID(const int serverID, const uint16_t msg_id, 
         stream << " can't find the server " << serverID;
         stream << " msg id " << msg_id;
         m_log_->LogError(stream, __FUNCTION__, __LINE__);
+        return false;
     }
+    return true;
 }
 
-void NetClientModule::SendToAllServer(const uint16_t msg_id, const std::string &strData) {
-    std::shared_ptr<ConnectData> pServer = mxServerMap.First();
-    while (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
-        if (pNetModule) {
-            if (!pNetModule->SendMsgWithOutHead(msg_id, strData, 0)) {
-                std::ostringstream stream;
-                stream << " SendMsgWithOutHead failed " << pServer->id;
-                stream << " msg id " << msg_id;
-                m_log_->LogError(stream, __FUNCTION__, __LINE__);
-            }
-        }
-
-        pServer = mxServerMap.Next();
-    }
-}
-
-void NetClientModule::SendToAllServer(const uint16_t msg_id, const std::string &strData, const string guid) {
+void NetClientModule::SendToAllNode(const uint16_t msg_id, const std::string &strData, const string guid) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
@@ -175,24 +140,7 @@ void NetClientModule::SendToAllServer(const uint16_t msg_id, const std::string &
     }
 }
 
-void NetClientModule::SendToAllServer(const ServerType eType, const uint16_t msg_id, const std::string &strData) {
-    std::shared_ptr<ConnectData> pServer = mxServerMap.First();
-    while (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
-        if (pNetModule && eType == pServer->type) {
-            if (!pNetModule->SendMsgWithOutHead(msg_id, strData, 0)) {
-                std::ostringstream stream;
-                stream << " SendMsgWithOutHead failed " << pServer->id;
-                stream << " msg id " << msg_id;
-                m_log_->LogError(stream, __FUNCTION__, __LINE__);
-            }
-        }
-
-        pServer = mxServerMap.Next();
-    }
-}
-
-void NetClientModule::SendToAllServer(const ServerType eType, const uint16_t msg_id, const std::string &strData, const string guid) {
+void NetClientModule::SendToAllNodeByType(const ServerType eType, const uint16_t msg_id, const std::string &strData, const string guid) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
@@ -209,27 +157,7 @@ void NetClientModule::SendToAllServer(const ServerType eType, const uint16_t msg
     }
 }
 
-void NetClientModule::SendToServerByPB(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData) {
-    std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(serverID);
-    if (pServer) {
-        std::shared_ptr<INetModule> pNetModule = pServer->net_module;
-        if (pNetModule) {
-            if (!pNetModule->SendMsgPB(msg_id, xData, 0)) {
-                std::ostringstream stream;
-                stream << " SendMsgPB failed " << pServer->id;
-                stream << " msg id " << msg_id;
-                m_log_->LogError(stream, __FUNCTION__, __LINE__);
-            }
-        }
-    } else {
-        std::ostringstream stream;
-        stream << " can't find the server " << serverID;
-        stream << " msg id " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
-    }
-}
-
-void NetClientModule::SendToServerByPB(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid) {
+bool NetClientModule::SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(serverID);
     if (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
@@ -239,6 +167,7 @@ void NetClientModule::SendToServerByPB(const int serverID, const uint16_t msg_id
                 stream << " SendMsgPB failed " << pServer->id;
                 stream << " msg id " << msg_id;
                 m_log_->LogError(stream, __FUNCTION__, __LINE__);
+                return false;
             }
         }
     } else {
@@ -246,10 +175,12 @@ void NetClientModule::SendToServerByPB(const int serverID, const uint16_t msg_id
         stream << " can't find the server " << serverID;
         stream << " msg id " << msg_id;
         m_log_->LogError(stream, __FUNCTION__, __LINE__);
+        return false;
     }
+    return true;
 }
 
-void NetClientModule::SendToAllServerByPB(const uint16_t msg_id, const google::protobuf::Message &xData, const string guid) {
+void NetClientModule::SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message &xData, const string guid) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
@@ -266,7 +197,7 @@ void NetClientModule::SendToAllServerByPB(const uint16_t msg_id, const google::p
     }
 }
 
-void NetClientModule::SendToAllServerByPB(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid) {
+void NetClientModule::SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
@@ -309,7 +240,7 @@ std::shared_ptr<ConnectData> NetClientModule::GetServerNetInfo(const INet *pNet)
 
 void NetClientModule::StartCallBacks(std::shared_ptr<ConnectData> pServerData) {
     std::ostringstream stream;
-    stream << "AddServer Type: " << pServerData->type << " Server ID: " << pServerData->id << " State: " << pServerData->state
+    stream << "Adding Node, NodeType: " << pServerData->type << " Node ID : " << pServerData->id << " State : " << pServerData->state
            << " IP: " << pServerData->ip << " Port: " << pServerData->port << "\n";
 
     m_log_->LogInfo(stream.str());
@@ -392,7 +323,6 @@ void NetClientModule::ProcessUpdate() {
     }
 }
 
-// 打印服务状态
 void NetClientModule::LogServerInfo() {
     bool error = false;
     std::ostringstream stream;
@@ -506,7 +436,7 @@ void NetClientModule::ProcessAddNetConnect() {
 
             mxServerMap.AddElement(cd.id, sd);
         } else {
-            sd->work_load = cd.work_load;
+            
         }
     }
 

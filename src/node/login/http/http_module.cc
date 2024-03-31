@@ -344,28 +344,6 @@ bool HttpModule::OnGetCDN(std::shared_ptr<HttpRequest> req) {
 
     repRoot["code"] = 0;
     repRoot["msg"] = "";
-
-    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
-    if (xLogicClass) {
-        const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
-        for (int i = 0; i < strIdList.size(); ++i) {
-            const std::string &strId = strIdList[i];
-            int type = m_element_->GetPropertyInt32(strId, excel::Server::Type());
-            if (type != ServerType::ST_CDN) {
-                continue;
-            }
-            int web_port = m_element_->GetPropertyInt32(strId, excel::Server::WebPort());
-            int rpc_port = m_element_->GetPropertyInt32(strId, excel::Server::Port());
-            int server_id = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            string server_name = m_element_->GetPropertyString(strId, excel::Server::ID());
-            string public_ip = m_element_->GetPropertyString(strId, excel::Server::PublicIP());
-            json server;
-            server = {{"name", server_name}, {"ip", public_ip}, {"port", rpc_port},
-                      {"id", server_id},     {"type", "cdn"},   {"http_url", "http://" + public_ip + ":" + to_string(web_port)}};
-            cdnServerList.push_back(server);
-        }
-        repRoot["servers"] = cdnServerList;
-    }
     return m_http_server_->ResponseMsg(req, repRoot.dump(), WebStatus::WEB_OK);
 }
 

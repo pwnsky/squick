@@ -52,7 +52,7 @@ void TesterModule::TestProxyTransferSpeed_Req() {
     test.set_index(test_req_index_);
     test.set_data(test_req_data_);
     test.set_req_time(SquickGetTimeMSEx());
-    m_net_client_->SendToAllServerByPB(ServerType::ST_PROXY, rpc::TestRPC::REQ_TEST_PROXY, test, "");
+    m_net_client_->SendPBToAllNodeByType(ServerType::ST_PROXY, rpc::TestRPC::REQ_TEST_PROXY, test, "");
     test_req_index_++;
     test_req_data_ = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
 }
@@ -83,6 +83,7 @@ bool TesterModule::AddServer(ServerType type) {
     m_net_client_->AddEventCallBack(type, this, &TesterModule::OnClientSocketEvent);
     m_net_client_->ExpandBufferSize();
 
+    /*
     std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string>& strIdList = xLogicClass->GetIDList();
@@ -107,7 +108,7 @@ bool TesterModule::AddServer(ServerType type) {
                 return true;
             }
         }
-    }
+    }*/
     return false;
 }
 

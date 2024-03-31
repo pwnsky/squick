@@ -418,19 +418,6 @@ Guid LuaScriptModule::CreateID() { return m_kernel_->CreateGUID(); }
 INT64 LuaScriptModule::AppID() { return pm_->GetAppID(); }
 
 INT64 LuaScriptModule::AppType() {
-    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
-    if (xLogicClass) {
-        const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
-        for (int i = 0; i < strIdList.size(); ++i) {
-            const std::string &strId = strIdList[i];
-
-            const int serverType = m_element_->GetPropertyInt32(strId, excel::Server::Type());
-            const int serverID = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-            if (pm_->GetAppID() == serverID) {
-                return serverType;
-            }
-        }
-    }
     return 0;
 }
 
@@ -625,11 +612,11 @@ void LuaScriptModule::SendToServerByServerID(const int server_id, const uint16_t
         m_log_->LogError("you can send message to yourself");
         return;
     }
-    m_net_client_->SendByServerID(server_id, msg_id, data, guid);
+    m_net_client_->SendByID(server_id, msg_id, data, guid);
 }
 
 void LuaScriptModule::SendToAllServerByServerType(const ServerType server_type, const uint16_t msg_id, const std::string &data, const std::string& guid) {
-    m_net_client_->SendToAllServer(server_type, msg_id, data, guid);
+    m_net_client_->SendToAllNodeByType(server_type, msg_id, data, guid);
 }
 
 void LuaScriptModule::SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, string guid) {

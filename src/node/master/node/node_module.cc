@@ -10,7 +10,7 @@ bool NodeModule::Destory() { return true; }
 
 bool NodeModule::AfterStart() {
     
-    m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REPORT, this, &NodeModule::OnReport);
+    m_net_->AddReceiveCallBack(rpc::NodeRPC::NN_NTF_NODE_REPORT, this, &NodeModule::OnReport);
     Listen();
     
     return true;
@@ -20,13 +20,13 @@ bool NodeModule::AfterStart() {
 void NodeModule::OnReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     
     string guid;
-    rpc::ReqReport req;
-    if (!INetModule::ReceivePB(msg_id, msg, len, req, guid)) {
+    rpc::NnNtfNodeReport ntf;
+    if (!INetModule::ReceivePB(msg_id, msg, len, ntf, guid)) {
         return;
     }
 
     do {
-        for (auto s : req.list()) {
+        for (auto s : ntf.list()) {
             if (s.id() == pm_->GetAppID() || s.id() == 0) {
                 continue;
             }

@@ -14,6 +14,7 @@ bool LogicModule::AfterStart() {
     m_net_ = pm_->FindModule<INetModule>();
     m_net_client_ = pm_->FindModule<INetClientModule>();
 
+    /*
     std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
     if (xLogicClass) {
         const std::vector<std::string> &strIdList = xLogicClass->GetIDList();
@@ -27,7 +28,7 @@ bool LogicModule::AfterStart() {
                 break;
             }
         }
-    }
+    }*/
 
     // 来自Game 服务器
     m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, rpc::REQ_GAMEPLAY_CREATE, this, &LogicModule::OnReqPvpInstanceCreate);

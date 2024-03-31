@@ -36,7 +36,7 @@ bool NodeModule::OnReqProxyConnectVerify(INT64 session, const std::string& guid,
     req.set_session(session);
     req.set_key(key);
     req.set_guid(guid);
-    m_net_client_->SendToAllServerByPB(ServerType::ST_LOGIN, rpc::LoginRPC::REQ_PROXY_CONNECT_VERIFY, req, "");
+    m_net_client_->SendPBToAllNodeByType(ServerType::ST_LOGIN, rpc::LoginRPC::REQ_PROXY_CONNECT_VERIFY, req);
     return true;
 }
 

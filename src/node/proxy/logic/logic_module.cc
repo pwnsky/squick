@@ -102,7 +102,7 @@ void LogicModule::OnClientDisconnected(const socket_t sock) {
                             return;
                         }
 
-                        m_net_client_->SendByServerID(nGameID, rpc::PlayerEventRPC::PLAYER_LEAVE_EVENT, msg);
+                        m_net_client_->SendByID(nGameID, rpc::PlayerEventRPC::PLAYER_LEAVE_EVENT, msg);
 
                         // 断开该掉连接
                         m_net_->GetNet()->CloseNetObject(sock);
@@ -230,7 +230,7 @@ void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const ch
     // 根据ID 来转发至不同服务器
     if (msg_id >= 12000 && msg_id < 30000) {
         // 转发到Lobby
-        m_net_client_->SendByServerID(lobby_id, msg_id, pak);
+        m_net_client_->SendByID(lobby_id, msg_id, pak);
     } else if (msg_id >= 10000 && msg_id < 32000) {
 
     } else if (msg_id >= 30000 && msg_id < 32000) {
@@ -309,7 +309,7 @@ bool LogicModule::TryEnter(string guid) {
     event.set_account_id(client->second.account_id);
     event.set_ip(client->second.ip);
     event.set_proxy_id(pm_->GetAppID());
-    m_net_client_->SendToServerByPB(lobby_id, rpc::PlayerEventRPC::PLAYER_ENTER_EVENT, event);
+    m_net_client_->SendPBByID(lobby_id, rpc::PlayerEventRPC::PLAYER_ENTER_EVENT, event);
     client->second.lobby_id = lobby_id;
     return true;
 }

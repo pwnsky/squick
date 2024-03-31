@@ -68,8 +68,8 @@ class INodeBaseModule : public IModule {
     }
 
     virtual bool Listen() {
-        m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_REGISTER, this, &INodeBaseModule::OnReqRegister);
-        m_net_->AddReceiveCallBack(rpc::ServerRPC::REQ_UNREGISTER, this, &INodeBaseModule::OnServerUnRegistered);
+        m_net_->AddReceiveCallBack(rpc::NodeRPC::NN_REQ_NODE_REGISTER, this, &INodeBaseModule::OnReqRegister);
+        m_net_->AddReceiveCallBack(rpc::NodeRPC::NN_REQ_NODE_UNREGISTER, this, &INodeBaseModule::OnServerUnRegistered);
         
         m_net_->AddReceiveCallBack(this, &INodeBaseModule::InvalidMessage);
         m_net_->AddEventCallBack(this, &INodeBaseModule::OnServerSocketEvent);
@@ -113,7 +113,7 @@ class INodeBaseModule : public IModule {
     bool ConnectToMaster() {
         m_net_client_->AddEventCallBack(ST_MASTER, this, &INodeBaseModule::OnClientSocketEvent);
         //m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::ServerRPC::SERVER_ADD, this, &INodeBaseModule::OnDynamicServerAdd);
-        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::ServerRPC::ACK_REGISTER, this, &INodeBaseModule::OnAckRegister);
+        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::NodeRPC::NN_ACK_NODE_REGISTER, this, &INodeBaseModule::OnAckRegister);
         m_net_client_->ExpandBufferSize();
         bool ret = false;
 
@@ -156,7 +156,6 @@ class INodeBaseModule : public IModule {
             s.ip = sd.ip();
             s.port = sd.port();
             s.name = sd.name();
-            s.work_load = sd.cpu_count();
             s.type = (ServerType)sd.type();
             m_net_client_->AddNode(s);
         }
@@ -174,8 +173,6 @@ class INodeBaseModule : public IModule {
 
     // Report to upper server
     void UpdateState() {
-        rpc::ReqReport req;
-        req.set_id(pm_->GetAppID());
         auto iter = servers_.find(pm_->GetAppID());
         if (iter == servers_.end()) {
             m_log_->LogDebug("No self node info");
@@ -185,10 +182,11 @@ class INodeBaseModule : public IModule {
         iter->second.info->set_workload(workload_);
         // Update status to master
         if (pm_->GetAppType() != ST_MASTER) {
-            rpc::ReqReport req;
+            rpc::NnNtfNodeReport req;
+            req.set_id(pm_->GetAppID());
             auto s = req.add_list();
             *s = *iter->second.info;
-            m_net_client_->SendToServerByPB(DEFAULT_MASTER_ID, rpc::ServerRPC::REQ_REPORT, req);
+            m_net_client_->SendPBByID(DEFAULT_MASTER_ID, rpc::NodeRPC::NN_NTF_NODE_REPORT, req);
         }
     }
 
@@ -229,9 +227,8 @@ class INodeBaseModule : public IModule {
         }
     }
 
-    // 向连接的服务注册自己
     void ReqRegister(INet* pNet) {
-        rpc::ReqRegisterServer req;
+        rpc::NnReqNodeRegister req;
         req.set_id(pm_->GetAppID());
         std::shared_ptr<ConnectData> ts = m_net_client_->GetServerNetInfo(pNet);
         if (ts == nullptr) {
@@ -242,17 +239,17 @@ class INodeBaseModule : public IModule {
         }
         auto s = req.add_list();
         *s = *servers_[pm_->GetAppID()].info.get();
-        m_net_client_->SendToServerByPB(ts->id, rpc::ServerRPC::REQ_REGISTER, req);
+        m_net_client_->SendPBByID(ts->id, rpc::NodeRPC::NN_REQ_NODE_REGISTER, req);
         m_log_->LogInfo(Guid(0, pm_->GetAppID()), ts->name, "Register");
     }
 
     virtual void OnReqRegister(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
         string nPlayerID;
-        rpc::ReqRegisterServer req;
+        rpc::NnReqNodeRegister req;
         if (!m_net_->ReceivePB(msg_id, msg, len, req, nPlayerID)) {
             return;
         }
-        rpc::AckRegisterServer ack;
+        rpc::NnAckNodeRegister ack;
         do {
             auto& cs = servers_[pm_->GetAppID()];
             ack.set_code(0);
@@ -273,43 +270,22 @@ class INodeBaseModule : public IModule {
             if (iter != servers_.end()) {
                 iter->second.status = ServerInfo::Status::Connected;
             }
-            
-            int area = servers_[req.id()].info->area();
-            for (auto sv : servers_) {
-                if (area == 0 || sv.second.info->area() == area || sv.second.info->area() == 0) {
-                    auto s = ack.add_list();
-                    *s = *sv.second.info.get();
-                }
-            }
         } while (false);
-        m_net_->SendMsgPB(rpc::ACK_REGISTER, ack, sock);
+        m_net_->SendMsgPB(rpc::NodeRPC::NN_ACK_NODE_REGISTER, ack, sock);
     }
     
     // 注册响应
     virtual void OnAckRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
         string guid;
-        rpc::AckRegisterServer ack;
+        rpc::NnAckNodeRegister ack;
         if (!m_net_->ReceivePB(msg_id, msg, len, ack, guid)) {
             return;
         }
 
         if (ack.code() == 0) {
-            for (auto s : ack.list()) {
-                if (s.id() == pm_->GetAppID()) { // 排除自己
-                    continue;
-                }
-                auto iter = servers_.find(s.id());
-                if (iter == servers_.end()) {
-                    ServerInfo info;
-                    info.fd = 0;
-                    info.status = ServerInfo::Status::Unknowing;
-                    *info.info = s;
-                    servers_[s.id()] = info;
-                }
-                else {
-                    iter->second.status = ServerInfo::Status::Connected;
-                    *iter->second.info = s;
-                }
+            auto iter = servers_.find(ack.id());
+            if (iter != servers_.end()) {
+                iter->second.status = ServerInfo::Status::Connected;
             }
         }
         else {

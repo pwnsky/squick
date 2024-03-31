@@ -70,6 +70,7 @@ namespace imodule {
             return true;
         };
         virtual bool AfterStart() override {
+            /*
             std::shared_ptr<IClass> iclass = m_class_->GetElement(excel::DB::ThisName());
             if (iclass) {
                 const std::vector<std::string>& strIdList = iclass->GetIDList();
@@ -85,7 +86,7 @@ namespace imodule {
                         break;
                     }
                 }
-            }
+            }*/
             return true;
         };
 

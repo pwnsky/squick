@@ -21,18 +21,17 @@ struct ConnectData {
         type = ST_NONE;
         state = ConnectDataState::DISCONNECT;
         last_time = 0;
-        work_load = 0;
     }
 
     int id;
     ServerType type;
     std::string ip;
     int port;
-    int work_load;
     std::string name;
     ConnectDataState state;
     INT64 last_time;
     std::shared_ptr<INetModule> net_module;
+    // net handler
 };
 
 class INetClientModule : public IModule {
@@ -85,20 +84,13 @@ public:
     virtual unsigned int ExpandBufferSize(const unsigned int size = 1024 * 1024) = 0;
 
     ////////////////////////////////////////////////////////////////////////////////
-    virtual void SendByServerID(const int serverID, const uint16_t msg_id, const std::string& strData) = 0;
-    virtual void SendByServerID(const int serverID, const uint16_t msg_id, const std::string& strData, const string id) = 0;
-
-    virtual void SendToAllServer(const uint16_t msg_id, const std::string& strData) = 0;
-    virtual void SendToAllServer(const uint16_t msg_id, const std::string& strData, const string id) = 0;
-
-    virtual void SendToAllServer(const ServerType eType, const uint16_t msg_id, const std::string& strData) = 0;
-    virtual void SendToAllServer(const ServerType eType, const uint16_t msg_id, const std::string& strData, const string id) = 0;
-
-    virtual void SendToServerByPB(const int serverID, const uint16_t msg_id, const google::protobuf::Message& xData) = 0;
-    virtual void SendToServerByPB(const int serverID, const uint16_t msg_id, const google::protobuf::Message& xData, const string id) = 0;
-
-    virtual void SendToAllServerByPB(const uint16_t msg_id, const google::protobuf::Message& xData, const string id) = 0;
-    virtual void SendToAllServerByPB(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message& xData, const string id) = 0;
+    virtual bool IsConnected(const int node_id) = 0;
+    virtual bool SendByID(const int serverID, const uint16_t msg_id, const std::string& strData, const string id = "") = 0;
+    virtual bool SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message& xData, const string id = "") = 0;
+    virtual void SendToAllNode(const uint16_t msg_id, const std::string& strData, const string id = "") = 0;
+    virtual void SendToAllNodeByType(const ServerType eType, const uint16_t msg_id, const std::string& strData, const string id = "") = 0;
+    virtual void SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message& xData, const string id = "") = 0;
+    virtual void SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message& xData, const string id = "") = 0;
     ////////////////////////////////////////////////////////////////////////////////
 
     virtual MapEx<int, ConnectData>& GetServerList() = 0;
