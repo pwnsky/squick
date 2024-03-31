@@ -29,7 +29,7 @@ bool HttpModule::AfterStart() {
     //m_http_server_->AddNetFilter("/area/list", this, &HttpModule::OnFilter);
     //m_http_server_->AddNetFilter("/area/enter", this, &HttpModule::OnFilter);
 
-    m_http_server_->StartServer(pm_->GetArg("web_port=", 80));
+    m_http_server_->StartServer(pm_->GetArg("http_port=", 80));
 
     return true;
 }

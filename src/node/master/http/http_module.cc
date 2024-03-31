@@ -18,7 +18,7 @@ bool HttpModule::AfterStart() {
     m_http_server_->AddRequestHandler("/status", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnCommandQuery);
 
     //m_http_server_->AddNetFilter("/status", this, &HttpModule::OnFilter);
-    m_http_server_->StartServer(pm_->GetArg("web_port=", 8888));
+    m_http_server_->StartServer(pm_->GetArg("http_port = ", 8888));
 
     return true;
 }
