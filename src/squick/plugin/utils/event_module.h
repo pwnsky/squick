@@ -1,10 +1,7 @@
-
-
-#ifndef SQUICK_EVENT_MODULE_H
-#define SQUICK_EVENT_MODULE_H
+#pragma once
 
 #include "i_event_module.h"
-#include "i_kernel_module.h"
+//#include "i_kernel_module.h"
 #include <iostream>
 #include <squick/core/guid.h>
 #include <squick/core/i_object.h>
@@ -44,7 +41,7 @@ class EventModule : public IEventModule {
     virtual bool AddCommonEventCallBack(const OBJECT_EVENT_FUNCTOR cb);
 
   private:
-    IKernelModule *m_kernel_;
+    //IKernelModule *m_kernel_;
 
   private:
     // for module
@@ -58,5 +55,3 @@ class EventModule : public IEventModule {
     // for common event
     List<OBJECT_EVENT_FUNCTOR> mCommonEventInfoMapEx;
 };
-
-#endif

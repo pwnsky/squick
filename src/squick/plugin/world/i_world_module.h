@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_INTF_KERNEL_MODULE_H
-#define SQUICK_INTF_KERNEL_MODULE_H
+#pragma once
 
 #include <functional>
 #include <iostream>
@@ -9,7 +6,7 @@
 #include <squick/core/guid.h>
 #include <squick/core/i_module.h>
 #include <squick/core/i_object.h>
-#include <squick/plugin/config/i_class_module.h>
+#include <squick/plugin/config/export.h>
 #include <string>
 class IKernelModule : public IModule {
 
@@ -197,5 +194,3 @@ class IKernelModule : public IModule {
     virtual bool RegisterClassPropertyEvent(const std::string &className, const PROPERTY_EVENT_FUNCTOR_PTR &cb) = 0;
     virtual bool RegisterClassRecordEvent(const std::string &className, const RECORD_EVENT_FUNCTOR_PTR &cb) = 0;
 };
-
-#endif

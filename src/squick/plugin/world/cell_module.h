@@ -1,10 +1,7 @@
-
-#ifndef SQUICK_CELL_MODULE_H
-#define SQUICK_CELL_MODULE_H
+#pragma once
 
 #include "i_cell_module.h"
-#include "i_event_module.h"
-#include "i_kernel_module.h"
+#include "i_world_module.h"
 #include "i_scene_module.h"
 #include <assert.h>
 #include <iostream>
@@ -12,8 +9,8 @@
 #include <squick/core/data_list.h>
 #include <squick/core/list.h>
 #include <squick/plugin/config/export.h>
-#include <squick/plugin/log/i_log_module.h>
-
+#include <squick/plugin/log/export.h>
+#include <squick/plugin/utils/export.h>
 class SceneCellInfo : public List<Guid> {
   public:
     SceneCellInfo(const SceneCellInfo &cell) {
@@ -170,5 +167,3 @@ class CellModule : public ICellModule {
     IElementModule *m_element_;
     IEventModule *m_event_;
 };
-
-#endif

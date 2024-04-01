@@ -5,8 +5,7 @@
 #include <string>
 
 #include <squick/core/queue.h>
-#include <squick/plugin/world/i_kernel_module.h>
-#include <squick/plugin/world/i_thread_pool_module.h>
+#include <squick/plugin/utils/export.h>
 
 #include "actor.h"
 #include "i_actor_module.h"
@@ -37,7 +36,8 @@ class ActorModule : public IActorModule {
 
   private:
     bool test = false;
-    IKernelModule *m_kernel_;
+    int64_t guid_index_ = 0;
+    //IKernelModule *m_kernel_;
     IThreadPoolModule *m_thread_pool_;
 
     std::map<Guid, std::shared_ptr<IActor>> mxActorMap;

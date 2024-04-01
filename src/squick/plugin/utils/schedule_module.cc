@@ -1,4 +1,3 @@
-
 #include "schedule_module.h"
 
 void ScheduleElement::DoHeartBeatEvent(INT64 nowTime) {
@@ -33,12 +32,6 @@ ScheduleModule::~ScheduleModule() { mObjectScheduleMap.ClearAll(); }
 
 bool ScheduleModule::Start() {
     m_log_ = pm_->FindModule<ILogModule>();
-    m_kernel_ = pm_->FindModule<IKernelModule>();
-    m_scene_ = pm_->FindModule<ISceneModule>();
-
-    m_kernel_->RegisterCommonClassEvent(this, &ScheduleModule::OnClassCommonEvent);
-    m_scene_->AddSceneGroupDestroyedCallBack(this, &ScheduleModule::OnGroupCommonEvent);
-
     return true;
 }
 
@@ -152,17 +145,4 @@ std::shared_ptr<ScheduleElement> ScheduleModule::GetSchedule(const Guid self, co
     }
 
     return xObjectScheduleMap->GetElement(scheduleName);
-}
-
-int ScheduleModule::OnClassCommonEvent(const Guid &self, const std::string &className, const CLASS_OBJECT_EVENT classEvent, const DataList &var) {
-    if (CLASS_OBJECT_EVENT::COE_DESTROY == classEvent) {
-        this->RemoveSchedule(self);
-    }
-
-    return 0;
-}
-
-int ScheduleModule::OnGroupCommonEvent(const Guid &self, const int scene, const int group, const int type, const DataList &arg) {
-    this->RemoveSchedule(Guid(scene, group));
-    return 0;
 }

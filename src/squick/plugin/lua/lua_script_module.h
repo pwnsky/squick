@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_LUA_SCRIPT_MODULE_H
-#define SQUICK_LUA_SCRIPT_MODULE_H
+#pragma once
 
 #ifdef min
 #undef min
@@ -11,14 +8,12 @@
 // #define LUAINTF_LINK_LUA_COMPILED_IN_CXX 0
 
 #include "lua_pb_module.h"
-#include <squick/plugin/config/i_class_module.h>
-#include <squick/plugin/config/i_element_module.h>
-#include <squick/plugin/world/i_event_module.h>
-#include <squick/plugin/world/i_kernel_module.h>
-#include <squick/plugin/world/i_schedule_module.h>
-#include <squick/plugin/log/i_log_module.h>
-#include <squick/plugin/net/i_net_client_module.h>
-#include <squick/plugin/net/i_net_module.h>
+#include <squick/plugin/config/export.h>
+#include <squick/plugin/utils/export.h>
+#include <squick/plugin/world/export.h>
+#include <squick/plugin/log/export.h>
+#include <squick/plugin/net/export.h>
+
 
 #if PLATFORM == PLATFORM_WIN
 #elif PLATFORM == PLATFORM_LINUX
@@ -213,5 +208,3 @@ class LuaScriptModule : public ILuaScriptModule {
     int hotFixNotifyFd = -1;
     char hotFixInotifyEventBuf[512];
 };
-
-#endif

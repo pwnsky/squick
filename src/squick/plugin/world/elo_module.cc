@@ -1,5 +1,3 @@
-
-
 #include "elo_module.h"
 
 bool ELOModule::Start() { return true; }

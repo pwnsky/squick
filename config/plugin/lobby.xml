@@ -4,6 +4,7 @@
 		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />
 		<Plugin Name="core/world" />
+        <Plugin Name="core/utils" />
 		<Plugin Name="core/lua" />
 		
 		<Plugin Name="node/lobby/node" />

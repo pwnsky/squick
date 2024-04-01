@@ -4,7 +4,7 @@
 #include <squick/plugin/config/export.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
-#include <squick/plugin/world/export.h>
+#include <squick/plugin/utils/export.h>
 
 #include "i_logic_module.h"
 #include <node/proxy/node/i_node_module.h>

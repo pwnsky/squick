@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_ELO_MODULE_H
-#define SQUICK_ELO_MODULE_H
+#pragma once
 
 #include "i_elo_module.h"
 
@@ -25,5 +22,3 @@ class ELOModule : public IELOModule {
   private:
     int K = 50;
 };
-
-#endif

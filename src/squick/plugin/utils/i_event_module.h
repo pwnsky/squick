@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_INTF_EVENT_MODULE_H
-#define SQUICK_INTF_EVENT_MODULE_H
+#pragma once
 
 #include <iostream>
 #include <squick/core/i_module.h>
@@ -50,5 +47,3 @@ class IEventModule : public IModule {
     virtual bool AddEventCallBack(const Guid self, const int eventID, const OBJECT_EVENT_FUNCTOR cb) = 0;
     virtual bool AddCommonEventCallBack(const OBJECT_EVENT_FUNCTOR cb) = 0;
 };
-
-#endif

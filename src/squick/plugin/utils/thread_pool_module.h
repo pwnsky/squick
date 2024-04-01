@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_THREAD_POOL_MODULE_H
-#define SQUICK_THREAD_POOL_MODULE_H
+#pragma once
 
 #include "i_thread_pool_module.h"
 #include <map>
@@ -80,5 +77,3 @@ class ThreadPoolModule : public IThreadPoolModule {
     Queue<ThreadTask> mTaskResult;
     std::vector<std::shared_ptr<ThreadCell>> mThreadPool;
 };
-
-#endif

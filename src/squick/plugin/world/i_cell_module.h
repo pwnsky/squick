@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_INTF_CELL_MODULE_H
-#define SQUICK_INTF_CELL_MODULE_H
+#pragma once
 
 #include <algorithm>
 #include <array>
@@ -106,5 +103,3 @@ class ICellModule : public IModule {
 
   private:
 };
-
-#endif

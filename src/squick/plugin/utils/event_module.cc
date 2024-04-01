@@ -2,8 +2,6 @@
 #include "event_module.h"
 
 bool EventModule::Start() {
-    m_kernel_ = GetPluginManager()->FindModule<IKernelModule>();
-
     return true;
 }
 
@@ -81,10 +79,6 @@ bool EventModule::DoEvent(const Guid self, const int eventID, const DataList &va
 
     bool bRet = false;
 
-    if (!m_kernel_->ExistObject(self)) {
-        return bRet;
-    }
-
     auto xEventMapPtr = mObjectEventInfoMapEx.GetElement(self);
     if (!xEventMapPtr) {
         return bRet;
@@ -139,9 +133,6 @@ bool EventModule::AddEventCallBack(const int eventID, const MODULE_EVENT_FUNCTOR
 }
 
 bool EventModule::AddEventCallBack(const Guid self, const int eventID, const OBJECT_EVENT_FUNCTOR cb) {
-    if (!m_kernel_->ExistObject(self)) {
-        return false;
-    }
 
     auto xEventMapPtr = mObjectEventInfoMapEx.GetElement(self);
     if (!xEventMapPtr) {

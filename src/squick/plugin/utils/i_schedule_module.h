@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_INTF_SCHEDULE_MODULE_H
-#define SQUICK_INTF_SCHEDULE_MODULE_H
+#pragma once
 
 #include <squick/core/data_list.h>
 #include <squick/core/date_time.h>
@@ -62,5 +59,3 @@ class IScheduleModule : public IModule {
   protected:
     virtual bool AddSchedule(const Guid self, const std::string &scheduleName, const OBJECT_SCHEDULE_FUNCTOR_PTR &cb, const float time, const int count) = 0;
 };
-
-#endif

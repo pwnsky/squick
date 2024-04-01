@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_INTF_ELO_MODULE_H
-#define SQUICK_INTF_ELO_MODULE_H
+#pragma once
 
 #include <iostream>
 #include <squick/core/i_module.h>
@@ -37,5 +34,3 @@ class IELOModule : public IModule {
      */
     virtual void EloRating(int ratingA, int ratingB, bool aWin, int &resultA, int &resultB) = 0;
 };
-
-#endif

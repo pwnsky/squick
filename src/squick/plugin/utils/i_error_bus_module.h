@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_INTF_ERROR_BUS_MODULE_H
-#define SQUICK_INTF_ERROR_BUS_MODULE_H
+#pragma once
 
 #include <iostream>
 #include <squick/core/guid.h>
@@ -28,5 +25,3 @@ class IErrorBusModule : public IModule {
 
     virtual void ClearAllError() = 0;
 };
-
-#endif

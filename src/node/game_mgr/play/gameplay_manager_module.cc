@@ -8,12 +8,7 @@ bool GameplayManagerModule::Start() {
     m_element_ = pm_->FindModule<IElementModule>();
     m_class_ = pm_->FindModule<IClassModule>();
     m_net_ = pm_->FindModule<INetModule>();
-    m_kernel_ = pm_->FindModule<IKernelModule>();
     m_net_client_ = pm_->FindModule<INetClientModule>();
-    m_schedule_ = pm_->FindModule<IScheduleModule>();
-    m_data_tail_ = pm_->FindModule<IDataTailModule>();
-    m_scene_ = pm_->FindModule<ISceneModule>();
-    m_event_ = pm_->FindModule<IEventModule>();
     m_node_ = pm_->FindModule<node::INodeModule>();
     return true;
 }

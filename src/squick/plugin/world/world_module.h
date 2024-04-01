@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_KERNEL_MODULE_H
-#define SQUICK_KERNEL_MODULE_H
+#pragma once
 
 #include <chrono>
 #include <fstream>
@@ -11,17 +8,15 @@
 #include <squick/core/guid.h>
 #include <squick/core/i_object.h>
 #include <squick/core/i_record.h>
-#include <squick/plugin/config/i_class_module.h>
-#include <squick/plugin/config/i_element_module.h>
-#include <squick/plugin/log/i_log_module.h>
+#include <squick/plugin/config/export.h>
+#include <squick/plugin/log/export.h>
 #include <string>
+#include <squick/plugin/utils/export.h>
 
 #include "i_cell_module.h"
-#include "i_event_module.h"
-#include "i_kernel_module.h"
+#include "i_world_module.h"
 #include "i_scene_module.h"
-#include "i_schedule_module.h"
-#include "i_thread_pool_module.h"
+
 
 class KernelModule : public IKernelModule, public MapEx<Guid, IObject> {
   public:
@@ -187,5 +182,3 @@ class KernelModule : public IKernelModule, public MapEx<Guid, IObject> {
     ICellModule *m_pCellModule;
     IThreadPoolModule *m_thread_pool_;
 };
-
-#endif

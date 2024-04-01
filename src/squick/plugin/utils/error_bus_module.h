@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_ERROR_BUS_MODULE_H
-#define SQUICK_ERROR_BUS_MODULE_H
+#pragma once
 
 #include "i_error_bus_module.h"
 #include <iostream>
@@ -22,5 +19,3 @@ class ErrorBusModule : public IErrorBusModule {
   private:
     std::list<ErrorData> mErrList;
 };
-
-#endif

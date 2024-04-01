@@ -1,5 +1,5 @@
 
-#include "kernel_module.h"
+#include "world_module.h"
 #include "scene_module.h"
 #include <squick/core/guid.h>
 #include <squick/core/mem_manager.h>

@@ -1,6 +1,4 @@
-
-#ifndef SQUICK_INTF_THREAD_POOL_MODULE_H
-#define SQUICK_INTF_THREAD_POOL_MODULE_H
+#pragma once
 
 #include <squick/core/i_module.h>
 #include <thread>
@@ -59,5 +57,3 @@ class IThreadPoolModule : public IModule {
     /////repush the result
     virtual void TaskResult(const ThreadTask &task) = 0;
 };
-
-#endif

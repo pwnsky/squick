@@ -10,7 +10,6 @@ ActorModule::ActorModule(IPluginManager *p) {
 ActorModule::~ActorModule() {}
 
 bool ActorModule::Start() {
-    m_kernel_ = pm_->FindModule<IKernelModule>();
     m_thread_pool_ = pm_->FindModule<IThreadPoolModule>();
 
     return true;
@@ -32,7 +31,10 @@ bool ActorModule::Update() {
 }
 
 std::shared_ptr<IActor> ActorModule::CreateActor() {
-    std::shared_ptr<IActor> pActor = std::shared_ptr<IActor>(new Actor(m_kernel_->CreateGUID(), this));
+    guid_index_++;
+    if (guid_index_ > 0x7fffffffff) guid_index_ = 1;
+    Guid guid = Guid(SquickGetTimeMS(), 0);
+    std::shared_ptr<IActor> pActor = std::shared_ptr<IActor>(new Actor(guid, this));
     mxActorMap.insert(std::map<Guid, std::shared_ptr<IActor>>::value_type(pActor->ID(), pActor));
     return pActor;
 }

@@ -4,9 +4,6 @@
 // Github: https://github.com/pwnsky/squick
 // Description: Export current plugin's all modules in a single header file
 #pragma once
-
-#include "i_cell_module.h"
-#include "i_data_tail_module.h"
-#include "i_elo_module.h"
-#include "i_world_module.h"
-#include "i_scene_module.h"
+#include "i_event_module.h"
+#include "i_schedule_module.h"
+#include "i_thread_pool_module.h"
