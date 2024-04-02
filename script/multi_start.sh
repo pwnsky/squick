@@ -8,7 +8,7 @@
 #export LC_ALL="C"
 ulimit -c unlimited
 #source /etc/profile
-squick_bin_path=./bin
+squick_bin_path=../bin
 cd $squick_bin_path
 # for linux
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/lib

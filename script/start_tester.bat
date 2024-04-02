@@ -5,7 +5,7 @@ rem Date  : 2022-05-07
 rem Github: https://github.com/pwnsky/squick
 rem Description: start 100 testers to test server
 
-cd bin
+cd ..\bin
 
 for /l %%i in (1,1,100) do (
 echo start tester_%%i

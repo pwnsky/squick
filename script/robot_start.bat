@@ -5,6 +5,6 @@ rem Date  : 2022-11-27
 rem Github: https://github.com/i0gan/Squick
 rem Description: Start all servers script
 
-cd bin
+cd ..\bin
 
-start cmd /c " squick "
+start cmd /c " squick plugin=robot.xml server=robot id=4001 "

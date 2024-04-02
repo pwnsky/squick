@@ -20,4 +20,4 @@ RUN cd tools/source && chmod +x *.sh && dos2unix *.sh
 RUN cd resource/script && chmod +x *.sh && dos2unix *.sh
 RUN cd tools && bash ./build_all.sh
 RUN cd tools && bash ./generate_deploy.sh
-CMD cd deploy && bash ./single_start.sh
+CMD cd deploy/script && bash ./squick.sh

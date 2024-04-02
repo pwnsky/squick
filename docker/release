@@ -14,4 +14,4 @@ ARG DEBIAN_FRONTEND=noninteractive
 # copy from docker builded files
 COPY ./cache/docker_deploy /squick
 WORKDIR /squick
-CMD cd /squick && bash ./single_start.sh
+CMD cd /squick/script && bash ./squick.sh

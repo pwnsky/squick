@@ -2,10 +2,15 @@
 
 ulimit -c unlimited
 
-cd bin
+cd ../bin
 # for linux
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/lib
 # for macos
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:`pwd`
 
-./squick $@
+echo $SQUICK_ARGS
+if [ -z $SQUICK_ARGS ];then
+        ./squick $@
+else
+        ./squick $SQUICK_ARGS
+fi

@@ -1,10 +1,11 @@
+@echo off
 rem Author: i0gan
 rem Email : l418894113@gmail.com
 rem Date  : 2022-11-27
 rem Github: https://github.com/i0gan/Squick
 rem Description: Start all servers script
 
-cd bin
+cd ..\bin
 
 start cmd /c " squick type=master id=1 area=0 ip=127.0.0.1 port=10001 web_port=8888"
 start cmd /c " squick type=world id=100 area=0 ip=127.0.0.1 port=10101 master_ip=127.0.0.1 master_port=10001"
