@@ -25,4 +25,7 @@ cp -r kubernetes deploy
 cp /lib/x86_64-linux-gnu/libssl.so.1.1    deploy/bin
 cp /lib/x86_64-linux-gnu/libcrypto.so.1.1 deploy/bin
 
+cp /lib/x86_64-linux-gnu/libssl.so    deploy/bin
+cp /lib/x86_64-linux-gnu/libcrypto.so deploy/bin
+
 echo "Generated all files!"
