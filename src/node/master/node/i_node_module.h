@@ -4,8 +4,7 @@
 namespace master::node {
 class INodeModule : public INodeBaseModule {
   public:
-    virtual std::string GetServersStatus() = 0;
-    virtual map<int, ServerInfo>& GetServers() = 0;
+    virtual map<int, ServerInfo>& GetAllNodes() = 0;
 };
 
 } // namespace master::node

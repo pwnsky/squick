@@ -2,7 +2,7 @@
 #include "struct.h"
 #include <third_party/common/sha256.h>
 #include <third_party/common/base64.hpp>
-#define SQUICK_HASH_SALT "7e82e88dfd98952b713c0d20170ce12b";
+#define SQUICK_HASH_SALT "7e82e88dfd98952b713c0d20170ce12b"
 namespace login::http {
 bool HttpModule::Start() {
     m_http_server_ = pm_->FindModule<IHttpServerModule>();

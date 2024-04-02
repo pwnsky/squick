@@ -23,7 +23,7 @@ class HttpModule : public IHttpModule {
     virtual bool Update();
 
   protected:
-    bool OnCommandQuery(std::shared_ptr<HttpRequest> req);
+    bool OnGetNodeList(std::shared_ptr<HttpRequest> req);
 
     WebStatus OnFilter(std::shared_ptr<HttpRequest> req);
 
