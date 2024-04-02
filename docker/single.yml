@@ -7,9 +7,71 @@ services:
     user: root
     restart: always
     ports:
-      - 80:4000
+      - 8888:8888
     environment:
-      - UPLOAD_FOLDER=/var/uploads
+      - SQUICK_ARGS=type=master id=1 area=0 ip=127.0.0.1 port=10001 web_port=8888
+    networks:
+      default:
+      internal:
+
+  world:
+    build:
+      context: .
+    image: i0gan/squick:1.1
+    user: root
+    restart: always
+    environment:
+      - SQUICK_ARGS=type=world id=100 area=0 ip=127.0.0.1 port=10101 master_ip=127.0.0.1 master_port=10001
+    networks:
+      default:
+      internal:
+
+  db_proxy:
+    build:
+      context: .
+    image: i0gan/squick:1.1
+    user: root
+    restart: always
+    environment:
+      - SQUICK_ARGS=type=db_proxy id=300 area=0 ip=127.0.0.1 port=10201 master_ip=127.0.0.1 master_port=10001
+    networks:
+      default:
+      internal:
+
+  login:
+    build:
+      context: .
+    image: i0gan/squick:1.1
+    user: root
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - SQUICK_ARGS=type=login id=2 area=0 ip=127.0.0.1 port=10301 web_port=80 master_ip=127.0.0.1 master_port=10001
+    networks:
+      default:
+      internal:
+
+  lobby:
+    build:
+      context: .
+    image: i0gan/squick:1.1
+    user: root
+    restart: always
+    environment:
+      - SQUICK_ARGS=type=lobby id=1000 area=0 ip=127.0.0.1 port=10401 master_ip=127.0.0.1 master_port=10001
+    networks:
+      default:
+      internal:
+
+  proxy1:
+    build:
+      context: .
+    image: i0gan/squick:1.1
+    user: root
+    restart: always
+    environment:
+      - SQUICK_ARGS=type=proxy id=500 area=0 ip=127.0.0.1 port=10501 master_ip=127.0.0.1 master_port=10001
     networks:
       default:
       internal:
