@@ -5,7 +5,7 @@
 # Github: https://github.com/pwnsky/squick
 # Description: Build squick application and core plugins
 
-source source/build.sh
+source common.sh
 
 # 将Proto文件生成代码
 log_info "Generate protocol c++ files from proto files"

@@ -4,6 +4,8 @@
 # Date  : 2022-11-27
 # Github: https://github.com/i0gan/Squick
 # Description: Clean all generated files
+source common.sh
+
 cd ..
 
 rm -rf ./cache
