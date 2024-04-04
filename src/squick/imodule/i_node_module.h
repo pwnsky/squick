@@ -16,6 +16,7 @@
 class INodeBaseModule : public IModule {
   public:
     virtual bool Awake() final { return true; }
+
     virtual bool Start() override final {
         m_net_ = pm_->FindModule<INetModule>();
         m_log_ = pm_->FindModule<ILogModule>();
@@ -24,6 +25,7 @@ class INodeBaseModule : public IModule {
 
         pm_->SetAppType(StringNodeTypeToEnum(pm_->GetArg("type=", "proxy")));
         pm_->SetArea(pm_->GetArg("area=", 0));
+
         return true;
     }
 

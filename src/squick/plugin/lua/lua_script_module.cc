@@ -623,15 +623,15 @@ void LuaScriptModule::SendByFD(const socket_t fd, const uint16_t msg_id, const s
     m_net_->SendMsg(msg_id, data, fd, uid);
 }
 
-void LuaScriptModule::LogInfo(const std::string &logData) { m_log_->LogInfo(logData); }
+void LuaScriptModule::LogInfo(const std::string &logData) { m_log_->LogInfo("LuaLog: " + logData); }
 
-void LuaScriptModule::LogError(const std::string &logData) { m_log_->LogError(logData); }
+void LuaScriptModule::LogError(const std::string &logData) { m_log_->LogError("LuaLog: " + logData); }
 
-void LuaScriptModule::LogWarning(const std::string &logData) { m_log_->LogWarning(logData); }
+void LuaScriptModule::LogWarning(const std::string &logData) { m_log_->LogWarning("LuaLog: " + logData); }
 
-void LuaScriptModule::LogDebug(const std::string &logData) { m_log_->LogDebug(logData); }
+void LuaScriptModule::LogDebug(const std::string &logData) { m_log_->LogDebug("LuaLog: " + logData); }
 
-void LuaScriptModule::SetVersionCode(const std::string &logData) { strVersionCode = logData; }
+void LuaScriptModule::SetVersionCode(const std::string &version) { strVersionCode = version; }
 
 const std::string &LuaScriptModule::GetVersionCode() { return strVersionCode; }
 

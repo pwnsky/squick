@@ -29,15 +29,6 @@ enum ServerType {
     ST_MAX = 12,   // 最大服务类型
 };
 
-enum class DbType {
-    None = 0,
-    Mysql = 1,
-    MongoDB = 2,
-    Redis = 3,
-    ClickHouse = 4,
-    Max = 5,
-};
-
 // 线程池 每一帧睡眠时间，单位毫秒
 #define THREAD_POOL_SLEEP_TIME 100
 // 主线程 每一帧睡眠时间，单位毫秒

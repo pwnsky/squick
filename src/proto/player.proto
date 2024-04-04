@@ -29,7 +29,8 @@ message ReqPlayerEnter {
 }
 
 message AckPlayerEnter {
-    PlayerData data = 1;
+    int32 code = 1;
+    PlayerData data = 2;
 }
 
 message ReqPlayerLeave {
@@ -42,5 +43,6 @@ message ReqPlayerData {
 }
 
 message AckPlayerData {
-    PlayerData data = 1;
+    int32 code = 1;
+    PlayerData data = 2;
 }

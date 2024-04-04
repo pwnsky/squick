@@ -21,7 +21,7 @@ end
 -- Main 函数调用，业务代码避免在此初始化，该函数调用优先级高于c++层的模块链接初始化。
 function Main(context)
     Squick = context;
-    Squick:LogInfo("Hello Lua, awake script_module " );
+    Squick:LogInfo("Lua module is running" );
     Env.path = Squick:GetScriptPath()
     local path = Env.path
     print('path: ', path)

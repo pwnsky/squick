@@ -68,18 +68,21 @@ class Exception {
         void *array[16];
         int stack_num = backtrace(array, size);
         char **stacktrace = backtrace_symbols(array, stack_num);
+        std::cout << "Fatal Error: Crash Signal: " << sig << std::endl;
         for (int i = 0; i < stack_num; ++i) {
             outfile << stacktrace[i] << std::endl;
+            std::cout << stacktrace[i] << std::endl;
         }
 
         free(stacktrace);
 
         outfile.close();
+
+        
     }
 
     static void CrashHandler(int sig) {
-        // std::cout << "CrashHandler" << std::endl;
-
+        
         Exception::StackTrace(sig);
         if (sig > 0) {
             if (signal(SIGILL, Exception::CrashHandler) != Exception::CrashHandler)

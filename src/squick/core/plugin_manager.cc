@@ -78,7 +78,7 @@ inline bool PluginManager::Start() {
 // 加载插件配置
 bool PluginManager::LoadPluginConfig() {
     std::string content;
-    std::string strFilePath = GetConfigPath() + "/" + configName;
+    std::string strFilePath = GetWorkPath() + "/" + configName;
     GetFileContent(strFilePath, content);
 
     rapidxml::xml_document<> xDoc;
@@ -270,9 +270,9 @@ inline INT64 PluginManager::GetStartTime() const { return mnStartTime; }
 
 inline INT64 PluginManager::GetNowTime() const { return mnNowTime; }
 
-inline const std::string &PluginManager::GetConfigPath() const { return configPath; }
+inline const std::string &PluginManager::GetWorkPath() const { return configPath; }
 
-inline void PluginManager::SetConfigPath(const std::string &strPath) { configPath = strPath; }
+inline void PluginManager::SetWorkPath(const std::string &strPath) { configPath = strPath; }
 
 void PluginManager::SetConfigName(const std::string &fileName) {
     if (fileName.empty()) {

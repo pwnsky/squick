@@ -35,7 +35,7 @@ void LogModule::rolloutHandler(const char *filename, std::size_t size) {
 // 获取日志配置文件全路径
 std::string LogModule::GetConfigPath(const std::string &fileName) {
     std::string strAppLogName;
-    strAppLogName = pm_->GetConfigPath() + "/config/log/" + fileName + ".conf";
+    strAppLogName = pm_->GetWorkPath() + "/config/log/" + fileName + ".conf";
 
     return strAppLogName;
 }
@@ -67,7 +67,7 @@ bool LogModule::Awake() {
     }
 
     const std::string &fileName = pConfiguration->value();
-    pConfiguration->setValue(pm_->GetConfigPath() + fileName);
+    pConfiguration->setValue(pm_->GetWorkPath() + fileName);
 
 #ifdef DEBUG
     std::cout << "LogConfig: " << strAppLogName << std::endl;

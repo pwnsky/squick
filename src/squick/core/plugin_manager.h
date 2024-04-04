@@ -81,8 +81,8 @@ class PluginManager : public IPluginManager {
     virtual INT64 GetStartTime() const override;
     virtual INT64 GetNowTime() const override;
 
-    virtual const std::string &GetConfigPath() const override;
-    virtual void SetConfigPath(const std::string &strPath) override;
+    virtual const std::string &GetWorkPath() const override;
+    virtual void SetWorkPath(const std::string &strPath) override;
 
     virtual void SetConfigName(const std::string &fileName) override;
     virtual const std::string &GetConfigName() const override;

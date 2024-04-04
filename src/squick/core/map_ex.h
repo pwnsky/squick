@@ -26,20 +26,7 @@ template <typename T, typename TD> class MapEx {
             return false;
         }
     }
-    /*
-            virtual std::shared_ptr<TD> AddElement(const T& name)
-            {
-                    typename MapOBJECT::iterator itr = mObjectList.find(name);
-                    if (itr == mObjectList.end())
-                    {
-                            std::shared_ptr<TD> data(new TD());
-                            mObjectList.insert(typename MapOBJECT::value_type(name, data));
-                            return data;
-                    }
-
-                    return std::shared_ptr<TD>();
-            }
-            */
+    
     virtual bool AddElement(const T &name, const std::shared_ptr<TD> data) {
         if (data == nullptr) {
             std::cout << "AddElement failed : " << std::endl;

@@ -25,7 +25,7 @@ void PluginServer::Start() {
     ProcessParameter();
 
     pm_->SetGetFileContentFunctor(GetFileContent);
-    pm_->SetConfigPath("../");
+    pm_->SetWorkPath("..");
 
     if (externalBasicWarePluginLoader) {
         externalBasicWarePluginLoader(pm_.get());
@@ -169,14 +169,3 @@ bool PluginServer::GetFileContent(IPluginManager *p, const std::string &strFileP
 
     return true;
 }
-/*
-std::string PluginServer::FindParameterValue(const std::vector<std::string> &argList, const std::string &header) {
-    for (int i = 0; i < argList.size(); i++) {
-        std::string name = argList[i];
-        if (name.find(header) != string::npos) {
-            name.erase(0, header.length());
-            return name;
-        }
-    }
-    return "";
-}*/

@@ -156,8 +156,8 @@ class IPluginManager {
     virtual INT64 GetStartTime() const = 0;
     virtual INT64 GetNowTime() const = 0;
 
-    virtual const std::string &GetConfigPath() const = 0;
-    virtual void SetConfigPath(const std::string &strPath) = 0;
+    virtual const std::string &GetWorkPath() const = 0;
+    virtual void SetWorkPath(const std::string &strPath) = 0;
 
     virtual void SetConfigName(const std::string &fileName) = 0;
     virtual const std::string &GetConfigName() const = 0;

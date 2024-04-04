@@ -41,8 +41,6 @@ class PluginServer {
     void SetBasicWareLoader(std::function<void(IPluginManager *p)> fun);
     void SetMidWareLoader(std::function<void(IPluginManager *p)> fun);
 
-    //static std::string FindParameterValue(const std::vector<std::string>& argList, const std::string& header);
-
   private:
     std::shared_ptr<IPluginManager> pm_;
     std::string strArgvList;

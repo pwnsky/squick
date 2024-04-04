@@ -63,11 +63,9 @@ void ClickhouseModule::OnReqSelect(const socket_t sock, const int msg_id, const 
 
 }
 
-
-
 bool ClickhouseModule::Connect() {
-	
-	if (!InitConnectDataFromConfig(DbType::ClickHouse)) {
+
+	if (!InitConnectDataFromConfig(DbType::Clickhouse, "Log")) {
 		LogError("Config load failed!");
 		return false;
 	}

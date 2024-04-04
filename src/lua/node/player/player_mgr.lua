@@ -1,22 +1,46 @@
 local PlayerMgr = Module
 
+
+function PlayerMgr:Init()
+    if self.players == nil then
+        self.players = {}
+    end
+
+    if self.coroutines == nil then
+        self.coroutines = {}
+    end
+
+    self.coroutine_id = 0
+    self.uid_sec = 1000000
+end
+
+
 function PlayerMgr:Start()
     Net:Register(PlayerRPC.REQ_PLAYER_ENTER, self, self.OnReqPlayerEnter)
     Net:Register(PlayerRPC.REQ_PLAYER_DATA, self, self.OnReqPlayerData)
     Net:Register(PlayerRPC.REQ_PLAYER_LEAVE, self, self.OnReqPlayerLeave)
+
+    self:Init()
 end
 
 function PlayerMgr:Update()
-
+    self:CheckCoroutne()
 end
 
 function PlayerMgr:Destroy()
 
 end
+function PlayerMgr:GenUID()
+    self.uid_sec = self.uid_sec + 1
+    if(self.uid_sec > 0xffffffffff) then
+        self.uid_sec = 1000000
+    end
+    return os.time() + self.uid_sec
+end
 
 function PlayerMgr:GetNewPlayerData(account, account_id)
     player_data = {
-        account = account, account_id = account_id, uid = Env.area .. "-" .. account_id, name = "none",
+        account = account, account_id = account_id, uid = self:GenUID(), name = "none",
         age = 0, level = 0, last_login_time = os.time(), created_time = os.time(),
         online = false, platform = "none", extra = {},
         area = Env.area, mail = {}, itmes = {}, ip = "", ip_address = "", last_offline_time = 0,
@@ -32,13 +56,16 @@ function PlayerMgr:GetNewPlayerData(account, account_id)
             master_id = 0,
         }
     }
-
     return player_data
 end
 
 
-function PlayerMgr:GetPlayerDataFromMongo(account_id, account)
+function PlayerMgr:GetPlayerDataFromDB(account_id, account)
     local result = Mongo:FindAsync(MONGO_PLAYERS_DB, "base", '{"account_id":"' .. account_id .. '"}')
+    if result == nil then
+        return nil
+    end
+
     local player_data = nil
     if(result.matched_count == 0) then
         -- Create a new player
@@ -58,12 +85,13 @@ function PlayerMgr:GetPlayerDataFromMongo(account_id, account)
             Mongo:InsertAsync(MONGO_PLAYERS_DB, "index", Json.encode({ detail = true }))
         end
 
+        player_data = self:GetNewPlayerData(account_id, account_id)
+
         local base_data = {
             account_id = account_id,
             uid = player_data.uid,
         }
 
-        player_data = self:GetNewPlayerData(account_id, account_id)
         Mongo:InsertAsync(MONGO_PLAYERS_DB, "base", Json.encode(base_data))
         Mongo:InsertAsync(MONGO_PLAYERS_DB, "detail", Json.encode(player_data))
 
@@ -89,17 +117,14 @@ function PlayerMgr:OnReqPlayerEnter(uid, msg_data, msg_id, fd)
 
         local account_id = req.account_id
         local account = req.account
-        local player_data = self:GetPlayerDataFromMongo(account_id, account);
+        local player_data = self:GetPlayerDataFromDB(account_id, account);
 
-        Print("Created in mongo db")
+        if player_data == nil then
+            Squick:LogError("Cannot get player data from db" );
+            return
+        end
+
         uid = player_data.uid
-        
-        local ack = {
-            code = 0,
-            account_id = account_id,
-            uid = uid,
-        }
-
         player_data.last_login_time = os.time()
         player_data.node.proxy_fd = fd
         player_data.node.proxy_id = req.proxy_id
@@ -117,8 +142,22 @@ function PlayerMgr:OnReqPlayerEnter(uid, msg_data, msg_id, fd)
         '{"$set": '..Json.encode(update)..'}')
 
         self:CachePlayerData(uid, player_data)
-        Net:SendByFD(fd, PlayerEventRPC.PLAYER_BIND_EVENT, Squick:Encode("rpc.AckPlayerEnter", ack))
+
+        local ack = {
+            code = 0,
+            data = {
+                account = account;
+                account_id = account_id,
+                uid = uid,
+                name = player_data.name,
+            }
+        }
+        
+        Net:SendByFD(fd, PlayerRPC.ACK_PLAYER_ENTER, Squick:Encode("rpc.AckPlayerEnter", ack))
     end, uid, msg_data, msg_id, fd)
+end
+
+function PlayerMgr:GetPlayerProtoData()
 end
 
 function PlayerMgr:OnReqPlayerLeave(uid, msg_data, msg_id, fd)
@@ -135,11 +174,50 @@ function PlayerMgr:OnReqPlayerLeave(uid, msg_data, msg_id, fd)
     end, uid, msg_data, msg_id, fd)
 end
 
-function PlayerMgr:AsyncHnalder(func, ...)
+function PlayerMgr:AsyncHnalder(func, uid, msg_data, msg_id, fd)
     local co = coroutine.create(func)
-    local status, err = coroutine.resume(co, ...)
+    local status, err = coroutine.resume(co, uid, msg_data, msg_id, fd)
     if(err)then
-        print(err)
+        Print(err)
+    end
+
+    self.coroutines[self.coroutine_id] = {
+        uid = uid,
+        msg_id = msg_id,
+        co = co,
+        time = os.time()
+    }
+
+    self.coroutine_id = self.coroutine_id + 1
+    if self.coroutine_id > 0xffffffff then
+        self.coroutine_id = 0
+    end
+end
+
+function PlayerMgr:CheckCoroutne()
+    local timeout = {}
+    local now_time = os.time()
+    local i = 1
+    for index, value in pairs(self.coroutines) do
+        if now_time - value.time > 5 then
+            -- destroy
+            timeout[i] = index
+            i = i + 1
+        end
+    end
+    
+    -- remove timeout coroutines
+    for index, value in ipairs(timeout) do
+        local info = self.coroutines[value]
+        local status = coroutine.status(info.co)
+        if status == "suspended" then
+            local err = coroutine.resume(info.co, nil)
+            if(err) then
+                Print(err)
+            end
+        elseif status == "dead" then
+            self.coroutines[value] = nil
+        end
     end
 end
 
@@ -157,7 +235,7 @@ end
 function PlayerMgr:OnReqPlayerData(uid, msg_data, msg_id, fd)
     local player = self.players[uid]
     if player == nil then
-        print("No this player ", uid)
+        Print("No this player ", uid)
         return
     end
 
@@ -178,9 +256,6 @@ function PlayerMgr:OnReqPlayerData(uid, msg_data, msg_id, fd)
 end
 
 function PlayerMgr:CachePlayerData(uid, player_data)
-    if self.players == nil then
-        self.players = {}
-    end
     self.players[uid] = player_data
 end
 

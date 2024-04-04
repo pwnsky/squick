@@ -111,7 +111,7 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
     if (pm_->UsingBackThread()) {
         m_thread_pool_->DoAsyncTask(
             Guid(), "",
-            [=](ThreadTask &task) -> void {
+            [=, this](ThreadTask &task) -> void {
                 // backup thread for async task
                 {
                     std::shared_ptr<IPropertyManager> pStaticClassPropertyManager = m_class_->GetThreadClassModule()->GetClassPropertyManager(className);
@@ -157,7 +157,7 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
                     }
                 }
             },
-            [=](ThreadTask &task) -> void {
+            [=, this](ThreadTask &task) -> void {
                 // no data--main thread
                 {
                     Vector3 vRelivePos = m_scene_->GetRelivePosition(sceneID, 0);
@@ -175,7 +175,7 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
 
                 m_thread_pool_->DoAsyncTask(
                     Guid(), "",
-                    [=](ThreadTask &task) -> void {
+                    [=, this](ThreadTask &task) -> void {
                         // backup thread
                         {
                             std::shared_ptr<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
@@ -194,7 +194,7 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
                             }
                         }
                     },
-                    [=](ThreadTask &task) -> void {
+                    [=, this](ThreadTask &task) -> void {
                         // main thread
                         {
                             std::shared_ptr<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
@@ -246,14 +246,14 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
 
                         m_thread_pool_->DoAsyncTask(
                             Guid(), "",
-                            [=](ThreadTask &task) -> void {
+                            [=, this](ThreadTask &task) -> void {
                                 // back up thread
                                 {
                                     pObject->SetState(COE_CREATE_LOADDATA);
                                     DoEvent(ident, className, pObject->GetState(), arg);
                                 }
                             },
-                            [=](ThreadTask &task) -> void {
+                            [=, this](ThreadTask &task) -> void {
                                 // below are main thread
                                 {
                                     pObject->SetState(COE_CREATE_AFTER_ATTACHDATA);

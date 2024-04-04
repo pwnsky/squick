@@ -137,7 +137,7 @@ namespace db_proxy::redis {
 	}
 
 	bool RedisModule::Connect() {
-		if (!InitConnectDataFromConfig(DbType::Redis)) {
+		if (!InitConnectDataFromConfig(DbType::Redis, "Cache")) {
 			LogError("Config load failed", __func__, __LINE__);
 			return false;
 		}

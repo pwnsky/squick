@@ -150,13 +150,11 @@ class LuaScriptModule : public ILuaScriptModule {
     void LogDebug(const std::string &logData);
 
     // hot fix
-    void SetVersionCode(const std::string &logData);
+    void SetVersionCode(const std::string &version);
     const std::string &GetVersionCode();
 
     // FOR CLASS MODULE
     bool AddClassCallBack(std::string &className, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
-
-    
 
   protected:
     template <typename T> bool AddLuaFuncToMap(Map<T, Map<Guid, List<LuaCallBack>>> &funcMap, const Guid &self, T key, const LuaCallBack &callback);
