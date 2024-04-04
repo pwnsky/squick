@@ -101,12 +101,12 @@ bool NetClientModule::IsConnected(const int node_id) {
     return false;
 }
 
-bool NetClientModule::SendByID(const int serverID, const uint16_t msg_id, const std::string &strData, const string guid, reqid_t req_id) {
+bool NetClientModule::SendByID(const int serverID, const uint16_t msg_id, const std::string &strData, const uint64_t uid, reqid_t req_id) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(serverID);
     if (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule.get()) {
-            if (!pNetModule->SendMsg(msg_id, strData, 0, guid, req_id)) {
+            if (!pNetModule->SendMsg(msg_id, strData, 0, uid, req_id)) {
                 std::ostringstream stream;
                 stream << " SendMsgWithOutHead failed " << serverID;
                 stream << " msg id " << msg_id;
@@ -124,12 +124,12 @@ bool NetClientModule::SendByID(const int serverID, const uint16_t msg_id, const 
     return true;
 }
 
-void NetClientModule::SendToAllNode(const uint16_t msg_id, const std::string &strData, const string guid) {
+void NetClientModule::SendToAllNode(const uint16_t msg_id, const std::string &strData, const uint64_t uid) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule) {
-            if (!pNetModule->SendMsg(msg_id, strData, 0, guid)) {
+            if (!pNetModule->SendMsg(msg_id, strData, 0, uid)) {
                 std::ostringstream stream;
                 stream << " SendMsgWithOutHead failed " << pServer->id;
                 stream << " msg id " << msg_id;
@@ -141,12 +141,12 @@ void NetClientModule::SendToAllNode(const uint16_t msg_id, const std::string &st
     }
 }
 
-void NetClientModule::SendToAllNodeByType(const ServerType eType, const uint16_t msg_id, const std::string &strData, const string guid) {
+void NetClientModule::SendToAllNodeByType(const ServerType eType, const uint16_t msg_id, const std::string &strData, const uint64_t uid) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule && eType == pServer->type) {
-            if (!pNetModule->SendMsg(msg_id, strData, 0, guid)) {
+            if (!pNetModule->SendMsg(msg_id, strData, 0, uid)) {
                 std::ostringstream stream;
                 stream << " SendMsgWithOutHead failed " << pServer->id;
                 stream << " msg id " << msg_id;
@@ -158,12 +158,12 @@ void NetClientModule::SendToAllNodeByType(const ServerType eType, const uint16_t
     }
 }
 
-bool NetClientModule::SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid, reqid_t req_id) {
+bool NetClientModule::SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid, reqid_t req_id) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(serverID);
     if (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule) {
-            if (!pNetModule->SendMsgPB(msg_id, xData, 0, guid, req_id)) {
+            if (!pNetModule->SendMsgPB(msg_id, xData, 0, uid, req_id)) {
                 std::ostringstream stream;
                 stream << " SendMsgPB failed " << pServer->id;
                 stream << " msg id " << msg_id;
@@ -181,12 +181,12 @@ bool NetClientModule::SendPBByID(const int serverID, const uint16_t msg_id, cons
     return true;
 }
 
-void NetClientModule::SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message &xData, const string guid) {
+void NetClientModule::SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule) {
-            if (!pNetModule->SendMsgPB(msg_id, xData, 0, guid)) {
+            if (!pNetModule->SendMsgPB(msg_id, xData, 0, uid)) {
                 std::ostringstream stream;
                 stream << " SendMsgPB failed " << pServer->id;
                 stream << " msg id " << msg_id;
@@ -198,12 +198,12 @@ void NetClientModule::SendPBToAllNode(const uint16_t msg_id, const google::proto
     }
 }
 
-void NetClientModule::SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid) {
+void NetClientModule::SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule && eType == pServer->type && pServer->state == ConnectDataState::NORMAL) {
-            if (!pNetModule->SendMsgPB(msg_id, xData, 0, guid)) {
+            if (!pNetModule->SendMsgPB(msg_id, xData, 0, uid)) {
                 std::ostringstream stream;
                 stream << " SendMsgPB failed " << pServer->id;
                 stream << " msg id " << msg_id;
@@ -215,7 +215,8 @@ void NetClientModule::SendPBToAllNodeByType(const ServerType eType, const uint16
     }
 }
 
-Awaitable<NetClientResponseData>  NetClientModule::Request(const int node_id, const uint16_t msg_id, const std::string& data, int ack_msg_id) {
+Awaitable<NetClientResponseData>  NetClientModule::Request(const int node_id, const uint16_t msg_id, const std::string& data, int ack_msg_id,
+                                                           const uint64_t uid) {
     Awaitable<NetClientResponseData> awaitbale;
 
     auto req_id = GenerateRequestID();
@@ -223,11 +224,12 @@ Awaitable<NetClientResponseData>  NetClientModule::Request(const int node_id, co
     awaitbale.data_.req_id = req_id;
     awaitbale.handler_ = std::bind(&NetClientModule::CoroutineBinder, this, placeholders::_1);
     // send
-    SendByID(node_id, msg_id, data, "", req_id);
+    SendByID(node_id, msg_id, data, uid, req_id);
     return awaitbale;
 }
 
-Awaitable<NetClientResponseData>  NetClientModule::RequestPB(const int node_id, const uint16_t msg_id, const google::protobuf::Message& pb, int ack_msg_id) {
+Awaitable<NetClientResponseData>  NetClientModule::RequestPB(const int node_id, const uint16_t msg_id, const google::protobuf::Message& pb, int ack_msg_id,
+                                                            const uint64_t uid) {
     Awaitable<NetClientResponseData> awaitbale;
 
     auto req_id = GenerateRequestID();
@@ -235,7 +237,7 @@ Awaitable<NetClientResponseData>  NetClientModule::RequestPB(const int node_id, 
     awaitbale.data_.req_id = req_id;
     awaitbale.handler_ = std::bind(&NetClientModule::CoroutineBinder, this, placeholders::_1);
     // send
-    SendPBByID(node_id, msg_id, pb, "", req_id);
+    SendPBByID(node_id, msg_id, pb, uid, req_id);
     return awaitbale;
 }
 

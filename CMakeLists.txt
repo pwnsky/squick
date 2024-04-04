@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.6)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
-set(SolutionDir ${PROJECT_SOURCE_DIR}/..)
+set(SolutionDir ${PROJECT_SOURCE_DIR})
 message(STATUS "SolutionDir=" ${SolutionDir})
 
 # 链接Squick必要动态链接库
@@ -112,11 +112,12 @@ endif()
 link_directories(${ThirdPartyLibPath} ${SquickLibPath})
 add_definitions(-D_X64 -D_CONSOLE -DSQUICK_DYNAMIC_PLUGIN -DSQUICK_ENABLE_SSL)
 
-add_subdirectory(struct)
-add_subdirectory(squick)
-add_subdirectory(node)
-add_subdirectory(tools/sqkcli)
-add_subdirectory(tutorial)
+add_subdirectory(src/struct)
+add_subdirectory(src/squick)
+add_subdirectory(src/node)
+add_subdirectory(src/tools/sqkcli)
+add_subdirectory(src/tutorial)
+
 
 if( EXTRA STREQUAL "EXTRA" )
 	
@@ -126,10 +127,14 @@ message("Start to build squick")
 
 
 set(ProjectName "startup")
-file(GLOB soruces *.cc)
-file(GLOB headers *.h)
+file(GLOB soruces src/*.cc)
+file(GLOB headers src/*.h)
+file(GLOB_RECURSE proto ./src/proto/*.proto)
+file(GLOB_RECURSE lua ./src/lua/*.lua)
+file(GLOB_RECURSE plugin ./config//plugin/*.xml)
+file(GLOB_RECURSE config ./config/node/*.json)
 
-add_executable(${ProjectName} ${soruces} ${headers})
+add_executable(${ProjectName} ${soruces} ${headers} ${proto} ${lua} ${plugin} ${config})
 
 if (APPLE)
 

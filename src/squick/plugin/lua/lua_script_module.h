@@ -105,8 +105,8 @@ class LuaScriptModule : public ILuaScriptModule {
 
     INT64 GetNowTime();
     Guid CreateID();
-    INT64 AppID();
-    INT64 AppType();
+    int AppID();
+    int AppType();
     string AppName();
     INT64 Area();
 
@@ -137,11 +137,11 @@ class LuaScriptModule : public ILuaScriptModule {
     const std::string Encode(const std::string &msgTypeName, const LuaIntf::LuaRef &luaTable);
     LuaIntf::LuaRef Decode(const std::string &msgTypeName, const std::string &data);
 
-    void SendToServerByServerID(const int server_id, const uint16_t msg_id, const std::string &data, const std::string& guid);
-    void SendToAllServerByServerType(const ServerType server_type, const uint16_t msg_id, const std::string &data, const std::string& guid);
+    void SendToServerByServerID(const int server_id, const uint16_t msg_id, const std::string &data, const uint64_t uid);
+    void SendToAllServerByServerType(const ServerType server_type, const uint16_t msg_id, const std::string &data, const uint64_t uid);
 
     // for net module
-    void SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, string guid);
+    void SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, const uint64_t uid);
 
     // for log
     void LogInfo(const std::string &logData);

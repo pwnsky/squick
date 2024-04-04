@@ -11,6 +11,8 @@ function GetDbProxyID()
         id = 300
     elseif(area == 2) then
         id = 301
+    else
+        id = 300
     end
     return id
 end

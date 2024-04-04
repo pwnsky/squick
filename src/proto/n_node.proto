@@ -5,12 +5,10 @@ package rpc;
 
 // only be used in inner node
 message MsgBase {
-    int32 id = 1; // node id
-    bytes guid = 2; // player guid
+    int32 id = 1;       // sender node id
+    int64 uid = 6;      // player uid
+    int64 req_id = 5;   // request id
     bytes msg_data = 3; // data
-    repeated int64 broadcast = 4; // broadcast guid list
-    int64 req_id = 5; // request id
-    int64 uid = 6; // player uid
 }
 
 // Node RPC 0 ~ 500

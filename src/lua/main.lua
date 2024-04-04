@@ -10,6 +10,10 @@ Env = {
     area = 0,
 }
 
+function Print(...)
+    print("Lua print: ", ...)
+end
+
 function Require(file)
     require(file)
 end
@@ -84,6 +88,6 @@ function Load()
     if(node_init[Env.app_type]) then
         node_init[Env.app_type]()
     else
-        print("Not surppot this app type: " .. Env.app_type)
+        Print("Not surppot this app type: " .. Env.app_type)
     end
 end

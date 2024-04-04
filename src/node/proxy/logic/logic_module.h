@@ -32,6 +32,7 @@ struct PlayerConnInfo {
     uint64_t uid;
     int player_node = 0;
     int world_node = 0;
+    int login_node = 0;
 };
 
 struct Session {
@@ -41,14 +42,14 @@ struct Session {
     string account_id;
     string key;
     string ip;
+    int login_node;
 };
 
 namespace proxy::logic {
 class LogicModule : public ILogicModule {
   public:
 
-
-    LogicModule(IPluginManager *p) { pm_ = p; }
+    LogicModule(IPluginManager *p) { pm_ = p; is_update_ = true; }
 
     virtual bool Start() override;
     virtual bool Destory() override;

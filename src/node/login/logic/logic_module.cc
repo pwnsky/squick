@@ -16,9 +16,9 @@ bool LogicModule::AfterStart() {
 bool LogicModule::Destory() { return true; }
 
 void LogicModule::OnConnectProxyVerify(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    string tmp;
+    uint64_t uid;
     rpc::NReqConnectProxyVerify req;
-    if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
+    if (!m_net_->ReceivePB(msg_id, msg, len, req, uid)) {
         return;
     }
     // to do, auth from db

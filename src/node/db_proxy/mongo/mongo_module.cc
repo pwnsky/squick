@@ -74,7 +74,7 @@ namespace db_proxy::mongo {
         rpc::AckMongoInsert ack;
         
         try {
-            string tmp;
+            uint64_t tmp;
             assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 
             mongocxx::database db = client_->database(req.db());
@@ -100,7 +100,7 @@ namespace db_proxy::mongo {
         rpc::ReqMongoFind req;
         rpc::AckMongoFind ack;
         try {
-            string tmp;
+            uint64_t tmp;
             assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 
             mongocxx::database db = client_->database(req.db());
@@ -128,7 +128,7 @@ namespace db_proxy::mongo {
         rpc::ReqMongoUpdate req;
         rpc::AckMongoUpdate ack;
         try {
-            string tmp;
+            uint64_t tmp;
             assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 
             mongocxx::database db = client_->database(req.db());
@@ -155,7 +155,7 @@ namespace db_proxy::mongo {
         rpc::ReqMongoDelete req;
         rpc::AckMongoDelete ack;
         try {
-            string tmp;
+            uint64_t tmp;
             assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 
             mongocxx::database db = client_->database(req.db());
@@ -179,7 +179,7 @@ namespace db_proxy::mongo {
         rpc::ReqMongoCreateIndex req;
         rpc::AckMongoCreateIndex ack;
         try {
-            string tmp;
+            uint64_t tmp;
             assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 
             mongocxx::database db = client_->database(req.db());

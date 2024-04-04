@@ -52,15 +52,15 @@ void TesterModule::TestProxyTransferSpeed_Req() {
     test.set_index(test_req_index_);
     test.set_data(test_req_data_);
     test.set_req_time(SquickGetTimeMSEx());
-    m_net_client_->SendPBToAllNodeByType(ServerType::ST_PROXY, rpc::TestRPC::REQ_TEST_PROXY, test, "");
+    m_net_client_->SendPBToAllNodeByType(ServerType::ST_PROXY, rpc::TestRPC::REQ_TEST_PROXY, test, 0);
     test_req_index_++;
     test_req_data_ = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
 }
 
 void TesterModule::TestProxyTransferSpeed_Ack(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    string guid;
+    uint64_t uid;
     rpc::Test ack;
-    if (!INetModule::ReceivePB(msg_id, msg, len, ack, guid)) {
+    if (!INetModule::ReceivePB(msg_id, msg, len, ack, uid)) {
         std::cout << "Error\n";
     }
 

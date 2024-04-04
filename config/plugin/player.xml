@@ -1,5 +1,5 @@
 <XML>
-	<Lobby>
+        <Player>
 		<Plugin Name="core/net" />
 		<Plugin Name="core/config" />
 		<Plugin Name="core/log" />
@@ -8,5 +8,5 @@
 		<Plugin Name="core/lua" />
 		
 		<Plugin Name="node/player/node" />
-	</Lobby>
+        </Player>
 </XML>

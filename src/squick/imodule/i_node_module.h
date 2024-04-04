@@ -22,6 +22,8 @@ class INodeBaseModule : public IModule {
         m_net_client_ = pm_->FindModule<INetClientModule>();
         is_update_ = true;
 
+        pm_->SetAppType(StringNodeTypeToEnum(pm_->GetArg("type=", "proxy")));
+        pm_->SetArea(pm_->GetArg("area=", 0));
         return true;
     }
 
@@ -35,6 +37,8 @@ class INodeBaseModule : public IModule {
             UpdateState();
         }
         last_report_time_ = pm_->GetNowTime();
+
+
         return true;
     }
 
@@ -87,19 +91,18 @@ class INodeBaseModule : public IModule {
 
         node_info_.info->set_id(pm_->GetArg("id=", 0));
         std::string name = pm_->GetArg("type=", "proxy") + pm_->GetArg("id=", "0");
-        node_info_.info->set_type(StringNodeTypeToEnum(pm_->GetArg("type=", "proxy")));
+        node_info_.info->set_type(pm_->GetAppType());
         node_info_.info->set_port(pm_->GetArg("port=", 10000));
 
         node_info_.info->set_name(name);
         node_info_.info->set_ip(pm_->GetArg("ip=", "127.0.0.1"));
         node_info_.info->set_public_ip(pm_->GetArg("public_ip=", "127.0.0.1"));
-        node_info_.info->set_area(pm_->GetArg("area=", 0));
+        node_info_.info->set_area(pm_->GetArea());
         node_info_.info->set_update_time(SquickGetTimeS());
         node_info_.info->set_max_online(DEFAULT_NODE_MAX_SERVER_CONNECTION);
         node_info_.info->set_cpu_count(DEFAULT_NODE_CPUT_COUNT);
 
-        pm_->SetAppType(node_info_.info->type());
-        pm_->SetArea(node_info_.info->area());
+        
 
         //servers_[pm_->GetAppID()] = s;
 
@@ -145,9 +148,9 @@ class INodeBaseModule : public IModule {
 
     // Add upper server
     void OnDynamicServerAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-        string guid;
+        uint64_t uid;
         rpc::NNtfNodeAdd ntf;
-        if (!INetModule::ReceivePB(msg_id, msg, len, ntf, guid)) {
+        if (!INetModule::ReceivePB(msg_id, msg, len, ntf, uid)) {
             return;
         }
         for (int i = 0; i < ntf.node_list().size(); ++i) {
@@ -251,9 +254,9 @@ class INodeBaseModule : public IModule {
     }
     
     void OnNAckNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-        string guid;
+        uint64_t uid;
         rpc::NAckNodeRegister ack;
-        if (!m_net_->ReceivePB(msg_id, msg, len, ack, guid)) {
+        if (!m_net_->ReceivePB(msg_id, msg, len, ack, uid)) {
             return;
         }
 
@@ -267,16 +270,16 @@ class INodeBaseModule : public IModule {
 
     // Add node ntf
     void OnNNtfNodeAdd(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-        string guid;
+        uint64_t uid;
         rpc::NNtfNodeAdd ntf;
-        if (!m_net_->ReceivePB(msg_id, msg, len, ntf, guid)) {
+        if (!m_net_->ReceivePB(msg_id, msg, len, ntf, uid)) {
             return;
         }
         AddNodes(ntf.node_list(), true);
     }
 
     bool AddNodes(const google::protobuf::RepeatedPtrField<rpc::Server>& list, bool from_ntf = false) {
-        for (auto n : list) {
+        for (const auto &n : list) {
             dout << "Add node from master, is_ntf: " << from_ntf << " cmd, current: " << node_info_.info->name() << " add " << n.name() << endl;
             ConnectData s;
             s.id = n.id();

@@ -86,9 +86,9 @@ Coroutine<bool>  HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
             break;
         }
 
-        string guid;
+        uint64_t uid;
         rpc::NAckMinWorkloadNodeInfo pback;
-        if (!INetModule::ReceivePB(data.ack_msg_id, data.data, data.length, pback, guid)) {
+        if (!INetModule::ReceivePB(data.ack_msg_id, data.data, data.length, pback, uid)) {
             ack.code = IResponse::SERVER_ERROR;
             ack.msg = "Get min workload proxy info from master error, pb data is invalid\n";
             break;

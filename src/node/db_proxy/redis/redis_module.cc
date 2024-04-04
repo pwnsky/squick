@@ -39,7 +39,7 @@ namespace db_proxy::redis {
 		rpc::AckRedisGet ack;
 		
 		try {
-			string tmp;
+			uint64_t tmp;
 			assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 			auto val = client_->get(req.key());
 			if (val) {
@@ -65,7 +65,7 @@ namespace db_proxy::redis {
 		rpc::ReqRedisSet req;
 		rpc::AckRedisSet ack;
 		try {
-			string tmp;
+			uint64_t tmp;
 			assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 			client_->set(req.key(), req.value(), std::chrono::milliseconds(req.ttl()));
 		}
@@ -84,7 +84,7 @@ namespace db_proxy::redis {
 		rpc::ReqRedisHGet req;
 		rpc::AckRedisHGet ack;
 		try {
-			string tmp;
+			uint64_t tmp;
 			assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 			auto val = client_->hget(req.key(), req.field());
 			if (val) {
@@ -110,7 +110,7 @@ namespace db_proxy::redis {
 		rpc::ReqRedisHSet req;
 		rpc::AckRedisHSet ack;
 		try {
-			string tmp;
+			uint64_t tmp;
 			assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 			client_->hset(req.key(), req.field(), req.value());
 		}

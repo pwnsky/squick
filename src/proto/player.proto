@@ -2,6 +2,7 @@
 // 使用: 服务器,客户端
 syntax = "proto3";
 package rpc;
+import "base.proto";
 
 // PlayerRPC 12000 ~ 15000
 enum PlayerRPC {
@@ -17,14 +18,19 @@ enum PlayerRPC {
 }
 
 message ReqPlayerEnter {
+    string account = 1;
+    string account_id = 2;
+    string ip = 3;
+    int32 proxy_node = 4;
+    int32 login_node = 5;
+    int32 protocol = 6;
+    int32 area = 7;
+    int32 platform = 8;
 }
-
 
 message AckPlayerEnter {
-    string account_id = 1;
-    uint64 uid = 3;
+    PlayerData data = 1;
 }
-
 
 message ReqPlayerLeave {
 }
@@ -36,15 +42,5 @@ message ReqPlayerData {
 }
 
 message AckPlayerData {
-    string account = 1;
-    string account_id = 2;
-    uint64 uid = 3;
-    string name = 4;
-    int32 level = 5;
-    string ip = 6;
-    int32 area = 7;
-    int32 created_time = 8;
-    int32 last_login_time = 9;
-    int32 last_offline_time = 10;
-    string platform = 11;
+    PlayerData data = 1;
 }

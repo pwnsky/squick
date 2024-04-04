@@ -95,16 +95,16 @@ public:
 
     ////////////////////////////////////////////////////////////////////////////////
     virtual bool IsConnected(const int node_id) = 0;
-    virtual bool SendByID(const int serverID, const uint16_t msg_id, const std::string& strData, const string guid = "", reqid_t req_id = 0) = 0;
-    virtual bool SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message& xData, const string guid = "", reqid_t req_id = 0) = 0;
-    virtual void SendToAllNode(const uint16_t msg_id, const std::string& strData, const string guid = "") = 0;
-    virtual void SendToAllNodeByType(const ServerType eType, const uint16_t msg_id, const std::string& strData, const string guid = "") = 0;
-    virtual void SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message& xData, const string id = "") = 0;
-    virtual void SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message& xData, const string guid = "") = 0;
+    virtual bool SendByID(const int serverID, const uint16_t msg_id, const std::string& strData, const uint64_t uid = 0, reqid_t req_id = 0) = 0;
+    virtual bool SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message& xData, const uint64_t uid = 0, reqid_t req_id = 0) = 0;
+    virtual void SendToAllNode(const uint16_t msg_id, const std::string& strData, const uint64_t uid = 0) = 0;
+    virtual void SendToAllNodeByType(const ServerType eType, const uint16_t msg_id, const std::string& strData, const uint64_t uid = 0) = 0;
+    virtual void SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message& xData, const uint64_t uid = 0) = 0;
+    virtual void SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message& xData, const uint64_t uid = 0) = 0;
     ////////////////////////////////////////////////////////////////////////////////
     // coroutine
-    virtual Awaitable<NetClientResponseData>  Request(const int serverID, const uint16_t msg_id, const std::string& data, int ack_msg_id) = 0;
-    virtual Awaitable<NetClientResponseData>  RequestPB(const int node_id, const uint16_t msg_id, const google::protobuf::Message& pb, int ack_msg_id) = 0;
+    virtual Awaitable<NetClientResponseData>  Request(const int serverID, const uint16_t msg_id, const std::string& data, int ack_msg_id, const uint64_t uid = 0) = 0;
+    virtual Awaitable<NetClientResponseData>  RequestPB(const int node_id, const uint16_t msg_id, const google::protobuf::Message& pb, int ack_msg_id, const uint64_t uid = 0) = 0;
 
     virtual MapEx<int, ConnectData>& GetServerList() = 0;
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const ServerType eType) = 0;

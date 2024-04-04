@@ -26,7 +26,7 @@ function Mongo:InsertAsync(db, collection, insert_json)
         collection = collection,
         insert_json = insert_json,
     }
-    Net:SendToServer(DbProxyID, DbProxyRPC.REQ_MONGO_INSERT, Squick:Encode("rpc.ReqMongoInsert", req))
+    Net:SendToNode(DbProxyID, DbProxyRPC.REQ_MONGO_INSERT, Squick:Encode("rpc.ReqMongoInsert", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data
@@ -46,7 +46,7 @@ function Mongo:FindAsync(db, collection, condition_json)
         collection = collection,
         condition_json = condition_json,
     }
-    Net:SendToServer(DbProxyID, DbProxyRPC.REQ_MONGO_FIND, Squick:Encode("rpc.ReqMongoFind", req))
+    Net:SendToNode(DbProxyID, DbProxyRPC.REQ_MONGO_FIND, Squick:Encode("rpc.ReqMongoFind", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data
@@ -67,7 +67,7 @@ function Mongo:UpdateAsync(db, collection, condition_json, update_json)
         condition_json = condition_json,
         update_json = update_json,
     }
-    Net:SendToServer(DbProxyID, DbProxyRPC.REQ_MONGO_UPDATE, Squick:Encode("rpc.ReqMongoUpdate", req))
+    Net:SendToNode(DbProxyID, DbProxyRPC.REQ_MONGO_UPDATE, Squick:Encode("rpc.ReqMongoUpdate", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data
@@ -87,7 +87,7 @@ function Mongo:DeleteAsync(db, collection, condition_json)
         collection = collection,
         condition_json = condition_json,
     }
-    Net:SendToServer(DbProxyID, DbProxyRPC.REQ_MONGO_DELETE, Squick:Encode("rpc.ReqMongoDelete", req))
+    Net:SendToNode(DbProxyID, DbProxyRPC.REQ_MONGO_DELETE, Squick:Encode("rpc.ReqMongoDelete", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data
@@ -107,7 +107,7 @@ function Mongo:CreateIndexAsync(db, collection, condition_json)
         collection = collection,
         condition_json = condition_json,
     }
-    Net:SendToServer(DbProxyID, DbProxyRPC.REQ_MONGO_CREATE_INDEX, Squick:Encode("rpc.ReqMongoCreateIndex", req))
+    Net:SendToNode(DbProxyID, DbProxyRPC.REQ_MONGO_CREATE_INDEX, Squick:Encode("rpc.ReqMongoCreateIndex", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data

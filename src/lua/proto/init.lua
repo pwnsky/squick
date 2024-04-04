@@ -7,12 +7,11 @@
 
 require "proto.enum"
 Squick:ImportProto("base.proto");
-Squick:ImportProto("server.proto");
+Squick:ImportProto("n_node.proto");
 Squick:ImportProto("game.proto");
-Squick:ImportProto("game_mgr.proto");
-Squick:ImportProto("db_proxy.proto");
-Squick:ImportProto("world.proto");
-Squick:ImportProto("player_event.proto");
+Squick:ImportProto("n_game_mgr.proto");
+Squick:ImportProto("n_db_proxy.proto");
+Squick:ImportProto("n_world.proto");
+Squick:ImportProto("n_player.proto");
 Squick:ImportProto("player.proto");
-Squick:ImportProto("login.proto");
-Squick:ImportProto("micro.proto");
+Squick:ImportProto("n_login.proto");

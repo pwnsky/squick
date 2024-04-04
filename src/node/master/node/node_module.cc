@@ -19,9 +19,9 @@ bool NodeModule::AfterStart() {
 }
 
 void NodeModule::OnNReqNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    string nPlayerID;
+    uint64_t uid;
     rpc::NReqNodeRegister req;
-    if (!m_net_->ReceivePB(msg_id, msg, len, req, nPlayerID)) {
+    if (!m_net_->ReceivePB(msg_id, msg, len, req, uid)) {
         return;
     }
     rpc::NAckNodeRegister ack;
@@ -113,9 +113,9 @@ bool NodeModule::SendPBByID(const int node_id, const uint16_t msg_id, const goog
 }
 
 void NodeModule::OnNReqNodeUnregistered(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    string guid;
+    uint64_t uid;
     rpc::NReqNodeUnregister req;
-    if (!m_net_->ReceivePB(msg_id, msg, len, req, guid)) {
+    if (!m_net_->ReceivePB(msg_id, msg, len, req, uid)) {
         return;
     }
     
@@ -130,9 +130,9 @@ void NodeModule::OnNReqNodeUnregistered(const socket_t sock, const int msg_id, c
 // Master
 void NodeModule::OnNNtfNodeReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     
-    string guid;
+    uint64_t uid;
     rpc::NNtfNodeReport ntf;
-    if (!INetModule::ReceivePB(msg_id, msg, len, ntf, guid)) {
+    if (!INetModule::ReceivePB(msg_id, msg, len, ntf, uid)) {
         return;
     }
 
@@ -172,17 +172,15 @@ void NodeModule::OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, co
     if (!req.ParseFromString(msg_base.msg_data())) {
         return;
     }
-    dout << "find ....\n";
     for (auto type : req.type_list()) {
         int id = GetLoadBanlanceNode((ServerType)type);
         if (id == -1) continue;
-        dout << " added min id: " << id << endl;
         auto p = ack.add_list();
         auto iter = node_map_.find(id);
         *p = *iter->second.info;
     }
     reqid_t req_id = msg_base.req_id();
-    m_net_->SendMsgPB(rpc::NMasterRPC::NACK_MIN_WORKLOAD_NODE_INFO, ack, sock, "", req_id);
+    m_net_->SendMsgPB(rpc::NMasterRPC::NACK_MIN_WORKLOAD_NODE_INFO, ack, sock, 0, req_id);
 }
 
 int NodeModule::GetLoadBanlanceNode(ServerType type) {

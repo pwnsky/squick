@@ -3,7 +3,7 @@
 
 namespace proxy::logic {
 
-bool LogicModule::Start() { return true; }
+bool LogicModule::Start() {  return true; }
 
 bool LogicModule::Destory() { return true; }
 
@@ -48,38 +48,46 @@ bool LogicModule::AfterStart() {
 void LogicModule::NReqMinWorkloadNodeInfo() {
     // find min work load proxy
     rpc::NReqMinWorkloadNodeInfo pbreq;
-    pbreq.add_type_list(ST_PROXY);
+    pbreq.add_type_list(ST_PLAYER);
+    pbreq.add_type_list(ST_WORLD);
     m_net_client_->SendPBByID(DEFAULT_NODE_MASTER_ID, rpc::NMasterRPC::NREQ_MIN_WORKLOAD_NODE_INFO, pbreq);
 
 }
 
 void LogicModule::OnNAckMinWorkloadNodeInfo(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    string guid;
+    uint64_t uid;
     rpc::NAckMinWorkloadNodeInfo ack;
-    if (!INetModule::ReceivePB(msg_id, msg, len, ack, guid)) {
+    if (!INetModule::ReceivePB(msg_id, msg, len, ack, uid)) {
         return;
     }
 
     for (auto &info : ack.list()) {
         min_workload_nodes_[info.type()] = info.id();
     }
-
-    dout << "OnNAckMinWorkloadNodeInfo: updated !\n";
 }
 
 void LogicModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    dout << "OnReqPlayerEnter\n";
+
     auto pInfo = GetPlayerConnInfo(sock);
     if (pInfo == nullptr) {
         return;
     }
 
     int player_node = GetLoadBanlanceNode(ST_PLAYER);
-    if (player_node == -1 || pInfo->player_node > 0) {
+    if (player_node <= 0 || pInfo->player_node > 0) {
         return;
     }
 
-    m_net_client_->SendByID(player_node, rpc::PlayerRPC::REQ_PLAYER_ENTER, std::string(msg, len));
+    rpc::ReqPlayerEnter req;
+    req.set_account_id(pInfo->account_id);
+    req.set_account(pInfo->account);
+    req.set_ip(pInfo->ip);
+    req.set_protocol((int)pInfo->protocol_type);
+    req.set_proxy_node(pm_->GetAppID());
+    req.set_login_node(pInfo->login_node);
+    req.set_area(pm_->GetArea());
+    dout << "OnReqPlayerEnter: player_node: " << player_node << "\n";
+    m_net_client_->SendPBByID(player_node, rpc::PlayerRPC::REQ_PLAYER_ENTER, req);
     pInfo->player_node = player_node;
     return;
 }
@@ -87,7 +95,6 @@ void LogicModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const 
 void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
 
     rpc::AckPlayerEnter ack;
-    string guid;
     if (!ack.ParseFromString(std::string(msg, len))) {
         return;
     }
@@ -95,7 +102,7 @@ void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const 
     dout << "OnAckPlayerEnter\n";
     // start heatbeat
     //m_schedule_->AddSchedule(s.account_id, "HeatbeatCheck", this, &LogicModule::OnHeatbeatCheck, 10.0f, 99999); // 每10秒check一次
-    auto pInfo = GetPlayerConnInfo(ack.uid());
+    auto pInfo = GetPlayerConnInfo(ack.data().uid());
 
     if (pInfo != nullptr) {
         return ;
@@ -104,10 +111,13 @@ void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const 
     // 在这里创建玩家表
 }
 
-int GetLoadBanlanceNode(ServerType type) {
-    return 0;
+int LogicModule::GetLoadBanlanceNode(ServerType type) {
+    auto iter = min_workload_nodes_.find(type);
+    if(iter == min_workload_nodes_.end()) {
+        return 0;
+    }
+    return iter->second;
 }
-
 
 void LogicModule::OnReqPlayerLeave(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
 
@@ -155,16 +165,7 @@ void LogicModule::OnRecivedPlayerNodeMsg(const socket_t sock, const int msg_id, 
         sprintf(szData, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
         return;
     }
-
-    // broadcast many palyers
-    for (int i = 0; i < msg_pak.broadcast_size(); ++i) {
-        //SendToPlayer(xMsg.broadcast(i), msg_id, xMsg.msg_data());
-    }
-
-    // send to one player
-    if (msg_pak.broadcast_size() <= 0) {
-        SendToPlayer(msg_pak.uid(), msg_id, msg_pak.msg_data());
-    }
+    SendToPlayer(msg_pak.uid(), msg_id, msg_pak.msg_data());
     return;
 }
 
@@ -252,8 +253,8 @@ void LogicModule::OnReqTestProxy(const socket_t sock, const int msg_id, const ch
     
     if (now_time - last_time > 1000000) {
         rpc::Test req;
-        string guid;
-        INetModule::ReceivePB(msg_id, string(msg, len), req, guid);
+        uint64_t uid;
+        INetModule::ReceivePB(msg_id, string(msg, len), req, uid);
         std::cout << "Proxy Test:\n" << "handle quests: " << request_time - last_request_times << " times/second \n req network time: " << (now_time - req.req_time()) / 1000.0f << " ms \n";
         last_time = now_time;
         last_request_times = request_time;
@@ -330,6 +331,10 @@ void LogicModule::OnReqConnect(ProtocolType type, const socket_t sock, const int
     if (!req.ParseFromArray(msg, len)) {
         return;
     }
+    // check login_node
+    int login_node = req.login_node();
+
+
     // 验证Token
     Session s;
     s.account_id = req.account_id();
@@ -338,16 +343,14 @@ void LogicModule::OnReqConnect(ProtocolType type, const socket_t sock, const int
     s.sock = sock;
     s.ip = pNetObject->GetIP();
     s.protocol_type = type;
+    s.login_node = login_node;
     sessions_[sock] = s;
 
     rpc::NReqConnectProxyVerify nreq;
     nreq.set_session(sock);
     nreq.set_key(req.key());
     nreq.set_account_id(req.account_id());
-
-    int login_node = req.login_node();
-    // check login_node
-
+    
     dout << "login_node: " << login_node << endl;
     // send rand id
     // Modify ...
@@ -355,9 +358,9 @@ void LogicModule::OnReqConnect(ProtocolType type, const socket_t sock, const int
 }
 
 void LogicModule::OnNAckConnectVerify(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    string tmp;
+    uint64_t uid;
     rpc::NAckConnectProxyVerify data;
-    if (!m_net_->ReceivePB(msg_id, msg, len, data, tmp)) {
+    if (!m_net_->ReceivePB(msg_id, msg, len, data, uid)) {
         return;
     }
 
@@ -400,6 +403,7 @@ void LogicModule::OnNAckConnectVerify(const socket_t sock, const int msg_id, con
         client.last_ping = SquickGetTimeMSEx();
         client.account_id = s.account_id;
         client.account = data.account();
+        client.login_node = s.login_node;
         //client.world_id = data.world_id();
         client.protocol_type = s.protocol_type;
         client.ip = s.ip;
