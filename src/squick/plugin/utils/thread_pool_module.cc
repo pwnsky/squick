@@ -7,7 +7,11 @@ ThreadPoolModule::ThreadPoolModule(IPluginManager *p) {
     pm_ = p;
 }
 
-ThreadPoolModule::~ThreadPoolModule() {}
+ThreadPoolModule::~ThreadPoolModule() {
+    for (auto& t : mThreadPool) {
+        t->Quit();
+    }
+}
 
 bool ThreadPoolModule::Start() {
     for (int i = 0; i < pm_->GetAppCPUCount(); ++i) {
@@ -19,7 +23,10 @@ bool ThreadPoolModule::Start() {
 
 bool ThreadPoolModule::AfterStart() { return true; }
 
-bool ThreadPoolModule::BeforeDestory() { return true; }
+bool ThreadPoolModule::BeforeDestory() {
+
+    return true;
+}
 
 bool ThreadPoolModule::Destory() { return true; }
 

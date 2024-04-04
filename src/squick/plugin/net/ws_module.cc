@@ -252,7 +252,7 @@ void WSModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const cha
     if (msg_id < 0) {
         NetObject *pNetObject = m_pNet->GetNetObject(sock);
         if (nullptr != pNetObject) {
-            switch (pNetObject->GetConnectKeyState()) {
+            switch (pNetObject->GetConnectState()) {
             case ws_init: {
                 std::string_view data(pNetObject->GetBuff(), pNetObject->GetBuffLen());
                 auto pos = data.find("\r\n\r\n");
@@ -266,7 +266,7 @@ void WSModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const cha
                         return;
                     }
                     pNetObject->RemoveBuff(0, pos + 4);
-                    pNetObject->SetConnectKeyState(ws_handshaked);
+                    pNetObject->SetConnectState(ws_handshaked);
                     // may have more data, check it
                     ec = DecodeFrame(sock, pNetObject);
                     if (ec) {

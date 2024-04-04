@@ -140,7 +140,12 @@ class PluginManager : public IPluginManager {
 
     std::vector<std::string> args_;
 
-    typedef std::map<std::string, bool> PluginNameMap;
+    struct PluginInfo {
+        std::string path = "";
+        bool is_loaded = false;
+        time_t loaded_time = 0;
+    };
+
     typedef std::map<std::string, DynLib *> PluginLibMap;
     typedef std::map<std::string, IPlugin *> PluginInstanceMap;
     typedef std::map<std::string, IModule *> ModuleInstanceMap;
@@ -153,7 +158,8 @@ class PluginManager : public IPluginManager {
     std::vector<std::string> mStaticPlugin;
     std::map<std::string, std::vector<ReplaceContent>> mReplaceContent;
 
-    PluginNameMap mPluginNameMap;
+    std::vector<PluginInfo> plugins_;
+
     PluginLibMap mPluginLibMap;
     PluginInstanceMap mPluginInstanceMap;
     ModuleInstanceMap mModuleInstanceMap;

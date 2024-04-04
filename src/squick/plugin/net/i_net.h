@@ -215,8 +215,6 @@ class NetObject {
         memset(&sin, 0, sizeof(sin));
         sin = addr;
         ip = inet_ntoa(addr.sin_addr);
-
-        memset(node_list_, 0, sizeof(node_list_));
     }
 
     virtual ~NetObject() {}
@@ -248,48 +246,17 @@ class NetObject {
     }
 
     const char *GetBuff() { return ringBuff.data(); }
-
     int GetBuffLen() const { return (int)ringBuff.length(); }
-
     void *GetUserData() { return userData; }
-
     INet *GetNet() { return netObject; }
-
-    int GetConnectKeyState() const { return logicState; }
-
-    void SetConnectKeyState(const int state) { logicState = state; }
-
+    int GetConnectState() const { return logicState; }
+    void SetConnectState(const int state) { logicState = state; }
     bool NeedRemove() { return bNeedRemove; }
-
     void SetNeedRemove(bool b) { bNeedRemove = b; }
-
-    const string &GetPlayerID() { return playerID; }
-
-    void SetPlayerID(const string & playerID) { this->playerID = playerID; }
-
-    const string&GetAccountID() { return accountID; }
-
-    void SetAccountID(const string & accountID) { this->accountID = accountID; }
-
     socket_t GetRealFD() { return fd; }
 
     string GetIP() {
         return ip;
-    }
-
-    int GetNodeID(int index) {
-        if (index >= sizeof(node_list_) / sizeof(int)) {
-            return 0;
-        }
-        return node_list_[index];
-    }
-
-    bool GetNodeID(int index, int value) {
-        if (index >= sizeof(node_list_) / sizeof(int)) {
-            return false;
-        }
-        node_list_[index] = value;
-        return true;
     }
 
   private:
@@ -298,13 +265,10 @@ class NetObject {
     // ringbuff
     std::string ringBuff;
     int32_t logicState;
-    string playerID;    // player id
-    string accountID;    // temporary client id
     INet *netObject;
     socket_t fd;
     bool bNeedRemove;
     std::string ip;
-    int node_list_[12];
 };
 
 class INet {

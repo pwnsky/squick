@@ -12,7 +12,7 @@ call "init_runtime_dll.bat"
 rem cmake 
 cd %build_path%\
 echo %project_path%
-cmake %project_path%\src -DMODE=dev
+cmake %project_path% -DMODE=dev
 
 rem Project has generated at %build_path%
 explorer ..\cache

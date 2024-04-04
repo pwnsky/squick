@@ -6,22 +6,27 @@
 #include <squick/core/queue.h>
 #include <string>
 #include <squick/core/base.h>
+#include <atomic>
 
 class ThreadCell : MemoryCounter {
   public:
     ThreadCell(IThreadPoolModule *p) : MemoryCounter(GET_CLASS_NAME(ThreadCell), 1) {
         m_thread_pool_ = p;
         mThread = std::shared_ptr<std::thread>(new std::thread(&ThreadCell::Update, this));
+        is_quit_ = false;
     }
 
     void AddTask(const ThreadTask &task) { mTaskList.Push(task); }
 
     virtual void ToMemoryCounterString(std::string &info) override {}
-
+    virtual void Quit() {
+        is_quit_ = true;
+        mThread->join();
+    }
   protected:
     void Update() {
         ThreadTask task;
-        while (true) {
+        while (is_quit_ == false) {
             // 任务每0.1秒再执行
             std::this_thread::sleep_for(std::chrono::milliseconds(THREAD_POOL_SLEEP_TIME));
             {
@@ -47,6 +52,7 @@ class ThreadCell : MemoryCounter {
     Queue<ThreadTask> mTaskList;
     std::shared_ptr<std::thread> mThread;
     IThreadPoolModule *m_thread_pool_;
+    atomic<bool> is_quit_;
 };
 
 class ThreadPoolModule : public IThreadPoolModule {

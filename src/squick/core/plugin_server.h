@@ -31,9 +31,7 @@
 class PluginServer {
   public:
     PluginServer(const std::string &strArgv);
-
-    virtual ~PluginServer() { Final(); }
-
+    virtual ~PluginServer() {}
     void Start();
     void Update();
     void Final();
