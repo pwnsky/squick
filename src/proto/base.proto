@@ -20,3 +20,8 @@ message Vector4 {
     float z = 3;
     float w = 4;
 }
+
+enum ErrorCode {
+    ErrCommonSucc = 0;
+    ErrCommonFaild = 1;
+}

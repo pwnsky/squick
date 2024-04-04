@@ -250,8 +250,5 @@ class INetModule : public IModule {
 
     virtual bool SendMsgPBToAllClient(const uint16_t msg_id, const google::protobuf::Message &xData) = 0;
 
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const std::vector<string> *pClientIDList) = 0;
-    virtual bool SendMsgPB(const uint16_t msg_id, const std::string &strData, const socket_t sock, const std::vector<string> *pClientIDList) = 0;
-
     virtual INet *GetNet() = 0;
 };

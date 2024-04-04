@@ -15,14 +15,14 @@ enum ProxyRPC {
     REQ_DISCONNECT_PROXY = 8005;
     ACK_DISCONNECT_PROXY = 8006;
 
-    ACK_KICK_OFF = 8010; // 被踢下线
+    NC_ACK_KICK_OFF = 8010; // 被踢下线
 }
 
-////////////////////////////////////////////////////
-
 message ReqConnectProxy {
-    bytes account_id = 1;
-    bytes key = 2;
+    string account_id = 1;
+    string key = 2;
+    int32 login_node = 3;
+    uint64 signatrue = 4;
 }
 
 message AckConnectProxy { int32 code = 1; }

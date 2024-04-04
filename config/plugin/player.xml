@@ -7,6 +7,6 @@
         <Plugin Name="core/utils" />
 		<Plugin Name="core/lua" />
 		
-		<Plugin Name="node/lobby/node" />
+		<Plugin Name="node/player/node" />
 	</Lobby>
 </XML>

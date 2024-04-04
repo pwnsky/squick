@@ -1,7 +1,6 @@
 // 描述: 数据库 
 // 使用: 服务器
 syntax = "proto3";
-import "base.proto";
 package rpc;
 
 // 30000 ~ 35000

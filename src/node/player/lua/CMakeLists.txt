@@ -1,4 +1,4 @@
-set(ProjectName "lobby_lua")
+set(ProjectName "player_lua")
 file(GLOB soruces *.cc)
 file(GLOB headers *.h)
 add_library(${ProjectName} SHARED ${soruces} ${headers})
@@ -12,4 +12,4 @@ else()
 endif()
 
 LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "node/lobby" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/lobby "lua")
+SquickOut(${ProjectName} "node/player" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/player "lua")

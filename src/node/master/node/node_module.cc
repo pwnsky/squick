@@ -9,22 +9,22 @@ bool NodeModule::Destory() { return true; }
 
 bool NodeModule::AfterStart() {
     
-    m_net_->AddReceiveCallBack(rpc::MasterRPC::NN_REQ_NODE_REGISTER, this, &NodeModule::OnNnReqNodeRegister);
-    m_net_->AddReceiveCallBack(rpc::MasterRPC::NN_REQ_NODE_UNREGISTER, this, &NodeModule::OnNnReqNodeUnregistered);
-    m_net_->AddReceiveCallBack(rpc::MasterRPC::NN_NTF_NODE_REPORT, this, &NodeModule::OnNnNtfNodeReport);
-    m_net_->AddReceiveCallBack(rpc::MasterRPC::NN_REQ_MIN_WORKLOAD_NODE_INFO, this, &NodeModule::OnNnReqMinWorkNodeInfo);
+    m_net_->AddReceiveCallBack(rpc::NMasterRPC::NREQ_NODE_REGISTER, this, &NodeModule::OnNReqNodeRegister);
+    m_net_->AddReceiveCallBack(rpc::NMasterRPC::NREQ_NODE_UNREGISTER, this, &NodeModule::OnNReqNodeUnregistered);
+    m_net_->AddReceiveCallBack(rpc::NMasterRPC::NNTF_NODE_REPORT, this, &NodeModule::OnNNtfNodeReport);
+    m_net_->AddReceiveCallBack(rpc::NMasterRPC::NREQ_MIN_WORKLOAD_NODE_INFO, this, &NodeModule::OnNReqMinWorkNodeInfo);
     Listen();
     
     return true;
 }
 
-void NodeModule::OnNnReqNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+void NodeModule::OnNReqNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     string nPlayerID;
-    rpc::NnReqNodeRegister req;
+    rpc::NReqNodeRegister req;
     if (!m_net_->ReceivePB(msg_id, msg, len, req, nPlayerID)) {
         return;
     }
-    rpc::NnAckNodeRegister ack;
+    rpc::NAckNodeRegister ack;
     int new_node_id = 0;
     ack.set_code(1);
     do {        
@@ -63,7 +63,7 @@ void NodeModule::OnNnReqNodeRegister(const socket_t sock, const int msg_id, cons
         ack.set_code(0);
     } while (false);
 
-    m_net_->SendMsgPB(rpc::MasterRPC::NN_ACK_NODE_REGISTER, ack, sock);
+    m_net_->SendMsgPB(rpc::NMasterRPC::NACK_NODE_REGISTER, ack, sock);
 
     NtfSubscribNode(new_node_id);
 }
@@ -93,11 +93,11 @@ void NodeModule::NtfSubscribNode(int new_node_id) {
         if (type != new_node_type) continue;
         for (auto sub_id : ns.second) {
             if (sub_id == new_node_id) continue;
-            rpc::NnNtfNodeAdd ntf;
+            rpc::NNtfNodeAdd ntf;
             auto p = ntf.add_node_list();
             *p = *new_node;
             dout << "Ntf add: " << sub_id << " new: " << new_node_id << endl;
-            SendPBByID(sub_id, rpc::MasterRPC::NN_NTF_NODE_ADD, ntf);
+            SendPBByID(sub_id, rpc::NMasterRPC::NNTF_NODE_ADD, ntf);
         }
     }
 }
@@ -112,9 +112,9 @@ bool NodeModule::SendPBByID(const int node_id, const uint16_t msg_id, const goog
     return m_net_->SendMsgPB(msg_id, pb, iter->second.fd);
 }
 
-void NodeModule::OnNnReqNodeUnregistered(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+void NodeModule::OnNReqNodeUnregistered(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     string guid;
-    rpc::NnReqNodeUnregister req;
+    rpc::NReqNodeUnregister req;
     if (!m_net_->ReceivePB(msg_id, msg, len, req, guid)) {
         return;
     }
@@ -128,10 +128,10 @@ void NodeModule::OnNnReqNodeUnregistered(const socket_t sock, const int msg_id, 
 }
 
 // Master
-void NodeModule::OnNnNtfNodeReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+void NodeModule::OnNNtfNodeReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     
     string guid;
-    rpc::NnNtfNodeReport ntf;
+    rpc::NNtfNodeReport ntf;
     if (!INetModule::ReceivePB(msg_id, msg, len, ntf, guid)) {
         return;
     }
@@ -160,9 +160,9 @@ void NodeModule::OnNnNtfNodeReport(const socket_t sock, const int msg_id, const 
     } while (false);
 }
 
-void NodeModule::OnNnReqMinWorkNodeInfo(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    rpc::NnReqMinWorkloadNodeInfo req;
-    rpc::NnAckMinWorkloadNodeInfo ack;
+void NodeModule::OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    rpc::NReqMinWorkloadNodeInfo req;
+    rpc::NAckMinWorkloadNodeInfo ack;
     string guid;
     
     rpc::MsgBase msg_base;
@@ -182,7 +182,7 @@ void NodeModule::OnNnReqMinWorkNodeInfo(const socket_t sock, const int msg_id, c
         *p = *iter->second.info;
     }
     reqid_t req_id = msg_base.req_id();
-    m_net_->SendMsgPB(rpc::MasterRPC::NN_ACK_MIN_WORKLOAD_NODE_INFO, ack, sock, "", req_id);
+    m_net_->SendMsgPB(rpc::NMasterRPC::NACK_MIN_WORKLOAD_NODE_INFO, ack, sock, "", req_id);
 }
 
 int NodeModule::GetLoadBanlanceNode(ServerType type) {

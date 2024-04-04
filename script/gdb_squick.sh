@@ -9,8 +9,4 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/lib
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:`pwd`
 
 echo $SQUICK_ARGS
-if [ -z $SQUICK_ARGS ];then
-        ./squick $@
-else
-        ./squick $SQUICK_ARGS
-fi
+gdb ./squick

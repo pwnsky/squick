@@ -9,15 +9,11 @@ class NodeModule : public INodeModule {
     virtual bool AfterStart();
     virtual void OnClientConnected(socket_t sock) override;
     virtual void OnClientDisconnected(socket_t sock) override;
-
-    virtual bool OnReqProxyConnectVerify(INT64 session, const std::string& guid, const std::string& key) override;
+    
 private:
-    void OnAckProxyConnectVerify(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
-    // From lobby
-    void Transport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
-    void PlayerBindEvent(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
-  protected:
+    void OnWebSocketClientEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet);
+private:
     logic::ILogicModule *m_logic_;
+    IWSModule* m_ws_;
 };
-
 } // namespace proxy::node

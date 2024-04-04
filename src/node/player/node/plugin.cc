@@ -2,7 +2,7 @@
 #include "node_module.h"
 //
 //
-namespace lobby::node {
+namespace player::node {
 SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){CREATE_PLUGIN(pm, Plugin)};
 
 SQUICK_EXPORT void SquickPluginUnload(IPluginManager *pm){DESTROY_PLUGIN(pm, Plugin)};
@@ -17,4 +17,4 @@ void Plugin::Install() { REGISTER_MODULE(pm_, INodeModule, NodeModule) }
 
 void Plugin::Uninstall() { UNREGISTER_MODULE(pm_, INodeModule, NodeModule) }
 
-} // namespace lobby::node
+} // namespace player::node

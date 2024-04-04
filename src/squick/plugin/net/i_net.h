@@ -208,7 +208,6 @@ class NetObject {
   public:
     NetObject(INet *pNet, socket_t sock, sockaddr_in &addr, void *pBev) {
         logicState = 0;
-        lobbyID = 0;
         fd = sock;
         bNeedRemove = false;
         netObject = pNet;
@@ -216,6 +215,8 @@ class NetObject {
         memset(&sin, 0, sizeof(sin));
         sin = addr;
         ip = inet_ntoa(addr.sin_addr);
+
+        memset(node_list_, 0, sizeof(node_list_));
     }
 
     virtual ~NetObject() {}
@@ -262,11 +263,6 @@ class NetObject {
 
     void SetNeedRemove(bool b) { bNeedRemove = b; }
 
-
-    int GetLobbyID() const { return lobbyID; }
-
-    void SetLobbyID(const int nData) { lobbyID = nData; }
-
     const string &GetPlayerID() { return playerID; }
 
     void SetPlayerID(const string & playerID) { this->playerID = playerID; }
@@ -281,19 +277,34 @@ class NetObject {
         return ip;
     }
 
+    int GetNodeID(int index) {
+        if (index >= sizeof(node_list_) / sizeof(int)) {
+            return 0;
+        }
+        return node_list_[index];
+    }
+
+    bool GetNodeID(int index, int value) {
+        if (index >= sizeof(node_list_) / sizeof(int)) {
+            return false;
+        }
+        node_list_[index] = value;
+        return true;
+    }
+
   private:
     sockaddr_in sin;
     void *userData;
     // ringbuff
     std::string ringBuff;
     int32_t logicState;
-    int32_t lobbyID;
     string playerID;    // player id
     string accountID;    // temporary client id
     INet *netObject;
     socket_t fd;
     bool bNeedRemove;
     std::string ip;
+    int node_list_[12];
 };
 
 class INet {

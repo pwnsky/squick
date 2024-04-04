@@ -65,6 +65,8 @@ class AckLogin : public IResponse {
     string ip;
     int port;
     int ws_port;
+    int login_node;
+    uint64_t signatrue;
 };
 
-AJSON(AckLogin, code, msg, token, account_id, limit_time, key, ip, port, ws_port)
+AJSON(AckLogin, code, msg, token, account_id, limit_time, key, ip, port, ws_port, login_node, signatrue)

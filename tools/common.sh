@@ -46,20 +46,18 @@ fi
 
 function log_error()
 {
-     echo -e "\e[1;41m Error: $1 \e[0m"
+     echo -e "\e[1;41m ERROR: $1 \e[0m"
      sleep 1
 }
 
 function log_info()
 {
-    echo -e "\e[1;42m $1\e[0m"
-    sleep 1
+    echo -e "\e[1;42m INFO: $1\e[0m"
 }
 
 function log_debug()
 {
-    echo -e "\e[5;45m $1 \e[0m"
-    sleep 1
+    echo -e "\e[5;45m INFO: $1 \e[0m"
 }
 
 function check_err()
@@ -72,4 +70,3 @@ function check_err()
         log_info "No error"
     fi
 }
-

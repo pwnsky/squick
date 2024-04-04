@@ -2,7 +2,7 @@
 
 #include "i_node_module.h"
 
-namespace lobby::node {
+namespace player::node {
 	class NodeModule : public INodeModule {
 	public:
 		NodeModule(IPluginManager* p) {
@@ -16,4 +16,4 @@ namespace lobby::node {
 	private:
 	};
 
-} // namespace lobby::node
+} // namespace player::node

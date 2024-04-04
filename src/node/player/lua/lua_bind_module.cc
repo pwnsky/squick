@@ -3,7 +3,7 @@
 #include "lua_bind_module.h"
 #include <squick/plugin/lua/export.h>
 // #include <third_party/nlohmann/json.hpp>
-namespace lobby::lua {
+namespace player::lua {
 bool LuaBindModule::Start() {
     m_lua_script_ = pm_->FindModule<ILuaScriptModule>();
     //m_player_manager_ = pm_->FindModule<player::IPlayerManagerModule>();

@@ -3,7 +3,7 @@
 #include <squick/core/i_plugin.h>
 #include <squick/core/i_plugin_manager.h>
 
-namespace lobby::node {
+namespace player::node {
 class Plugin : public IPlugin {
   public:
     Plugin(IPluginManager *p) { pm_ = p; }
@@ -13,4 +13,4 @@ class Plugin : public IPlugin {
     virtual void Uninstall();
 };
 
-} // namespace lobby::server
+} // namespace player::server

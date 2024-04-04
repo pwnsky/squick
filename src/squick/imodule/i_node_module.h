@@ -54,7 +54,7 @@ class INodeBaseModule : public IModule {
         case ServerType::ST_WORLD: return "world";
         case ServerType::ST_DB_PROXY: return "db_proxy";
         case ServerType::ST_PROXY: return "proxy";
-        case ServerType::ST_LOBBY: return "lobby";
+        case ServerType::ST_PLAYER: return "player";
         case ServerType::ST_GAME_MGR: return "game_mgr";
         case ServerType::ST_GAME: return "game";
         case ServerType::ST_MICRO: return "micro";
@@ -71,7 +71,7 @@ class INodeBaseModule : public IModule {
         else if (type == "world") return ServerType::ST_WORLD;
         else if (type == "db_proxy") return ServerType::ST_DB_PROXY;
         else if (type == "proxy") return ServerType::ST_PROXY;
-        else if (type == "lobby") return ServerType::ST_LOBBY;
+        else if (type == "player") return ServerType::ST_PLAYER;
         else if (type == "game_mgr") return ServerType::ST_GAME_MGR;
         else if (type == "game") return ServerType::ST_GAME;
         else if (type == "micro") return ServerType::ST_MICRO;
@@ -122,9 +122,9 @@ class INodeBaseModule : public IModule {
     // Add upper server
     bool AddNodesByType(const vector<int> &types) {
         m_net_client_->AddEventCallBack(ST_MASTER, this, &INodeBaseModule::OnClientSocketEvent);
-        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::MasterRPC::NN_NTF_NODE_ADD, this, &INodeBaseModule::OnNnNtfNodeAdd);
-        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::MasterRPC::NN_NTF_NODE_REMOVE, this, &INodeBaseModule::OnNnNtfNodeRemove);
-        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::MasterRPC::NN_ACK_NODE_REGISTER, this, &INodeBaseModule::OnNnAckNodeRegister);
+        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::NMasterRPC::NNTF_NODE_ADD, this, &INodeBaseModule::OnNNtfNodeAdd);
+        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::NMasterRPC::NNTF_NODE_REMOVE, this, &INodeBaseModule::OnNNtfNodeRemove);
+        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::NMasterRPC::NACK_NODE_REGISTER, this, &INodeBaseModule::OnNAckNodeRegister);
         m_net_client_->ExpandBufferSize();
         bool ret = false;
         node_info_.listen_types = types;
@@ -146,7 +146,7 @@ class INodeBaseModule : public IModule {
     // Add upper server
     void OnDynamicServerAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
         string guid;
-        rpc::NnNtfNodeAdd ntf;
+        rpc::NNtfNodeAdd ntf;
         if (!INetModule::ReceivePB(msg_id, msg, len, ntf, guid)) {
             return;
         }
@@ -180,11 +180,11 @@ class INodeBaseModule : public IModule {
         node_info_.info->set_workload(workload_);
         // Update status to master
         if (pm_->GetAppType() != ST_MASTER) {
-            rpc::NnNtfNodeReport req;
+            rpc::NNtfNodeReport req;
             req.set_id(pm_->GetAppID());
             auto s = req.add_list();
             *s = *node_info_.info.get();
-            m_net_client_->SendPBByID(DEFAULT_NODE_MASTER_ID, rpc::MasterRPC::NN_NTF_NODE_REPORT, req);
+            m_net_client_->SendPBByID(DEFAULT_NODE_MASTER_ID, rpc::NMasterRPC::NNTF_NODE_REPORT, req);
         }
     }
 
@@ -239,20 +239,20 @@ class INodeBaseModule : public IModule {
         // target type only master can register
         if (ts->type != ST_MASTER) return;
         
-        rpc::NnReqNodeRegister req;
+        rpc::NReqNodeRegister req;
         *req.mutable_node() = *node_info_.info.get();
         
         for (auto type : node_info_.listen_types) {
             req.add_listen_type_list(type);
         }
 
-        m_net_client_->SendPBByID(ts->id, rpc::MasterRPC::NN_REQ_NODE_REGISTER, req);
+        m_net_client_->SendPBByID(ts->id, rpc::NMasterRPC::NREQ_NODE_REGISTER, req);
         m_log_->LogInfo(Guid(0, pm_->GetAppID()), ts->name, "Register");
     }
     
-    void OnNnAckNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    void OnNAckNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
         string guid;
-        rpc::NnAckNodeRegister ack;
+        rpc::NAckNodeRegister ack;
         if (!m_net_->ReceivePB(msg_id, msg, len, ack, guid)) {
             return;
         }
@@ -266,9 +266,9 @@ class INodeBaseModule : public IModule {
     }
 
     // Add node ntf
-    void OnNnNtfNodeAdd(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    void OnNNtfNodeAdd(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
         string guid;
-        rpc::NnNtfNodeAdd ntf;
+        rpc::NNtfNodeAdd ntf;
         if (!m_net_->ReceivePB(msg_id, msg, len, ntf, guid)) {
             return;
         }
@@ -290,12 +290,12 @@ class INodeBaseModule : public IModule {
     }
 
     // Add node ntf
-    void OnNnNtfNodeRemove(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    void OnNNtfNodeRemove(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
 
     }
 
     bool RemoveNodes() {
-
+        return true;
     }
 
     public:

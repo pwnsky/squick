@@ -17,9 +17,6 @@ bool HttpModule::AfterStart() {
     m_http_server_->AddMiddleware(this, &HttpModule::Middleware);
 
     m_http_server_->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &HttpModule::OnLogin);
-    //m_http_server_->AddNetFilter("/area/list", this, &HttpModule::OnFilter);
-    //m_http_server_->AddNetFilter("/area/enter", this, &HttpModule::OnFilter);
-
     m_http_server_->StartServer(pm_->GetArg("http_port=", 80));
 
     return true;
@@ -79,11 +76,10 @@ Coroutine<bool>  HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
             // check from db
         }
 
-
         // find min work load proxy
-        rpc::NnReqMinWorkloadNodeInfo pbreq;
+        rpc::NReqMinWorkloadNodeInfo pbreq;
         pbreq.add_type_list(ST_PROXY);
-        auto data = co_await m_net_client_->RequestPB(DEFAULT_NODE_MASTER_ID, rpc::MasterRPC::NN_REQ_MIN_WORKLOAD_NODE_INFO, pbreq, rpc::MasterRPC::NN_ACK_MIN_WORKLOAD_NODE_INFO);
+        auto data = co_await m_net_client_->RequestPB(DEFAULT_NODE_MASTER_ID, rpc::NMasterRPC::NREQ_MIN_WORKLOAD_NODE_INFO, pbreq, rpc::NMasterRPC::NACK_MIN_WORKLOAD_NODE_INFO);
         if (data.error) {
             ack.code = IResponse::SERVER_ERROR;
             ack.msg = "Get min workload proxy info from master error, network error\n";
@@ -91,7 +87,7 @@ Coroutine<bool>  HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
         }
 
         string guid;
-        rpc::NnAckMinWorkloadNodeInfo pback;
+        rpc::NAckMinWorkloadNodeInfo pback;
         if (!INetModule::ReceivePB(data.ack_msg_id, data.data, data.length, pback, guid)) {
             ack.code = IResponse::SERVER_ERROR;
             ack.msg = "Get min workload proxy info from master error, pb data is invalid\n";
@@ -104,6 +100,7 @@ Coroutine<bool>  HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
             break;
         }
 
+        account_id = CreatePlayerGUID().ToString();
         auto proxy_info = pback.list()[0];
         string token = MakeToken(account_id);
         
@@ -115,6 +112,8 @@ Coroutine<bool>  HttpModule::OnLogin(std::shared_ptr<HttpRequest> request) {
         ack.port = proxy_info.port();
         ack.ws_port = proxy_info.ws_port();
         ack.key = token;
+        ack.signatrue = 123456;
+        ack.login_node = pm_->GetAppID();
 
         time_t login_time = SquickGetTimeS();
 
@@ -193,6 +192,7 @@ WebStatus HttpModule::Middleware(std::shared_ptr<HttpRequest> req) {
         token = info["token"];
     }
     catch (exception e) {
+        m_http_server_->ResponseMsg(req, "{\"code\":-1, \"msg\"=\"Forbiden\"}", WebStatus::WEB_AUTH);
         return WebStatus::WEB_AUTH;
     }
     if (CheckAuth(account_id, token)) {

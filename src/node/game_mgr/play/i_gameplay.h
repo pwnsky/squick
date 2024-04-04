@@ -135,7 +135,7 @@ class IGameplay {
         }
 
         // 发送当前所有玩家给加入者
-        SendToPlayer(GameBaseRPC::ACK_PLAYER_ENTER, xPlayerEntryInfoList, player);
+        SendToPlayer(GameBaseRPC::ACK_GAME_PLAYER_ENTER, xPlayerEntryInfoList, player);
 
         // 发送新玩家给其他已加入的玩家
         AckPlayerEnterList xNewPlayerEntryInfoList;
@@ -148,7 +148,7 @@ class IGameplay {
         //pEntryInfo->set_glove(p->glove_);
 
         // 广播新加入者
-        BroadcastToPlayersExcept(GameBaseRPC::ACK_PLAYER_ENTER, xNewPlayerEntryInfoList, player);
+        BroadcastToPlayersExcept(GameBaseRPC::ACK_GAME_PLAYER_ENTER, xNewPlayerEntryInfoList, player);
 
         // 调用子类
         PlayerJoin(player);

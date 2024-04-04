@@ -76,8 +76,8 @@ function Load()
         [ServerType.ST_GAME ] = function()
             Require("node.game.init")
         end,
-        [ServerType.ST_LOBBY] = function ()
-            Require("node.lobby.init")
+        [ServerType.ST_PLAYER] = function ()
+            Require("node.player.init")
             --Require("test.init")
         end
     }

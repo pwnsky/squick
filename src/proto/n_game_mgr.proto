@@ -5,7 +5,7 @@ package rpc;
 import "game.proto";
 // GameplayManagerRPC RPC 500 ~ 600
 enum GameplayManagerRPC {
-    GAMEPLAY_MANAGER_RPC_NONE = 0;
+    NGAMEPLAY_MANAGER_RPC_NONE = 0;
 
     // GAME_PLAY Manager API
     // GAME_PLAY 管理服 接口

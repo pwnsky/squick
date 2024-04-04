@@ -9,7 +9,7 @@
 #include <squick/plugin/net/export.h>
 #include <struct/struct.h>
 
-namespace lobby::lua {
+namespace player::lua {
 class ILuaBindModule : public IModule {};
 
 class LuaBindModule : public ILuaBindModule {
@@ -37,4 +37,4 @@ class LuaBindModule : public ILuaBindModule {
     //node::INodeModule *m_node_;
 };
 
-} // namespace lobby::lua
+} // namespace player::lua

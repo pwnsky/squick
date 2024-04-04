@@ -1,6 +1,0 @@
-syntax = "proto3";
-package rpc;
-
-enum WorldRPC {
-    WORLD_RPC_NONE = 0;
-}

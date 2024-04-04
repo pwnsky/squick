@@ -1,9 +1,9 @@
 #pragma once
 
 #include <squick/imodule/i_node_module.h>
-namespace lobby::node {
+namespace player::node {
 class INodeModule : public INodeBaseModule {
   public:
 };
 
-} // namespace lobby::server
+} // namespace player::server
