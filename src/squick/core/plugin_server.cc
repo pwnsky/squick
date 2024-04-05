@@ -60,10 +60,6 @@ void PluginServer::ProcessParameter() {
     }
 
 #if PLATFORM != PLATFORM_WIN
-    // run it as a daemon process
-    if (strArgvList.find("-d") != string::npos) {
-        StartDaemon();
-    }
     signal(SIGPIPE, SIG_IGN);
     signal(SIGCHLD, SIG_IGN);
 #endif
