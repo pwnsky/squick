@@ -26,11 +26,13 @@ message ReqPlayerEnter {
     int32 protocol = 6;
     int32 area = 7;
     int32 platform = 8;
+    int64 proxy_sock = 9;
 }
 
 message AckPlayerEnter {
     int32 code = 1;
-    PlayerData data = 2;
+    int64 proxy_sock = 2;
+    PlayerData data = 3;
 }
 
 message ReqPlayerLeave {

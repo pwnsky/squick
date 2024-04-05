@@ -83,12 +83,12 @@ class LogicModule : public ILogicModule {
     void OnWebSocketClientEvent(socket_t sockIndex, const SQUICK_NET_EVENT eEvent, INet* pNet);
     
     int GetLoadBanlanceNode(ServerType type);
-    PlayerConnInfo* GetPlayerConnInfo(const uint64_t uid);
+    PlayerConnInfo* GetPlayerConnInfoByUID(const uint64_t uid);
     PlayerConnInfo* GetPlayerConnInfo(const socket_t player_sock);
     bool RemovePlayerConnInfo(const socket_t player_sock);
 
-    unordered_map<socket_t, PlayerConnInfo> players_;    // key: sock , value: info
-    unordered_map<uint64_t, socket_t> players_socks_;    // key: uid, value: sock
+    map<socket_t, PlayerConnInfo> players_;    // key: sock , value: info
+    map<uint64_t, socket_t> players_socks_;    // key: uid, value: sock
 
     map<socket_t, Session> sessions_;
     map<int, int> min_workload_nodes_; // min workload nodes, key: node type, value: node id

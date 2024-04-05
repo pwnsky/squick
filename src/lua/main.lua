@@ -8,6 +8,7 @@ Env = {
     app_name = '',
     start_time = 0,
     area = 0,
+    Debug = true,
 }
 
 function Print(...)

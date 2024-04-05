@@ -1,9 +1,13 @@
 
 #include "logic_module.h"
+#include <squick/core/base.h>
 
 namespace proxy::logic {
 
-bool LogicModule::Start() {  return true; }
+bool LogicModule::Start() {  
+    last_update_work_load_info_time_ = SquickGetTimeS();
+    return true;
+}
 
 bool LogicModule::Destory() { return true; }
 
@@ -86,6 +90,7 @@ void LogicModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const 
     req.set_proxy_node(pm_->GetAppID());
     req.set_login_node(pInfo->login_node);
     req.set_area(pm_->GetArea());
+    req.set_proxy_sock(sock);
     dout << "OnReqPlayerEnter: player_node: " << player_node << "\n";
     m_net_client_->SendPBByID(player_node, rpc::PlayerRPC::REQ_PLAYER_ENTER, req);
     pInfo->player_node = player_node;
@@ -94,21 +99,39 @@ void LogicModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const 
 
 void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
 
+    uint64_t uid = 0;
+
     rpc::AckPlayerEnter ack;
-    if (!ack.ParseFromString(std::string(msg, len))) {
+    if (!m_net_->ReceivePB(msg_id, msg, len, ack, uid)) {
         return;
     }
 
     dout << "OnAckPlayerEnter\n";
     // start heatbeat
     //m_schedule_->AddSchedule(s.account_id, "HeatbeatCheck", this, &LogicModule::OnHeatbeatCheck, 10.0f, 99999); // 每10秒check一次
-    auto pInfo = GetPlayerConnInfo(ack.data().uid());
 
+    uid = ack.data().uid();
+    socket_t player_sock = ack.proxy_sock();
+
+    auto pInfo = GetPlayerConnInfoByUID(uid);
     if (pInfo != nullptr) {
+        m_log_->LogError("Uid: " + std::to_string(uid) + " has enter the game, do not try again");
+        return ;
+    }
+
+    pInfo = GetPlayerConnInfo(player_sock);
+
+    if (pInfo == nullptr) {
+        m_log_->LogError("Uid: " + std::to_string(uid) + " no this socket: " + std::to_string(player_sock));
         return ;
     }
 
     // 在这里创建玩家表
+    players_socks_[uid] = player_sock;
+    pInfo->uid = uid;
+    pInfo->status = PlayerOnline;
+
+    m_net_->SendMsgWithOutHead(rpc::PlayerRPC::ACK_PLAYER_ENTER, ack.SerializeAsString(), player_sock);
 }
 
 int LogicModule::GetLoadBanlanceNode(ServerType type) {
@@ -279,7 +302,7 @@ int LogicModule::OnHeatbeatCheck(const Guid &self, const std::string &heartBeat,
     return 0;
 }
 
-PlayerConnInfo* LogicModule::GetPlayerConnInfo(const uint64_t uid) {
+PlayerConnInfo* LogicModule::GetPlayerConnInfoByUID(const uint64_t uid) {
     auto iter = players_socks_.find(uid);
     if (iter == players_socks_.end()) {
         return nullptr;
@@ -301,7 +324,14 @@ bool LogicModule::RemovePlayerConnInfo(const socket_t player_sock) {
     if (iter == players_.end()) {
         return false;
     }
+    uint64_t uid = iter->second.uid;
     players_.erase(iter);
+
+    auto iter2 = players_socks_.find(uid);
+    if (iter2 != players_socks_.end()) {
+        players_socks_.erase(iter2);
+    }
+
     return true;
 }
 
@@ -407,6 +437,7 @@ void LogicModule::OnNAckConnectVerify(const socket_t sock, const int msg_id, con
         //client.world_id = data.world_id();
         client.protocol_type = s.protocol_type;
         client.ip = s.ip;
+        client.status = PlayerNotEneter;
 
         dout << "Verify succ! " << client.account_id << endl;
     } else {

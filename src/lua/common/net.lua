@@ -23,6 +23,18 @@ function Net:SendByFD(fd, msg_id, msg_data, uid)
     Squick:SendByFD(fd, msg_id, msg_data, uid)
 end
 
+function Net:SendPBByFD(fd, msg_id, tn, t, uid)
+    if(uid == nil) then
+        uid = 0
+    end
+    if (Env.Debug) then
+        Print("Send pb to fd: " .. fd .. " uid: " .. uid .. " msg_id: " .. msg_id .. " proto: " .. tn)
+        
+        PrintTable(t)
+    end
+    Squick:SendByFD(fd, msg_id, Squick:Encode(tn, t), uid)
+end
+
 function Net:SendToPlayer(msg_id)
 
 end

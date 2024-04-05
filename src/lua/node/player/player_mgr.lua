@@ -145,15 +145,20 @@ function PlayerMgr:OnReqPlayerEnter(uid, msg_data, msg_id, fd)
 
         local ack = {
             code = 0,
+            proxy_sock = req.proxy_sock,
             data = {
                 account = account;
                 account_id = account_id,
                 uid = uid,
                 name = player_data.name,
+                ip = req.ip,
+                last_login_time = player_data.last_login_time,
+                platform = player_data.platform,
+                level = player_data.level
             }
         }
         
-        Net:SendByFD(fd, PlayerRPC.ACK_PLAYER_ENTER, Squick:Encode("rpc.AckPlayerEnter", ack))
+        Net:SendPBByFD(fd, PlayerRPC.ACK_PLAYER_ENTER, "rpc.AckPlayerEnter", ack, uid)
     end, uid, msg_data, msg_id, fd)
 end
 

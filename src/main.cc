@@ -108,7 +108,6 @@ int main(int argc, char *argv[]) {
 
 #if PLATFORM != PLATFORM_WIN
     signal(SIGINT, SquickExit);
-    signal(SIGQUIT, SquickExit);
 #endif
 
     for (auto item : serverList) {
