@@ -11,7 +11,7 @@ bool NodeModule::AfterStart() {
 
     node_info_.info->set_ws_port(pm_->GetArg("ws_port=", 10502));
 
-    m_ws_->Startialization(DEFAULT_NODE_MAX_SERVER_CONNECTION, pm_->GetArg("ws_port=", 10502));
+    m_ws_->Listen(DEFAULT_NODE_MAX_SERVER_CONNECTION, pm_->GetArg("ws_port=", 10502), DEFAULT_NODE_CPUT_COUNT, DEFAULT_NET_SERVER_BUFFER_SIZE);
     m_ws_->AddEventCallBack(this, &NodeModule::OnWebSocketClientEvent);
 
     vector<int> node_types = { ServerType::ST_WORLD, ServerType::ST_LOGIN, ServerType::ST_PLAYER };

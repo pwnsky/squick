@@ -27,27 +27,14 @@ bool NetModule::Start() {
 
 bool NetModule::AfterStart() { return true; }
 
-void NetModule::Startialization(const char *ip, const unsigned short nPort) {
+void NetModule::Connect(const char *ip, const unsigned short nPort, const uint32_t expand_buffer_size) {
     m_pNet = new Net(this, &NetModule::OnReceiveNetPack, &NetModule::OnSocketNetEvent);
-    m_pNet->ExpandBufferSize(mnBufferSize);
-    m_pNet->Startialization(ip, nPort);
+    m_pNet->Connect(ip, nPort, expand_buffer_size);
 }
 
-int NetModule::Startialization(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount) {
+int NetModule::Listen(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount, const uint32_t expand_buffer_size) {
     m_pNet = new Net(this, &NetModule::OnReceiveNetPack, &NetModule::OnSocketNetEvent);
-    m_pNet->ExpandBufferSize(mnBufferSize);
-    return m_pNet->Startialization(nMaxClient, nPort, nCpuCount);
-}
-
-unsigned int NetModule::ExpandBufferSize(const unsigned int size) {
-    if (size > 0) {
-        mnBufferSize = size;
-        if (m_pNet) {
-            m_pNet->ExpandBufferSize(mnBufferSize);
-        }
-    }
-
-    return mnBufferSize;
+    return m_pNet->Listen(nMaxClient, nPort, nCpuCount, expand_buffer_size);
 }
 
 void NetModule::RemoveReceiveCallBack(const int msg_id) {

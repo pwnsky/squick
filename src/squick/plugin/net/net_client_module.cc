@@ -4,7 +4,6 @@
 
 NetClientModule::NetClientModule(IPluginManager *p) {
     is_update_ = true;
-    mnBufferSize = 0;
     pm_ = p;
 }
 
@@ -26,7 +25,7 @@ bool NetClientModule::Destory() { return true; }
 
 bool NetClientModule::Update() {
     ProcessUpdate();
-    ProcessAddNetConnect();
+    ProcessNetConnect();
     return true;
 }
 
@@ -41,13 +40,6 @@ void NetClientModule::RemoveReceiveCallBack(const ServerType eType, const uint16
 }
 
 void NetClientModule::AddNode(const ConnectData &xInfo) { mxTempNetList.push_back(xInfo); }
-
-unsigned int NetClientModule::ExpandBufferSize(const unsigned int size) {
-    if (size > 0) {
-        mnBufferSize = size;
-    }
-    return mnBufferSize;
-}
 
 int NetClientModule::AddReceiveCallBack(const ServerType eType, const uint16_t msg_id, NET_RECEIVE_FUNCTOR_PTR functorPtr) {
     std::shared_ptr<CallBack> xCallBack = mxCallBack.GetElement(eType);
@@ -396,7 +388,7 @@ void NetClientModule::ProcessUpdate() {
             pServerData->net_module->AfterStart();
             pServerData->net_module->ReadyUpdate();
 
-            pServerData->net_module->Startialization(pServerData->ip.c_str(), pServerData->port);
+            pServerData->net_module->Connect(pServerData->ip.c_str(), pServerData->port, pServerData->buffer_size);
 
             StartCallBacks(pServerData);
         } break;
@@ -491,39 +483,45 @@ int NetClientModule::OnDisConnected(const socket_t fd, INet *pNet) {
     return 0;
 }
 
-void NetClientModule::ProcessAddNetConnect() {
-    std::list<ConnectData>::iterator it = mxTempNetList.begin();
-    for (; it != mxTempNetList.end(); ++it) {
-        const ConnectData &cd = *it;
-        std::shared_ptr<ConnectData> sd = mxServerMap.GetElement(cd.id);
-        if (nullptr == sd) {
-            sd = std::shared_ptr<ConnectData>(new ConnectData());
+void NetClientModule::ProcessNetConnect() {
 
-            sd->id = cd.id;
-            sd->type = cd.type;
-            sd->ip = cd.ip;
-            sd->name = cd.name;
-            sd->state = ConnectDataState::CONNECTING;
-            sd->port = cd.port;
-            sd->last_time = GetPluginManager()->GetNowTime();
+    if (mxTempNetList.size() > 0) {
+        std::list<ConnectData>::iterator it = mxTempNetList.begin();
+        for (; it != mxTempNetList.end(); ++it) {
+            const ConnectData& cd = *it;
+            std::shared_ptr<ConnectData> sd = mxServerMap.GetElement(cd.id);
+            if (nullptr == sd) {
+                sd = std::shared_ptr<ConnectData>(new ConnectData());
 
-            sd->net_module = std::shared_ptr<INetModule>(new NetModule(pm_));
+                sd->id = cd.id;
+                sd->type = cd.type;
+                sd->ip = cd.ip;
+                sd->name = cd.name;
+                sd->state = ConnectDataState::CONNECTING;
+                sd->port = cd.port;
+                sd->last_time = GetPluginManager()->GetNowTime();
+                sd->buffer_size = cd.buffer_size;
 
-            sd->net_module->Awake();
-            sd->net_module->Start();
-            sd->net_module->AfterStart();
-            sd->net_module->ReadyUpdate();
+                sd->net_module = std::shared_ptr<INetModule>(new NetModule(pm_));
 
-            sd->net_module->Startialization(sd->ip.c_str(), sd->port);
-            sd->net_module->ExpandBufferSize((unsigned int)mnBufferSize);
+                sd->net_module->Awake();
+                sd->net_module->Start();
+                sd->net_module->AfterStart();
+                sd->net_module->ReadyUpdate();
 
-            StartCallBacks(sd);
+                sd->net_module->Connect(sd->ip.c_str(), sd->port, sd->buffer_size);
 
-            mxServerMap.AddElement(cd.id, sd);
-        } else {
-            
+                StartCallBacks(sd);
+
+                mxServerMap.AddElement(cd.id, sd);
+            }
+            else {
+                // cannot connect one id twice
+            }
         }
+
+        mxTempNetList.clear();
     }
 
-    mxTempNetList.clear();
+    
 }

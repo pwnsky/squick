@@ -43,11 +43,10 @@ class IWSModule : public IModule {
     }
 
     // as client
-    virtual void Startialization(const char *ip, const unsigned short nPort) = 0;
+    virtual void Connect(const char *ip, const unsigned short nPort, const uint32_t expand_buffer_size) = 0;
 
     // as server
-    virtual int Startialization(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount = 4) = 0;
-    virtual unsigned int ExpandBufferSize(const unsigned int size = 1024 * 1024 * 20) = 0;
+    virtual int Listen(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount, const uint32_t expand_buffer_size) = 0;
 
     virtual void RemoveReceiveCallBack(const int msg_id) = 0;
 

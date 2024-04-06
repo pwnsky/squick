@@ -52,9 +52,9 @@ void Net::conn_eventcb(struct bufferevent *bev, short events, void *user_data) {
     if (events & BEV_EVENT_CONNECTED) {
         struct evbuffer *input = bufferevent_get_input(bev);
         struct evbuffer *output = bufferevent_get_output(bev);
-        if (pNet->mnBufferSize > 0) {
-            evbuffer_expand(input, pNet->mnBufferSize);
-            evbuffer_expand(output, pNet->mnBufferSize);
+        if (pNet->expand_buffer_size_ > 0) {
+            evbuffer_expand(input, pNet->expand_buffer_size_);
+            evbuffer_expand(output, pNet->expand_buffer_size_);
         }
         // printf("%d Connection successed\n", pObject->GetFd());/*XXX win32*/
     } else {
@@ -169,26 +169,20 @@ bool Net::Update() {
     return true;
 }
 
-void Net::Startialization(const char *ip, const unsigned short nPort) {
+void Net::Connect(const char *ip, const unsigned short nPort, const uint32_t expand_buffer_size) {
     mstrIP = ip;
     mnPort = nPort;
+    expand_buffer_size_ = expand_buffer_size;
 
     StartClientNet();
 }
 
-int Net::Startialization(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount) {
+int Net::Listen(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount, const uint32_t expand_buffer_size) {
     mnMaxConnect = nMaxClient;
     mnPort = nPort;
     mnCpuCount = nCpuCount;
-
+    expand_buffer_size_ = expand_buffer_size;
     return StartServerNet();
-}
-
-unsigned int Net::ExpandBufferSize(const unsigned int size) {
-    if (size > 0) {
-        mnBufferSize = size;
-    }
-    return mnBufferSize;
 }
 
 bool Net::Final() {
@@ -491,7 +485,7 @@ void Net::UpdateClose() {
 }
 
 void Net::log_cb(int severity, const char *msg) {
-    // LOG(FATAL) << "severity:" << severity << " " << msg;
+    //LOG(FATAL) << "severity:" << severity << " " << msg;
 }
 
 bool Net::IsServer() { return mbServer; }

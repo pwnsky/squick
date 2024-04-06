@@ -23,12 +23,10 @@ class NetModule : public INetModule {
     virtual bool Update();
 
     // as client
-    virtual void Startialization(const char *ip, const unsigned short nPort);
+    virtual void Connect(const char *ip, const unsigned short nPort, const uint32_t expand_buffer_size) override;
 
     // as server
-    virtual int Startialization(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount = 4);
-
-    virtual unsigned int ExpandBufferSize(const unsigned int size = 1024 * 1024 * 20) override;
+    virtual int Listen(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount, const uint32_t expand_buffer_size) override;
 
     virtual void RemoveReceiveCallBack(const int msg_id);
     virtual bool AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb);

@@ -13,6 +13,9 @@
 #define DEFAULT_NODE_CPUT_COUNT 100
 #define DEFAULT_NODE_MAX_SERVER_CONNECTION 100000
 
+#define DEFAULT_NET_CLIENT_BUFFER_SIZE 1048576 // 1024 * 1024
+#define DEFAULT_NET_SERVER_BUFFER_SIZE 1048576 // 1024 * 1024
+
 class INodeBaseModule : public IModule {
   public:
     virtual bool Awake() final { return true; }
@@ -39,8 +42,6 @@ class INodeBaseModule : public IModule {
             UpdateState();
         }
         last_report_time_ = pm_->GetNowTime();
-
-
         return true;
     }
 
@@ -89,7 +90,6 @@ class INodeBaseModule : public IModule {
     virtual bool Listen() {        
         m_net_->AddReceiveCallBack(this, &INodeBaseModule::InvalidMessage);
         m_net_->AddEventCallBack(this, &INodeBaseModule::OnServerSocketEvent);
-        m_net_->ExpandBufferSize();
 
         node_info_.info->set_id(pm_->GetArg("id=", 0));
         std::string name = pm_->GetArg("type=", "proxy") + pm_->GetArg("id=", "0");
@@ -104,11 +104,7 @@ class INodeBaseModule : public IModule {
         node_info_.info->set_max_online(DEFAULT_NODE_MAX_SERVER_CONNECTION);
         node_info_.info->set_cpu_count(DEFAULT_NODE_CPUT_COUNT);
 
-        
-
-        //servers_[pm_->GetAppID()] = s;
-
-        int nRet = m_net_->Startialization(node_info_.info->max_online(), node_info_.info->port(), node_info_.info->cpu_count());
+        int nRet = m_net_->Listen(node_info_.info->max_online(), node_info_.info->port(), node_info_.info->cpu_count(), DEFAULT_NET_SERVER_BUFFER_SIZE);
 
         std::ostringstream log;
         log << "Node Listen at 0.0.0.0:" << node_info_.info->port() << " Name: " << node_info_.info->name();
@@ -130,7 +126,6 @@ class INodeBaseModule : public IModule {
         m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::NMasterRPC::NNTF_NODE_ADD, this, &INodeBaseModule::OnNNtfNodeAdd);
         m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::NMasterRPC::NNTF_NODE_REMOVE, this, &INodeBaseModule::OnNNtfNodeRemove);
         m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::NMasterRPC::NACK_NODE_REGISTER, this, &INodeBaseModule::OnNAckNodeRegister);
-        m_net_client_->ExpandBufferSize();
         bool ret = false;
         node_info_.listen_types = types;
         ConnectData s;
@@ -139,6 +134,7 @@ class INodeBaseModule : public IModule {
         s.ip = pm_->GetArg("master_ip=", "127.0.0.1");
         s.port = pm_->GetArg("master_port=", 10001);
         s.name = "master";
+        s.buffer_size = DEFAULT_NET_CLIENT_BUFFER_SIZE;
         std::ostringstream log;
         log << "Node Connect to " << s.name << " host " << s.ip << ":" << s.port << " cur_area: " << pm_->GetArg("area=", 0) << std::endl;
         m_log_->LogDebug(NULL_OBJECT, log, __FUNCTION__, __LINE__);

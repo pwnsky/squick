@@ -9,6 +9,6 @@ cd ..\bin
 
 for /l %%i in (1,1,100) do (
 echo start tester_%%i
-start /b .\sqkcli type=sqkcli test=proxy hide=true id=100%%i
+start /b .\sqkcli type=sqkcli test=proxy ip=127.0.0.1 port=10501 hide=true id=100%%i
 )
 

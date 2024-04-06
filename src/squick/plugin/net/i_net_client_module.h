@@ -22,6 +22,7 @@ struct ConnectData {
         type = ST_NONE;
         state = ConnectDataState::DISCONNECT;
         last_time = 0;
+        buffer_size = 0;
     }
 
     int id;
@@ -31,6 +32,7 @@ struct ConnectData {
     std::string name;
     ConnectDataState state;
     INT64 last_time;
+    uint32_t buffer_size;
     std::shared_ptr<INetModule> net_module;
 };
 
@@ -91,7 +93,6 @@ public:
     ////////////////////////////////////////////////////////////////////////////////
 
     virtual void AddNode(const ConnectData& xInfo) = 0;
-    virtual unsigned int ExpandBufferSize(const unsigned int size = 1024 * 1024) = 0;
 
     ////////////////////////////////////////////////////////////////////////////////
     virtual bool IsConnected(const int node_id) = 0;

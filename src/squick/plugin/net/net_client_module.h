@@ -20,7 +20,6 @@ class NetClientModule : public INetClientModule {
     virtual bool Update();
 
     virtual void AddNode(const ConnectData &xInfo);
-    virtual unsigned int ExpandBufferSize(const unsigned int size = 1024 * 1024 * 20) override;
     virtual int AddReceiveCallBack(const ServerType eType, NET_RECEIVE_FUNCTOR_PTR functorPtr);
     virtual int AddReceiveCallBack(const ServerType eType, const uint16_t msg_id, NET_RECEIVE_FUNCTOR_PTR functorPtr);
     virtual int AddEventCallBack(const ServerType eType, NET_EVENT_FUNCTOR_PTR functorPtr);
@@ -65,11 +64,10 @@ class NetClientModule : public INetClientModule {
 
     int OnDisConnected(const socket_t fd, INet *pNet);
 
-    void ProcessAddNetConnect();
+    void ProcessNetConnect();
 
   private:
     int64_t mnLastActionTime;
-    unsigned int mnBufferSize;
     // server_id, server_data
     ConsistentHashMapEx<int, ConnectData> mxServerMap;
     // server_type, server_id, server_data

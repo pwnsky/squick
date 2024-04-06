@@ -75,28 +75,16 @@ bool WSModule::Start() {
 
 bool WSModule::AfterStart() { return true; }
 
-void WSModule::Startialization(const char *ip, const unsigned short nPort) {
+void WSModule::Connect(const char *ip, const unsigned short nPort, const uint32_t expand_buffer_size) {
     m_pNet = new Net(this, &WSModule::OnReceiveNetPack, &WSModule::OnSocketNetEvent, true);
-    m_pNet->ExpandBufferSize(mnBufferSize);
-    m_pNet->Startialization(ip, nPort);
+    m_pNet->Connect(ip, nPort, expand_buffer_size);
 }
 
-int WSModule::Startialization(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount) {
+int WSModule::Listen(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount, const uint32_t expand_buffer_size) {
     m_pNet = new Net(this, &WSModule::OnReceiveNetPack, &WSModule::OnSocketNetEvent, true);
-    m_pNet->ExpandBufferSize(mnBufferSize);
-    return m_pNet->Startialization(nMaxClient, nPort, nCpuCount);
+    return m_pNet->Listen(nMaxClient, nPort, nCpuCount, expand_buffer_size);
 }
 
-unsigned int WSModule::ExpandBufferSize(const unsigned int size) {
-    if (size > 0) {
-        mnBufferSize = size;
-        if (m_pNet) {
-            m_pNet->ExpandBufferSize(mnBufferSize);
-        }
-    }
-
-    return mnBufferSize;
-}
 
 void WSModule::RemoveReceiveCallBack(const int msg_id) {
     std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msg_id);

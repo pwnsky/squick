@@ -30,7 +30,6 @@ class TesterModule : public ITesterModule {
       void TestProxyTransferSpeed_Init();
       void TestProxyTransferSpeed_Req();
       void TestProxyTransferSpeed_Ack(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
-      bool AddServer(ServerType type);
       void OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet);
 
 

@@ -40,11 +40,17 @@ bool TesterModule::AfterStart() {
 
 void TesterModule::TestProxyTransferSpeed_Init() {
     std::cout << "Test proxy Transfer speed!\n";
-
     m_net_client_->AddReceiveCallBack(ServerType::ST_PROXY, rpc::TestRPC::ACK_TEST_PROXY, this, &TesterModule::TestProxyTransferSpeed_Ack);
+    m_net_client_->AddEventCallBack(ServerType::ST_PROXY, this, &TesterModule::OnClientSocketEvent);
 
-    AddServer(ServerType::ST_PROXY);
-    
+    ConnectData s;
+    s.id = 1; // Just for test
+    s.type = ServerType::ST_PROXY;
+    s.ip = pm_->GetArg("ip=", "127.0.0.1");
+    s.port = pm_->GetArg("port=", 10501);
+    s.name = "test";
+    s.buffer_size = 0;
+    m_net_client_->AddNode(s);
 }
 
 void TesterModule::TestProxyTransferSpeed_Req() {
@@ -77,39 +83,6 @@ void TesterModule::TestProxyTransferSpeed_Ack(const socket_t sock, const int msg
         last_ack_time = now_time;
 
     }
-}
-
-bool TesterModule::AddServer(ServerType type) {
-    m_net_client_->AddEventCallBack(type, this, &TesterModule::OnClientSocketEvent);
-    m_net_client_->ExpandBufferSize();
-
-    /*
-    std::shared_ptr<IClass> xLogicClass = m_class_->GetElement(excel::Server::ThisName());
-    if (xLogicClass) {
-        const std::vector<std::string>& strIdList = xLogicClass->GetIDList();
-
-        for (int i = 0; i < strIdList.size(); ++i) {
-            const std::string& strId = strIdList[i];
-
-            const int server_type = m_element_->GetPropertyInt32(strId, excel::Server::Type());
-            
-            if (server_type == type) {
-                const int server_id = m_element_->GetPropertyInt32(strId, excel::Server::ServerID());
-                const int nPort = m_element_->GetPropertyInt32(strId, excel::Server::Port());
-                const std::string& name = m_element_->GetPropertyString(strId, excel::Server::ID());
-                const std::string& ip = m_element_->GetPropertyString(strId, excel::Server::IP());
-                ConnectData s;
-                s.id = server_id;
-                s.type = (ServerType)server_type;
-                s.ip = ip;
-                s.port = nPort;
-                s.name = strId;
-                m_net_client_->AddNode(s);
-                return true;
-            }
-        }
-    }*/
-    return false;
 }
 
 void TesterModule::OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet) {
