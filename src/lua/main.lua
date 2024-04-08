@@ -22,15 +22,11 @@ end
 -- Main 函数调用，业务代码避免在此初始化，该函数调用优先级高于c++层的模块链接初始化。
 function Main(context)
     Squick = context;
-    Squick:LogInfo("Lua module is running" );
     Env.path = Squick:GetScriptPath()
     local path = Env.path
     print('path: ', path)
     package.path = path .. '/?.lua;'
-
-    Squick:LogInfo("lua module execute");
 end
-
 
 -- C++ 层的 Awake Start AfterStart 这三个函数在模块中请谨慎定义使用
 function Awake()
