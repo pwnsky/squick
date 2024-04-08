@@ -1,10 +1,8 @@
-
-#ifndef SQUICK_LOG_MODULE_H
-#define SQUICK_LOG_MODULE_H
+#pragma once
 
 #include "i_log_module.h"
 #include <squick/core/performance.h>
-
+#include <squick/core/easylogging++.h>
 class LogModule : public ILogModule {
   public:
     LogModule(IPluginManager *p);
@@ -66,6 +64,5 @@ class LogModule : public ILogModule {
     static unsigned int idx;
     uint64_t mnLogCountTotal;
     std::list<Performance> mxPerformanceList;
+    el::Logger* logger_ = nullptr;
 };
-
-#endif

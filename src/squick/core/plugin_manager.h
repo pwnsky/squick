@@ -1,6 +1,4 @@
-
-#ifndef SQUICK_PLUGIN_MANAGER_H
-#define SQUICK_PLUGIN_MANAGER_H
+#pragma once
 
 #include "dyn_lib.h"
 #include "i_module.h"
@@ -91,10 +89,6 @@ class PluginManager : public IPluginManager {
 
     virtual void SetAppName(const std::string &appName) override;
 
-    virtual const std::string &GetLogConfigName() const override;
-
-    virtual void SetLogConfigName(const std::string &name) override;
-
     virtual IPlugin *GetCurrentPlugin() override;
     virtual IModule *GetCurrentModule() override;
 
@@ -133,7 +127,6 @@ class PluginManager : public IPluginManager {
     std::string configPath;
     std::string configName;
     std::string appName;
-    std::string logConfigName;
 
     IPlugin *currentPlugin;
     IModule *currentModule;
@@ -168,5 +161,3 @@ class PluginManager : public IPluginManager {
 
     GET_FILECONTENT_FUNCTOR mGetFileContentFunctor;
 };
-
-#endif

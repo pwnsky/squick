@@ -1,14 +1,13 @@
 
 
-#define GLOG_NO_ABBREVIATED_SEVERITIES
 #include "log_module.h"
-#include "easylogging++.h"
+
 #include "plugin.h"
 #include "squick/core/exception.h"
-#include "termcolor.h"
+#include <squick/core/termcolor.h>
 #include <stdarg.h>
 
-INITIALIZE_EASYLOGGINGPP
+// Ref https://github.com/abumq/easyloggingpp;
 
 unsigned int LogModule::idx = 0;
 
@@ -49,20 +48,17 @@ LogModule::LogModule(IPluginManager *p) {
 
 bool LogModule::Awake() {
     mnLogCountTotal = 0;
-
-    std::string strLogConfigName = pm_->GetLogConfigName();
-    if (strLogConfigName.empty()) {
-        strLogConfigName = pm_->GetAppName();
+    
+    string conf_path = pm_->GetArg("logconf=", "");
+    if (conf_path.empty()) {
+        conf_path = GetConfigPath(pm_->GetAppName());
     }
 
-    string strAppLogName = GetConfigPath(strLogConfigName);
-
-    el::Configurations conf(strAppLogName);
-
+    el::Configurations conf(conf_path);
     el::Configuration *pConfiguration = conf.get(el::Level::Debug, el::ConfigurationType::Filename);
     if (pConfiguration == nullptr) {
         std::cout << "Warnning: Use default log config, config/log/default.conf \n";
-        conf = el::Configurations(GetConfigPath("Default"));
+        conf = el::Configurations(GetConfigPath("default"));
         pConfiguration = conf.get(el::Level::Debug, el::ConfigurationType::Filename);
     }
 
@@ -72,9 +68,10 @@ bool LogModule::Awake() {
 #ifdef DEBUG
     std::cout << "LogConfig: " << strAppLogName << std::endl;
 #endif
-    el::Loggers::reconfigureAllLoggers(conf);
+    //el::Loggers::reconfigureAllLoggers(conf);
     el::Helpers::installPreRollOutCallback(rolloutHandler);
-
+    logger_ = el::Loggers::getLogger(pm_->GetAppName());
+    logger_->configure(conf);
     return true;
 }
 
@@ -121,31 +118,32 @@ bool LogModule::Log(const SQUICK_LOG_LEVEL nll, const char *format, ...) {
     switch (nll) {
     case ILogModule::NLL_DEBUG_NORMAL: {
         std::cout << termcolor::magenta;
-        LOG(DEBUG) << mstrLocalStream;
+        logger_->debug("%s", mstrLocalStream.c_str());
     } break;
     case ILogModule::NLL_INFO_NORMAL: {
         std::cout << termcolor::cyan;
-        LOG(INFO) << mstrLocalStream;
+        logger_->info("%s", mstrLocalStream.c_str());
     } break;
     case ILogModule::NLL_WARING_NORMAL: {
         std::cout << termcolor::yellow;
-        LOG(WARNING) << mstrLocalStream;
+        logger_->warn("%s", mstrLocalStream.c_str());
     } break;
     case ILogModule::NLL_ERROR_NORMAL: {
         std::cout << termcolor::red;
-        LOG(ERROR) << mstrLocalStream;
-        // LogStack();
+        logger_->error("%s", mstrLocalStream.c_str());
+        LogStack();
     } break;
     case ILogModule::NLL_FATAL_NORMAL: {
         std::cout << termcolor::red;
-        LOG(FATAL) << mstrLocalStream;
+        logger_->fatal("%s", mstrLocalStream.c_str());
+        LogStack();
     } break;
     default: {
         std::cout << termcolor::white;
-        LOG(INFO) << mstrLocalStream;
+        logger_->info("%s", mstrLocalStream.c_str());
     } break;
     }
-
+    //logger_->flush();
     std::cout << termcolor::reset;
 
     return true;
@@ -208,7 +206,7 @@ bool LogModule::ChangeLogLevel(const std::string &strLevel) {
         break;
     }
 
-    el::Loggers::reconfigureAllLoggers(*pConfigurations);
+    //el::Loggers::reconfigureAllLoggers(*pConfigurations);
     LogInfo("[Log] Change log level as " + strLevel, __FUNCTION__, __LINE__);
     return true;
 }

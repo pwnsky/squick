@@ -304,10 +304,6 @@ void PluginManager::SetAppName(const std::string &name) {
     appName = name;
 }
 
-const std::string &PluginManager::GetLogConfigName() const { return logConfigName; }
-
-void PluginManager::SetLogConfigName(const std::string &name) { logConfigName = name; }
-
 IPlugin *PluginManager::GetCurrentPlugin() { return currentPlugin; }
 
 IModule *PluginManager::GetCurrentModule() { return currentModule; }

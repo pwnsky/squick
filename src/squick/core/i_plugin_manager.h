@@ -165,9 +165,6 @@ class IPluginManager {
     virtual const std::string &GetAppName() const = 0;
     virtual void SetAppName(const std::string &appName) = 0;
 
-    virtual const std::string &GetLogConfigName() const = 0;
-    virtual void SetLogConfigName(const std::string &name) = 0;
-
     virtual IPlugin *GetCurrentPlugin() = 0;
     virtual IModule *GetCurrentModule() = 0;
 
