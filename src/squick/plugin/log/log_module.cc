@@ -68,10 +68,20 @@ bool LogModule::Awake() {
 #ifdef DEBUG
     std::cout << "LogConfig: " << strAppLogName << std::endl;
 #endif
-    //el::Loggers::reconfigureAllLoggers(conf);
+    int open_log = pm_->GetArg("logshow=", 0);
+    if (open_log) {
+        conf.setGlobally(el::ConfigurationType::ToStandardOutput, "true");
+    } else {
+        conf.setGlobally(el::ConfigurationType::ToStandardOutput, "false");
+    }
+    
     el::Helpers::installPreRollOutCallback(rolloutHandler);
     logger_ = el::Loggers::getLogger(pm_->GetAppName());
     logger_->configure(conf);
+
+    
+    //conf.set(el::Level::Error, el::ConfigurationType::ToFile, "true");
+
     return true;
 }
 
@@ -82,7 +92,7 @@ bool LogModule::Start() {
 
 bool LogModule::Destory() {
     el::Helpers::uninstallPreRollOutCallback();
-
+    logger_->flush();
     return true;
 }
 
@@ -118,32 +128,31 @@ bool LogModule::Log(const SQUICK_LOG_LEVEL nll, const char *format, ...) {
     switch (nll) {
     case ILogModule::NLL_DEBUG_NORMAL: {
         std::cout << termcolor::magenta;
-        logger_->debug("%s", mstrLocalStream.c_str());
+        logger_->debug("%v", mstrLocalStream.c_str());
     } break;
     case ILogModule::NLL_INFO_NORMAL: {
         std::cout << termcolor::cyan;
-        logger_->info("%s", mstrLocalStream.c_str());
+        logger_->info("%v", mstrLocalStream.c_str());
     } break;
     case ILogModule::NLL_WARING_NORMAL: {
         std::cout << termcolor::yellow;
-        logger_->warn("%s", mstrLocalStream.c_str());
+        logger_->warn("%v", mstrLocalStream.c_str());
     } break;
     case ILogModule::NLL_ERROR_NORMAL: {
         std::cout << termcolor::red;
-        logger_->error("%s", mstrLocalStream.c_str());
+        logger_->error("%v", mstrLocalStream.c_str());
         LogStack();
     } break;
     case ILogModule::NLL_FATAL_NORMAL: {
         std::cout << termcolor::red;
-        logger_->fatal("%s", mstrLocalStream.c_str());
+        logger_->fatal("%v", mstrLocalStream.c_str());
         LogStack();
     } break;
     default: {
         std::cout << termcolor::white;
-        logger_->info("%s", mstrLocalStream.c_str());
+        logger_->info("%v", mstrLocalStream.c_str());
     } break;
     }
-    //logger_->flush();
     std::cout << termcolor::reset;
 
     return true;
@@ -163,52 +172,6 @@ void LogModule::LogStack() {
 #if PLATFORM != PLATFORM_WIN
     Exception::CrashHandler(0);
 #endif
-}
-bool LogModule::LogDebugFunctionDump(const Guid ident, const int nMsg, const std::string &strArg, const char *func /*= ""*/, const int line /*= 0*/) {
-    // #ifdef SQUICK_DEBUG_MODE
-    LogDebug(ident, strArg + "MsgID:" + std::to_string(nMsg), func, line);
-    // #endif
-    return true;
-}
-
-bool LogModule::ChangeLogLevel(const std::string &strLevel) {
-    el::Level logLevel = el::LevelHelper::convertFromString(strLevel.c_str());
-    el::Logger *pLogger = el::Loggers::getLogger("default");
-    if (NULL == pLogger) {
-        return false;
-    }
-
-    el::Configurations *pConfigurations = pLogger->configurations();
-    if (NULL == pConfigurations) {
-        return false;
-    }
-
-    switch (logLevel) {
-    case el::Level::Fatal: {
-        el::Configuration errorConfiguration(el::Level::Error, el::ConfigurationType::Enabled, "false");
-        pConfigurations->set(&errorConfiguration);
-    }
-    case el::Level::Error: {
-        el::Configuration warnConfiguration(el::Level::Warning, el::ConfigurationType::Enabled, "false");
-        pConfigurations->set(&warnConfiguration);
-    }
-    case el::Level::Warning: {
-        el::Configuration infoConfiguration(el::Level::Info, el::ConfigurationType::Enabled, "false");
-        pConfigurations->set(&infoConfiguration);
-    }
-    case el::Level::Info: {
-        el::Configuration debugConfiguration(el::Level::Debug, el::ConfigurationType::Enabled, "false");
-        pConfigurations->set(&debugConfiguration);
-    }
-    case el::Level::Debug:
-        break;
-    default:
-        break;
-    }
-
-    //el::Loggers::reconfigureAllLoggers(*pConfigurations);
-    LogInfo("[Log] Change log level as " + strLevel, __FUNCTION__, __LINE__);
-    return true;
 }
 
 bool LogModule::LogDebug(const std::string &strLog, const char *func, int line) {

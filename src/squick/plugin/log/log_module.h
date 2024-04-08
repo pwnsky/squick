@@ -45,9 +45,6 @@ class LogModule : public ILogModule {
     virtual bool LogError(const Guid ident, const std::ostringstream &stream, const char *func = "", int line = 0);
     virtual bool LogFatal(const Guid ident, const std::ostringstream &stream, const char *func = "", int line = 0);
 
-    virtual bool LogDebugFunctionDump(const Guid ident, const int nMsg, const std::string &strArg, const char *func = "", const int line = 0);
-    virtual bool ChangeLogLevel(const std::string &strLevel);
-
     virtual void SetHooker(LOG_HOOKER_FUNCTOR_PTR hooker);
 
   protected:
