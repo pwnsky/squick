@@ -65,9 +65,6 @@ bool LogModule::Awake() {
     const std::string &fileName = pConfiguration->value();
     pConfiguration->setValue(pm_->GetWorkPath() + fileName);
 
-#ifdef DEBUG
-    std::cout << "LogConfig: " << strAppLogName << std::endl;
-#endif
     int open_log = pm_->GetArg("logshow=", 0);
     if (open_log) {
         conf.setGlobally(el::ConfigurationType::ToStandardOutput, "true");

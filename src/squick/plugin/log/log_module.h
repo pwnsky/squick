@@ -2,7 +2,7 @@
 
 #include "i_log_module.h"
 #include <squick/core/performance.h>
-#include <squick/core/easylogging++.h>
+#include "easylogging++.h"
 class LogModule : public ILogModule {
   public:
     LogModule(IPluginManager *p);
