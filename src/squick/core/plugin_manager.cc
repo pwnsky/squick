@@ -296,9 +296,7 @@ bool PluginManager::GetFileContent(const std::string &fileName, std::string &con
 }
 
 void PluginManager::AddModule(const std::string &moduleName, IModule *pModule) {
-#ifdef SQUICK_DEV
-    std::cout << "Squick register module: [" << moduleName << "] is_update: " << pModule->is_update_ << std::endl;
-#endif
+    SQUICK_PRINT("[" + GetAppName() + "] Register module: [" + moduleName + "] is_update: " + std::to_string(pModule->is_update_));
     if (!FindModule(moduleName)) {
         mModuleInstanceMap.insert(ModuleInstanceMap::value_type(moduleName, pModule));
 

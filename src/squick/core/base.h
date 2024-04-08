@@ -54,6 +54,6 @@ enum ServerType {
 #endif
 
 #define SQUICK_DPRINT(x) std::cout << termcolor::magenta << "SQUICK:"  << __FILE__ << ":" << __LINE__ << ":" << x << "\n" << termcolor::reset;
-#define SQUICK_PRINT(x) std::cout << termcolor::magenta << "SQUICK:" << x << "\n" << termcolor::reset;
+#define SQUICK_PRINT(x) std::cout << termcolor::magenta << "SQUICK:" << x << termcolor::reset << std::endl;
 
 //#define SQUICK_PRINT SQUICK_DPRINT

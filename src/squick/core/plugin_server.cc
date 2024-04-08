@@ -1,10 +1,9 @@
-
-
 #include "plugin_server.h"
-#include "squick/core/exception.h"
+#include <squick/core/exception.h>
+#include <squick/core/base.h>
 
 PluginServer::PluginServer(const std::string &strArgv) {
-    std::cout << "Start Server: " << strArgv << std::endl;
+    std::cout << "Start to run node with: " << strArgv << std::endl;
     this->strArgvList = strArgv;
 
 #if PLATFORM != PLATFORM_WIN
