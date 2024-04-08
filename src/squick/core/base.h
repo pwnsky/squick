@@ -9,6 +9,7 @@
 #include "i_plugin.h"
 #include "i_plugin_manager.h"
 #include <iostream>
+#include "termcolor.h"
 
 #define SQUICK_VERSION "1.0.2"
 #define SERVER_NAME "Squick/" SQUICK_VERSION
@@ -52,4 +53,7 @@ enum ServerType {
 #define dout /stuff/
 #endif
 
-#define dlog(x) "SQUICK_DEV LOG:" + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "\n" + std::string(x) + "\n"
+#define SQUICK_DPRINT(x) std::cout << termcolor::magenta << "SQUICK:"  << __FILE__ << ":" << __LINE__ << ":" << x << "\n" << termcolor::reset;
+#define SQUICK_PRINT(x) std::cout << termcolor::magenta << "SQUICK:" << x << "\n" << termcolor::reset;
+
+//#define SQUICK_PRINT SQUICK_DPRINT

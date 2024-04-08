@@ -73,9 +73,6 @@ class PluginManager : public IPluginManager {
     virtual int GetAppType() const override;
     virtual void SetAppType(const int type) override;
 
-    virtual bool IsRunningDocker() const override;
-    virtual void SetRunningDocker(bool bDocker) override;
-
     virtual INT64 GetStartTime() const override;
     virtual INT64 GetNowTime() const override;
 
@@ -116,8 +113,6 @@ class PluginManager : public IPluginManager {
     int appID = 0;
     int appType = 0;
     int area_ = 0;
-    bool mbIsDocker = false;
-    bool mbStaticPlugin = false;
     bool usingBackThread = false;
 
     INT64 mnStartTime = 0;

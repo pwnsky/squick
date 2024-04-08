@@ -9,17 +9,10 @@
 
 PluginManager::PluginManager() : IPluginManager() {
     appID = 0;
-    mbIsDocker = false;
     area_ = 0;
 
     currentPlugin = nullptr;
     currentModule = nullptr;
-
-#ifdef SQUICK_DYNAMIC_PLUGIN
-    mbStaticPlugin = false;
-#else
-    mbStaticPlugin = true;
-#endif
 
     mnStartTime = time(NULL);
     mnNowTime = mnStartTime;
@@ -33,46 +26,29 @@ PluginManager::PluginManager() : IPluginManager() {
 PluginManager::~PluginManager() {}
 
 bool PluginManager::LoadPlugin() {
-#ifdef DEBUG
-    std::cout << "---- LoadPlugin ----" << std::endl;
-#endif
-
+    SQUICK_PRINT("[" + GetAppName() + "] start to load plugin");
     for (auto& info : plugins_) {
-#ifdef SQUICK_DEV
-        dout << "Load plugin: " << info.path << endl;
-#endif // SQUICK_DEV
-
+        SQUICK_PRINT("Load plugin: " + info.path);
         LoadPluginLibrary(info.path);
     }
     return true;
 }
 
 bool PluginManager::Awake() {
-#ifdef DEBUG
-    std::cout << "----Awake----" << std::endl;
-#endif
     PluginInstanceMap::iterator itAfterInstance = mPluginInstanceMap.begin();
     for (; itAfterInstance != mPluginInstanceMap.end(); itAfterInstance++) {
         SetCurrentPlugin(itAfterInstance->second);
         itAfterInstance->second->Awake();
     }
-
     return true;
 }
 
 inline bool PluginManager::Start() {
-#ifdef DEBUG
-    std::cout << "----Start----" << std::endl;
-#endif
     PluginInstanceMap::iterator itInstance = mPluginInstanceMap.begin();
     for (; itInstance != mPluginInstanceMap.end(); itInstance++) {
         SetCurrentPlugin(itInstance->second);
-#ifdef DEBUG
-        // std::cout << "Loaded Plugin: "  << itInstance->first << std::endl;
-#endif
         itInstance->second->Start();
     }
-
     return true;
 }
 
@@ -87,28 +63,22 @@ bool PluginManager::LoadPluginConfig() {
 
     rapidxml::xml_node<> *pRoot = xDoc.first_node();
     if (pRoot == nullptr) {
-        std::cout << "Cannot load plugin config from :" << strFilePath << std::endl;
-        std::cout << "Please check your working directory, make sure config file in the [../config/plugin/] directory.\n";
+        SQUICK_PRINT("Cannot load plugin config from :" + strFilePath);
+        SQUICK_PRINT("Please check your working directory, make sure config file in the [../config/plugin/] directory.");
         return false;
     }
     rapidxml::xml_node<> *pAppNameNode = pRoot->first_node(appName.c_str());
     if (pAppNameNode) {
         for (rapidxml::xml_node<> *pPluginNode = pAppNameNode->first_node("Plugin"); pPluginNode; pPluginNode = pPluginNode->next_sibling("Plugin")) {
             const char *pluginName = pPluginNode->first_attribute("Name")->value();
-
-            //mPluginNameMap.insert(PluginNameMap::value_type(pluginName, true));
             PluginInfo info;
             info.is_loaded = false;
             info.loaded_time = SquickGetTimeMS();
             info.path = pluginName;
             plugins_.push_back(info);
-
-            // std::cout << pluginName << std::endl;
         }
     } else {
-
         for (rapidxml::xml_node<> *pServerNode = pRoot->first_node(); pServerNode; pServerNode = pServerNode->next_sibling()) {
-
             for (rapidxml::xml_node<> *pPluginNode = pServerNode->first_node("Plugin"); pPluginNode; pPluginNode = pPluginNode->next_sibling("Plugin")) {
                 const char *pluginName = pPluginNode->first_attribute("Name")->value();
                 PluginInfo info;
@@ -129,17 +99,14 @@ void PluginManager::Registered(IPlugin *plugin) {
         mPluginInstanceMap.insert(PluginInstanceMap::value_type(pluginName, plugin));
         plugin->Install();
     } else {
-#ifdef DEBUG
-        std::cout << "Registered Plugin:    " << pluginName << std::endl;
-#endif
+        SQUICK_PRINT("Registered Plugin: " + pluginName + " is error!");
         assert(0);
     }
 }
 
 void PluginManager::UnRegistered(IPlugin *plugin) {
-#ifdef DEBUG
-    std::cout << "UnRegistered Plugin:    " << plugin->GetPluginName() << std::endl;
-#endif
+
+    SQUICK_PRINT("UnRegistered Plugin: " + plugin->GetPluginName());
     PluginInstanceMap::iterator it = mPluginInstanceMap.find(plugin->GetPluginName());
     if (it != mPluginInstanceMap.end()) {
         it->second->Uninstall();
@@ -194,7 +161,6 @@ bool PluginManager::ReLoadPlugin(const std::string &pluginDLLName) {
             assert(0);
             return false;
         }
-
         pFunc(this);
     } else {
 #if PLATFORM == PLATFORM_LINUX
@@ -241,7 +207,6 @@ bool PluginManager::Update() {
         bool tembRet = xPair.second->Update();
         bRet = bRet && tembRet;
     }
-    // sleep(1);
 
     return bRet;
 }
@@ -269,10 +234,6 @@ inline std::string PluginManager::FindParameterValue(const std::string& header) 
 
     return "";
 }
-
-bool PluginManager::IsRunningDocker() const { return mbIsDocker; }
-
-void PluginManager::SetRunningDocker(bool bDocker) { mbIsDocker = bDocker; }
 
 inline INT64 PluginManager::GetStartTime() const { return mnStartTime; }
 

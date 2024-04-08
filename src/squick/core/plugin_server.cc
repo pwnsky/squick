@@ -83,12 +83,6 @@ void PluginServer::ProcessParameter() {
         pm_->SetAppID(appID);
     }
 
-    std::string strDockerFlag = pm_->FindParameterValue("docker=");
-    int nDockerFlag = 0;
-    if (SQUICK_StrTo(strDockerFlag, nDockerFlag)) {
-        pm_->SetRunningDocker(nDockerFlag);
-    }
-
     // NoSqlServer.xml:IP=\"127.0.0.1\"==IP=\"192.168.1.1\"
     if (strArgvList.find(".xml:") != string::npos) {
         for (int i = 0; i < argList.size(); i++) {

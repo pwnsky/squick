@@ -150,9 +150,6 @@ class IPluginManager {
     virtual int GetAppType() const = 0;
     virtual void SetAppType(const int type) = 0;
 
-    virtual bool IsRunningDocker() const = 0;
-    virtual void SetRunningDocker(bool bDocker) = 0;
-
     virtual INT64 GetStartTime() const = 0;
     virtual INT64 GetNowTime() const = 0;
 
