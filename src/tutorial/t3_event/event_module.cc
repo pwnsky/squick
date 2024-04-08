@@ -1,5 +1,4 @@
 #include "event_module.h"
-#include <squick/plugin/world/event_module.h>
 #include <struct/struct.h>
 namespace tutorial {
     bool EventModule::Start() {

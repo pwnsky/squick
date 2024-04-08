@@ -8,7 +8,12 @@ Env = {
     app_name = '',
     start_time = 0,
     area = 0,
+    Debug = true,
 }
+
+function Print(...)
+    print("Lua print: ", ...)
+end
 
 function Require(file)
     require(file)
@@ -17,7 +22,7 @@ end
 -- Main 函数调用，业务代码避免在此初始化，该函数调用优先级高于c++层的模块链接初始化。
 function Main(context)
     Squick = context;
-    Squick:LogInfo("Hello Lua, awake script_module " );
+    Squick:LogInfo("Lua module is running" );
     Env.path = Squick:GetScriptPath()
     local path = Env.path
     print('path: ', path)
@@ -76,14 +81,14 @@ function Load()
         [ServerType.ST_GAME ] = function()
             Require("node.game.init")
         end,
-        [ServerType.ST_LOBBY] = function ()
-            Require("node.lobby.init")
+        [ServerType.ST_PLAYER] = function ()
+            Require("node.player.init")
             --Require("test.init")
         end
     }
     if(node_init[Env.app_type]) then
         node_init[Env.app_type]()
     else
-        print("Not surppot this app type: " .. Env.app_type)
+        Print("Not surppot this app type: " .. Env.app_type)
     end
 end

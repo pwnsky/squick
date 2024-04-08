@@ -15,8 +15,6 @@ namespace db_proxy::mongo {
 
     MongoModule::~MongoModule() {}
 
-    
-
     bool MongoModule::AfterStart() {
         Connect();
 
@@ -36,7 +34,7 @@ namespace db_proxy::mongo {
     bool MongoModule::Connect() {
         try {
 
-            if (!InitConnectDataFromConfig(DbType::MongoDB)) {
+            if (!InitConnectDataFromConfig(DbType::Mongo, "Player")) {
                 LogError("Config load failed!");
                 return false;
             }
@@ -47,10 +45,12 @@ namespace db_proxy::mongo {
             // ref: https://www.mongodb.com/docs/manual/reference/connection-string/
             // ref: https://www.kancloud.cn/noahs/linux/1425614
             string url = "mongodb://" + user_ + ":" + password_ + "@" + ip_ + ":" + std::to_string(port_);
+            std::cout <<url << endl;
             // Setup the connection and get a handle on the "admin" database.
             client_ = new client{ uri {url} };
+
             string log;
-            log += "MongoDB appname: ";
+            log += "Mongo appname: ";
             log += client_->start_session().client().uri().appname().value().data();
             m_log_->LogInfo(log);
         }
@@ -74,7 +74,7 @@ namespace db_proxy::mongo {
         rpc::AckMongoInsert ack;
         
         try {
-            string tmp;
+            uint64_t tmp;
             assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 
             mongocxx::database db = client_->database(req.db());
@@ -99,9 +99,11 @@ namespace db_proxy::mongo {
         int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
         rpc::ReqMongoFind req;
         rpc::AckMongoFind ack;
+
         try {
-            string tmp;
+            uint64_t tmp;
             assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
+            if(client_ == nullptr) throw "No db client";
 
             mongocxx::database db = client_->database(req.db());
             auto collection = db[req.collection()];
@@ -128,7 +130,7 @@ namespace db_proxy::mongo {
         rpc::ReqMongoUpdate req;
         rpc::AckMongoUpdate ack;
         try {
-            string tmp;
+            uint64_t tmp;
             assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 
             mongocxx::database db = client_->database(req.db());
@@ -155,7 +157,7 @@ namespace db_proxy::mongo {
         rpc::ReqMongoDelete req;
         rpc::AckMongoDelete ack;
         try {
-            string tmp;
+            uint64_t tmp;
             assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 
             mongocxx::database db = client_->database(req.db());
@@ -179,7 +181,7 @@ namespace db_proxy::mongo {
         rpc::ReqMongoCreateIndex req;
         rpc::AckMongoCreateIndex ack;
         try {
-            string tmp;
+            uint64_t tmp;
             assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
 
             mongocxx::database db = client_->database(req.db());

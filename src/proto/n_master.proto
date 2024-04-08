@@ -1,0 +1,97 @@
+// 描述: 登录验证
+// 使用: 服务器, 客户端
+syntax = "proto3";
+package rpc;
+
+// Master RPC 500 ~ 1000
+enum NMasterRPC {
+    NMASTER_RPC_NONE = 0;
+    NREQ_NODE_REGISTER = 500;
+    NACK_NODE_REGISTER = 501;
+
+    NREQ_NODE_UNREGISTER = 502;
+    NACK_NODE_UNREGISTER = 503;
+
+    NREQ_MIN_WORKLOAD_NODE_INFO = 504;
+    NACK_MIN_WORKLOAD_NODE_INFO = 505;
+
+    NREQ_NODE_INFO = 506;
+    NACK_NODE_INFO = 507;
+
+    NNTF_NODE_REPORT = 508; // Report node state to master
+    NNTF_NODE_ADD = 509;    // new node will ntf
+    NNTF_NODE_REMOVE = 510; // remove node will ntf
+}
+
+enum ServerState {
+    ServerCrash = 0;
+    ServerNormal = 1;
+    ServerBusy = 2;
+    ServerFrie = 3;
+}
+
+message Server {
+    int32 id = 1;
+    bytes name = 2;
+    bytes ip = 3;
+    int32 port = 4;
+    int32 max_online = 5;
+    int32 cpu_count = 6;
+    ServerState state = 7;
+    int32 type = 8;
+    int32 area = 9;
+    int32 connections = 10;
+    int32 workload = 11;
+    bytes key = 12;
+    bytes public_ip = 13;
+    int32 update_time = 14;
+    repeated int32 added_node_id_list = 15;
+    int32 ws_port = 16;
+    int32 http_port = 17;
+    int32 https_port = 18;
+}
+
+//message ServerList { repeated Server list = 1; }
+
+message NReqNodeRegister {
+    repeated int32 listen_type_list = 1; // set bind type, When new same type node connect to master, it will ntf self node.
+    Server node = 2;
+}
+
+message NAckNodeRegister {
+    int32 code = 1;
+    repeated Server node_add_list = 2;
+}
+
+message NNtfNodeAdd {
+    repeated Server node_list = 1;
+}
+
+message NNtfNodeRemove {
+    repeated Server node_list = 1;
+}
+
+message NNtfNodeReport {
+    int32 id = 1;
+    repeated Server list = 2;
+}
+
+message NReqNodeInfo {
+    repeated int32 id_list = 1;
+}
+
+message NAckNodeInfo {
+    repeated Server list = 1;
+}
+
+message NReqMinWorkloadNodeInfo {
+    repeated int32 type_list = 1;
+}
+
+message NAckMinWorkloadNodeInfo {
+    repeated Server list = 1;
+}
+
+message NReqNodeUnregister { int32 id = 1; }
+
+message NAckNodeUnregister { int32 code = 1; }

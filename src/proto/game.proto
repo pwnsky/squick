@@ -17,8 +17,8 @@ enum GameBaseRPC {
     ACK_GAME_RESTART = 20021;
 
     // 场景对象
-    ACK_PLAYER_ENTER = 20100; // 对象在服务端上创建成功
-    ACK_PLAYER_LEAVE = 20102; //
+    ACK_GAME_PLAYER_ENTER = 20100; // 对象在服务端上创建成功
+    ACK_GAME_PLAYER_LEAVE = 20102; //
 }
 
 // 进入游戏

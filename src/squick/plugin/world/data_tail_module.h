@@ -1,15 +1,11 @@
+#pragma once
 
-
-#ifndef SQUICK_DATA_TRAIL_MODULE_H
-#define SQUICK_DATA_TRAIL_MODULE_H
-
-#include "i_kernel_module.h"
+#include "i_world_module.h"
 
 #include "i_data_tail_module.h"
-#include <squick/core/i_plugin_manager.h>
-#include <squick/plugin/config/i_class_module.h>
-#include <squick/plugin/config/i_element_module.h>
-#include <squick/plugin/log/i_log_module.h>
+#include <squick/core/base.h>
+#include <squick/plugin/config/export.h>
+#include <squick/plugin/log/export.h>
 
 class DataTailModule : public IDataTailModule {
   public:
@@ -41,5 +37,3 @@ class DataTailModule : public IDataTailModule {
     IClassModule *m_class_;
     ILogModule *m_log_;
 };
-
-#endif

@@ -1,0 +1,8 @@
+<XML>
+    <Tutorial>
+        <Plugin Name="core/net" />
+        <Plugin Name="core/log" />
+
+        <Plugin Name="tutorial/t6_rpc" />
+    </Tutorial>
+</XML>

@@ -13,15 +13,12 @@ class NodeModule : public INodeModule {
     virtual bool Destory();
     virtual bool AfterStart();
 
-    virtual void LogReceive(const char *str) {}
-    virtual void LogSend(const char *str) {}
-    virtual std::string GetServersStatus();
-    map<int, ServerInfo>& GetServers();
+    map<int, ServerInfo>& GetAllNodes();
 
-    void OnNnNtfNodeReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
-    void OnNnReqNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
-    void OnNnReqNodeUnregistered(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
-    void OnNnReqMinWorkNodeInfo(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnNNtfNodeReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnNReqNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnNReqNodeUnregistered(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
 
     int GetLoadBanlanceNode(ServerType type);
 

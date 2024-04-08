@@ -5,10 +5,6 @@
 #include <string>
 #include <vector>
 
-class Line;
-class Box;
-class Plane;
-
 class Vector2 {
   private:
     float x, y;

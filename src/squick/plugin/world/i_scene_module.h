@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_INTF_SCENE_AOI_MODULE_H
-#define SQUICK_INTF_SCENE_AOI_MODULE_H
+#pragma once
 
 #include <algorithm>
 #include <functional>
@@ -307,4 +304,3 @@ class ISceneModule : public IModule, public MapEx<int, SceneInfo> {
 
   private:
 };
-#endif

@@ -1,0 +1,248 @@
+// 描述: 数据库 
+// 使用: 服务器
+syntax = "proto3";
+package rpc;
+
+// 30000 ~ 35000
+enum DbProxyRPC {
+    DB_RPC_NONE = 0;
+    
+    REQ_REDIS_QUERY = 30001;
+    ACK_REDIS_QUERY = 30002;
+    REQ_REDIS_GET = 30003;
+    ACK_REDIS_GET = 30004;
+    REQ_REDIS_SET = 30005;
+    ACK_REDIS_SET = 30006;
+    REQ_REDIS_HGET = 30007;
+    ACK_REDIS_HGET = 30008;
+    REQ_REDIS_HSET = 30009;
+    ACK_REDIS_HSET = 30010;
+    REQ_REDIS_HGETALL = 30011;
+    ACK_REDIS_HGETALL = 30012;
+    REQ_REDIS_HMSET = 30013;
+    ACK_REDIS_HMSET = 30014;
+
+    REQ_MONGO_QUERY = 30500;
+    ACK_MONGO_QUERY = 30501;
+    REQ_MONGO_INSERT = 30502;
+    ACK_MONGO_INSERT = 30503;
+    REQ_MONGO_FIND = 30504;
+    ACK_MONGO_FIND = 30505;
+    REQ_MONGO_UPDATE = 30506;
+    ACK_MONGO_UPDATE = 30507;
+    REQ_MONGO_DELETE = 30508;
+    ACK_MONGO_DELETE = 30509;
+    REQ_MONGO_CREATE_INDEX = 30510;
+    ACK_MONGO_CREATE_INDEX = 30511;
+
+    REQ_MYSQL_QUERY = 31000;
+    ACK_MYSQL_QUERY = 31001;
+    REQ_MYSQL_EXECUTE = 31002;
+    ACK_MYSQL_EXECUTE = 31003;
+    REQ_MYSQL_SELECT = 31004;
+    ACK_MYSQL_SELECT = 31005;
+    REQ_MYSQL_INSERT = 31006;
+    ACK_MYSQL_INSERT = 31007;
+    REQ_MYSQL_UPDATE = 31008;
+    ACK_MYSQL_UPDATE = 31009;
+    REQ_MYSQL_DELETE = 31010;
+    ACK_MYSQL_DELETE = 31011;
+    
+
+    REQ_CLICKHOUSE_QUERY = 31500;
+    ACK_CLICKHOUSE_QUERY = 31501;
+    REQ_CLICKHOUSE_EXECUTE = 31502;
+    ACK_CLICKHOUSE_EXECUTE = 31503;
+    REQ_CLICKHOUSE_SELECT = 31504;
+    ACK_CLICKHOUSE_SELECT = 31505;
+    REQ_CLICKHOUSE_INSERT = 31506;
+    ACK_CLICKHOUSE_INSERT = 31507;
+
+}
+
+// Proxy DB code
+enum DbProxyCode {
+    DB_PROXY_CODE_REDIS_SUCCESS = 0;
+    DB_PROXY_CODE_REDIS_PROTO_ERROR = 1;
+    DB_PROXY_CODE_REDIS_EXCEPTION = 2;
+    DB_PROXY_CODE_REDIS_NO_KEY = 3;
+
+    DB_PROXY_CODE_MONGO_SUCCESS = 500;
+    DB_PROXY_CODE_MONGO_PROTO_ERROR = 501;
+    DB_PROXY_CODE_MONGO_EXCEPTION = 502;
+
+    DB_PROXY_CODE_MYSQL_SUCCESS = 1000;
+    DB_PROXY_CODE_MYSQL_PROTO_ERROR = 1001;
+    DB_PROXY_CODE_MYSQL_EXCEPTION = 1002;
+
+    DB_PROXY_CODE_CLICKHOUSE_SUCCESS = 1500;
+    DB_PROXY_CODE_CLICKHOUSE_PROTO_ERROR = 1501;
+    DB_PROXY_CODE_CLICKHOUSE_EXCEPTION = 1502;
+}
+
+message Data {
+    int32 type = 1;
+    bytes value = 2;
+}
+
+message List {
+    int32 type = 1;
+    repeated bytes values = 2;
+}
+
+message ReqRedisGet {
+    int32 query_id = 1;
+    string key = 2;
+}
+
+message AckRedisGet {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    bytes value = 4;
+}
+
+message ReqRedisSet {
+    int32 query_id = 1;
+    string key = 2;
+    bytes value = 3;
+    int64 ttl = 4;
+}
+
+message AckRedisSet {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+}
+
+message ReqRedisHGet {
+    int32 query_id = 1;
+    string key = 2;
+    string field = 3;
+}
+
+message AckRedisHGet {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    bytes value = 4;
+}
+
+message ReqRedisHSet {
+    int32 query_id = 1;
+    string key = 2;
+    string field = 3;
+    bytes value = 4;
+    int64 ttl = 5;
+}
+
+message AckRedisHSet {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+}
+
+message ReqClickhouseExecute {
+    int32 query_id = 1;
+    string sql = 2;
+}
+
+message AckClickhouseExecute {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+}
+
+message ReqClickhouseSelect {
+    int32 query_id = 1;
+    string sql = 2;
+}
+
+message AckClickhouseSelect {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    repeated List result = 4;
+}
+
+// Insert one
+message ReqMongoInsert {
+    int32 query_id = 1;
+    string db = 2;
+    string collection = 3;
+    string insert_json = 4;
+}
+
+message AckMongoInsert {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    string inserted_id = 4; // Inserted Object ID
+}
+
+// Find many
+message ReqMongoFind {
+    int32 query_id = 1;
+    string db = 2;
+    string collection = 3;
+    string condition_json = 4;
+    int32 limit = 5;
+    int32 skip = 6;
+    string sort_json = 7;
+}
+
+message AckMongoFind {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    int32 matched_count = 4;
+    repeated string result_json = 5;
+}
+
+// Default: Update many
+message ReqMongoUpdate {
+    int32 query_id = 1;
+    string db = 2;
+    string collection = 3;
+    string condition_json = 4;
+    string update_json = 5;
+}
+
+message AckMongoUpdate {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    int32 matched_count = 4;
+    int32 modified_count = 5;
+    int32 upserted_count = 6;
+}
+
+// Default: Delete many
+message ReqMongoDelete {
+    int32 query_id = 1;
+    string db = 2;
+    string collection = 3;
+    string condition_json = 4;
+}
+
+message AckMongoDelete {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    int32 deleted_count = 4;
+}
+
+// Create index
+message ReqMongoCreateIndex {
+    int32 query_id = 1;
+    string db = 2;
+    string collection = 3;
+    string condition_json = 4;
+}
+
+message AckMongoCreateIndex {
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    string result_json = 4;
+}

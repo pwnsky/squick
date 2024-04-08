@@ -1,6 +1,4 @@
-
-#ifndef SQUICK_NET_H
-#define SQUICK_NET_H
+#pragma once
 
 #include "i_net.h"
 #include "third_party/concurrentqueue/concurrentqueue.h"
@@ -16,7 +14,6 @@
 #include <thread>
 #include <unordered_map>
 
-#pragma pack(push, 1)
 
 class Net : public INet {
   public:
@@ -29,11 +26,9 @@ class Net : public INet {
         mnCpuCount = 0;
         mbServer = false;
         mbWorking = false;
-
         mnSendMsgTotal = 0;
         mnReceiveMsgTotal = 0;
 
-        mnBufferSize = 0;
         mbTCPStream = false;
     }
 
@@ -50,11 +45,8 @@ class Net : public INet {
         mnCpuCount = 0;
         mbServer = false;
         mbWorking = false;
-
         mnSendMsgTotal = 0;
         mnReceiveMsgTotal = 0;
-
-        mnBufferSize = 0;
         mbTCPStream = tcpStream;
     }
 
@@ -63,9 +55,8 @@ class Net : public INet {
   public:
     virtual bool Update() override;
 
-    virtual void Startialization(const char *ip, const unsigned short nPort) override;
-    virtual int Startialization(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount = 4) override;
-    virtual unsigned int ExpandBufferSize(const unsigned int size) override;
+    virtual void Connect(const char *ip, const unsigned short nPort, const uint32_t expand_buffer_size) override;
+    virtual int Listen(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount, const uint32_t expand_buffer_size) override;
 
     virtual bool Final() override;
 
@@ -125,7 +116,7 @@ class Net : public INet {
     int mnCpuCount;
     bool mbServer;
 
-    unsigned int mnBufferSize;
+    uint32_t expand_buffer_size_ = 0;
 
     bool mbWorking;
     bool mbTCPStream;
@@ -154,7 +145,3 @@ class Net : public INet {
     moodycamel::ConcurrentQueue<NetEvent> msgQueue;
     //////////////////////////////////////////////////////////////////////////
 };
-
-#pragma pack(pop)
-
-#endif

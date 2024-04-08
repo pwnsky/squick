@@ -18,5 +18,5 @@ call "init_runtime_dll.bat"
 rem cmake 
 cd %build_path%\
 echo %project_path%
-cmake %project_path%\src -DMODE=dev
+cmake %project_path% -DMODE=dev
 cmake --build . -j8

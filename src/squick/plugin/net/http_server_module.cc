@@ -73,8 +73,7 @@ bool HttpServerModule::OnReceiveNetPack(std::shared_ptr<HttpRequest> req) {
     if (middleware_) {
         auto webstate = middleware_->operator()(req);
         if (webstate != WEB_OK) {
-            ResponseMsg(req, "{\"code=-1\", \"msg\"=\"Forbiden\"}", webstate);
-            return true;
+            return false;
         }
     }
 

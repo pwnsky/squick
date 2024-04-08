@@ -38,8 +38,8 @@ void ClickhouseModule::OnReqExecute(const socket_t sock, const int msg_id, const
 	int code = rpc::DbProxyCode::DB_PROXY_CODE_CLICKHOUSE_SUCCESS;
 	rpc::ReqClickhouseExecute req;
 	rpc::AckMongoInsert ack;
-	string tmp;
-	if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
+	uint64_t uid;
+	if (!m_net_->ReceivePB(msg_id, msg, len, req, uid)) {
 		return;
 	}
 	try {
@@ -63,11 +63,9 @@ void ClickhouseModule::OnReqSelect(const socket_t sock, const int msg_id, const 
 
 }
 
-
-
 bool ClickhouseModule::Connect() {
-	
-	if (!InitConnectDataFromConfig(DbType::ClickHouse)) {
+
+	if (!InitConnectDataFromConfig(DbType::Clickhouse, "Log")) {
 		LogError("Config load failed!");
 		return false;
 	}

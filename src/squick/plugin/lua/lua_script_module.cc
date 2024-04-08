@@ -415,10 +415,10 @@ INT64 LuaScriptModule::GetNowTime() { return pm_->GetNowTime(); }
 
 Guid LuaScriptModule::CreateID() { return m_kernel_->CreateGUID(); }
 
-INT64 LuaScriptModule::AppID() { return pm_->GetAppID(); }
+int LuaScriptModule::AppID() { return pm_->GetAppID(); }
 
-INT64 LuaScriptModule::AppType() {
-    return 0;
+int LuaScriptModule::AppType() {
+    return pm_->GetAppType();
 }
 
 string LuaScriptModule::AppName() {
@@ -607,31 +607,31 @@ void LuaScriptModule::SetScriptPath(const std::string &path) { scriptPath = path
 
 const std::string LuaScriptModule::GetScriptPath() { return scriptPath; }
 
-void LuaScriptModule::SendToServerByServerID(const int server_id, const uint16_t msg_id, const std::string &data, const std::string& guid) {
+void LuaScriptModule::SendToServerByServerID(const int server_id, const uint16_t msg_id, const std::string &data, const uint64_t uid) {
     if (pm_->GetAppID() == server_id) {
         m_log_->LogError("you can send message to yourself");
         return;
     }
-    m_net_client_->SendByID(server_id, msg_id, data, guid);
+    m_net_client_->SendByID(server_id, msg_id, data, uid);
 }
 
-void LuaScriptModule::SendToAllServerByServerType(const ServerType server_type, const uint16_t msg_id, const std::string &data, const std::string& guid) {
-    m_net_client_->SendToAllNodeByType(server_type, msg_id, data, guid);
+void LuaScriptModule::SendToAllServerByServerType(const ServerType server_type, const uint16_t msg_id, const std::string &data, const uint64_t uid) {
+    m_net_client_->SendToAllNodeByType(server_type, msg_id, data, uid);
 }
 
-void LuaScriptModule::SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, string guid) {
-    m_net_->SendMsg(msg_id, data, fd, guid);
+void LuaScriptModule::SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, const uint64_t uid) {
+    m_net_->SendMsg(msg_id, data, fd, uid);
 }
 
-void LuaScriptModule::LogInfo(const std::string &logData) { m_log_->LogInfo(logData); }
+void LuaScriptModule::LogInfo(const std::string &logData) { m_log_->LogInfo("LuaLog: " + logData); }
 
-void LuaScriptModule::LogError(const std::string &logData) { m_log_->LogError(logData); }
+void LuaScriptModule::LogError(const std::string &logData) { m_log_->LogError("LuaLog: " + logData); }
 
-void LuaScriptModule::LogWarning(const std::string &logData) { m_log_->LogWarning(logData); }
+void LuaScriptModule::LogWarning(const std::string &logData) { m_log_->LogWarning("LuaLog: " + logData); }
 
-void LuaScriptModule::LogDebug(const std::string &logData) { m_log_->LogDebug(logData); }
+void LuaScriptModule::LogDebug(const std::string &logData) { m_log_->LogDebug("LuaLog: " + logData); }
 
-void LuaScriptModule::SetVersionCode(const std::string &logData) { strVersionCode = logData; }
+void LuaScriptModule::SetVersionCode(const std::string &version) { strVersionCode = version; }
 
 const std::string &LuaScriptModule::GetVersionCode() { return strVersionCode; }
 
@@ -814,9 +814,9 @@ bool LuaScriptModule::Register() {
 }
 
 void LuaScriptModule::OnNetMsgCallBackAsServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    string guid;
+    uint64_t uid;
     string data;
-    if (!m_net_->ReceivePB(msg_id, msg, len, data, guid)) {
+    if (!m_net_->ReceivePB(msg_id, msg, len, data, uid)) {
         ostringstream str;
         str << "Parse Message Failed from Packet to MsgBase! MessageID: " << msg_id;
         m_log_->LogWarning(str);
@@ -828,7 +828,7 @@ void LuaScriptModule::OnNetMsgCallBackAsServer(const socket_t sock, const int ms
         auto Ret = msgCallBack->First(callback);
         while (Ret) {
             try {
-                callback.func.call<LuaIntf::LuaRef>(callback.self, guid, data, msg_id, sock);
+                callback.func.call<LuaIntf::LuaRef>(callback.self, uid, data, msg_id, sock);
             } catch (LuaIntf::LuaException &e) {
                 cout << e.what() << endl;
             } catch (...) {
@@ -839,9 +839,9 @@ void LuaScriptModule::OnNetMsgCallBackAsServer(const socket_t sock, const int ms
 }
 
 void LuaScriptModule::OnNetMsgCallBackAsClient(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    string guid;
+    uint64_t uid;
     string data;
-    if (!m_net_->ReceivePB(msg_id, msg, len, data, guid)) {
+    if (!m_net_->ReceivePB(msg_id, msg, len, data, uid)) {
         ostringstream str;
         str << "Parse Message Failed from Packet to MsgBase! MessageID: " << msg_id;
         m_log_->LogWarning(str);
@@ -853,7 +853,7 @@ void LuaScriptModule::OnNetMsgCallBackAsClient(const socket_t sock, const int ms
 		auto Ret = msgCallBack->First(callback);
 		while (Ret) {
 			try {
-				callback.func.call<LuaIntf::LuaRef>(callback.self, guid, data, msg_id, sock);
+				callback.func.call<LuaIntf::LuaRef>(callback.self, uid, data, msg_id, sock);
 			}
 			catch (LuaIntf::LuaException& e) {
 				cout << e.what() << endl;

@@ -1,14 +1,26 @@
 
 #include "logic_module.h"
-#include "plugin.h"
+#include <squick/core/base.h>
 
 namespace proxy::logic {
 
-bool LogicModule::Start() { return true; }
+bool LogicModule::Start() {  
+    last_update_work_load_info_time_ = SquickGetTimeS();
+    return true;
+}
 
 bool LogicModule::Destory() { return true; }
 
-bool LogicModule::Update() { return true; }
+bool LogicModule::Update() {
+
+    time_t now_time = SquickGetTimeS();
+    if (now_time - last_update_work_load_info_time_ >= 10) {
+        NReqMinWorkloadNodeInfo();
+        last_update_work_load_info_time_ = now_time;
+    }
+
+    return true;
+}
 
 bool LogicModule::AfterStart() {
     m_class_ = pm_->FindModule<IClassModule>();
@@ -22,42 +34,116 @@ bool LogicModule::AfterStart() {
     m_net_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_HEARTBEAT, this, &LogicModule::OnHeartbeat);
     m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnectWithTcp);
+    m_net_->AddReceiveCallBack(rpc::PlayerRPC::REQ_PLAYER_ENTER, this, &LogicModule::OnReqPlayerEnter);
+    m_net_->AddReceiveCallBack(rpc::PlayerRPC::REQ_PLAYER_LEAVE, this, &LogicModule::OnReqPlayerLeave);
     m_net_->AddReceiveCallBack(rpc::TestRPC::REQ_TEST_PROXY, this, &LogicModule::OnReqTestProxy);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, this, &LogicModule::OnNAckMinWorkloadNodeInfo);
     m_ws_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnectWithWS);
     m_ws_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
 
-    m_ws_->Startialization(DEFAULT_NODE_MAX_SERVER_CONNECTION, pm_->GetArg("ws_port=", 10502));
-    m_ws_->AddEventCallBack(this, &LogicModule::OnWebSocketClientEvent);
+    // Lobby
+    m_net_client_->AddReceiveCallBack(ServerType::ST_PLAYER, this, &LogicModule::OnRecivedPlayerNodeMsg);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_LOGIN, rpc::NLoginRPC::NACK_PROXY_CONNECT_VERIFY, this, &LogicModule::OnNAckConnectVerify);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_PLAYER, rpc::PlayerRPC::ACK_PLAYER_ENTER, this, &LogicModule::OnAckPlayerEnter);
     return true;
 }
 
-void LogicModule::OnWebSocketClientEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet)
-{
-    if (eEvent & SQUICK_NET_EVENT_EOF)
-    {
-        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
-        OnClientDisconnected(sock);
-    } else if (eEvent & SQUICK_NET_EVENT_ERROR)
-    {
-        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
-        OnClientDisconnected(sock);
-    } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT)
-    {
-        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
-        OnClientDisconnected(sock);
-    }else if (eEvent & SQUICK_NET_EVENT_CONNECTED)
-    {
-        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
+// request per 5 sec
+void LogicModule::NReqMinWorkloadNodeInfo() {
+    // find min work load proxy
+    rpc::NReqMinWorkloadNodeInfo pbreq;
+    pbreq.add_type_list(ST_PLAYER);
+    pbreq.add_type_list(ST_WORLD);
+    m_net_client_->SendPBByID(DEFAULT_NODE_MASTER_ID, rpc::NMasterRPC::NREQ_MIN_WORKLOAD_NODE_INFO, pbreq);
+
+}
+
+void LogicModule::OnNAckMinWorkloadNodeInfo(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    uint64_t uid;
+    rpc::NAckMinWorkloadNodeInfo ack;
+    if (!INetModule::ReceivePB(msg_id, msg, len, ack, uid)) {
+        return;
+    }
+
+    for (auto &info : ack.list()) {
+        min_workload_nodes_[info.type()] = info.id();
     }
 }
 
-void LogicModule::OnWS(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    dout << "On Websocket: " << std::string(msg, len) << endl;
-    dout << "Websocket recived size: " << len << endl;
-    rpc::AckConnectProxy ack;
-    ack.set_code(0);
-    m_ws_->SendMsgPB(rpc::ProxyRPC::ACK_CONNECT_PROXY, ack, sock);
+void LogicModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+
+    auto pInfo = GetPlayerConnInfo(sock);
+    if (pInfo == nullptr) {
+        return;
+    }
+
+    int player_node = GetLoadBanlanceNode(ST_PLAYER);
+    if (player_node <= 0 || pInfo->player_node > 0) {
+        return;
+    }
+
+    rpc::ReqPlayerEnter req;
+    req.set_account_id(pInfo->account_id);
+    req.set_account(pInfo->account);
+    req.set_ip(pInfo->ip);
+    req.set_protocol((int)pInfo->protocol_type);
+    req.set_proxy_node(pm_->GetAppID());
+    req.set_login_node(pInfo->login_node);
+    req.set_area(pm_->GetArea());
+    req.set_proxy_sock(sock);
+    dout << "OnReqPlayerEnter: player_node: " << player_node << "\n";
+    m_net_client_->SendPBByID(player_node, rpc::PlayerRPC::REQ_PLAYER_ENTER, req);
+    pInfo->player_node = player_node;
     return;
+}
+
+void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+
+    uint64_t uid = 0;
+
+    rpc::AckPlayerEnter ack;
+    if (!m_net_->ReceivePB(msg_id, msg, len, ack, uid)) {
+        return;
+    }
+
+    dout << "OnAckPlayerEnter\n";
+    // start heatbeat
+    //m_schedule_->AddSchedule(s.account_id, "HeatbeatCheck", this, &LogicModule::OnHeatbeatCheck, 10.0f, 99999); // 每10秒check一次
+
+    uid = ack.data().uid();
+    socket_t player_sock = ack.proxy_sock();
+
+    auto pInfo = GetPlayerConnInfoByUID(uid);
+    if (pInfo != nullptr) {
+        m_log_->LogError("Uid: " + std::to_string(uid) + " has enter the game, do not try again");
+        return ;
+    }
+
+    pInfo = GetPlayerConnInfo(player_sock);
+
+    if (pInfo == nullptr) {
+        m_log_->LogError("Uid: " + std::to_string(uid) + " no this socket: " + std::to_string(player_sock));
+        return ;
+    }
+
+    // 在这里创建玩家表
+    players_socks_[uid] = player_sock;
+    pInfo->uid = uid;
+    pInfo->status = PlayerOnline;
+
+    m_net_->SendMsgWithOutHead(rpc::PlayerRPC::ACK_PLAYER_ENTER, ack.SerializeAsString(), player_sock);
+}
+
+int LogicModule::GetLoadBanlanceNode(ServerType type) {
+    auto iter = min_workload_nodes_.find(type);
+    if(iter == min_workload_nodes_.end()) {
+        return 0;
+    }
+    return iter->second;
+}
+
+void LogicModule::OnReqPlayerLeave(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+
 }
 
 void LogicModule::OnClientDisconnected(const socket_t sock) {
@@ -68,160 +154,79 @@ void LogicModule::OnClientDisconnected(const socket_t sock) {
         sessions_.erase(iter);
     }
     
-    NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
-    if (pNetObject) {
-        if (pNetObject->GetAccountID().empty()) {
-            return;
-        }
-        dout << "client disconnected " << pNetObject->GetAccountID() << std::endl;
-        string player_id = pNetObject->GetPlayerID();
-        string account_id = pNetObject->GetAccountID();
-        auto iter = clients_.find(account_id);
-        if (iter != clients_.end()) {
-            // 判断是否有新的连接
-            if (iter->second.sock == sock) {
-                // 移除schedule
-                m_schedule_->RemoveSchedule(iter->second.account_id);
-                clients_.erase(iter);
-
-                int nGameID = pNetObject->GetLobbyID();
-                if (nGameID > 0) {
-
-                    // when a net-object bind a account then tell that game-server
-                    if (!pNetObject->GetPlayerID().empty()) {
-                        rpc::PlayerLeaveEvent xData;
-                        rpc::MsgBase xMsg;
-
-                        xMsg.set_guid(player_id);
-                        if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
-                            return;
-                        }
-
-                        std::string msg;
-                        if (!xMsg.SerializeToString(&msg)) {
-                            return;
-                        }
-
-                        m_net_client_->SendByID(nGameID, rpc::PlayerEventRPC::PLAYER_LEAVE_EVENT, msg);
-
-                        // 断开该掉连接
-                        m_net_->GetNet()->CloseNetObject(sock);
-                    }
-                }
-            }
-        }
+    NetObject *net_obj = m_net_->GetNet()->GetNetObject(sock);
+    if (net_obj) {
+        m_net_->GetNet()->CloseNetObject(sock);
     }
+
+    auto pInfo = GetPlayerConnInfo(sock);
+    if (pInfo == nullptr) {
+        return ;
+    }
+
+    // 判断是否有新的连接
+    // 移除schedule
+    // m_schedule_->RemoveSchedule(iter->second.account_id);
+    if (pInfo->player_node > 0) {
+        // when a net-object bind a account then tell that game-server
+        rpc::NNtfPlayerOffline ntf;
+        m_net_client_->SendPBByID(pInfo->player_node, rpc::NPlayerRPC::NNTF_PLAYER_OFFLINE, ntf);
+    }
+
+    dout << "client disconnected " << pInfo->account_id << std::endl;
+    //return;
+
+    RemovePlayerConnInfo(sock);
 }
 
 // forward to client
-int LogicModule::ForwardToClient(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnRecivedPlayerNodeMsg(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     dout << " ForwardToClient: " << std::endl;
-    rpc::MsgBase xMsg;
-    if (!xMsg.ParseFromArray(msg, len)) {
+    rpc::MsgBase msg_pak;
+    if (!msg_pak.ParseFromArray(msg, len)) {
         char szData[MAX_PATH] = {0};
         sprintf(szData, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
-        return false;
+        return;
     }
-
-    // broadcast many palyers
-    for (int i = 0; i < xMsg.broadcast_size(); ++i) {
-        SendToPlayer(xMsg.broadcast(i), msg_id, xMsg.msg_data());
-    }
-
-    // send to one player
-    if (xMsg.broadcast_size() <= 0) {
-        SendToPlayer(xMsg.guid(), msg_id, xMsg.msg_data());
-    }
-    return true;
+    SendToPlayer(msg_pak.uid(), msg_id, msg_pak.msg_data());
+    return;
 }
 
-bool LogicModule::SendToPlayer(string player_id, const int msg_id, const string &data) {
+bool LogicModule::SendToPlayer(uint64_t uid, const int msg_id, const string &data) {
     
     bool ret = false;
     try {
-        string account_id = players_[player_id];
-        auto& client = clients_[account_id];
-        dout << " SendToPlayer: " << player_id << " msg_id: " << msg_id << " socks: " << client.sock << std::endl;
-        if (client.protocol_type == ProtocolType::Tcp) {
-            m_net_->SendMsgWithOutHead(msg_id, data, client.sock);
+        auto pInfo = GetPlayerConnInfo(uid);
+        if (pInfo == nullptr) {
+            throw;
         }
-        else if (client.protocol_type == ProtocolType::WS) {
-            m_ws_->SendMsgWithOutHead(msg_id, data.data(), data.size(), client.sock);
+
+        dout << " SendToPlayer: " << uid << " msg_id: " << msg_id << " socks: " << pInfo->sock << std::endl;
+        if (pInfo->protocol_type == ProtocolType::Tcp) {
+            m_net_->SendMsgWithOutHead(msg_id, data, pInfo->sock);
+        } else if (pInfo->protocol_type == ProtocolType::WS) {
+            m_ws_->SendMsgWithOutHead(msg_id, data.data(), data.size(), pInfo->sock);
         }
-        
         ret = true;
     }
     catch (...) {
         ostringstream info;
-        info << "Send to player failed, player_id: " << player_id;
+        info << "Send to player failed, uid: " << uid;
         m_log_->LogError(info);
     }
     return ret;
 }
 
-int LogicModule::EnterSuccessEvent(const string account_id, const string player_id) {
-    // 在这里创建玩家表
-
-    auto iter = clients_.find(account_id);
-    if (iter != clients_.end()) {
-        NetObject* obj = nullptr;
-        if (iter->second.protocol_type == ProtocolType::Tcp) {
-            obj = m_net_->GetNet()->GetNetObject(iter->second.sock);
-        }else if (iter->second.protocol_type == ProtocolType::WS) {
-            obj = m_ws_->GetNet()->GetNetObject(iter->second.sock);
-        }
-        
-        if (obj) {
-            obj->SetPlayerID(player_id);
-            players_[player_id] = account_id;
-            obj->SetLobbyID(iter->second.lobby_id);
-            iter->second.player_id = player_id;
-
-            dout << " EnterSuccessEvent account_guid: " << account_id << " player_id: " << player_id << std::endl;
-        }
-
-        if (iter->second.protocol_type == ProtocolType::Tcp) {
-            m_net_->SendMsgWithOutHead(rpc::PlayerRPC::ACK_PLAYER_ONLINE, "", obj->GetRealFD());
-        }else if (iter->second.protocol_type == ProtocolType::WS) {
-            m_ws_->SendMsgWithOutHead(rpc::PlayerRPC::ACK_PLAYER_ONLINE, "", 0,  obj->GetRealFD());
-        }
-        
-    }
-    return 0;
-}
 
 void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    NetObject *obj = m_net_->GetNet()->GetNetObject(sock);
-    if (!obj) {
-        obj = m_ws_->GetNet()->GetNetObject(sock);
-    }
+    auto pInfo = GetPlayerConnInfo(sock);
 
-    if (!obj) {
+    if (pInfo == nullptr) {
+        dout << "sock: " << sock << " msg_id" << msg_id << " cannot send msg\n";
         return;
     }
-
-    int lobby_id = obj->GetLobbyID();
-    if (lobby_id <= 0) {
-        return;
-    }
-    
-    string player_id = obj->GetPlayerID();
-    // check
-    auto iter = players_.find(player_id);
-    if (iter == players_.end()) {
-        dout << "This player not exsisted\n";
-        return;
-    }
-
     rpc::MsgBase xMsg;
-    if (!xMsg.ParseFromString(std::string(msg, len))) {
-        char szData[MAX_PATH] = {0};
-        sprintf(szData, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
-        m_log_->LogError(Guid(0, sock), szData, __FUNCTION__, __LINE__);
-        return;
-    }
-
-    xMsg.set_guid(player_id);
+    xMsg.set_uid(pInfo->uid);
     *xMsg.mutable_msg_data() = string(msg, len);
     std::string pak;
     if (!xMsg.SerializeToString(&pak)) {
@@ -229,8 +234,12 @@ void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const ch
     }
     // 根据ID 来转发至不同服务器
     if (msg_id >= 12000 && msg_id < 30000) {
-        // 转发到Lobby
-        m_net_client_->SendByID(lobby_id, msg_id, pak);
+        // 转发到Player node
+        int node_player_id = pInfo->player_node;
+        if (node_player_id <= 0) {
+                return;
+        }
+        m_net_client_->SendByID(node_player_id, msg_id, pak);
     } else if (msg_id >= 10000 && msg_id < 32000) {
 
     } else if (msg_id >= 30000 && msg_id < 32000) {
@@ -243,19 +252,17 @@ void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const ch
 }
 
 void LogicModule::OnHeartbeat(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    auto pInfo = GetPlayerConnInfo(sock);
+    if (pInfo == nullptr) {
+        return ;
+    }
+
     std::string msgData(msg, len);
-    NetObject *pNetObject = m_net_->GetNet()->GetNetObject(sock);
-    if (pNetObject) {
-        auto iter = clients_.find(pNetObject->GetAccountID());
-        if (iter != clients_.end()) {
-            iter->second.last_ping = SquickGetTimeMS();
-            if (iter->second.protocol_type == ProtocolType::Tcp) {
-                m_net_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_HEARTBEAT, msgData, sock);
-            }
-            else if(iter->second.protocol_type == ProtocolType::WS){
-                m_ws_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_HEARTBEAT, msgData.data(), msgData.size(), sock);
-            }
-        }
+    pInfo->last_ping = SquickGetTimeMS();
+    if (pInfo->protocol_type == ProtocolType::Tcp) {
+        m_net_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_HEARTBEAT, msgData, sock);
+    } else if(pInfo->protocol_type == ProtocolType::WS){
+        m_ws_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_HEARTBEAT, msgData.data(), msgData.size(), sock);
     }
 }
 
@@ -269,8 +276,8 @@ void LogicModule::OnReqTestProxy(const socket_t sock, const int msg_id, const ch
     
     if (now_time - last_time > 1000000) {
         rpc::Test req;
-        string guid;
-        INetModule::ReceivePB(msg_id, string(msg, len), req, guid);
+        uint64_t uid;
+        INetModule::ReceivePB(msg_id, string(msg, len), req, uid);
         std::cout << "Proxy Test:\n" << "handle quests: " << request_time - last_request_times << " times/second \n req network time: " << (now_time - req.req_time()) / 1000.0f << " ms \n";
         last_time = now_time;
         last_request_times = request_time;
@@ -280,8 +287,9 @@ void LogicModule::OnReqTestProxy(const socket_t sock, const int msg_id, const ch
 }
 
 int LogicModule::OnHeatbeatCheck(const Guid &self, const std::string &heartBeat, const float time, const int count) {
-    auto iter = clients_.find(self.ToString());
-    if (iter == clients_.end()) {
+    /*
+    auto iter = players_.find(self.ToString());
+    if (iter == players_.end()) {
         dout << "No this player to heatbeat check\n";
         return 1;
     }
@@ -290,33 +298,46 @@ int LogicModule::OnHeatbeatCheck(const Guid &self, const std::string &heartBeat,
     if (now - iter->second.last_ping > 30000) { // 大于30秒即断线
         OnClientDisconnected(iter->second.sock);
     }
+    return 0;*/
     return 0;
 }
 
-// Enter game
-bool LogicModule::TryEnter(string guid) {
-    
-    auto client = clients_.find(guid);
-    if (client == clients_.end()) {
+PlayerConnInfo* LogicModule::GetPlayerConnInfoByUID(const uint64_t uid) {
+    auto iter = players_socks_.find(uid);
+    if (iter == players_socks_.end()) {
+        return nullptr;
+    }
+    socket_t sock = iter->second;
+    return GetPlayerConnInfo(sock);
+}
+
+PlayerConnInfo* LogicModule::GetPlayerConnInfo(const socket_t player_sock) {
+    auto iter = players_.find(player_sock);
+    if (iter == players_.end()) {
+        return nullptr;
+    }
+    return &iter->second;
+}
+
+bool LogicModule::RemovePlayerConnInfo(const socket_t player_sock) {
+    auto iter = players_.find(player_sock);
+    if (iter == players_.end()) {
         return false;
     }
-    //int lobby_id = m_node_->GetLoadBanlanceNode(ServerType::ST_LOBBY);
-    int lobby_id = 0;
-    if (lobby_id == -1) {
-        return false;
+    uint64_t uid = iter->second.uid;
+    players_.erase(iter);
+
+    auto iter2 = players_socks_.find(uid);
+    if (iter2 != players_socks_.end()) {
+        players_socks_.erase(iter2);
     }
-    rpc::PlayerEnterEvent event;
-    event.set_account(client->second.account);
-    event.set_account_id(client->second.account_id);
-    event.set_ip(client->second.ip);
-    event.set_proxy_id(pm_->GetAppID());
-    m_net_client_->SendPBByID(lobby_id, rpc::PlayerEventRPC::PLAYER_ENTER_EVENT, event);
-    client->second.lobby_id = lobby_id;
+
     return true;
 }
 
-void LogicModule::OnReqConnectWithTcp(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+Coroutine<bool> LogicModule::OnReqConnectWithTcp(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     OnReqConnect(ProtocolType::Tcp, sock, msg_id, msg, len);
+    co_return;
 }
 
 void LogicModule::OnReqConnectWithWS(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -336,11 +357,14 @@ void LogicModule::OnReqConnect(ProtocolType type, const socket_t sock, const int
         return;
     }
 
-
     rpc::ReqConnectProxy req;
     if (!req.ParseFromArray(msg, len)) {
         return;
     }
+    // check login_node
+    int login_node = req.login_node();
+
+
     // 验证Token
     Session s;
     s.account_id = req.account_id();
@@ -349,15 +373,24 @@ void LogicModule::OnReqConnect(ProtocolType type, const socket_t sock, const int
     s.sock = sock;
     s.ip = pNetObject->GetIP();
     s.protocol_type = type;
+    s.login_node = login_node;
     sessions_[sock] = s;
-    m_node_->OnReqProxyConnectVerify(sock, req.account_id(), req.key());
+
+    rpc::NReqConnectProxyVerify nreq;
+    nreq.set_session(sock);
+    nreq.set_key(req.key());
+    nreq.set_account_id(req.account_id());
+    
+    dout << "login_node: " << login_node << endl;
+    // send rand id
+    // Modify ...
+    m_net_client_->SendPBByID(login_node, rpc::NLoginRPC::NREQ_PROXY_CONNECT_VERIFY, nreq);
 }
 
-
-void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const uint32_t len) {
-    string tmp;
-    rpc::AckConnectProxyVerify data;
-    if (!m_net_->ReceivePB(msg_id, msg, len, data, tmp)) {
+void LogicModule::OnNAckConnectVerify(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    uint64_t uid;
+    rpc::NAckConnectProxyVerify data;
+    if (!m_net_->ReceivePB(msg_id, msg, len, data, uid)) {
         return;
     }
 
@@ -373,20 +406,9 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
     // remove sessoin
     sessions_.erase(iter);
 
-    NetObject* net = nullptr;
-    if (s.protocol_type == ProtocolType::Tcp) {
-        net = m_net_->GetNet()->GetNetObject(s.sock);
-    }else if (s.protocol_type == ProtocolType::WS) {
-        net = m_ws_->GetNet()->GetNetObject(s.sock);
-    }
-    
-    if (!net) {
-        dout << "No this sock: " << s.sock << std::endl;
-        return;
-    }
-
     if (data.code() == 0) {
         // remove old socket
+        /*
         auto iter2 = clients_.find(s.account_id);
         if (iter2 != clients_.end()) {
             // kick off old connection;
@@ -394,10 +416,8 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
             k.set_time(SquickGetTimeMS());
             //m_net_->SendMsgPB(rpc::ProxyRPC::ACK_KICK_OFF, k, iter2->second.sock);
             return;
-        }
+        }*/
         
-        net->SetAccountID(s.account_id);
-        net->SetConnectKeyState(1);
         rpc::AckConnectProxy ack;
         ack.set_code(0);
         if (s.protocol_type == ProtocolType::Tcp) {
@@ -408,18 +428,18 @@ void LogicModule::OnAckConnectVerify(const int msg_id, const char *msg, const ui
             m_ws_->SendMsgWithOutHead(rpc::ProxyRPC::ACK_CONNECT_PROXY, send.data(), send.size(), s.sock);;
         }
         
-        auto &client = clients_[s.account_id];
+        auto &client = players_[s.sock];
         client.sock = s.sock;
         client.last_ping = SquickGetTimeMSEx();
         client.account_id = s.account_id;
         client.account = data.account();
-        client.world_id = data.world_id();
+        client.login_node = s.login_node;
+        //client.world_id = data.world_id();
         client.protocol_type = s.protocol_type;
         client.ip = s.ip;
+        client.status = PlayerNotEneter;
 
-        // 增加schecdule
-        m_schedule_->AddSchedule(s.account_id, "HeatbeatCheck", this, &LogicModule::OnHeatbeatCheck, 10.0f, 99999); // 每10秒check一次
-        TryEnter(s.account_id);
+        dout << "Verify succ! " << client.account_id << endl;
     } else {
         // if verify failed then close this connect
         //m_net_->GetNet()->CloseNetObject(s.sock);

@@ -9,26 +9,26 @@ bool LogicModule::Start() {
 }
 
 bool LogicModule::AfterStart() {
-    m_net_->AddReceiveCallBack(rpc::LoginRPC::REQ_PROXY_CONNECT_VERIFY, this, &LogicModule::OnConnectProxyVerify);
+    m_net_->AddReceiveCallBack(rpc::NLoginRPC::NREQ_PROXY_CONNECT_VERIFY, this, &LogicModule::OnConnectProxyVerify);
     return true;
 }
 
 bool LogicModule::Destory() { return true; }
 
 void LogicModule::OnConnectProxyVerify(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    string tmp;
-    rpc::ReqConnectProxyVerify req;
-    if (!m_net_->ReceivePB(msg_id, msg, len, req, tmp)) {
+    uint64_t uid;
+    rpc::NReqConnectProxyVerify req;
+    if (!m_net_->ReceivePB(msg_id, msg, len, req, uid)) {
         return;
     }
     // to do, auth from db
 
-    rpc::AckConnectProxyVerify ack;
+    rpc::NAckConnectProxyVerify ack;
     ack.set_code(0);
     ack.set_session(req.session());
-    ack.set_world_id(0);
-    ack.set_account(req.guid());
-    m_net_->SendMsgPB(rpc::LoginRPC::ACK_PROXY_CONNECT_VERIFY, ack, sock);
+    ack.set_area_id(0);
+    ack.set_account_id(req.account_id());
+    m_net_->SendMsgPB(rpc::NLoginRPC::NACK_PROXY_CONNECT_VERIFY, ack, sock);
 }
 
 bool LogicModule::ReadyUpdate() { return true; }

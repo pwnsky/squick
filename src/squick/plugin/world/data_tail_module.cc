@@ -1,7 +1,6 @@
 
 #include "data_tail_module.h"
 #include <squick/core/data_list.h>
-#include <squick/core/i_plugin_manager.h>
 #include <struct/excel.h>
 
 #if PLATFORM != PLATFORM_WIN

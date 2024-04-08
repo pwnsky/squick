@@ -13,7 +13,7 @@
 #include <memory>
 #include <squick/core/guid.h>
 #include <vector>
-
+#include "coroutine.h"
 #if PLATFORM == PLATFORM_WIN
 #include <WinSock2.h>
 #elif PLATFORM == PLATFORM_APPLE || PLATFORM == PLATFORM_LINUX || PLATFORM == PLATFORM_ANDROID
@@ -201,11 +201,13 @@ typedef std::shared_ptr<NET_EVENT_FUNCTOR> NET_EVENT_FUNCTOR_PTR;
 typedef std::function<void(int severity, const char *msg)> NET_EVENT_LOG_FUNCTOR;
 typedef std::shared_ptr<NET_EVENT_LOG_FUNCTOR> NET_EVENT_LOG_FUNCTOR_PTR;
 
+typedef std::function<Coroutine<bool>(const socket_t sock, const int msg_id, const char* msg, const uint32_t len)> NET_CORO_RECEIVE_FUNCTOR;
+typedef std::shared_ptr<NET_CORO_RECEIVE_FUNCTOR> NET_CORO_RECEIVE_FUNCTOR_PTR;
+
 class NetObject {
   public:
     NetObject(INet *pNet, socket_t sock, sockaddr_in &addr, void *pBev) {
         logicState = 0;
-        lobbyID = 0;
         fd = sock;
         bNeedRemove = false;
         netObject = pNet;
@@ -244,34 +246,13 @@ class NetObject {
     }
 
     const char *GetBuff() { return ringBuff.data(); }
-
     int GetBuffLen() const { return (int)ringBuff.length(); }
-
     void *GetUserData() { return userData; }
-
     INet *GetNet() { return netObject; }
-
-    int GetConnectKeyState() const { return logicState; }
-
-    void SetConnectKeyState(const int state) { logicState = state; }
-
+    int GetConnectState() const { return logicState; }
+    void SetConnectState(const int state) { logicState = state; }
     bool NeedRemove() { return bNeedRemove; }
-
     void SetNeedRemove(bool b) { bNeedRemove = b; }
-
-
-    int GetLobbyID() const { return lobbyID; }
-
-    void SetLobbyID(const int nData) { lobbyID = nData; }
-
-    const string &GetPlayerID() { return playerID; }
-
-    void SetPlayerID(const string & playerID) { this->playerID = playerID; }
-
-    const string&GetAccountID() { return accountID; }
-
-    void SetAccountID(const string & accountID) { this->accountID = accountID; }
-
     socket_t GetRealFD() { return fd; }
 
     string GetIP() {
@@ -284,9 +265,6 @@ class NetObject {
     // ringbuff
     std::string ringBuff;
     int32_t logicState;
-    int32_t lobbyID;
-    string playerID;    // player id
-    string accountID;    // temporary client id
     INet *netObject;
     socket_t fd;
     bool bNeedRemove;
@@ -301,12 +279,10 @@ class INet {
     virtual bool Update() = 0;
 
     // as client
-    virtual void Startialization(const char *ip, const unsigned short nPort) = 0;
+    virtual void Connect(const char *ip, const unsigned short nPort, const uint32_t expand_buffer_size) = 0;
 
     // as server
-    virtual int Startialization(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount = 4) = 0;
-
-    virtual unsigned int ExpandBufferSize(const unsigned int size) = 0;
+    virtual int Listen(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount, const uint32_t expand_buffer_size) = 0;
 
     virtual bool Final() = 0;
 

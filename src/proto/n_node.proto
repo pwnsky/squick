@@ -1,0 +1,26 @@
+// 描述: 各服务器之间的通信RPC
+// 使用: 服务器,客户端
+syntax = "proto3";
+package rpc;
+
+// only be used in inner node
+message MsgBase {
+    int32 id = 1;       // sender node id
+    int64 uid = 6;      // player uid
+    int64 req_id = 5;   // request id
+    bytes msg_data = 3; // data
+}
+
+// Node RPC 0 ~ 500
+enum NNodeRPC {
+    NNODE_RPC_NONE = 0;
+    NNTF_NODE_HEARTBEAT = 1; // 服务端之间心跳包
+}
+
+message NNtfNodeHeartBeat { int32 index = 1; }
+
+
+enum NErrorCode {
+    NErrCommonSucc = 0;
+    NErrCommonFaild = 1;
+}

@@ -1,6 +1,7 @@
 #pragma once
 #include <squick/plugin/config/export.h>
 #include <squick/plugin/world/export.h>
+#include <squick/plugin/utils/export.h>
 
 namespace tutorial {
 class IEventModule : public IModule {};

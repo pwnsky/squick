@@ -1,21 +1,16 @@
-
-
-#ifndef SQUICK_SCENE_MODULE_H
-#define SQUICK_SCENE_MODULE_H
+#pragma once
 
 #include <iostream>
 #include <squick/core/guid.h>
 #include <squick/core/i_object.h>
-#include <squick/plugin/log/i_log_module.h>
+#include <squick/plugin/log/export.h>
 
 #include "i_cell_module.h"
-#include "i_event_module.h"
-#include "i_kernel_module.h"
+#include "i_world_module.h"
 #include "i_scene_module.h"
 #include <forward_list>
-#include <squick/plugin/config/i_class_module.h>
-#include <squick/plugin/config/i_element_module.h>
-
+#include <squick/plugin/config/export.h>
+#include <squick/plugin/utils/export.h>
 // all object in this group
 /*
 if a object in the group of '0', them it can be see by all object in this scene.
@@ -399,5 +394,3 @@ class SceneModule : public ISceneModule {
     IEventModule *m_event_;
     ICellModule *m_pCellModule;
 };
-
-#endif

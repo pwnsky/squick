@@ -20,3 +20,22 @@ message Vector4 {
     float z = 3;
     float w = 4;
 }
+
+enum ErrorCode {
+    ErrCommonSucc = 0;
+    ErrCommonFaild = 1;
+}
+
+message PlayerData {
+    string account = 1;
+    string account_id = 2;
+    uint64 uid = 3;
+    string name = 4;
+    int32 level = 5;
+    string ip = 6;
+    int32 area = 7;
+    int32 created_time = 8;
+    int32 last_login_time = 9;
+    int32 last_offline_time = 10;
+    string platform = 11;
+}

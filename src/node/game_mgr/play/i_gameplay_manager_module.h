@@ -53,13 +53,8 @@ class IGameplayManagerModule : public IModule {
     INetModule *m_net_;
     IClassModule *m_class_;
     IElementModule *m_element_;
-    IKernelModule *m_kernel_;
-    ISceneModule *m_scene_;
     node::INodeModule *m_node_;
     INetClientModule *m_net_client_;
-    IScheduleModule *m_schedule_;
-    IDataTailModule *m_data_tail_;
-    IEventModule *m_event_;
 
   private:
     std::unordered_map<int, std::map<int, GAME_PLAY_RECEIVE_FUNCTOR_PTR>> mxReceiveCallBack;

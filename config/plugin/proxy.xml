@@ -3,7 +3,7 @@
 		<Plugin Name="core/net" />
 		<Plugin Name="core/config" />
         <Plugin Name="core/log" />
-		<Plugin Name="core/world" />
+		<Plugin Name="core/utils" />
 		
 		<Plugin Name="node/proxy/logic" />
 		<Plugin Name="node/proxy/node" />

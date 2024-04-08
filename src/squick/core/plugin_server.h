@@ -31,17 +31,13 @@
 class PluginServer {
   public:
     PluginServer(const std::string &strArgv);
-
-    virtual ~PluginServer() { Final(); }
-
+    virtual ~PluginServer() {}
     void Start();
     void Update();
     void Final();
 
     void SetBasicWareLoader(std::function<void(IPluginManager *p)> fun);
     void SetMidWareLoader(std::function<void(IPluginManager *p)> fun);
-
-    //static std::string FindParameterValue(const std::vector<std::string>& argList, const std::string& header);
 
   private:
     std::shared_ptr<IPluginManager> pm_;

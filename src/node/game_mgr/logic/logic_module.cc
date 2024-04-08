@@ -44,9 +44,9 @@ int LogicModule::GetUnbindPort() {
 // Game Server请求创建PVP服务器实例
 void LogicModule::OnReqPvpInstanceCreate(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
 
-    string tmpID; // 服务端之间推送，ID值无效
+    uint64_t uid; // 服务端之间推送，ID值无效
     rpc::ReqGameplayCreate xMsg;
-    if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, tmpID)) {
+    if (!m_net_->ReceivePB(msg_id, msg, len, xMsg, uid)) {
         return;
     }
 

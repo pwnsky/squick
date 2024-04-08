@@ -116,7 +116,7 @@ bool ElementModule::Load() {
             continue;
         }
         //////////////////////////////////////////////////////////////////////////
-        std::string strFile = pm_->GetConfigPath() + "/" + strInstancePath;
+        std::string strFile = pm_->GetWorkPath() + "/" + strInstancePath;
         std::string content;
         pm_->GetFileContent(strFile, content);
 #ifdef DEBUG

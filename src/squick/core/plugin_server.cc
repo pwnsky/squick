@@ -25,7 +25,7 @@ void PluginServer::Start() {
     ProcessParameter();
 
     pm_->SetGetFileContentFunctor(GetFileContent);
-    pm_->SetConfigPath("../");
+    pm_->SetWorkPath("..");
 
     if (externalBasicWarePluginLoader) {
         externalBasicWarePluginLoader(pm_.get());
@@ -60,10 +60,6 @@ void PluginServer::ProcessParameter() {
     }
 
 #if PLATFORM != PLATFORM_WIN
-    // run it as a daemon process
-    if (strArgvList.find("-d") != string::npos) {
-        StartDaemon();
-    }
     signal(SIGPIPE, SIG_IGN);
     signal(SIGCHLD, SIG_IGN);
 #endif
@@ -169,14 +165,3 @@ bool PluginServer::GetFileContent(IPluginManager *p, const std::string &strFileP
 
     return true;
 }
-/*
-std::string PluginServer::FindParameterValue(const std::vector<std::string> &argList, const std::string &header) {
-    for (int i = 0; i < argList.size(); i++) {
-        std::string name = argList[i];
-        if (name.find(header) != string::npos) {
-            name.erase(0, header.length());
-            return name;
-        }
-    }
-    return "";
-}*/

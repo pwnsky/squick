@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_LUA_SCRIPT_MODULE_H
-#define SQUICK_LUA_SCRIPT_MODULE_H
+#pragma once
 
 #ifdef min
 #undef min
@@ -11,14 +8,12 @@
 // #define LUAINTF_LINK_LUA_COMPILED_IN_CXX 0
 
 #include "lua_pb_module.h"
-#include <squick/plugin/config/i_class_module.h>
-#include <squick/plugin/config/i_element_module.h>
-#include <squick/plugin/world/i_event_module.h>
-#include <squick/plugin/world/i_kernel_module.h>
-#include <squick/plugin/world/i_schedule_module.h>
-#include <squick/plugin/log/i_log_module.h>
-#include <squick/plugin/net/i_net_client_module.h>
-#include <squick/plugin/net/i_net_module.h>
+#include <squick/plugin/config/export.h>
+#include <squick/plugin/utils/export.h>
+#include <squick/plugin/world/export.h>
+#include <squick/plugin/log/export.h>
+#include <squick/plugin/net/export.h>
+
 
 #if PLATFORM == PLATFORM_WIN
 #elif PLATFORM == PLATFORM_LINUX
@@ -110,8 +105,8 @@ class LuaScriptModule : public ILuaScriptModule {
 
     INT64 GetNowTime();
     Guid CreateID();
-    INT64 AppID();
-    INT64 AppType();
+    int AppID();
+    int AppType();
     string AppName();
     INT64 Area();
 
@@ -142,11 +137,11 @@ class LuaScriptModule : public ILuaScriptModule {
     const std::string Encode(const std::string &msgTypeName, const LuaIntf::LuaRef &luaTable);
     LuaIntf::LuaRef Decode(const std::string &msgTypeName, const std::string &data);
 
-    void SendToServerByServerID(const int server_id, const uint16_t msg_id, const std::string &data, const std::string& guid);
-    void SendToAllServerByServerType(const ServerType server_type, const uint16_t msg_id, const std::string &data, const std::string& guid);
+    void SendToServerByServerID(const int server_id, const uint16_t msg_id, const std::string &data, const uint64_t uid);
+    void SendToAllServerByServerType(const ServerType server_type, const uint16_t msg_id, const std::string &data, const uint64_t uid);
 
     // for net module
-    void SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, string guid);
+    void SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, const uint64_t uid);
 
     // for log
     void LogInfo(const std::string &logData);
@@ -155,13 +150,11 @@ class LuaScriptModule : public ILuaScriptModule {
     void LogDebug(const std::string &logData);
 
     // hot fix
-    void SetVersionCode(const std::string &logData);
+    void SetVersionCode(const std::string &version);
     const std::string &GetVersionCode();
 
     // FOR CLASS MODULE
     bool AddClassCallBack(std::string &className, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
-
-    
 
   protected:
     template <typename T> bool AddLuaFuncToMap(Map<T, Map<Guid, List<LuaCallBack>>> &funcMap, const Guid &self, T key, const LuaCallBack &callback);
@@ -213,5 +206,3 @@ class LuaScriptModule : public ILuaScriptModule {
     int hotFixNotifyFd = -1;
     char hotFixInotifyEventBuf[512];
 };
-
-#endif

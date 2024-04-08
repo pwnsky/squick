@@ -20,22 +20,13 @@ enum ServerType {
     ST_WORLD = 3,            //
     ST_DB_PROXY = 4,         //
     ST_PROXY = 5,            //
-    ST_LOBBY = 6,
+    ST_PLAYER = 6,
     ST_GAME_MGR = 7, //
     ST_GAME = 8,     //
     ST_MICRO = 9,  // 微服务
     ST_CDN = 10,   // CDN
     ST_ROBOT = 11, // 机器人: 模拟玩家
     ST_MAX = 12,   // 最大服务类型
-};
-
-enum class DbType {
-    None = 0,
-    Mysql = 1,
-    MongoDB = 2,
-    Redis = 3,
-    ClickHouse = 4,
-    Max = 5,
 };
 
 // 线程池 每一帧睡眠时间，单位毫秒

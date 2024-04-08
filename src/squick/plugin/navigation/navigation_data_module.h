@@ -1,12 +1,10 @@
 #pragma once
 #include <memory>
-#include <squick/plugin/config/i_class_module.h>
-#include <squick/plugin/config/i_element_module.h>
-#include <squick/plugin/world/i_event_module.h>
-#include <squick/plugin/world/i_kernel_module.h>
-#include <squick/plugin/world/i_scene_module.h>
-#include <squick/plugin/log/i_log_module.h>
-#include <squick/plugin/net/i_net_module.h>
+#include <squick/plugin/config/export.h>
+#include <squick/plugin/utils/export.h>
+#include <squick/plugin/world/export.h>
+#include <squick/plugin/log/export.h>
+#include <squick/plugin/net/export.h>
 // #include "squick/base/no_sql.h"
 #include "i_navigation_data_module.h"
 

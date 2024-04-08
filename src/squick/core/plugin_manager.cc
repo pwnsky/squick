@@ -5,6 +5,7 @@
 #include "third_party/rapidxml/rapidxml_iterators.hpp"
 #include "third_party/rapidxml/rapidxml_print.hpp"
 #include "third_party/rapidxml/rapidxml_utils.hpp"
+#include <squick/core/base.h>
 
 PluginManager::PluginManager() : IPluginManager() {
     appID = 0;
@@ -35,14 +36,14 @@ bool PluginManager::LoadPlugin() {
 #ifdef DEBUG
     std::cout << "---- LoadPlugin ----" << std::endl;
 #endif
-    PluginNameMap::iterator it = mPluginNameMap.begin();
-    for (; it != mPluginNameMap.end(); ++it) {
-#ifdef DEBUG
-        std::cout << "---- DYNAMIC Plugin: " << it->first << std::endl;
-#endif
-        LoadPluginLibrary(it->first);
-    }
 
+    for (auto& info : plugins_) {
+#ifdef SQUICK_DEV
+        dout << "Load plugin: " << info.path << endl;
+#endif // SQUICK_DEV
+
+        LoadPluginLibrary(info.path);
+    }
     return true;
 }
 
@@ -78,7 +79,7 @@ inline bool PluginManager::Start() {
 // 加载插件配置
 bool PluginManager::LoadPluginConfig() {
     std::string content;
-    std::string strFilePath = GetConfigPath() + "/" + configName;
+    std::string strFilePath = GetWorkPath() + "/" + configName;
     GetFileContent(strFilePath, content);
 
     rapidxml::xml_document<> xDoc;
@@ -95,7 +96,12 @@ bool PluginManager::LoadPluginConfig() {
         for (rapidxml::xml_node<> *pPluginNode = pAppNameNode->first_node("Plugin"); pPluginNode; pPluginNode = pPluginNode->next_sibling("Plugin")) {
             const char *pluginName = pPluginNode->first_attribute("Name")->value();
 
-            mPluginNameMap.insert(PluginNameMap::value_type(pluginName, true));
+            //mPluginNameMap.insert(PluginNameMap::value_type(pluginName, true));
+            PluginInfo info;
+            info.is_loaded = false;
+            info.loaded_time = SquickGetTimeMS();
+            info.path = pluginName;
+            plugins_.push_back(info);
 
             // std::cout << pluginName << std::endl;
         }
@@ -105,9 +111,11 @@ bool PluginManager::LoadPluginConfig() {
 
             for (rapidxml::xml_node<> *pPluginNode = pServerNode->first_node("Plugin"); pPluginNode; pPluginNode = pPluginNode->next_sibling("Plugin")) {
                 const char *pluginName = pPluginNode->first_attribute("Name")->value();
-                if (mPluginNameMap.find(pluginName) == mPluginNameMap.end()) {
-                    mPluginNameMap.insert(PluginNameMap::value_type(pluginName, true));
-                }
+                PluginInfo info;
+                info.is_loaded = false;
+                info.loaded_time = SquickGetTimeMS();
+                info.path = pluginName;
+                plugins_.push_back(info);
             }
         }
     }
@@ -270,9 +278,9 @@ inline INT64 PluginManager::GetStartTime() const { return mnStartTime; }
 
 inline INT64 PluginManager::GetNowTime() const { return mnNowTime; }
 
-inline const std::string &PluginManager::GetConfigPath() const { return configPath; }
+inline const std::string &PluginManager::GetWorkPath() const { return configPath; }
 
-inline void PluginManager::SetConfigPath(const std::string &strPath) { configPath = strPath; }
+inline void PluginManager::SetWorkPath(const std::string &strPath) { configPath = strPath; }
 
 void PluginManager::SetConfigName(const std::string &fileName) {
     if (fileName.empty()) {
@@ -478,14 +486,15 @@ bool PluginManager::Finalize() {
     }
 
     ////////////////////////////////////////////////
-
-    PluginNameMap::iterator it = mPluginNameMap.begin();
-    for (; it != mPluginNameMap.end(); it++) {
-        UnLoadPluginLibrary(it->first);
+    dout << "Start to unload all plugins ...\n";
+    for (auto &plugin : plugins_) {
+        dout << "Unloading: " << plugin.path << "\n";
+        UnLoadPluginLibrary(plugin.path);
     }
 
     mPluginInstanceMap.clear();
-    mPluginNameMap.clear();
+    plugins_.clear();
+    dout << "All plugins unloaded!" "\n";
 
     return true;
 }

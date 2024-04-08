@@ -5,10 +5,9 @@
 #include <squick/core/consistent_hash.h>
 #include <squick/core/i_plugin_manager.h>
 #include <squick/core/queue.h>
-#include <squick/plugin/log/i_log_module.h>
+#include <squick/plugin/log/export.h>
 
 #include "i_net_client_module.h"
-#include "i_net_module.h"
 
 class NetClientModule : public INetClientModule {
   public:
@@ -21,7 +20,6 @@ class NetClientModule : public INetClientModule {
     virtual bool Update();
 
     virtual void AddNode(const ConnectData &xInfo);
-    virtual unsigned int ExpandBufferSize(const unsigned int size = 1024 * 1024 * 20) override;
     virtual int AddReceiveCallBack(const ServerType eType, NET_RECEIVE_FUNCTOR_PTR functorPtr);
     virtual int AddReceiveCallBack(const ServerType eType, const uint16_t msg_id, NET_RECEIVE_FUNCTOR_PTR functorPtr);
     virtual int AddEventCallBack(const ServerType eType, NET_EVENT_FUNCTOR_PTR functorPtr);
@@ -29,16 +27,16 @@ class NetClientModule : public INetClientModule {
 
     ////////////////////////////////////////////////////////////////////////////////
     virtual bool IsConnected(const int node_id) override;
-    virtual bool SendByID(const int serverID, const uint16_t msg_id, const std::string &strData, const string guid = "", reqid_t req_id = 0) override;
-    virtual bool SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message& xData, const string guid = "", reqid_t req_id = 0) override;
-    virtual void SendToAllNode(const uint16_t msg_id, const std::string &strData, const string guid) override;
-    virtual void SendToAllNodeByType(const ServerType eType, const uint16_t msg_id, const std::string &strData, const string guid = "") override;
-    virtual void SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message &xData, const string guid = "") override;
-    virtual void SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const string guid = "") override;
+    virtual bool SendByID(const int serverID, const uint16_t msg_id, const std::string &strData, const uint64_t uid = 0, reqid_t req_id = 0) override;
+    virtual bool SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message& xData, const uint64_t uid = 0, reqid_t req_id = 0) override;
+    virtual void SendToAllNode(const uint16_t msg_id, const std::string &strData, const uint64_t uid = 0) override;
+    virtual void SendToAllNodeByType(const ServerType eType, const uint16_t msg_id, const std::string &strData, const uint64_t uid = 0) override;
+    virtual void SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0) override;
+    virtual void SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0) override;
     
     // coroutine
-    virtual Awaitable<NetClientResponseData>  Request(const int node_id, const uint16_t msg_id, const std::string& data, int ack_msg_id) override;
-    virtual Awaitable<NetClientResponseData>  RequestPB(const int node_id, const uint16_t msg_id, const google::protobuf::Message& pb, int ack_msg_id) override;
+    virtual Awaitable<NetClientResponseData>  Request(const int node_id, const uint16_t msg_id, const std::string& data, int ack_msg_id, const uint64_t uid = 0) override;
+    virtual Awaitable<NetClientResponseData>  RequestPB(const int node_id, const uint16_t msg_id, const google::protobuf::Message& pb, int ack_msg_id, const uint64_t uid = 0) override;
 
     void CoroutineBinder(Awaitable<NetClientResponseData>* awaitble);
     reqid_t GenerateRequestID();
@@ -66,11 +64,10 @@ class NetClientModule : public INetClientModule {
 
     int OnDisConnected(const socket_t fd, INet *pNet);
 
-    void ProcessAddNetConnect();
+    void ProcessNetConnect();
 
   private:
     int64_t mnLastActionTime;
-    unsigned int mnBufferSize;
     // server_id, server_data
     ConsistentHashMapEx<int, ConnectData> mxServerMap;
     // server_type, server_id, server_data
@@ -80,7 +77,6 @@ class NetClientModule : public INetClientModule {
 
     struct CallBack {
         // call back
-        // std::map<int, NET_RECEIVE_FUNCTOR_PTR> mxReceiveCallBack;
         std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>> mxReceiveCallBack;
         std::list<NET_EVENT_FUNCTOR_PTR> mxEventCallBack;
         std::list<NET_RECEIVE_FUNCTOR_PTR> mxCallBackList;

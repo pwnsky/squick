@@ -6,34 +6,46 @@
 -----------------------------------------------------------------------------
 
 Net = {}
--- function Table:func(guid, msg_data, msg_id, fd)
+-- function Table:func(uid, msg_data, msg_id, fd)
 function Net:Register(msg_id, this, func)
     Squick:AddMsgCallBackAsServer(msg_id, this, func)
 end
 
--- function func(guid, msg_data, msg_id, fd)
-function Net:ClientRegister(server_type, msg_id, this, func)
-    Squick:AddMsgCallBackAsClient(server_type, msg_id, this, func)
+-- function func(uid, msg_data, msg_id, fd)
+function Net:ClientRegister(node_type, msg_id, this, func)
+    Squick:AddMsgCallBackAsClient(node_type, msg_id, this, func)
 end
 
-function Net:SendByFD(fd, msg_id, msg_data, guid)
-    if(guid == nil) then
-        guid = ""
+function Net:SendByFD(fd, msg_id, msg_data, uid)
+    if(uid == nil) then
+        uid = 0
     end
-    Squick:SendByFD(fd, msg_id, msg_data, guid)
+    Squick:SendByFD(fd, msg_id, msg_data, uid)
+end
+
+function Net:SendPBByFD(fd, msg_id, tn, t, uid)
+    if(uid == nil) then
+        uid = 0
+    end
+    if (Env.Debug) then
+        Print("Send pb to fd: " .. fd .. " uid: " .. uid .. " msg_id: " .. msg_id .. " proto: " .. tn)
+        
+        PrintTable(t)
+    end
+    Squick:SendByFD(fd, msg_id, Squick:Encode(tn, t), uid)
 end
 
 function Net:SendToPlayer(msg_id)
 
 end
 
-function Net:SendToServer(server_id, msg_id, msg_data, guid)
-    if(guid == nil) then
-        guid = ""
+function Net:SendToNode(node_id, msg_id, msg_data, uid)
+    if(uid == nil) then
+        uid = 0
     end
-    Squick:SendToServerByServerID(server_id, msg_id, msg_data, guid)
+    Squick:SendToServerByServerID(node_id, msg_id, msg_data, uid)
 end
 
-function Net:SendToServers(server_type, msg_id, msg_data, guid)
-    Squick:SendToAllServerByServerType(server_type, msg_id, msg_data, guid)
+function Net:SendToNodesByType(node_type, msg_id, msg_data, uid)
+    Squick:SendToAllServerByServerType(node_type, msg_id, msg_data, uid)
 end

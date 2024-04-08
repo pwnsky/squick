@@ -4,10 +4,6 @@
 #include <iostream>
 #include <string>
 
-class Line;
-class Box;
-class Plane;
-
 class Vector3 {
   private:
     float x, y, z;

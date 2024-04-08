@@ -1,4 +1,5 @@
 #! /usr/bin/python3
+# Gen proto files to lua files, just for client
 import os
 import collections
 
@@ -10,7 +11,7 @@ is_find_package = False
 is_find_syntax  = False
 variable_name = "proto_code"
 def generate_lua_file():
-    with open('../src/lua/proto/code.lua', 'w+', encoding='utf-8') as out:
+    with open('../client/proto/lua/proto.lua', 'w+', encoding='utf-8') as out:
         out.write('''----------------------------------------------------------------------------------
 -- don't edit it, generated from .proto files by tools
 ----------------------------------------------------------------------------------
@@ -43,6 +44,7 @@ def parse_proto(f):
 
 for root, dirs, files in os.walk('../src/proto/'):
     for f in files:
-        if f.endswith('.proto'):
+        file_name = os.path.basename(f)
+        if f.endswith('.proto') and f.startswith("n_") == False:
             parse_proto(os.path.join(root, f))
 generate_lua_file()

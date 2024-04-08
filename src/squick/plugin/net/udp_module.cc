@@ -75,7 +75,7 @@ bool UDPModule::Start() { return true; }
 
 bool UDPModule::AfterStart() { return true; }
 
-int UDPModule::Startialization(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount) {
+int UDPModule::Listen(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount, const uint32_t expand_buffer_size) {
     /* Start. event */
     mxBase = event_init();
     if (mxBase == NULL) {
@@ -91,8 +91,6 @@ int UDPModule::Startialization(const unsigned int nMaxClient, const unsigned sho
 
     return 0;
 }
-
-unsigned int UDPModule::ExpandBufferSize(const unsigned int size) { return 0; }
 
 void UDPModule::RemoveReceiveCallBack(const int msg_id) {}
 

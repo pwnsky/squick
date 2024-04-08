@@ -2,7 +2,6 @@
 
 #include <iosfwd>
 #include <iostream>
-#include <squick/core/guid.h>
 
 #include "i_net.h"
 #include <squick/core/base.h>
@@ -12,39 +11,9 @@
 #include <squick/core/vector4.h>
 #include <squick/plugin/log/i_log_module.h>
 #include <struct/struct.h>
+#include "coroutine.h"
 
-////////////////////////////////////////////////////////////////////////////
-
-// only use this macro when u has entered game server
-#define CLIENT_MSG_PROCESS(msg_id, msgData, len, msg)                                                                                                          \
-    string nPlayerID;                                                                                                                                            \
-    msg xMsg;                                                                                                                                                  \
-    if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                       \
-        m_log_->LogError(Guid(), "Parse msg error " + std::to_string(msg_id).append(" in file: ").append(__FILE__), __FUNCTION__, __LINE__);                   \
-        return;                                                                                                                                                \
-    }                                                                                                                                                          \
-                                                                                                                                                               \
-    std::shared_ptr<IObject> pObject = m_kernel_->GetObject(nPlayerID);                                                                                        \
-    if (NULL == pObject.get()) {                                                                                                                               \
-        m_log_->LogError(nPlayerID, "From client object do not exist, msg_id:  " + std::to_string(msg_id).append(" in file: ").append(__FILE__), __FUNCTION__, \
-                         __LINE__);                                                                                                                            \
-        return;                                                                                                                                                \
-    }
-
-#define CLIENT_MSG_PROCESS_NO_OBJECT(msg_id, msgData, len, msg)                                                                                                \
-    string nPlayerID;                                                                                                                                            \
-    msg xMsg;                                                                                                                                                  \
-    if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                       \
-        m_log_->LogError(nPlayerID, "Parse msg error " + std::to_string(msg_id).append(" in file: ").append(__FILE__), __FUNCTION__, __LINE__);                \
-        return;                                                                                                                                                \
-    }
-
-#define CLIENT_MSG_PROCESS_NO_LOG(msg_id, msgData, len, msg)                                                                                                   \
-    string nPlayerID;                                                                                                                                            \
-    msg xMsg;                                                                                                                                                  \
-    if (!INetModule::ReceivePB(msg_id, msgData, len, xMsg, nPlayerID)) {                                                                                       \
-        return 0;                                                                                                                                              \
-    }
+#define NET_COROTINE_MAX_SURVIVAL_TIME 10
 
 struct ServerInfo {
     ServerInfo() {
@@ -136,6 +105,15 @@ class INetModule : public IModule {
         return AddReceiveCallBack(functorPtr);
     }
 
+    template <typename BaseType>
+    bool AddReceiveCallBack(const int msg_id, BaseType* pBase, Coroutine<bool> (BaseType::* handleReceiver)(const socket_t, const int, const char*, const uint32_t)) {
+        NET_CORO_RECEIVE_FUNCTOR functor = 
+            std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+        NET_CORO_RECEIVE_FUNCTOR_PTR functorPtr(new NET_CORO_RECEIVE_FUNCTOR(functor));
+
+        return AddReceiveCallBack(msg_id, functorPtr);
+    }
+
     template <typename BaseType> bool AddEventCallBack(BaseType *pBase, void (BaseType::*handler)(const socket_t, const SQUICK_NET_EVENT, INet *)) {
         NET_EVENT_FUNCTOR functor = std::bind(handler, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
         NET_EVENT_FUNCTOR_PTR functorPtr(new NET_EVENT_FUNCTOR(functor));
@@ -143,25 +121,7 @@ class INetModule : public IModule {
         return AddEventCallBack(functorPtr);
     }
 
-    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, Guid &nPlayer) {
-        rpc::MsgBase xMsg;
-        if (!xMsg.ParseFromArray(msg, len)) {
-            
-#ifdef DEBUG
-            char szData[MAX_PATH] = { 0 };
-            NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
-            std::cout << "--------------------" << szData << __FUNCTION__ << " " << __LINE__ << std::endl;
-#endif // DEBUG
-
-            return false;
-        }
-
-        nPlayer.FromString(xMsg.guid());
-
-        return true;
-    }
-
-    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, std::string &msgData, string &nPlayer) {
+    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, std::string &msgData, uint64_t& uid) {
         rpc::MsgBase xMsg;
         if (!xMsg.ParseFromArray(msg, len)) {
             ostringstream str;
@@ -176,16 +136,16 @@ class INetModule : public IModule {
 
         msgData.assign(xMsg.msg_data().data(), xMsg.msg_data().length());
 
-        nPlayer = xMsg.guid();
+        uid = xMsg.uid();
 
         return true;
     }
 
-    static bool ReceivePB(const int msg_id, const std::string &strMsgData, google::protobuf::Message &xData, string&nPlayer) {
-        return ReceivePB(msg_id, strMsgData.c_str(), (uint32_t)strMsgData.length(), xData, nPlayer);
+    static bool ReceivePB(const int msg_id, const std::string &strMsgData, google::protobuf::Message &xData, uint64_t& uid) {
+        return ReceivePB(msg_id, strMsgData.c_str(), (uint32_t)strMsgData.length(), xData, uid);
     }
 
-    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, google::protobuf::Message &xData, string&nPlayer) {
+    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, google::protobuf::Message &xData, uint64_t& uid) {
         rpc::MsgBase xMsg;
         if (!xMsg.ParseFromArray(msg, len)) {
             
@@ -208,21 +168,21 @@ class INetModule : public IModule {
 
             return false;
         }
-        nPlayer = xMsg.guid();
+        uid = xMsg.uid();
         return true;
     }
 
     /////////////////
     // as client
-    virtual void Startialization(const char *ip, const unsigned short nPort) = 0;
+    virtual void Connect(const char *ip, const unsigned short nPort, const uint32_t expand_buffer_size) = 0;
 
     // as server
-    virtual int Startialization(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount = 4) = 0;
-    virtual unsigned int ExpandBufferSize(const unsigned int size = 1024 * 1024 * 20) = 0;
+    virtual int Listen(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount, const uint32_t expand_buffer_size) = 0;
 
     virtual void RemoveReceiveCallBack(const int msg_id) = 0;
 
     virtual bool AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb) = 0;
+    virtual bool AddReceiveCallBack(const int msg_id, const NET_CORO_RECEIVE_FUNCTOR_PTR& cb) = 0;
 
     virtual bool AddReceiveCallBack(const NET_RECEIVE_FUNCTOR_PTR &cb) = 0;
 
@@ -232,13 +192,10 @@ class INetModule : public IModule {
 
     virtual bool SendMsgWithOutHead(const int msg_id, const std::string &msg, const socket_t sock) = 0;
     virtual bool SendMsgToAllClientWithOutHead(const int msg_id, const std::string &msg) = 0;
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const string guid = "", reqid_t req_id = 0) = 0;
-    virtual bool SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const string guid = "", reqid_t req_id = 0) = 0;
+    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const uint64_t uid = 0, reqid_t req_id = 0) = 0;
+    virtual bool SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const uint64_t uid = 0, reqid_t req_id = 0) = 0;
 
     virtual bool SendMsgPBToAllClient(const uint16_t msg_id, const google::protobuf::Message &xData) = 0;
-
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const std::vector<string> *pClientIDList) = 0;
-    virtual bool SendMsgPB(const uint16_t msg_id, const std::string &strData, const socket_t sock, const std::vector<string> *pClientIDList) = 0;
 
     virtual INet *GetNet() = 0;
 };

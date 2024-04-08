@@ -5,7 +5,7 @@
 # Github: https://github.com/pwnsky/squick
 # Description: Build sqkctl tools
 
-source source/build.sh
+source common.sh
 
 echo "build_path: " $build_path
 echo "project_path: " $project_path

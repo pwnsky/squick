@@ -31,6 +31,6 @@ namespace db_proxy::mongo {
         void OnReqDelete(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
         void OnReqCreateIndex(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
     private:
-        client* client_;
+        client* client_ = nullptr;
     };
 }

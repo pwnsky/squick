@@ -1,0 +1,22 @@
+// 描述: 玩家RPC
+// 使用: 服务器,客户端
+syntax = "proto3";
+package rpc;
+
+// PlayerRPC 12000 ~ 15000
+enum NPlayerRPC {
+    NPLAYER_RPC_NONE = 0;
+    NNTF_PLAYER_OFFLINE = 12001;
+}
+
+enum PlayerOfflineReason {
+    PLAYER_OFFLINE_REASON_NONE = 0;    // Unknown
+    PLAYER_OFFLINE_REASON_QUIT = 1;    // Quit normal
+    PLAYER_OFFLINE_REQSON_TIMEOUT = 2; // Heartbeat timeout
+}
+
+message NNtfPlayerOffline {
+    bytes player_id = 1;
+    int32 proxy_id = 2;
+    int32 reason = 3; // Offline reason
+}

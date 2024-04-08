@@ -9,7 +9,7 @@
 #cd protobuf-21.6
 
 # for docker env
-source ./source/build.sh
+source common.sh
 git config --global --add safe.directory /mnt
 
 third_party_path=`pwd`/../third_party

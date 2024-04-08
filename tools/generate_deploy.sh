@@ -15,7 +15,7 @@ mkdir deploy/src
 
 cp -r bin deploy
 cp -r config deploy
-cp -r resource/script/*.sh deploy
+cp -r script deploy
 cp -r src/proto deploy/src
 cp -r src/lua deploy/src
 cp -r docker deploy
@@ -24,5 +24,8 @@ cp -r kubernetes deploy
 # copy lib
 cp /lib/x86_64-linux-gnu/libssl.so.1.1    deploy/bin
 cp /lib/x86_64-linux-gnu/libcrypto.so.1.1 deploy/bin
+
+cp /lib/x86_64-linux-gnu/libssl.so    deploy/bin
+cp /lib/x86_64-linux-gnu/libcrypto.so deploy/bin
 
 echo "Generated all files!"

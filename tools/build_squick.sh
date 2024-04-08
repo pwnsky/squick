@@ -5,7 +5,7 @@
 # Github: https://github.com/pwnsky/squick
 # Description: Build squick application and core plugins
 
-source source/build.sh
+source common.sh
 
 # 将Proto文件生成代码
 log_info "Generate protocol c++ files from proto files"
@@ -30,7 +30,7 @@ build_squick() {
 	cd ${project_path}
 	mkdir -p "${build_path}"
 	cd "${build_path}"
-	cmake ${project_path}/src  -DBUILD_VERSION=$build_version -DMODE=$build_mode
+	cmake ${project_path}  -DBUILD_VERSION=$build_version -DMODE=$build_mode
 	if [ $# -gt 0 ]; then
 		echo "Compile $@"
 		make $@ -j $(nproc)

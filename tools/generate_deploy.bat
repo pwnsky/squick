@@ -10,7 +10,7 @@ mkdir deploy\src\proto
 mkdir deploy\src\lua
 
 xcopy /s /e /y bin deploy\bin
-xcopy /s /e /y resource\script deploy
+echo d | xcopy /s /e /y script deploy\script
 xcopy /s /e /y config deploy\config
 xcopy /s /e /y src\proto deploy\src\proto
 xcopy /s /e /y src\lua deploy\src\lua
