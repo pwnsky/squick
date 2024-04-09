@@ -8,6 +8,7 @@
 #include <stdarg.h>
 
 // Ref https://github.com/abumq/easyloggingpp;
+INITIALIZE_EASYLOGGINGPP
 
 unsigned int LogModule::idx = 0;
 
