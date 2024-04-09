@@ -19,6 +19,7 @@
 #include <thread>
 #include <time.h>
 #include <utility>
+#include <cxxabi.h>
 
 #include "platform.h"
 
@@ -70,16 +71,45 @@ class Exception {
         char **stacktrace = backtrace_symbols(array, stack_num);
         std::cout << "Fatal Error: Crash Signal: " << sig << std::endl;
         for (int i = 0; i < stack_num; ++i) {
-            outfile << stacktrace[i] << std::endl;
-            std::cout << stacktrace[i] << std::endl;
+			std::string output = DemangleOutput(stacktrace[i]);
+            outfile << output << std::endl;
+            std::cout << output << std::endl;
         }
 
         free(stacktrace);
-
         outfile.close();
-
-        
     }
+	static std::string DemangleOutput(const std::string &str) {
+		std::string output;
+		int s = str.find("(");
+		if(s < 0) {
+			return str;
+		}
+		output += str.substr(0, s + 1);		
+		int e = str.find("+");
+		if(e < 0) {
+			return str;
+		}
+		std::string func_name = str.substr(s + 1, e - s - 1);
+		std::string real_func_name = DemangleFuncName(func_name);
+		output += real_func_name;
+		output += str.substr(e, str.size() - e);
+		return output;
+	}
+
+	static std::string DemangleFuncName(const std::string &str) {
+		int status = 0;
+		char *realname = nullptr;
+		std::string ret_name;	
+		realname = abi::__cxa_demangle(str.c_str(), nullptr, nullptr, &status);
+		if (status == 0) {
+			ret_name = realname;
+			std::free(realname);
+		}else {
+			ret_name = str;
+		}
+		return ret_name;
+	}
 
     static void CrashHandler(int sig) {
         
