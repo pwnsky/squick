@@ -2,6 +2,8 @@
 
 A highly scalable, high-performance, high-availability, cross-platform (Windows, Linux, MacOS) server-side framework. This framework is co-written using C++23 and Lua languages, surport c++ & lua coroutine feature, and the framework is split into the kernel layer, node layer and business layer to improve the scalability and maintainability of the program. Split business functions to run on different nodes to achieve decoupling of different functions and efficient utilization of resources. Using dynamic load balancing algorithms, tasks can be effectively distributed among different nodes to ensure system stability and performance.
 
+**Wiki**: https://github.com/pwnsky/squick/wiki
+
 **Unity SDK**:  [squick-unity-sdk](https://github.com/pwnsky/squick-unity-sdk)
 
 **Unreal SDK**: [squick-unreal-sdk](https://github.com/pwnsky/squick-unreal-sdk)
@@ -23,6 +25,13 @@ A highly scalable, high-performance, high-availability, cross-platform (Windows,
 ![GitHub issues](https://img.shields.io/github/issues-raw/pwnsky/Squick.svg?style=flat-square)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/pwnsky/Squick.svg?style=flat-square)
 
+
+
+## [Squick Wiki](https://github.com/pwnsky/squick/wiki)
+
+Click here quick start.
+
+Wiki: https://github.com/pwnsky/squick/wiki
 
 ## Projects
 
@@ -61,20 +70,6 @@ Connections
 RPC communication method between servers
 
 <img src="./docs/images/server_to_server_rpc.png" alt="img" style="zoom: 33%;" />
-
-# Squick Quick start
-
-## Windows
-
-
-## Linux
-
-
-## MacOS
-
-
-## Docker
-
 
 
 
