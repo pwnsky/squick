@@ -126,6 +126,27 @@ endif()
 message("Start to build squick")
 
 
+macro(source_group_by_dir source_files)
+    if(MSVC)
+        set(honcur_dir ${CMAKE_CURRENT_SOURCE_DIR})
+        foreach(honfile ${${source_files}})            
+            string(REGEX REPLACE "\(.*\)/.*/.*" \\1 honproject_directory ${honfile})
+            INCLUDE_DIRECTORIES(SYSTEM ${honproject_directory})
+            #MESSAGE(${honproject_directory})
+            
+            string(REGEX REPLACE ${honcur_dir}/\(.*\) \\1 honfpath ${honfile})
+            string(REGEX REPLACE "\(.*\)/.*" \\1 hongroup_name ${honfpath})
+            string(COMPARE EQUAL ${honfpath} ${hongroup_name} honnogroup)
+            string(REPLACE "/" "\\" hongroup_name ${hongroup_name})
+            
+            if(honnogroup)
+                set(hongroup_name "\\")
+            endif(honnogroup)
+            source_group(${hongroup_name} FILES ${honfile})
+        endforeach(honfile)
+    endif(MSVC)
+endmacro(source_group_by_dir)
+
 set(ProjectName "startup")
 file(GLOB soruces src/*.cc)
 file(GLOB headers src/*.h)
@@ -133,6 +154,11 @@ file(GLOB_RECURSE proto ./src/proto/*.proto)
 file(GLOB_RECURSE lua ./src/lua/*.lua)
 file(GLOB_RECURSE plugin ./config//plugin/*.xml)
 file(GLOB_RECURSE config ./config/node/*.json)
+
+source_group_by_dir(proto)
+source_group_by_dir(lua)
+source_group_by_dir(plugin)
+source_group_by_dir(config)
 
 add_executable(${ProjectName} ${soruces} ${headers} ${proto} ${lua} ${plugin} ${config})
 

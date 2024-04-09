@@ -1,10 +1,9 @@
-
-
 #include "plugin_server.h"
-#include "squick/core/exception.h"
+#include <squick/core/exception.h>
+#include <squick/core/base.h>
 
 PluginServer::PluginServer(const std::string &strArgv) {
-    std::cout << "Start Server: " << strArgv << std::endl;
+    std::cout << "Start to run node with: " << strArgv << std::endl;
     this->strArgvList = strArgv;
 
 #if PLATFORM != PLATFORM_WIN
@@ -81,12 +80,6 @@ void PluginServer::ProcessParameter() {
     int appID = 0;
     if (SQUICK_StrTo(strAppID, appID)) {
         pm_->SetAppID(appID);
-    }
-
-    std::string strDockerFlag = pm_->FindParameterValue("docker=");
-    int nDockerFlag = 0;
-    if (SQUICK_StrTo(strDockerFlag, nDockerFlag)) {
-        pm_->SetRunningDocker(nDockerFlag);
     }
 
     // NoSqlServer.xml:IP=\"127.0.0.1\"==IP=\"192.168.1.1\"

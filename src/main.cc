@@ -2,7 +2,6 @@
 #include <squick/core/base.h>
 #include <squick/core/plugin_server.h>
 #include <struct/struct.h>
-
 void BasicPluginLoader(IPluginManager *pm_) {
     // 可自行设定加载的插件
 }
@@ -12,7 +11,7 @@ void MidWareLoader(IPluginManager *pm_) {
 }
 
 void PrintLogo() {
-    std::cout << R"(
+    SQUICK_PRINT(R"(
              ,        ,
             /(        )`
             \ \___   / |
@@ -38,7 +37,7 @@ void PrintLogo() {
 \__ \ (_| | |_| | | (__|   <
 |___/\__, |\__,_|_|\___|_|\_\
         |_|
-)";
+)");
     std::cout << "Version: " << SQUICK_VERSION << "\nGithub : https://github.com/pwnsky/squick\n\n";
 }
 
@@ -85,7 +84,7 @@ int main(int argc, char *argv[]) {
         DefaultStartUp(strArgvList, serverList);
         //TutorialStartUp(strArgvList, serverList);
 #else
-        std::cout << "<<  Squick  Help >>\n"
+        SQUICK_PRINT("<<  Squick  Help >>\n"
                 "Squick args usage:\n"
                 "       type: Set your plugin file to load and this is your server name, logger module will use it to log\n"
                 "       -d    : Run squick in background\n"
@@ -99,7 +98,7 @@ int main(int argc, char *argv[]) {
                 "       https_port   : The current node https port\n"
                 "       master_ip    : The master network ip for node connection\n"
                 "       master_port  : The master network port for node connection\n"
-                "Examples: ./squick type=master id=1 area=0 ip=127.0.0.1 port=10001 http_port=8888\n";
+                "Examples: ./squick type=master id=1 area=0 ip=127.0.0.1 port=10001 http_port=8888\n");
         "\n";
 #endif // DEBUG
     } else {
@@ -109,7 +108,7 @@ int main(int argc, char *argv[]) {
 #if PLATFORM != PLATFORM_WIN
     signal(SIGINT, SquickExit);
 #endif
-
+    SQUICK_PRINT("Squick Start");
     for (auto item : serverList) {
         item->SetBasicWareLoader(BasicPluginLoader);
         item->SetMidWareLoader(MidWareLoader);
@@ -125,12 +124,12 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    std::cout << "Squick exiting ....\n";
+    SQUICK_PRINT("Squick Exiting ...");
     for (auto item : serverList) {
         item->Final();
     }
     serverList.clear();
-    std::cout << "Squick exited ....\n";
+    SQUICK_PRINT("Squick Exited ....");
 
     return 0;
 }

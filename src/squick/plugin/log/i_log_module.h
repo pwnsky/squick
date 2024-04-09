@@ -1,7 +1,5 @@
 
-
-#ifndef SQUICK_INTF_LOG_MODULE_H
-#define SQUICK_INTF_LOG_MODULE_H
+#pragma once
 
 #include <squick/core/i_module.h>
 
@@ -54,5 +52,3 @@ class ILogModule : public IModule {
   protected:
     virtual void SetHooker(LOG_HOOKER_FUNCTOR_PTR hooker) = 0;
 };
-
-#endif

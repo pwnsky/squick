@@ -1,10 +1,8 @@
-
-#ifndef SQUICK_LOG_MODULE_H
-#define SQUICK_LOG_MODULE_H
+#pragma once
 
 #include "i_log_module.h"
 #include <squick/core/performance.h>
-
+#include "easylogging++.h"
 class LogModule : public ILogModule {
   public:
     LogModule(IPluginManager *p);
@@ -47,9 +45,6 @@ class LogModule : public ILogModule {
     virtual bool LogError(const Guid ident, const std::ostringstream &stream, const char *func = "", int line = 0);
     virtual bool LogFatal(const Guid ident, const std::ostringstream &stream, const char *func = "", int line = 0);
 
-    virtual bool LogDebugFunctionDump(const Guid ident, const int nMsg, const std::string &strArg, const char *func = "", const int line = 0);
-    virtual bool ChangeLogLevel(const std::string &strLevel);
-
     virtual void SetHooker(LOG_HOOKER_FUNCTOR_PTR hooker);
 
   protected:
@@ -66,6 +61,5 @@ class LogModule : public ILogModule {
     static unsigned int idx;
     uint64_t mnLogCountTotal;
     std::list<Performance> mxPerformanceList;
+    el::Logger* logger_ = nullptr;
 };
-
-#endif

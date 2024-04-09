@@ -1,6 +1,4 @@
-
-#ifndef SQUICK_PLUGIN_MANAGER_H
-#define SQUICK_PLUGIN_MANAGER_H
+#pragma once
 
 #include "dyn_lib.h"
 #include "i_module.h"
@@ -75,9 +73,6 @@ class PluginManager : public IPluginManager {
     virtual int GetAppType() const override;
     virtual void SetAppType(const int type) override;
 
-    virtual bool IsRunningDocker() const override;
-    virtual void SetRunningDocker(bool bDocker) override;
-
     virtual INT64 GetStartTime() const override;
     virtual INT64 GetNowTime() const override;
 
@@ -90,10 +85,6 @@ class PluginManager : public IPluginManager {
     virtual const std::string &GetAppName() const override;
 
     virtual void SetAppName(const std::string &appName) override;
-
-    virtual const std::string &GetLogConfigName() const override;
-
-    virtual void SetLogConfigName(const std::string &name) override;
 
     virtual IPlugin *GetCurrentPlugin() override;
     virtual IModule *GetCurrentModule() override;
@@ -122,8 +113,6 @@ class PluginManager : public IPluginManager {
     int appID = 0;
     int appType = 0;
     int area_ = 0;
-    bool mbIsDocker = false;
-    bool mbStaticPlugin = false;
     bool usingBackThread = false;
 
     INT64 mnStartTime = 0;
@@ -133,7 +122,6 @@ class PluginManager : public IPluginManager {
     std::string configPath;
     std::string configName;
     std::string appName;
-    std::string logConfigName;
 
     IPlugin *currentPlugin;
     IModule *currentModule;
@@ -168,5 +156,3 @@ class PluginManager : public IPluginManager {
 
     GET_FILECONTENT_FUNCTOR mGetFileContentFunctor;
 };
-
-#endif

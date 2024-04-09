@@ -150,9 +150,6 @@ class IPluginManager {
     virtual int GetAppType() const = 0;
     virtual void SetAppType(const int type) = 0;
 
-    virtual bool IsRunningDocker() const = 0;
-    virtual void SetRunningDocker(bool bDocker) = 0;
-
     virtual INT64 GetStartTime() const = 0;
     virtual INT64 GetNowTime() const = 0;
 
@@ -164,9 +161,6 @@ class IPluginManager {
 
     virtual const std::string &GetAppName() const = 0;
     virtual void SetAppName(const std::string &appName) = 0;
-
-    virtual const std::string &GetLogConfigName() const = 0;
-    virtual void SetLogConfigName(const std::string &name) = 0;
 
     virtual IPlugin *GetCurrentPlugin() = 0;
     virtual IModule *GetCurrentModule() = 0;
