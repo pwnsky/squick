@@ -42,21 +42,19 @@ Wiki: https://github.com/pwnsky/squick/wiki
 
 1. [10%] Distributed services, each service communicates through the network, Surport K8s cluster to manage node, and can reduce server pressure through distributed + clustering methods
 2. [100%] Use Lua to develop IO-intensive business code, and C++ to develop CPU-intensive services, which can be used to develop combat suits.
-3. [80%] The workload status of all nodes in the same region is self-synchronized.
-4. [10%] Provide stable services and ensure high availability of services.
-5. [20%] Optimize ultra-low CPU, memory, and network usage.
+3. [100%] The workload status of all nodes in the same region is self-synchronized.
+4. [40%] Provide stable services and ensure high availability of services.
+5. [40%] Optimize ultra-low CPU, memory, and network usage.
 6. [10%] It has standardized tests that allow developers to self-test various performance indicators (CPU, memory, network).
 7. [100%] Plug-in module combination turns development functions into plug-in modules for development and expansion.
 8. [60%] Support non-stop hot updates of business(c++/lua) code.
 9. [100%] When the program crashes in the Linux environment, the Dump Stack call chain is automatically written to the crash file.
-10. [50%] 
-11. [0%] Network library adds C++ coroutines
-12. Supports cross-platform, can be compiled and developed on Windows and Linux and MacOS, and can support VS for project development on Windows【100%】
-13. [100%] Supports changing 1 to N processes or N to 1 process. A single process on a physical machine can start all servers to facilitate development and debugging. Start single or multiple servers on different physical machines 
+11. [100%] Network library adds C++ coroutines
+12. Supports cross-platform, can be compiled and developed on Windows and Linux and MacOS, and can support VS for project development on Windows【80%】
+13. [100%] Supports changing 1 to N processes or N to 1 process. A single process on a physical machine can start all servers to facilitate development and debugging. Start single or multiple servers on different physical machines.
 14. [10%] It has relatively complete automation tools, such as automated code generation, compilation, packaging, deployment, cleaning, etc. 【80%】
-15. [60%] Supports mainstream protocols, such as HTTP/HTTPS, Websocket, TCP, UDP, KCP, etc.【60%】
-16. [60%] In order to ensure the correct processing and non-loss of packets, a custom two-way RPC protocol is built on top of TCP.【100%】
-18. [00%] Remote debugging console
+15. [80%] Supports mainstream protocols, such as HTTP/HTTPS, Websocket, TCP, UDP, KCP, etc.
+18. [00%] Remote debugging console.
 20. [80%] Has client sdk for Unity and UnrealEngine
 21. [80%] High availability - database proxy server, supports mainstream MongoDb, Mysql, Redis, Clickhouse databases etc.
 
