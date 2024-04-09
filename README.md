@@ -65,11 +65,11 @@ Wiki: https://github.com/pwnsky/squick/wiki
 
 Connections
 
-![img](./docs/images/object_connections.png)
+![img](https://github.com/pwnsky/squick/wiki/images/object_connections.png)
 
 RPC communication method between servers
 
-<img src="./docs/images/server_to_server_rpc.png" alt="img" style="zoom: 33%;" />
+<img src="https://github.com/pwnsky/squick/wiki/images/server_to_server_rpc.png" alt="img" style="zoom: 33%;" />
 
 
 
