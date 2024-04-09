@@ -6,5 +6,7 @@
 # Description: Format all source files
 
 echo -n "Running clang-format "
-find ../../src -name "*\.h" -o -name "*\.cc" -o -name "*\.cc"|grep -v bundled|xargs -I {} sh -c "clang-format -i -style=file {}; echo -n '.'"
+format_style="\"{IndentWidth: 4, ColumnLimit: 160}\""
+find ../../src -name "*\.h" -o -name "*\.cc" -o -name "*\.cc"|grep -v bundled|xargs -I "[]" sh -c "clang-format -i --style=google --style=$format_style [];echo -n '.'"
+#find ../../src -name "*\.proto" |grep -v bundled|xargs -I {} sh -c "clang-format -i -style=file {}; echo -n '.'"
 echo
