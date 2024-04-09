@@ -19,7 +19,7 @@
 #include <thread>
 #include <time.h>
 #include <utility>
-#include <cxxabi.h>
+
 
 #include "platform.h"
 
@@ -33,6 +33,7 @@
 
 #if PLATFORM == PLATFORM_LINUX
 #include <sys/prctl.h>
+#include <cxxabi.h>
 #endif
 
 class ExceptFrame {
