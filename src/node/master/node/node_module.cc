@@ -45,7 +45,7 @@ void NodeModule::OnNReqNodeRegister(const socket_t sock, const int msg_id, const
             types.push_back(t);
             log += ", " + to_string(t);
         }
-        dout << "Register node: " << new_node_id << " subscribe node type: [" << log << "]" << endl;
+        m_log_->LogInfo("Register node: " + std::to_string(new_node_id) + " subscribe node type: [" + log + "]");
         AddSubscribeNode(new_node_id, types);
 
         // pack current subscribe nodes to new nodes
@@ -96,7 +96,7 @@ void NodeModule::NtfSubscribNode(int new_node_id) {
             rpc::NNtfNodeAdd ntf;
             auto p = ntf.add_node_list();
             *p = *new_node;
-            dout << "Ntf add: " << sub_id << " new: " << new_node_id << endl;
+            m_log_->LogInfo("Ntf add: " + std::to_string(sub_id) + " new: " + std::to_string(new_node_id));
             SendPBByID(sub_id, rpc::NMasterRPC::NNTF_NODE_ADD, ntf);
         }
     }

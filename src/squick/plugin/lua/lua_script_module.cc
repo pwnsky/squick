@@ -3,7 +3,6 @@
 #include "plugin.h"
 #include <assert.h>
 
-// #include "squick/base/kernel.h"
 #define TRY_RUN_GLOBAL_SCRIPT_FUN0(strFuncName)                                                                                                                \
     try {                                                                                                                                                      \
         LuaIntf::LuaRef func(mLuaContext, strFuncName);                                                                                                        \

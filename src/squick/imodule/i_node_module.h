@@ -278,7 +278,7 @@ class INodeBaseModule : public IModule {
 
     bool AddNodes(const google::protobuf::RepeatedPtrField<rpc::Server>& list, bool from_ntf = false) {
         for (const auto &n : list) {
-            dout << "Add node from master, is_ntf: " << from_ntf << " cmd, current: " << node_info_.info->name() << " add " << n.name() << endl;
+            m_log_->LogInfo("Add node from master, is_ntf: " + std::to_string(from_ntf) + " cmd, current: " + node_info_.info->name() + " add " + n.name());
             ConnectData s;
             s.id = n.id();
             s.ip = n.ip();

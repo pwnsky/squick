@@ -24,7 +24,6 @@ function Main(context)
     Squick = context;
     Env.path = Squick:GetScriptPath()
     local path = Env.path
-    print('path: ', path)
     package.path = path .. '/?.lua;'
 end
 

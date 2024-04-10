@@ -70,3 +70,10 @@ function check_err()
         log_info "No error"
     fi
 }
+
+function print_ok()
+{
+	text="Life is a journey, not a destination. - Ralph Waldo Emerson"
+	echo -e "\e[5;32m$text\e[0m"
+
+}
