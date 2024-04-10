@@ -8,6 +8,7 @@ rem Description: Copy Windows dependency library
 set project_path=%~dp0\..
 
 mkdir %project_path%\data\logs
+mkdir %project_path%\data\crash
 mkdir %project_path%\bin
 cd %project_path%\bin
 xcopy /s /e /y ..\third_party\build\lib\*.dll .
