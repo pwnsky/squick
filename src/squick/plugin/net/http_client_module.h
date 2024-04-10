@@ -13,7 +13,7 @@ class HttpClientModule : public IHttpClientModule {
     virtual bool Start();
     virtual bool AfterStart();
     virtual bool Update();
-    virtual bool Destory();
+    virtual bool Destroy();
 
     // actually, sync post method
     // WebStatus

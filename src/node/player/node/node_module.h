@@ -9,7 +9,7 @@ namespace player::node {
 			pm_ = p;
 			is_update_ = true;
 		}
-		virtual bool Destory();
+		virtual bool Destroy();
 		virtual bool AfterStart();
 
 	protected:

@@ -35,7 +35,7 @@ bool HttpClientModule::Update() {
     return true;
 }
 
-bool HttpClientModule::Destory() {
+bool HttpClientModule::Destroy() {
     m_pHttpClient->Final();
 
     return true;

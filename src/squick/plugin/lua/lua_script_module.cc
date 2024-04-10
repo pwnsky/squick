@@ -73,7 +73,7 @@ bool LuaScriptModule::AfterStart() {
     return true;
 }
 
-bool LuaScriptModule::Destory() {
+bool LuaScriptModule::Destroy() {
     TRY_RUN_GLOBAL_SCRIPT_FUN0("Destroy");
     return true;
 }
@@ -95,8 +95,8 @@ bool LuaScriptModule::Update() {
     return true;
 }
 
-bool LuaScriptModule::BeforeDestory() {
-    TRY_RUN_GLOBAL_SCRIPT_FUN0("BeforeDestory");
+bool LuaScriptModule::BeforeDestroy() {
+    TRY_RUN_GLOBAL_SCRIPT_FUN0("BeforeDestroy");
 
     return true;
 }

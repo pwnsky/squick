@@ -3,7 +3,7 @@
 
 namespace gameplay::node {
 
-bool NodeModule::Destory() { return true; }
+bool NodeModule::Destroy() { return true; }
 
 bool NodeModule::AfterStart() { return true; }
 

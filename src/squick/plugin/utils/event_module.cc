@@ -7,14 +7,14 @@ bool EventModule::Start() {
 
 bool EventModule::AfterStart() { return true; }
 
-bool EventModule::BeforeDestory() {
+bool EventModule::BeforeDestroy() {
     mModuleEventInfoMapEx.ClearAll();
     mObjectEventInfoMapEx.ClearAll();
 
     return true;
 }
 
-bool EventModule::Destory() { return true; }
+bool EventModule::Destroy() { return true; }
 
 bool EventModule::Update() {
     // remove

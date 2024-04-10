@@ -14,7 +14,7 @@ class RedisModule : public IRedisModule {
     virtual ~RedisModule();
 
     virtual bool Start();
-    virtual bool Destory();
+    virtual bool Destroy();
     virtual bool Update();
     virtual bool AfterStart();
 

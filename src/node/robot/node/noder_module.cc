@@ -4,7 +4,7 @@
 namespace robot::server {
 bool ServerModule::Start() { return true; }
 
-bool ServerModule::Destory() { return true; }
+bool ServerModule::Destroy() { return true; }
 
 bool ServerModule::Update() { return true; }
 

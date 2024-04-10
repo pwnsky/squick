@@ -25,7 +25,7 @@ bool MysqlModule::AfterStart() {
 
 bool MysqlModule::Update() { return true; }
 
-bool MysqlModule::Destory() { return true; }
+bool MysqlModule::Destroy() { return true; }
 
 bool MysqlModule::Connect(std::string url) {
     // std::string curl =;

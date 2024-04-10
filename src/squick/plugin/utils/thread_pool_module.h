@@ -66,9 +66,9 @@ class ThreadPoolModule : public IThreadPoolModule {
 
     virtual bool AfterStart();
 
-    virtual bool BeforeDestory();
+    virtual bool BeforeDestroy();
 
-    virtual bool Destory();
+    virtual bool Destroy();
 
     virtual bool Update();
 

@@ -52,7 +52,7 @@ class LogicModule : public ILogicModule {
     LogicModule(IPluginManager *p) { pm_ = p; is_update_ = true; }
 
     virtual bool Start() override;
-    virtual bool Destory() override;
+    virtual bool Destroy() override;
     virtual bool Update() override;
     virtual bool AfterStart() override;
 

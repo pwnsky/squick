@@ -2,7 +2,7 @@
 
 bool ELOModule::Start() { return true; }
 
-bool ELOModule::Destory() { return true; }
+bool ELOModule::Destroy() { return true; }
 
 bool ELOModule::Update() { return true; }
 

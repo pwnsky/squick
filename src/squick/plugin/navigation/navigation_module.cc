@@ -101,8 +101,8 @@ int NavigationModule::Raycast(INT64 scendId, const Vector3 &start, const Vector3
     return 0;
 }
 
-bool NavigationModule::BeforeDestory() { return true; }
+bool NavigationModule::BeforeDestroy() { return true; }
 
-bool NavigationModule::Destory() { return true; }
+bool NavigationModule::Destroy() { return true; }
 
 bool NavigationModule::Update() { return true; }

@@ -18,8 +18,8 @@ public:
     virtual bool Start();
     virtual bool AfterStart();
     virtual bool Update();
-    virtual bool BeforeDestory();
-    virtual bool Destory();
+    virtual bool BeforeDestroy();
+    virtual bool Destroy();
     // Export function.
     virtual int MyExportFunc() override;
 private:

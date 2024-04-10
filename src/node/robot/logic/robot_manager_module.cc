@@ -10,7 +10,7 @@ bool RobotManagerModule::AfterStart() { return true; }
 
 bool RobotManagerModule::ReadyUpdate() { return true; }
 
-bool RobotManagerModule::Destory() { return true; }
+bool RobotManagerModule::Destroy() { return true; }
 
 bool RobotManagerModule::Update() { return true; }
 

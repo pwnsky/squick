@@ -9,7 +9,7 @@ bool LogicModule::Start() {
     return true;
 }
 
-bool LogicModule::Destory() { return true; }
+bool LogicModule::Destroy() { return true; }
 
 bool LogicModule::Update() {
 

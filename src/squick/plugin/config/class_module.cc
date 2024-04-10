@@ -54,9 +54,9 @@ bool ClassModule::Start() {
     return true;
 }
 
-bool ClassModule::Destory() {
+bool ClassModule::Destroy() {
     for (int i = 0; i < mThreadClasses.size(); ++i) {
-        mThreadClasses[i].classModule->Destory();
+        mThreadClasses[i].classModule->Destroy();
     }
 
     ClearAll();

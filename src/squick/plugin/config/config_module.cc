@@ -3,7 +3,7 @@
 
 bool ConfigModule::Start() { return true; }
 
-bool ConfigModule::Destory() { return true; }
+bool ConfigModule::Destroy() { return true; }
 
 bool ConfigModule::Update() { return true; }
 

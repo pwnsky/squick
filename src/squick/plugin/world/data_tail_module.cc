@@ -15,7 +15,7 @@ bool DataTailModule::Start() {
     return true;
 }
 
-bool DataTailModule::Destory() { return true; }
+bool DataTailModule::Destroy() { return true; }
 
 bool DataTailModule::Update() { return true; }
 

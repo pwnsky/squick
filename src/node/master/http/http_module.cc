@@ -9,7 +9,7 @@ bool HttpModule::Start() {
     m_node_ = pm_->FindModule<node::INodeModule>();
     return true;
 }
-bool HttpModule::Destory() { return true; }
+bool HttpModule::Destroy() { return true; }
 
 bool HttpModule::AfterStart() {
     // http://127.0.0.1/json

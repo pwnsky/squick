@@ -69,8 +69,8 @@ class CellModule : public ICellModule {
 
     virtual bool Start();
     virtual bool AfterStart();
-    virtual bool BeforeDestory();
-    virtual bool Destory();
+    virtual bool BeforeDestroy();
+    virtual bool Destroy();
     virtual bool Update();
 
     virtual const bool CreateGroupCell(const int &sceneID, const int &groupID);

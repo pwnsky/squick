@@ -19,7 +19,7 @@ bool RedisModule::Start() {
     return true;
 }
 
-bool RedisModule::Destory() { return true; }
+bool RedisModule::Destroy() { return true; }
 
 bool RedisModule::AfterStart() {
     m_log_ = pm_->FindModule<ILogModule>();

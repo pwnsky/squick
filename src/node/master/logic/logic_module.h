@@ -8,7 +8,7 @@ class LogicModule : public ILogicModule {
     LogicModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Start();
-    virtual bool Destory();
+    virtual bool Destroy();
     virtual bool Update();
 
   protected:

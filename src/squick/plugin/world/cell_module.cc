@@ -112,13 +112,13 @@ bool CellModule::AfterStart() {
     return true;
 }
 
-bool CellModule::BeforeDestory() {
+bool CellModule::BeforeDestroy() {
     mtCellInfoMap.clear();
 
     return false;
 }
 
-bool CellModule::Destory() { return false; }
+bool CellModule::Destroy() { return false; }
 
 bool CellModule::Update() { return false; }
 

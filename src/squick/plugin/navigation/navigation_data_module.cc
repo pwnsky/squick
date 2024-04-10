@@ -131,7 +131,7 @@ bool NavigationDataModule::SetMapDataLayer(const int scene, const int group, con
     return false;
 }
 
-bool NavigationDataModule::Destory() { return true; }
+bool NavigationDataModule::Destroy() { return true; }
 
 bool NavigationDataModule::Update() { return true; }
 

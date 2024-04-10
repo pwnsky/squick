@@ -55,7 +55,7 @@ bool KernelModule::Start() {
     return true;
 }
 
-bool KernelModule::Destory() { return true; }
+bool KernelModule::Destroy() { return true; }
 
 bool KernelModule::Update() {
     ProcessMemFree();
@@ -1484,7 +1484,7 @@ bool KernelModule::DestroyAll() {
     return true;
 }
 
-bool KernelModule::BeforeDestory() {
+bool KernelModule::BeforeDestroy() {
     DestroyAll();
 
     mvRandom.clear();

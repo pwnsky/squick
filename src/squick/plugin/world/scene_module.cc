@@ -38,7 +38,7 @@ bool SceneModule::AfterStart() {
     return true;
 }
 
-bool SceneModule::BeforeDestory() {
+bool SceneModule::BeforeDestroy() {
     mvObjectEnterCallback.clear();
     mvObjectLeaveCallback.clear();
     mvPropertyEnterCallback.clear();
@@ -53,7 +53,7 @@ bool SceneModule::BeforeDestory() {
     return true;
 }
 
-bool SceneModule::Destory() { return true; }
+bool SceneModule::Destroy() { return true; }
 
 bool SceneModule::Update() { return true; }
 

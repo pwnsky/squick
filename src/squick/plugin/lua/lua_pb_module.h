@@ -41,8 +41,8 @@ class LuaPBModule : public ILuaPBModule {
     virtual bool Awake() override;
     virtual bool Start();
     virtual bool AfterStart() override;
-    virtual bool BeforeDestory() override;
-    virtual bool Destory() override;
+    virtual bool BeforeDestroy() override;
+    virtual bool Destroy() override;
     virtual bool ReadyUpdate() override;
     virtual bool Update() override;
     

@@ -31,7 +31,7 @@ namespace db_proxy::redis {
 	
 	bool RedisModule::Update() { return true; }
 
-	bool RedisModule::Destory() { return true; }
+	bool RedisModule::Destroy() { return true; }
 
 	void RedisModule::OnReqRedisGet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
 		int code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_SUCCESS;

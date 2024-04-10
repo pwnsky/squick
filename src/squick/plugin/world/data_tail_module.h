@@ -13,7 +13,7 @@ class DataTailModule : public IDataTailModule {
     virtual ~DataTailModule(){};
 
     virtual bool Start();
-    virtual bool Destory();
+    virtual bool Destroy();
     virtual bool Update();
     virtual bool AfterStart();
 

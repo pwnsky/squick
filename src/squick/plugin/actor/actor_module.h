@@ -17,8 +17,8 @@ class ActorModule : public IActorModule {
     virtual ~ActorModule();
     virtual bool Start();
     virtual bool AfterStart();
-    virtual bool BeforeDestory();
-    virtual bool Destory();
+    virtual bool BeforeDestroy();
+    virtual bool Destroy();
     virtual bool Update();
 
     virtual std::shared_ptr<IActor> CreateActor();

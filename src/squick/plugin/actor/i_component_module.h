@@ -94,8 +94,8 @@ class IComponent // : MemoryCounter
     virtual bool CheckConfig() { return true; }
     virtual bool ReadyUpdate() { return true; }
     virtual bool Update() { return true; }
-    virtual bool BeforeDestory() { return true; }
-    virtual bool Destory() { return true; }
+    virtual bool BeforeDestroy() { return true; }
+    virtual bool Destroy() { return true; }
     virtual bool Finalize() { return true; }
     virtual bool SetEnable(const bool bEnable) {
         mbEnable = bEnable;

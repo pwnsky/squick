@@ -9,7 +9,7 @@ bool ManagerModule::Start() {
     return true;
 }
 
-bool ManagerModule::Destory() { return true; }
+bool ManagerModule::Destroy() { return true; }
 
 bool ManagerModule::AfterStart() { return true; }
 

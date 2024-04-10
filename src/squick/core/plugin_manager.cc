@@ -128,8 +128,8 @@ bool PluginManager::ReLoadPlugin(const std::string &pluginDLLName) {
     }
     // 1
     IPlugin *pPlugin = itInstance->second;
-    pPlugin->BeforeDestory();
-    pPlugin->Destory();
+    pPlugin->BeforeDestroy();
+    pPlugin->Destroy();
     pPlugin->Finalize();
 
     // 2
@@ -413,21 +413,21 @@ bool PluginManager::ReadyUpdate() {
     return true;
 }
 
-bool PluginManager::BeforeDestory() {
+bool PluginManager::BeforeDestroy() {
     PluginInstanceMap::iterator itBeforeInstance = mPluginInstanceMap.begin();
     for (; itBeforeInstance != mPluginInstanceMap.end(); itBeforeInstance++) {
         SetCurrentPlugin(itBeforeInstance->second);
-        itBeforeInstance->second->BeforeDestory();
+        itBeforeInstance->second->BeforeDestroy();
     }
 
     return true;
 }
 
-bool PluginManager::Destory() {
+bool PluginManager::Destroy() {
     PluginInstanceMap::iterator itInstance = mPluginInstanceMap.begin();
     for (; itInstance != mPluginInstanceMap.end(); ++itInstance) {
         SetCurrentPlugin(itInstance->second);
-        itInstance->second->Destory();
+        itInstance->second->Destroy();
     }
 
     return true;

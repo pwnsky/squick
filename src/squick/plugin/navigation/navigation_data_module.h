@@ -16,7 +16,7 @@ class NavigationDataModule : public INavigationDataModule {
   public:
     NavigationDataModule(IPluginManager *p) { pm_ = p; }
     virtual bool Start() override;
-    virtual bool Destory() override;
+    virtual bool Destroy() override;
     virtual bool Update() override;
 
     virtual bool AfterStart() override;

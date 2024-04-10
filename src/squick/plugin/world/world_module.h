@@ -24,9 +24,9 @@ class KernelModule : public IKernelModule, public MapEx<Guid, IObject> {
     virtual ~KernelModule();
 
     virtual bool Start();
-    virtual bool Destory();
+    virtual bool Destroy();
 
-    virtual bool BeforeDestory();
+    virtual bool BeforeDestroy();
     virtual bool AfterStart();
 
     virtual bool Update();

@@ -45,8 +45,8 @@ void PluginServer::Start() {
 }
 
 void PluginServer::Final() {
-    pm_->BeforeDestory();
-    pm_->Destory();
+    pm_->BeforeDestroy();
+    pm_->Destroy();
     pm_->Finalize();
 
     pm_ = nullptr;

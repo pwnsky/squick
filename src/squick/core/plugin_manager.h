@@ -27,9 +27,9 @@ class PluginManager : public IPluginManager {
 
     virtual bool ReadyUpdate() override;
 
-    virtual bool BeforeDestory() override;
+    virtual bool BeforeDestroy() override;
 
-    virtual bool Destory() override;
+    virtual bool Destroy() override;
 
     virtual bool Finalize() override;
 

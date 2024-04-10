@@ -27,7 +27,7 @@ bool LuaPBModule::AfterStart() {
     return true;
 }
 
-bool LuaPBModule::Destory() {
+bool LuaPBModule::Destroy() {
     delete m_pFactory;
     m_pFactory = nullptr;
 
@@ -41,7 +41,7 @@ bool LuaPBModule::ReadyUpdate() { return true; }
 
 bool LuaPBModule::Update() { return true; }
 
-bool LuaPBModule::BeforeDestory() { return true; }
+bool LuaPBModule::BeforeDestroy() { return true; }
 
 bool LuaPBModule::ImportProtoFile(const std::string &strFile) {
     bool ret = false;

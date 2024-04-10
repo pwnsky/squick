@@ -10,7 +10,7 @@ class NodeModule : public INodeModule {
     }
     virtual ~NodeModule();
 
-    virtual bool Destory();
+    virtual bool Destroy();
     virtual bool AfterStart();
 
     map<int, ServerInfo>& GetAllNodes();

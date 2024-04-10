@@ -5,7 +5,7 @@
 namespace master::node {
     NodeModule::~NodeModule() {}
 
-bool NodeModule::Destory() { return true; }
+bool NodeModule::Destroy() { return true; }
 
 bool NodeModule::AfterStart() {
     

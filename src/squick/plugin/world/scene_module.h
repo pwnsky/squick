@@ -195,8 +195,8 @@ class SceneModule : public ISceneModule {
 
     virtual bool Start();
     virtual bool AfterStart();
-    virtual bool BeforeDestory();
-    virtual bool Destory();
+    virtual bool BeforeDestroy();
+    virtual bool Destroy();
     virtual bool Update();
 
     virtual int RequestGroupScene(const int sceneID);

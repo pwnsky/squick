@@ -18,8 +18,8 @@ class TestModule : public ITestModule {
     virtual bool CheckConfig();
     virtual bool ReadyUpdate();
     virtual bool Update();
-    virtual bool BeforeDestory();
-    virtual bool Destory();
+    virtual bool BeforeDestroy();
+    virtual bool Destroy();
     virtual bool Finalize();
     virtual bool OnReloadPlugin();
 

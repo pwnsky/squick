@@ -139,23 +139,23 @@ class IPlugin : public IModule {
         return true;
     }
 
-    virtual bool BeforeDestory() {
+    virtual bool BeforeDestroy() {
         for (const auto &it : mModules) {
             IModule *pModule = it.second;
 
             pm_->SetCurrentModule(pModule);
-            pModule->BeforeDestory();
+            pModule->BeforeDestroy();
         }
 
         return true;
     }
 
-    virtual bool Destory() {
+    virtual bool Destroy() {
         for (const auto &it : mModules) {
             IModule *pModule = it.second;
 
             pm_->SetCurrentModule(pModule);
-            pModule->Destory();
+            pModule->Destroy();
         }
 
         return true;

@@ -16,7 +16,7 @@ class ClickhouseModule : public IClickhouseModule {
     
     virtual bool AfterStart();
     virtual bool Update();
-    virtual bool Destory();
+    virtual bool Destroy();
 
     void Test();
     virtual bool Connect();

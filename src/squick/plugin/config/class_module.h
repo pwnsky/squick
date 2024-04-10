@@ -74,7 +74,7 @@ class ClassModule : public IClassModule {
     virtual bool Awake() override;
     virtual bool Start() override;
     virtual bool AfterStart() override;
-    virtual bool Destory() override;
+    virtual bool Destroy() override;
 
     virtual bool Load() override;
     virtual bool Save() override;
