@@ -20,7 +20,7 @@ bool NodeModule::AfterStart() {
 }
 
 
-bool NodeModule::Destory() { return true; }
+bool NodeModule::Destroy() { return true; }
 
 void NodeModule::OnClientConnected(socket_t sock) {  }
 

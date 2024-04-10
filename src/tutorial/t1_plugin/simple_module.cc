@@ -23,13 +23,13 @@ bool SimpleModule::Update() {
     return true;
 }
 
-bool SimpleModule::BeforeDestory() {
-    std::cout << "SimpleModule BeforeDestory" << std::endl;
+bool SimpleModule::BeforeDestroy() {
+    std::cout << "SimpleModule BeforeDestroy" << std::endl;
     return true;
 }
 
-bool SimpleModule::Destory() {
-    std::cout << "SimpleModule Destory" << std::endl;
+bool SimpleModule::Destroy() {
+    std::cout << "SimpleModule Destroy" << std::endl;
     return true;
 }
 

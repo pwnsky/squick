@@ -78,7 +78,7 @@ bool ElementModule::AfterStart() {
     return true;
 }
 
-bool ElementModule::Destory() {
+bool ElementModule::Destroy() {
     Clear();
 
     return true;
@@ -549,7 +549,7 @@ bool ElementModule::LegalFloat(const char *str) {
     return true;
 }
 
-bool ElementModule::BeforeDestory() { return true; }
+bool ElementModule::BeforeDestroy() { return true; }
 
 bool ElementModule::Update() { return true; }
 

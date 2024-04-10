@@ -28,7 +28,7 @@ bool ClickhouseModule::AfterStart() {
 
 bool ClickhouseModule::Update() { return true; }
 
-bool ClickhouseModule::Destory() { return true; }
+bool ClickhouseModule::Destroy() { return true; }
 
 void ClickhouseModule::OnReqQuery(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {}
 

@@ -26,9 +26,9 @@ PluginManager::PluginManager() : IPluginManager() {
 PluginManager::~PluginManager() {}
 
 bool PluginManager::LoadPlugin() {
-    SQUICK_PRINT("[" + GetAppName() + "] start to load plugin");
+    SQUICK_PRINT("[" + GetAppName() + "] Start to load plugin");
     for (auto& info : plugins_) {
-        SQUICK_PRINT("Load plugin: " + info.path);
+        SQUICK_PRINT("[" + GetAppName() + "] Loading plugin: " + info.path);
         LoadPluginLibrary(info.path);
     }
     return true;
@@ -99,14 +99,12 @@ void PluginManager::Registered(IPlugin *plugin) {
         mPluginInstanceMap.insert(PluginInstanceMap::value_type(pluginName, plugin));
         plugin->Install();
     } else {
-        SQUICK_PRINT("Registered Plugin: " + pluginName + " is error!");
+        SQUICK_PRINT("[" + GetAppName() + "] Registered Plugin: " + pluginName + " is error!");
         assert(0);
     }
 }
 
 void PluginManager::UnRegistered(IPlugin *plugin) {
-
-    SQUICK_PRINT("UnRegistered Plugin: " + plugin->GetPluginName());
     PluginInstanceMap::iterator it = mPluginInstanceMap.find(plugin->GetPluginName());
     if (it != mPluginInstanceMap.end()) {
         it->second->Uninstall();
@@ -128,8 +126,8 @@ bool PluginManager::ReLoadPlugin(const std::string &pluginDLLName) {
     }
     // 1
     IPlugin *pPlugin = itInstance->second;
-    pPlugin->BeforeDestory();
-    pPlugin->Destory();
+    pPlugin->BeforeDestroy();
+    pPlugin->Destroy();
     pPlugin->Finalize();
 
     // 2
@@ -413,21 +411,21 @@ bool PluginManager::ReadyUpdate() {
     return true;
 }
 
-bool PluginManager::BeforeDestory() {
+bool PluginManager::BeforeDestroy() {
     PluginInstanceMap::iterator itBeforeInstance = mPluginInstanceMap.begin();
     for (; itBeforeInstance != mPluginInstanceMap.end(); itBeforeInstance++) {
         SetCurrentPlugin(itBeforeInstance->second);
-        itBeforeInstance->second->BeforeDestory();
+        itBeforeInstance->second->BeforeDestroy();
     }
 
     return true;
 }
 
-bool PluginManager::Destory() {
+bool PluginManager::Destroy() {
     PluginInstanceMap::iterator itInstance = mPluginInstanceMap.begin();
     for (; itInstance != mPluginInstanceMap.end(); ++itInstance) {
         SetCurrentPlugin(itInstance->second);
-        itInstance->second->Destory();
+        itInstance->second->Destroy();
     }
 
     return true;
@@ -441,15 +439,13 @@ bool PluginManager::Finalize() {
     }
 
     ////////////////////////////////////////////////
-    dout << "Start to unload all plugins ...\n";
     for (auto &plugin : plugins_) {
-        dout << "Unloading: " << plugin.path << "\n";
+        SQUICK_PRINT("[" + GetAppName() + "] Unloading plugin: " + plugin.path);
         UnLoadPluginLibrary(plugin.path);
     }
 
     mPluginInstanceMap.clear();
     plugins_.clear();
-    dout << "All plugins unloaded!" "\n";
 
     return true;
 }
@@ -465,7 +461,7 @@ bool PluginManager::LoadPluginLibrary(const std::string &pluginDLLName) {
 
             DLL_START_PLUGIN_FUNC pFunc = (DLL_START_PLUGIN_FUNC)pLib->GetSymbol("SquickPluginLoad");
             if (!pFunc) {
-                std::cout << "Find function SquickPluginLoad Failed in [" << pLib->GetName() << "]" << std::endl;
+                SQUICK_PRINT("Find function SquickPluginLoad Failed in [" + pLib->GetName() + "]");
                 assert(0);
                 return false;
             }

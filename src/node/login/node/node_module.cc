@@ -4,9 +4,9 @@
 
 namespace login::node {
 
-bool NodeModule::Destory() { return true; }
+bool NodeModule::Destroy() { return true; }
 
-bool NodeModule::BeforeDestory() { return true; }
+bool NodeModule::BeforeDestroy() { return true; }
 
 bool NodeModule::AfterStart() {
     m_net_->AddReceiveCallBack(this, &NodeModule::InvalidMessage);

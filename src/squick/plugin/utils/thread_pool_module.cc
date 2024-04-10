@@ -23,12 +23,12 @@ bool ThreadPoolModule::Start() {
 
 bool ThreadPoolModule::AfterStart() { return true; }
 
-bool ThreadPoolModule::BeforeDestory() {
+bool ThreadPoolModule::BeforeDestroy() {
 
     return true;
 }
 
-bool ThreadPoolModule::Destory() { return true; }
+bool ThreadPoolModule::Destroy() { return true; }
 
 bool ThreadPoolModule::Update() {
     UpdateTaskResult();

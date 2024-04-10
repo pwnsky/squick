@@ -29,7 +29,7 @@ namespace db_proxy::mongo {
 
     bool MongoModule::Update() { return true; }
 
-    bool MongoModule::Destory() { return true; }
+    bool MongoModule::Destroy() { return true; }
 
     bool MongoModule::Connect() {
         try {

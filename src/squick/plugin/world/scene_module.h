@@ -195,8 +195,8 @@ class SceneModule : public ISceneModule {
 
     virtual bool Start();
     virtual bool AfterStart();
-    virtual bool BeforeDestory();
-    virtual bool Destory();
+    virtual bool BeforeDestroy();
+    virtual bool Destroy();
     virtual bool Update();
 
     virtual int RequestGroupScene(const int sceneID);
@@ -387,7 +387,7 @@ class SceneModule : public ISceneModule {
     std::vector<SCENE_EVENT_FUNCTOR_PTR> mvSceneGroupDestroyedCallback;
 
   private:
-    IKernelModule *m_kernel_;
+    IWorldModule *m_world_;
     IClassModule *m_class_;
     ILogModule *m_log_;
     IElementModule *m_element_;

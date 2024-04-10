@@ -4,6 +4,6 @@
 namespace master::logic {
 bool LogicModule::Start() { return true; }
 
-bool LogicModule::Destory() { return true; }
+bool LogicModule::Destroy() { return true; }
 bool LogicModule::Update() { return true; }
 } // namespace master::logic

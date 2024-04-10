@@ -103,7 +103,7 @@ void TesterModule::OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVE
     }
 }
 
-bool TesterModule::Destory() {
+bool TesterModule::Destroy() {
     return true;
 }
 

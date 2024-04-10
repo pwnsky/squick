@@ -50,10 +50,10 @@ class ElementModule : public IElementModule, MapEx<std::string, ElementConfigInf
 
     virtual bool Awake() override;
     virtual bool Start() override;
-    virtual bool Destory() override;
+    virtual bool Destroy() override;
 
     virtual bool AfterStart() override;
-    virtual bool BeforeDestory() override;
+    virtual bool BeforeDestroy() override;
     virtual bool Update() override;
 
     virtual bool Load() override;

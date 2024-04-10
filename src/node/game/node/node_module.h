@@ -17,7 +17,7 @@ class NodeModule : public INodeModule {
   public:
       NodeModule(IPluginManager *p) { pm_ = p; }
 
-    virtual bool Destory();
+    virtual bool Destroy();
     virtual bool AfterStart();
 
   protected:

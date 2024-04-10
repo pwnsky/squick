@@ -13,7 +13,7 @@ bool LogicModule::AfterStart() {
     return true;
 }
 
-bool LogicModule::Destory() { return true; }
+bool LogicModule::Destroy() { return true; }
 
 void LogicModule::OnConnectProxyVerify(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     uint64_t uid;

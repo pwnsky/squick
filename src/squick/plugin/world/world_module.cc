@@ -11,7 +11,7 @@
 #include <squick/core/record_manager.h>
 #include <struct/excel.h>
 
-KernelModule::KernelModule(IPluginManager *p) {
+WorldModule::WorldModule(IPluginManager *p) {
     is_update_ = true;
     nGUIDIndex = 0;
     nLastTime = 0;
@@ -22,9 +22,9 @@ KernelModule::KernelModule(IPluginManager *p) {
     StartRandom();
 }
 
-KernelModule::~KernelModule() { ClearAll(); }
+WorldModule::~WorldModule() { ClearAll(); }
 
-void KernelModule::StartRandom() {
+void WorldModule::StartRandom() {
     mvRandom.clear();
 
     constexpr int nRandomMax = 100000;
@@ -41,7 +41,7 @@ void KernelModule::StartRandom() {
     mxRandomItor = mvRandom.cbegin();
 }
 
-bool KernelModule::Start() {
+bool WorldModule::Start() {
     mtDeleteSelfList.clear();
 
     m_scene_ = pm_->FindModule<ISceneModule>();
@@ -55,9 +55,9 @@ bool KernelModule::Start() {
     return true;
 }
 
-bool KernelModule::Destory() { return true; }
+bool WorldModule::Destroy() { return true; }
 
-bool KernelModule::Update() {
+bool WorldModule::Update() {
     ProcessMemFree();
 
     mnCurExeObject.nHead64 = 0;
@@ -74,7 +74,7 @@ bool KernelModule::Update() {
     return true;
 }
 
-std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className,
+std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className,
                                                     const std::string &configIndex, const DataList &arg) {
     std::shared_ptr<IObject> pObject;
     Guid ident = self;
@@ -133,7 +133,7 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
                             xProperty->SetUpload(pStaticConfigPropertyInfo->GetUpload());
 
                             //
-                            pObject->AddPropertyCallBack(pStaticConfigPropertyInfo->GetKey(), this, &KernelModule::OnPropertyCommonEvent);
+                            pObject->AddPropertyCallBack(pStaticConfigPropertyInfo->GetKey(), this, &WorldModule::OnPropertyCommonEvent);
 
                             pStaticConfigPropertyInfo = pStaticClassPropertyManager->Next();
                         }
@@ -150,7 +150,7 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
                             xRecord->SetUpload(pConfigRecordInfo->GetUpload());
 
                             //
-                            pObject->AddRecordCallBack(pConfigRecordInfo->GetName(), this, &KernelModule::OnRecordCommonEvent);
+                            pObject->AddRecordCallBack(pConfigRecordInfo->GetName(), this, &WorldModule::OnRecordCommonEvent);
 
                             pConfigRecordInfo = pStaticClassRecordManager->Next();
                         }
@@ -302,7 +302,7 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
                     xProperty->SetRef(pStaticConfigPropertyInfo->GetRef());
                     xProperty->SetUpload(pStaticConfigPropertyInfo->GetUpload());
 
-                    pObject->AddPropertyCallBack(pStaticConfigPropertyInfo->GetKey(), this, &KernelModule::OnPropertyCommonEvent);
+                    pObject->AddPropertyCallBack(pStaticConfigPropertyInfo->GetKey(), this, &WorldModule::OnPropertyCommonEvent);
 
                     pStaticConfigPropertyInfo = pStaticClassPropertyManager->Next();
                 }
@@ -318,7 +318,7 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
                     xRecord->SetCache(pConfigRecordInfo->GetCache());
                     xRecord->SetUpload(pConfigRecordInfo->GetUpload());
 
-                    pObject->AddRecordCallBack(pConfigRecordInfo->GetName(), this, &KernelModule::OnRecordCommonEvent);
+                    pObject->AddRecordCallBack(pConfigRecordInfo->GetName(), this, &WorldModule::OnRecordCommonEvent);
 
                     pConfigRecordInfo = pStaticClassRecordManager->Next();
                 }
@@ -442,7 +442,7 @@ std::shared_ptr<IObject> KernelModule::CreateObject(const Guid &self, const int 
     return pObject;
 }
 
-bool KernelModule::DestroyObject(const Guid &self) {
+bool WorldModule::DestroyObject(const Guid &self) {
     if (self == mnCurExeObject && !self.IsNull()) {
 
         return DestroySelf(self);
@@ -478,7 +478,7 @@ bool KernelModule::DestroyObject(const Guid &self) {
     return false;
 }
 
-bool KernelModule::FindProperty(const Guid &self, const std::string &propertyName) {
+bool WorldModule::FindProperty(const Guid &self, const std::string &propertyName) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->FindProperty(propertyName);
@@ -489,7 +489,7 @@ bool KernelModule::FindProperty(const Guid &self, const std::string &propertyNam
     return false;
 }
 
-bool KernelModule::SetPropertyInt(const Guid &self, const std::string &propertyName, const INT64 nValue, const INT64 reason) {
+bool WorldModule::SetPropertyInt(const Guid &self, const std::string &propertyName, const INT64 nValue, const INT64 reason) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->SetPropertyInt(propertyName, nValue, reason);
@@ -500,7 +500,7 @@ bool KernelModule::SetPropertyInt(const Guid &self, const std::string &propertyN
     return false;
 }
 
-bool KernelModule::SetPropertyFloat(const Guid &self, const std::string &propertyName, const double dValue, const INT64 reason) {
+bool WorldModule::SetPropertyFloat(const Guid &self, const std::string &propertyName, const double dValue, const INT64 reason) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->SetPropertyFloat(propertyName, dValue, reason);
@@ -511,7 +511,7 @@ bool KernelModule::SetPropertyFloat(const Guid &self, const std::string &propert
     return false;
 }
 
-bool KernelModule::SetPropertyString(const Guid &self, const std::string &propertyName, const std::string &value, const INT64 reason) {
+bool WorldModule::SetPropertyString(const Guid &self, const std::string &propertyName, const std::string &value, const INT64 reason) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->SetPropertyString(propertyName, value, reason);
@@ -522,7 +522,7 @@ bool KernelModule::SetPropertyString(const Guid &self, const std::string &proper
     return false;
 }
 
-bool KernelModule::SetPropertyObject(const Guid &self, const std::string &propertyName, const Guid &objectValue, const INT64 reason) {
+bool WorldModule::SetPropertyObject(const Guid &self, const std::string &propertyName, const Guid &objectValue, const INT64 reason) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->SetPropertyObject(propertyName, objectValue, reason);
@@ -533,7 +533,7 @@ bool KernelModule::SetPropertyObject(const Guid &self, const std::string &proper
     return false;
 }
 
-bool KernelModule::SetPropertyVector2(const Guid &self, const std::string &propertyName, const Vector2 &value, const INT64 reason) {
+bool WorldModule::SetPropertyVector2(const Guid &self, const std::string &propertyName, const Vector2 &value, const INT64 reason) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->SetPropertyVector2(propertyName, value, reason);
@@ -544,7 +544,7 @@ bool KernelModule::SetPropertyVector2(const Guid &self, const std::string &prope
     return false;
 }
 
-bool KernelModule::SetPropertyVector3(const Guid &self, const std::string &propertyName, const Vector3 &value, const INT64 reason) {
+bool WorldModule::SetPropertyVector3(const Guid &self, const std::string &propertyName, const Vector3 &value, const INT64 reason) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->SetPropertyVector3(propertyName, value, reason);
@@ -555,7 +555,7 @@ bool KernelModule::SetPropertyVector3(const Guid &self, const std::string &prope
     return false;
 }
 
-INT64 KernelModule::GetPropertyInt(const Guid &self, const std::string &propertyName) {
+INT64 WorldModule::GetPropertyInt(const Guid &self, const std::string &propertyName) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetPropertyInt(propertyName);
@@ -566,7 +566,7 @@ INT64 KernelModule::GetPropertyInt(const Guid &self, const std::string &property
     return NULL_INT;
 }
 
-int KernelModule::GetPropertyInt32(const Guid &self, const std::string &propertyName) {
+int WorldModule::GetPropertyInt32(const Guid &self, const std::string &propertyName) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetPropertyInt32(propertyName);
@@ -577,7 +577,7 @@ int KernelModule::GetPropertyInt32(const Guid &self, const std::string &property
     return (int)NULL_INT;
 }
 
-double KernelModule::GetPropertyFloat(const Guid &self, const std::string &propertyName) {
+double WorldModule::GetPropertyFloat(const Guid &self, const std::string &propertyName) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetPropertyFloat(propertyName);
@@ -588,7 +588,7 @@ double KernelModule::GetPropertyFloat(const Guid &self, const std::string &prope
     return NULL_FLOAT;
 }
 
-const std::string &KernelModule::GetPropertyString(const Guid &self, const std::string &propertyName) {
+const std::string &WorldModule::GetPropertyString(const Guid &self, const std::string &propertyName) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetPropertyString(propertyName);
@@ -599,7 +599,7 @@ const std::string &KernelModule::GetPropertyString(const Guid &self, const std::
     return NULL_STR;
 }
 
-const Guid &KernelModule::GetPropertyObject(const Guid &self, const std::string &propertyName) {
+const Guid &WorldModule::GetPropertyObject(const Guid &self, const std::string &propertyName) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetPropertyObject(propertyName);
@@ -610,7 +610,7 @@ const Guid &KernelModule::GetPropertyObject(const Guid &self, const std::string 
     return NULL_OBJECT;
 }
 
-const Vector2 &KernelModule::GetPropertyVector2(const Guid &self, const std::string &propertyName) {
+const Vector2 &WorldModule::GetPropertyVector2(const Guid &self, const std::string &propertyName) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetPropertyVector2(propertyName);
@@ -621,7 +621,7 @@ const Vector2 &KernelModule::GetPropertyVector2(const Guid &self, const std::str
     return NULL_VECTOR2;
 }
 
-const Vector3 &KernelModule::GetPropertyVector3(const Guid &self, const std::string &propertyName) {
+const Vector3 &WorldModule::GetPropertyVector3(const Guid &self, const std::string &propertyName) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetPropertyVector3(propertyName);
@@ -632,7 +632,7 @@ const Vector3 &KernelModule::GetPropertyVector3(const Guid &self, const std::str
     return NULL_VECTOR3;
 }
 
-std::shared_ptr<IRecord> KernelModule::FindRecord(const Guid &self, const std::string &recordName) {
+std::shared_ptr<IRecord> WorldModule::FindRecord(const Guid &self, const std::string &recordName) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordManager()->GetElement(recordName);
@@ -643,7 +643,7 @@ std::shared_ptr<IRecord> KernelModule::FindRecord(const Guid &self, const std::s
     return nullptr;
 }
 
-bool KernelModule::ClearRecord(const Guid &self, const std::string &recordName) {
+bool WorldModule::ClearRecord(const Guid &self, const std::string &recordName) {
     std::shared_ptr<IRecord> pRecord = FindRecord(self, recordName);
     if (pRecord) {
         return pRecord->Clear();
@@ -654,7 +654,7 @@ bool KernelModule::ClearRecord(const Guid &self, const std::string &recordName) 
     return false;
 }
 
-bool KernelModule::SetRecordInt(const Guid &self, const std::string &recordName, const int row, const int col, const INT64 nValue) {
+bool WorldModule::SetRecordInt(const Guid &self, const std::string &recordName, const int row, const int col, const INT64 nValue) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordInt(recordName, row, col, nValue)) {
@@ -669,7 +669,7 @@ bool KernelModule::SetRecordInt(const Guid &self, const std::string &recordName,
     return false;
 }
 
-bool KernelModule::SetRecordInt(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const INT64 value) {
+bool WorldModule::SetRecordInt(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const INT64 value) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordInt(recordName, row, colTag, value)) {
@@ -684,7 +684,7 @@ bool KernelModule::SetRecordInt(const Guid &self, const std::string &recordName,
     return false;
 }
 
-bool KernelModule::SetRecordFloat(const Guid &self, const std::string &recordName, const int row, const int col, const double dwValue) {
+bool WorldModule::SetRecordFloat(const Guid &self, const std::string &recordName, const int row, const int col, const double dwValue) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordFloat(recordName, row, col, dwValue)) {
@@ -699,7 +699,7 @@ bool KernelModule::SetRecordFloat(const Guid &self, const std::string &recordNam
     return false;
 }
 
-bool KernelModule::SetRecordFloat(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const double value) {
+bool WorldModule::SetRecordFloat(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const double value) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordFloat(recordName, row, colTag, value)) {
@@ -714,7 +714,7 @@ bool KernelModule::SetRecordFloat(const Guid &self, const std::string &recordNam
     return false;
 }
 
-bool KernelModule::SetRecordString(const Guid &self, const std::string &recordName, const int row, const int col, const std::string &value) {
+bool WorldModule::SetRecordString(const Guid &self, const std::string &recordName, const int row, const int col, const std::string &value) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordString(recordName, row, col, value)) {
@@ -729,7 +729,7 @@ bool KernelModule::SetRecordString(const Guid &self, const std::string &recordNa
     return false;
 }
 
-bool KernelModule::SetRecordString(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const std::string &value) {
+bool WorldModule::SetRecordString(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const std::string &value) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordString(recordName, row, colTag, value)) {
@@ -744,7 +744,7 @@ bool KernelModule::SetRecordString(const Guid &self, const std::string &recordNa
     return false;
 }
 
-bool KernelModule::SetRecordObject(const Guid &self, const std::string &recordName, const int row, const int col, const Guid &objectValue) {
+bool WorldModule::SetRecordObject(const Guid &self, const std::string &recordName, const int row, const int col, const Guid &objectValue) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordObject(recordName, row, col, objectValue)) {
@@ -759,7 +759,7 @@ bool KernelModule::SetRecordObject(const Guid &self, const std::string &recordNa
     return false;
 }
 
-bool KernelModule::SetRecordObject(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Guid &value) {
+bool WorldModule::SetRecordObject(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Guid &value) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordObject(recordName, row, colTag, value)) {
@@ -774,7 +774,7 @@ bool KernelModule::SetRecordObject(const Guid &self, const std::string &recordNa
     return false;
 }
 
-bool KernelModule::SetRecordVector2(const Guid &self, const std::string &recordName, const int row, const int col, const Vector2 &value) {
+bool WorldModule::SetRecordVector2(const Guid &self, const std::string &recordName, const int row, const int col, const Vector2 &value) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordVector2(recordName, row, col, value)) {
@@ -789,7 +789,7 @@ bool KernelModule::SetRecordVector2(const Guid &self, const std::string &recordN
     return false;
 }
 
-bool KernelModule::SetRecordVector2(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Vector2 &value) {
+bool WorldModule::SetRecordVector2(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Vector2 &value) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordVector2(recordName, row, colTag, value)) {
@@ -804,7 +804,7 @@ bool KernelModule::SetRecordVector2(const Guid &self, const std::string &recordN
     return false;
 }
 
-bool KernelModule::SetRecordVector3(const Guid &self, const std::string &recordName, const int row, const int col, const Vector3 &value) {
+bool WorldModule::SetRecordVector3(const Guid &self, const std::string &recordName, const int row, const int col, const Vector3 &value) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordVector3(recordName, row, col, value)) {
@@ -819,7 +819,7 @@ bool KernelModule::SetRecordVector3(const Guid &self, const std::string &recordN
     return false;
 }
 
-bool KernelModule::SetRecordVector3(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Vector3 &value) {
+bool WorldModule::SetRecordVector3(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Vector3 &value) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordVector3(recordName, row, colTag, value)) {
@@ -834,7 +834,7 @@ bool KernelModule::SetRecordVector3(const Guid &self, const std::string &recordN
     return false;
 }
 
-INT64 KernelModule::GetRecordInt(const Guid &self, const std::string &recordName, const int row, const int col) {
+INT64 WorldModule::GetRecordInt(const Guid &self, const std::string &recordName, const int row, const int col) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordInt(recordName, row, col);
@@ -845,7 +845,7 @@ INT64 KernelModule::GetRecordInt(const Guid &self, const std::string &recordName
     return 0;
 }
 
-INT64 KernelModule::GetRecordInt(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
+INT64 WorldModule::GetRecordInt(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordInt(recordName, row, colTag);
@@ -856,7 +856,7 @@ INT64 KernelModule::GetRecordInt(const Guid &self, const std::string &recordName
     return 0;
 }
 
-double KernelModule::GetRecordFloat(const Guid &self, const std::string &recordName, const int row, const int col) {
+double WorldModule::GetRecordFloat(const Guid &self, const std::string &recordName, const int row, const int col) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordFloat(recordName, row, col);
@@ -867,7 +867,7 @@ double KernelModule::GetRecordFloat(const Guid &self, const std::string &recordN
     return 0.0;
 }
 
-double KernelModule::GetRecordFloat(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
+double WorldModule::GetRecordFloat(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordFloat(recordName, row, colTag);
@@ -878,7 +878,7 @@ double KernelModule::GetRecordFloat(const Guid &self, const std::string &recordN
     return 0.0;
 }
 
-const std::string &KernelModule::GetRecordString(const Guid &self, const std::string &recordName, const int row, const int col) {
+const std::string &WorldModule::GetRecordString(const Guid &self, const std::string &recordName, const int row, const int col) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordString(recordName, row, col);
@@ -889,7 +889,7 @@ const std::string &KernelModule::GetRecordString(const Guid &self, const std::st
     return NULL_STR;
 }
 
-const std::string &KernelModule::GetRecordString(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
+const std::string &WorldModule::GetRecordString(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordString(recordName, row, colTag);
@@ -900,7 +900,7 @@ const std::string &KernelModule::GetRecordString(const Guid &self, const std::st
     return NULL_STR;
 }
 
-const Guid &KernelModule::GetRecordObject(const Guid &self, const std::string &recordName, const int row, const int col) {
+const Guid &WorldModule::GetRecordObject(const Guid &self, const std::string &recordName, const int row, const int col) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordObject(recordName, row, col);
@@ -911,7 +911,7 @@ const Guid &KernelModule::GetRecordObject(const Guid &self, const std::string &r
     return NULL_OBJECT;
 }
 
-const Guid &KernelModule::GetRecordObject(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
+const Guid &WorldModule::GetRecordObject(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordObject(recordName, row, colTag);
@@ -922,7 +922,7 @@ const Guid &KernelModule::GetRecordObject(const Guid &self, const std::string &r
     return NULL_OBJECT;
 }
 
-const Vector2 &KernelModule::GetRecordVector2(const Guid &self, const std::string &recordName, const int row, const int col) {
+const Vector2 &WorldModule::GetRecordVector2(const Guid &self, const std::string &recordName, const int row, const int col) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordVector2(recordName, row, col);
@@ -933,7 +933,7 @@ const Vector2 &KernelModule::GetRecordVector2(const Guid &self, const std::strin
     return NULL_VECTOR2;
 }
 
-const Vector2 &KernelModule::GetRecordVector2(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
+const Vector2 &WorldModule::GetRecordVector2(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordVector2(recordName, row, colTag);
@@ -944,7 +944,7 @@ const Vector2 &KernelModule::GetRecordVector2(const Guid &self, const std::strin
     return NULL_VECTOR2;
 }
 
-const Vector3 &KernelModule::GetRecordVector3(const Guid &self, const std::string &recordName, const int row, const int col) {
+const Vector3 &WorldModule::GetRecordVector3(const Guid &self, const std::string &recordName, const int row, const int col) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordVector3(recordName, row, col);
@@ -955,7 +955,7 @@ const Vector3 &KernelModule::GetRecordVector3(const Guid &self, const std::strin
     return NULL_VECTOR3;
 }
 
-const Vector3 &KernelModule::GetRecordVector3(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
+const Vector3 &WorldModule::GetRecordVector3(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         return pObject->GetRecordVector3(recordName, row, colTag);
@@ -966,7 +966,7 @@ const Vector3 &KernelModule::GetRecordVector3(const Guid &self, const std::strin
     return NULL_VECTOR3;
 }
 
-Guid KernelModule::CreateGUID() {
+Guid WorldModule::CreateGUID() {
     int64_t value = 0;
     uint64_t time = SquickGetTimeMS();
 
@@ -988,7 +988,7 @@ Guid KernelModule::CreateGUID() {
     return xID;
 }
 
-Guid KernelModule::CreatePlayerGUID() {
+Guid WorldModule::CreatePlayerGUID() {
     int64_t value = 0;
     uint64_t time = SquickGetTimeMS();
 
@@ -1011,7 +1011,7 @@ Guid KernelModule::CreatePlayerGUID() {
 }
 
 
-bool KernelModule::CreateScene(const int sceneID) {
+bool WorldModule::CreateScene(const int sceneID) {
     std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (pSceneInfo) {
         return false;
@@ -1027,13 +1027,13 @@ bool KernelModule::CreateScene(const int sceneID) {
     return false;
 }
 
-bool KernelModule::DestroyScene(const int sceneID) {
+bool WorldModule::DestroyScene(const int sceneID) {
     m_scene_->RemoveElement(sceneID);
 
     return true;
 }
 
-int KernelModule::GetOnLineCount() {
+int WorldModule::GetOnLineCount() {
     int count = 0;
     std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->First();
     while (pSceneInfo) {
@@ -1049,18 +1049,18 @@ int KernelModule::GetOnLineCount() {
     return count;
 }
 
-int KernelModule::GetMaxOnLineCount() {
+int WorldModule::GetMaxOnLineCount() {
     // test count 5000
     // and it should be define in a xml file
 
     return 10000;
 }
 
-int KernelModule::RequestGroupScene(const int sceneID) { return m_scene_->RequestGroupScene(sceneID); }
+int WorldModule::RequestGroupScene(const int sceneID) { return m_scene_->RequestGroupScene(sceneID); }
 
-bool KernelModule::ReleaseGroupScene(const int sceneID, const int groupID) { return m_scene_->ReleaseGroupScene(sceneID, groupID); }
+bool WorldModule::ReleaseGroupScene(const int sceneID, const int groupID) { return m_scene_->ReleaseGroupScene(sceneID, groupID); }
 
-bool KernelModule::ExitGroupScene(const int sceneID, const int groupID) {
+bool WorldModule::ExitGroupScene(const int sceneID, const int groupID) {
     std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (pSceneInfo) {
         std::shared_ptr<SceneGroupInfo> pGroupInfo = pSceneInfo->GetElement(groupID);
@@ -1072,7 +1072,7 @@ bool KernelModule::ExitGroupScene(const int sceneID, const int groupID) {
     return false;
 }
 
-bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, DataList &list, const Guid &noSelf) {
+bool WorldModule::GetGroupObjectList(const int sceneID, const int groupID, DataList &list, const Guid &noSelf) {
     std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (pSceneInfo) {
 
@@ -1107,7 +1107,7 @@ bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, Data
     return false;
 }
 
-int KernelModule::GetGroupObjectList(const int sceneID, const int groupID, const bool bPlayer, const Guid &noSelf) {
+int WorldModule::GetGroupObjectList(const int sceneID, const int groupID, const bool bPlayer, const Guid &noSelf) {
     int objectCount = 0;
     std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (pSceneInfo) {
@@ -1140,9 +1140,9 @@ int KernelModule::GetGroupObjectList(const int sceneID, const int groupID, const
     return objectCount;
 }
 
-bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, DataList &list) { return GetGroupObjectList(sceneID, groupID, list, Guid()); }
+bool WorldModule::GetGroupObjectList(const int sceneID, const int groupID, DataList &list) { return GetGroupObjectList(sceneID, groupID, list, Guid()); }
 
-bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, DataList &list, const bool bPlayer, const Guid &noSelf) {
+bool WorldModule::GetGroupObjectList(const int sceneID, const int groupID, DataList &list, const bool bPlayer, const Guid &noSelf) {
     std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (pSceneInfo) {
 
@@ -1177,11 +1177,11 @@ bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, Data
     return false;
 }
 
-bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, DataList &list, const bool bPlayer) {
+bool WorldModule::GetGroupObjectList(const int sceneID, const int groupID, DataList &list, const bool bPlayer) {
     return GetGroupObjectList(sceneID, groupID, list, bPlayer, Guid());
 }
 
-bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, const std::string &className, DataList &list, const Guid &noSelf) {
+bool WorldModule::GetGroupObjectList(const int sceneID, const int groupID, const std::string &className, DataList &list, const Guid &noSelf) {
     DataList xDataList;
     if (GetGroupObjectList(sceneID, groupID, xDataList)) {
         for (int i = 0; i < xDataList.GetCount(); i++) {
@@ -1201,11 +1201,11 @@ bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, cons
     return false;
 }
 
-bool KernelModule::GetGroupObjectList(const int sceneID, const int groupID, const std::string &className, DataList &list) {
+bool WorldModule::GetGroupObjectList(const int sceneID, const int groupID, const std::string &className, DataList &list) {
     return GetGroupObjectList(sceneID, groupID, className, list, Guid());
 }
 
-bool KernelModule::LogStack() {
+bool WorldModule::LogStack() {
 #if PLATFORM == PLATFORM_WIN
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
 #else
@@ -1219,7 +1219,7 @@ bool KernelModule::LogStack() {
     return true;
 }
 
-bool KernelModule::LogInfo(const Guid ident) {
+bool WorldModule::LogInfo(const Guid ident) {
 
     std::shared_ptr<IObject> pObject = GetObject(ident);
     if (pObject) {
@@ -1234,7 +1234,7 @@ bool KernelModule::LogInfo(const Guid ident) {
     return true;
 }
 
-int KernelModule::OnPropertyCommonEvent(const Guid &self, const std::string &propertyName, const SquickData &oldVar, const SquickData &newVar,
+int WorldModule::OnPropertyCommonEvent(const Guid &self, const std::string &propertyName, const SquickData &oldVar, const SquickData &newVar,
                                         const INT64 reason) {
     Performance performance;
 
@@ -1273,9 +1273,9 @@ int KernelModule::OnPropertyCommonEvent(const Guid &self, const std::string &pro
     return 0;
 }
 
-std::shared_ptr<IObject> KernelModule::GetObject(const Guid &ident) { return GetElement(ident); }
+std::shared_ptr<IObject> WorldModule::GetObject(const Guid &ident) { return GetElement(ident); }
 
-int KernelModule::GetObjectByProperty(const int sceneID, const int groupID, const std::string &propertyName, const DataList &valueArg, DataList &list) {
+int WorldModule::GetObjectByProperty(const int sceneID, const int groupID, const std::string &propertyName, const DataList &valueArg, DataList &list) {
     DataList varObjectList;
     GetGroupObjectList(sceneID, groupID, varObjectList);
 
@@ -1313,7 +1313,7 @@ int KernelModule::GetObjectByProperty(const int sceneID, const int groupID, cons
     return list.GetCount();
 }
 
-bool KernelModule::ExistScene(const int sceneID) {
+bool WorldModule::ExistScene(const int sceneID) {
     std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (pSceneInfo) {
         return true;
@@ -1322,9 +1322,9 @@ bool KernelModule::ExistScene(const int sceneID) {
     return false;
 }
 
-bool KernelModule::ExistObject(const Guid &ident) { return ExistElement(ident); }
+bool WorldModule::ExistObject(const Guid &ident) { return ExistElement(ident); }
 
-bool KernelModule::ObjectReady(const Guid &ident) {
+bool WorldModule::ObjectReady(const Guid &ident) {
     auto gameObject = GetElement(ident);
     if (gameObject) {
         return gameObject->ObjectReady();
@@ -1333,7 +1333,7 @@ bool KernelModule::ObjectReady(const Guid &ident) {
     return false;
 }
 
-bool KernelModule::ExistObject(const Guid &ident, const int sceneID, const int groupID) {
+bool WorldModule::ExistObject(const Guid &ident, const int sceneID, const int groupID) {
     std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (!pSceneInfo) {
         return false;
@@ -1342,12 +1342,12 @@ bool KernelModule::ExistObject(const Guid &ident, const int sceneID, const int g
     return pSceneInfo->ExistObjectInGroup(groupID, ident);
 }
 
-bool KernelModule::DestroySelf(const Guid &self) {
+bool WorldModule::DestroySelf(const Guid &self) {
     mtDeleteSelfList.push_back(self);
     return true;
 }
 
-int KernelModule::OnRecordCommonEvent(const Guid &self, const RECORD_EVENT_DATA &eventData, const SquickData &oldVar, const SquickData &newVar) {
+int WorldModule::OnRecordCommonEvent(const Guid &self, const RECORD_EVENT_DATA &eventData, const SquickData &oldVar, const SquickData &newVar) {
     Performance performance;
 
     std::shared_ptr<IObject> xObject = GetElement(self);
@@ -1386,7 +1386,7 @@ int KernelModule::OnRecordCommonEvent(const Guid &self, const RECORD_EVENT_DATA 
     return 0;
 }
 
-int KernelModule::OnClassCommonEvent(const Guid &self, const std::string &className, const CLASS_OBJECT_EVENT classEvent, const DataList &var) {
+int WorldModule::OnClassCommonEvent(const Guid &self, const std::string &className, const CLASS_OBJECT_EVENT classEvent, const DataList &var) {
     Performance performance;
 
     std::list<CLASS_EVENT_FUNCTOR_PTR>::iterator it = mtCommonClassCallBackList.begin();
@@ -1409,22 +1409,22 @@ int KernelModule::OnClassCommonEvent(const Guid &self, const std::string &classN
     return 0;
 }
 
-bool KernelModule::RegisterCommonClassEvent(const CLASS_EVENT_FUNCTOR_PTR &cb) {
+bool WorldModule::RegisterCommonClassEvent(const CLASS_EVENT_FUNCTOR_PTR &cb) {
     mtCommonClassCallBackList.push_back(cb);
     return true;
 }
 
-bool KernelModule::RegisterCommonPropertyEvent(const PROPERTY_EVENT_FUNCTOR_PTR &cb) {
+bool WorldModule::RegisterCommonPropertyEvent(const PROPERTY_EVENT_FUNCTOR_PTR &cb) {
     mtCommonPropertyCallBackList.push_back(cb);
     return true;
 }
 
-bool KernelModule::RegisterCommonRecordEvent(const RECORD_EVENT_FUNCTOR_PTR &cb) {
+bool WorldModule::RegisterCommonRecordEvent(const RECORD_EVENT_FUNCTOR_PTR &cb) {
     mtCommonRecordCallBackList.push_back(cb);
     return true;
 }
 
-bool KernelModule::RegisterClassPropertyEvent(const std::string &className, const PROPERTY_EVENT_FUNCTOR_PTR &cb) {
+bool WorldModule::RegisterClassPropertyEvent(const std::string &className, const PROPERTY_EVENT_FUNCTOR_PTR &cb) {
     if (mtClassPropertyCallBackList.find(className) == mtClassPropertyCallBackList.end()) {
         std::list<PROPERTY_EVENT_FUNCTOR_PTR> xList;
         xList.push_back(cb);
@@ -1440,7 +1440,7 @@ bool KernelModule::RegisterClassPropertyEvent(const std::string &className, cons
     return false;
 }
 
-bool KernelModule::RegisterClassRecordEvent(const std::string &className, const RECORD_EVENT_FUNCTOR_PTR &cb) {
+bool WorldModule::RegisterClassRecordEvent(const std::string &className, const RECORD_EVENT_FUNCTOR_PTR &cb) {
     if (mtClassRecordCallBackList.find(className) == mtClassRecordCallBackList.end()) {
         std::list<RECORD_EVENT_FUNCTOR_PTR> xList;
         xList.push_back(cb);
@@ -1456,12 +1456,12 @@ bool KernelModule::RegisterClassRecordEvent(const std::string &className, const 
     return true;
 }
 
-bool KernelModule::LogSelfInfo(const Guid ident) { return false; }
+bool WorldModule::LogSelfInfo(const Guid ident) { return false; }
 
-bool KernelModule::AfterStart() {
+bool WorldModule::AfterStart() {
     std::shared_ptr<IClass> pClass = m_class_->First();
     while (pClass) {
-        IKernelModule::AddClassCallBack(pClass->GetClassName(), this, &KernelModule::OnClassCommonEvent);
+        IWorldModule::AddClassCallBack(pClass->GetClassName(), this, &WorldModule::OnClassCommonEvent);
 
         pClass = m_class_->Next();
     }
@@ -1469,7 +1469,7 @@ bool KernelModule::AfterStart() {
     return true;
 }
 
-bool KernelModule::DestroyAll() {
+bool WorldModule::DestroyAll() {
     std::shared_ptr<IObject> pObject = First();
     while (pObject) {
         mtDeleteSelfList.push_back(pObject->Self());
@@ -1484,7 +1484,7 @@ bool KernelModule::DestroyAll() {
     return true;
 }
 
-bool KernelModule::BeforeDestory() {
+bool WorldModule::BeforeDestroy() {
     DestroyAll();
 
     mvRandom.clear();
@@ -1498,7 +1498,7 @@ bool KernelModule::BeforeDestory() {
     return true;
 }
 
-int KernelModule::Random(int nStart, int nEnd) {
+int WorldModule::Random(int nStart, int nEnd) {
     if (++mxRandomItor == mvRandom.cend()) {
         mxRandomItor = mvRandom.cbegin();
     }
@@ -1506,7 +1506,7 @@ int KernelModule::Random(int nStart, int nEnd) {
     return static_cast<int>((nEnd - nStart) * *mxRandomItor) + nStart;
 }
 
-float KernelModule::Random() {
+float WorldModule::Random() {
     if (++mxRandomItor == mvRandom.cend()) {
         mxRandomItor = mvRandom.cbegin();
     }
@@ -1514,9 +1514,9 @@ float KernelModule::Random() {
     return *mxRandomItor;
 }
 
-bool KernelModule::AddClassCallBack(const std::string &className, const CLASS_EVENT_FUNCTOR_PTR &cb) { return m_class_->AddClassCallBack(className, cb); }
+bool WorldModule::AddClassCallBack(const std::string &className, const CLASS_EVENT_FUNCTOR_PTR &cb) { return m_class_->AddClassCallBack(className, cb); }
 
-void KernelModule::ProcessMemFree() {
+void WorldModule::ProcessMemFree() {
     if (nLastTime + 30 > pm_->GetNowTime()) {
         return;
     }
@@ -1534,6 +1534,6 @@ void KernelModule::ProcessMemFree() {
     // MallocExtension::instance()->ReleaseFreeMemory();
 }
 
-bool KernelModule::DoEvent(const Guid &self, const std::string &className, CLASS_OBJECT_EVENT eEvent, const DataList &valueList) {
+bool WorldModule::DoEvent(const Guid &self, const std::string &className, CLASS_OBJECT_EVENT eEvent, const DataList &valueList) {
     return m_class_->DoEvent(self, className, eEvent, valueList);
 }

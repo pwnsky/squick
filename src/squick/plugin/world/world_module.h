@@ -18,15 +18,15 @@
 #include "i_scene_module.h"
 
 
-class KernelModule : public IKernelModule, public MapEx<Guid, IObject> {
+class WorldModule : public IWorldModule, public MapEx<Guid, IObject> {
   public:
-    KernelModule(IPluginManager *p);
-    virtual ~KernelModule();
+    WorldModule(IPluginManager *p);
+    virtual ~WorldModule();
 
     virtual bool Start();
-    virtual bool Destory();
+    virtual bool Destroy();
 
-    virtual bool BeforeDestory();
+    virtual bool BeforeDestroy();
     virtual bool AfterStart();
 
     virtual bool Update();

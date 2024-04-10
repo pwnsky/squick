@@ -88,13 +88,13 @@ bool LogModule::Start() {
     return true;
 }
 
-bool LogModule::Destory() {
+bool LogModule::Destroy() {
     el::Helpers::uninstallPreRollOutCallback();
     logger_->flush();
     return true;
 }
 
-bool LogModule::BeforeDestory() { return true; }
+bool LogModule::BeforeDestroy() { return true; }
 
 bool LogModule::AfterStart() { return true; }
 

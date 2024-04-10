@@ -41,12 +41,12 @@ class LuaScriptModule : public ILuaScriptModule {
 
     virtual bool Awake();
     virtual bool Start();
-    virtual bool Destory();
+    virtual bool Destroy();
     virtual bool ReadyUpdate();
     virtual bool Update();
 
     virtual bool AfterStart();
-    virtual bool BeforeDestory();
+    virtual bool BeforeDestroy();
 
     virtual LuaIntf::LuaContext &GetLuaEnv();
 
@@ -181,7 +181,7 @@ class LuaScriptModule : public ILuaScriptModule {
 
   protected:
     IElementModule *m_element_;
-    IKernelModule *m_kernel_;
+    IWorldModule *m_world_;
     IClassModule *m_class_;
     IEventModule *m_event_;
     IScheduleModule *m_schedule_;

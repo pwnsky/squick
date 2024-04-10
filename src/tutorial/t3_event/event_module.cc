@@ -2,7 +2,7 @@
 #include <struct/struct.h>
 namespace tutorial {
     bool EventModule::Start() {
-        m_kernel_ = pm_->FindModule<IKernelModule>();
+        m_world_ = pm_->FindModule<IWorldModule>();
         m_element_ = pm_->FindModule<IElementModule>();
         m_event_ = pm_->FindModule<::IEventModule>();
         m_schedule_ = pm_->FindModule<IScheduleModule>();
@@ -13,8 +13,8 @@ namespace tutorial {
         std::cout << "OnEvent EventID: " << event << " self: " << self.nData64 << " argList: " << arg.Int(0) << " "
             << " " << arg.String(1) << std::endl;
 
-        m_kernel_->SetPropertyInt(self, "Hello", arg.Int(0));
-        m_kernel_->SetPropertyString(self, "Hello", arg.String(1));
+        m_world_->SetPropertyInt(self, "Hello", arg.Int(0));
+        m_world_->SetPropertyString(self, "Hello", arg.String(1));
         return 0;
     }
 
@@ -50,11 +50,11 @@ namespace tutorial {
 
     bool EventModule::AfterStart() {
         std::cout << "Hello, world3, AfterStart" << std::endl;
-        m_kernel_->CreateScene(1);
-        m_kernel_->AddClassCallBack(excel::Player::ThisName(), this, &EventModule::OnClassCallBackEvent);
+        m_world_->CreateScene(1);
+        m_world_->AddClassCallBack(excel::Player::ThisName(), this, &EventModule::OnClassCallBackEvent);
         m_schedule_->AddSchedule(Guid(), "OnHeartBe22222", this, &EventModule::OnHeartBeat, 6.0f, 10);
 
-        std::shared_ptr<IObject> pObject = m_kernel_->CreateObject(Guid(0, 10), 1, 0, excel::Player::ThisName(), "", DataList::Empty());
+        std::shared_ptr<IObject> pObject = m_world_->CreateObject(Guid(0, 10), 1, 0, excel::Player::ThisName(), "", DataList::Empty());
         if (!pObject) {
             return false;
         }

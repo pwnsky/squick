@@ -20,7 +20,7 @@ class GameplayManagerModule : public IGameplayManagerModule {
 
     virtual ~GameplayManagerModule(){};
     virtual bool Start();
-    virtual bool Destory();
+    virtual bool Destroy();
     virtual bool ReadyUpdate();
     virtual bool Update();
     virtual bool AfterStart();

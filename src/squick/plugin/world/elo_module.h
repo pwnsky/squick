@@ -8,7 +8,7 @@ class ELOModule : public IELOModule {
     virtual ~ELOModule(){};
 
     virtual bool Start() override;
-    virtual bool Destory() override;
+    virtual bool Destroy() override;
     virtual bool Update() override;
     virtual bool AfterStart() override;
 

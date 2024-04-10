@@ -18,7 +18,7 @@ class ServerModule : public IServerModule {
     ServerModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Start();
-    virtual bool Destory();
+    virtual bool Destroy();
     virtual bool Update();
     virtual bool AfterStart();
 

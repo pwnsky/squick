@@ -7,7 +7,7 @@
 namespace gameplay_manager::node {
 
 
-bool NodeModule::Destory() { return true; }
+bool NodeModule::Destroy() { return true; }
 
 bool NodeModule::AfterStart() {
     // PVP校验连接Key,校验成功后，之后的数据直接转发到Game服务器上

@@ -11,7 +11,7 @@ bool HttpModule::Start() {
     return true;
 }
 
-bool HttpModule::Destory() { return true; }
+bool HttpModule::Destroy() { return true; }
 
 bool HttpModule::AfterStart() {
     m_http_server_->AddMiddleware(this, &HttpModule::Middleware);

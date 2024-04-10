@@ -1,6 +1,4 @@
-
-#ifndef SQUICK_EXCEPTION_H
-#define SQUICK_EXCEPTION_H
+#pragma once
 
 #include <atomic>
 #include <chrono>
@@ -48,11 +46,9 @@ class Exception {
     static std::string FileName() {
         time_t now = time(0);
         tm *ltm = localtime(&now);
-
         std::stringstream ss;
+		ss << "../data/crash/";
         ss << std::setfill('0') << std::setw(4) << 1900 + ltm->tm_year << "-" << std::setw(2) << 1 + ltm->tm_mon << "-" << std::setw(2) << ltm->tm_mday;
-        ss << "-";
-        ss << std::setfill('0') << std::setw(2) << ltm->tm_hour << ":" << std::setw(2) << ltm->tm_min << ":" << std::setw(2) << ltm->tm_sec;
         ss << ".crash";
         return ss.str();
     }
@@ -61,10 +57,15 @@ class Exception {
     static void StackTrace(int sig) {
         std::ofstream outfile;
         outfile.open(FileName(), std::ios::app);
+        time_t now = time(0);
+        tm *ltm = localtime(&now);
 
         outfile << std::endl;
-        outfile << "******************************************************************************" << std::endl;
-        outfile << "crash sig:" << sig << std::endl;
+        outfile << "----------------------------------------------------------------------------------" << std::endl;
+        outfile << "Fatal Error: Crash Signal: " << sig << std::endl;
+        outfile << std::setfill('0') << std::setw(4) << 1900 + ltm->tm_year << "-" << std::setw(2) << 1 + ltm->tm_mon << "-" << std::setw(2) << ltm->tm_mday;
+		outfile << " " << std::setfill('0') << std::setw(2) << ltm->tm_hour << ":" << std::setw(2) << ltm->tm_min << ":" << std::setw(2) << ltm->tm_sec;
+		outfile << "Stack Traceback:" << std::endl;
 
         int size = 16;
         void *array[16];
@@ -76,6 +77,7 @@ class Exception {
             outfile << output << std::endl;
             std::cout << output << std::endl;
         }
+		outfile << std::endl;
 
         free(stacktrace);
         outfile.close();
@@ -199,4 +201,3 @@ int main()
         return 0;
 }
  */
-#endif

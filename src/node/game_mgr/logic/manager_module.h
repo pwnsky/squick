@@ -17,7 +17,7 @@ class ManagerModule : public IManagerModule {
     }
 
     virtual bool Start();
-    virtual bool Destory();
+    virtual bool Destroy();
 
     virtual bool AfterStart();
     virtual bool Update();

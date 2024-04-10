@@ -439,8 +439,8 @@ class NavigationModule : public INavigationModule {
 
     virtual bool Start();
     virtual bool AfterStart();
-    virtual bool BeforeDestory();
-    virtual bool Destory();
+    virtual bool BeforeDestroy();
+    virtual bool Destroy();
     virtual bool Update();
 
     std::shared_ptr<NFNavigationHandle> LoadNavigation(INT64 scendId, std::string resPath);

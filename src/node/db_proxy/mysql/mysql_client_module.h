@@ -8,7 +8,7 @@ class MysqlModule : public IMysqlModule {
     virtual bool Start();
     virtual bool AfterStart();
     virtual bool Update();
-    virtual bool Destory();
+    virtual bool Destroy();
 
     void Test();
     virtual bool Connect(std::string url) override;

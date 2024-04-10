@@ -17,12 +17,12 @@ bool ActorModule::Start() {
 
 bool ActorModule::AfterStart() { return true; }
 
-bool ActorModule::BeforeDestory() {
+bool ActorModule::BeforeDestroy() {
     mxActorMap.clear();
     return true;
 }
 
-bool ActorModule::Destory() { return true; }
+bool ActorModule::Destroy() { return true; }
 
 bool ActorModule::Update() {
     UpdateEvent();

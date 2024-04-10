@@ -17,8 +17,8 @@ class ActorModule : public IActorModule {
     virtual ~ActorModule();
     virtual bool Start();
     virtual bool AfterStart();
-    virtual bool BeforeDestory();
-    virtual bool Destory();
+    virtual bool BeforeDestroy();
+    virtual bool Destroy();
     virtual bool Update();
 
     virtual std::shared_ptr<IActor> CreateActor();
@@ -37,7 +37,7 @@ class ActorModule : public IActorModule {
   private:
     bool test = false;
     int64_t guid_index_ = 0;
-    //IKernelModule *m_kernel_;
+    //IWorldModule *m_world_;
     IThreadPoolModule *m_thread_pool_;
 
     std::map<Guid, std::shared_ptr<IActor>> mxActorMap;

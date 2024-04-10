@@ -17,8 +17,8 @@ class IMysqlModuleA : public IMysqlModule, public imodule::IMysqlModule {
     virtual bool Start() {
         return imodule::IMysqlModule::Start();;
     }
-    virtual bool Destory() {
-        return imodule::IMysqlModule::Destory();
+    virtual bool Destroy() {
+        return imodule::IMysqlModule::Destroy();
     }
     virtual bool ReadyUpdate() {
         return imodule::IMysqlModule::ReadyUpdate();

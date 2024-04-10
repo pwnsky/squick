@@ -10,6 +10,6 @@ bool NodeModule::AfterStart() {
 	AddNodesByType(node_types);
 	return true;
 }
-bool NodeModule::Destory() { return true; }
+bool NodeModule::Destroy() { return true; }
 
 } // namespace world::server

@@ -19,9 +19,9 @@ bool NetClientModule::Start() {
 
 bool NetClientModule::AfterStart() { return true; }
 
-bool NetClientModule::BeforeDestory() { return true; }
+bool NetClientModule::BeforeDestroy() { return true; }
 
-bool NetClientModule::Destory() { return true; }
+bool NetClientModule::Destroy() { return true; }
 
 bool NetClientModule::Update() {
     ProcessUpdate();

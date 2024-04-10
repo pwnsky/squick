@@ -12,7 +12,7 @@ bool LuaBindModule::Start() {
     return true;
 }
 
-bool LuaBindModule::Destory() { return true; }
+bool LuaBindModule::Destroy() { return true; }
 
 bool LuaBindModule::AfterStart() { return true; }
 

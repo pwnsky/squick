@@ -19,7 +19,7 @@ namespace imodule {
             m_log_ = pm_->FindModule<ILogModule>();
             return true;
         }
-        virtual bool Destory() override  {
+        virtual bool Destroy() override  {
             return true;
         }
         virtual bool ReadyUpdate() override {

@@ -44,3 +44,4 @@ build_squick() {
 time build_squick $@
 check_err
 log_info "All builded"
+print_ok

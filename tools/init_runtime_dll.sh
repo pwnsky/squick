@@ -6,6 +6,9 @@
 # Description: Build deploy files
 
 mkdir -p ../bin
+mkdir -p ../data/logs
+mkdir -p ../data/crash
+
 sys=`uname -s`
 if [ $sys == "Darwin" ];then
     echo "Mac runtime init"

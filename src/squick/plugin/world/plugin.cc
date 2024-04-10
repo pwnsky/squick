@@ -19,7 +19,7 @@ const std::string WorldPlugin::GetPluginName() { return GET_CLASS_NAME(WorldPlug
 
 void WorldPlugin::Install() {
     REGISTER_MODULE(pm_, ISceneModule, SceneModule)
-    REGISTER_MODULE(pm_, IKernelModule, KernelModule)
+    REGISTER_MODULE(pm_, IWorldModule, WorldModule)
     //REGISTER_MODULE(pm_, IEventModule, EventModule)
     //REGISTER_MODULE(pm_, IScheduleModule, ScheduleModule)
     REGISTER_MODULE(pm_, IDataTailModule, DataTailModule)
@@ -35,7 +35,7 @@ void WorldPlugin::Uninstall() {
     UNREGISTER_MODULE(pm_, ICellModule, CellModule)
     UNREGISTER_MODULE(pm_, IDataTailModule, DataTailModule)
     //UNREGISTER_MODULE(pm_, IEventModule, EventModule)
-    UNREGISTER_MODULE(pm_, IKernelModule, KernelModule)
+    UNREGISTER_MODULE(pm_, IWorldModule, WorldModule)
     UNREGISTER_MODULE(pm_, ISceneModule, SceneModule)
     //UNREGISTER_MODULE(pm_, IScheduleModule, ScheduleModule)
 }

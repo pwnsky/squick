@@ -13,7 +13,7 @@ bool NodeModule::AfterStart() {
     return true;
 }
 
-bool NodeModule::Destory() { return true; }
+bool NodeModule::Destroy() { return true; }
 
 
 void NodeModule::OnClientDisconnect(const socket_t sock) {}

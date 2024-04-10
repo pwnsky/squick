@@ -108,13 +108,13 @@ int main(int argc, char *argv[]) {
 #if PLATFORM != PLATFORM_WIN
     signal(SIGINT, SquickExit);
 #endif
-    SQUICK_PRINT("Squick Start");
     for (auto item : serverList) {
         item->SetBasicWareLoader(BasicPluginLoader);
         item->SetMidWareLoader(MidWareLoader);
         item->Start();
     }
 
+    SQUICK_PRINT("Squick has started!");
     uint64_t nIndex = 0;
     while (squick_loop_) {
         nIndex++;

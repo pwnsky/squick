@@ -54,9 +54,9 @@ class IPluginManager {
 
     virtual bool Update() { return true; }
 
-    virtual bool BeforeDestory() { return true; }
+    virtual bool BeforeDestroy() { return true; }
 
-    virtual bool Destory() { return true; }
+    virtual bool Destroy() { return true; }
 
     virtual bool Finalize() { return true; }
 

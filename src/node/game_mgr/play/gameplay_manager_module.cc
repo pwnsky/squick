@@ -17,7 +17,7 @@ bool GameplayManagerModule::AfterStart() { return true; }
 
 bool GameplayManagerModule::ReadyUpdate() { return true; }
 
-bool GameplayManagerModule::Destory() { return true; }
+bool GameplayManagerModule::Destroy() { return true; }
 
 bool GameplayManagerModule::Update() {
     static int64_t lastGameplayUpdate = SquickGetTimeMS();

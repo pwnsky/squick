@@ -21,7 +21,7 @@ namespace db_proxy::mongo {
         
         virtual bool AfterStart();
         virtual bool Update();
-        virtual bool Destory();
+        virtual bool Destroy();
         virtual bool Connect();
 
         void OnReqQuery(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);

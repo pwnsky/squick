@@ -17,7 +17,7 @@ class RobotManagerModule : public IRobotManagerModule {
 
     virtual ~RobotManagerModule(){};
     virtual bool Start();
-    virtual bool Destory();
+    virtual bool Destroy();
     virtual bool ReadyUpdate();
     virtual bool Update();
     virtual bool AfterStart();

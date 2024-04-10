@@ -9,7 +9,7 @@
 
 bool NavigationDataModule::Start() {
     m_net_ = pm_->FindModule<INetModule>();
-    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_world_ = pm_->FindModule<IWorldModule>();
     m_class_ = pm_->FindModule<IClassModule>();
     m_element_ = pm_->FindModule<IElementModule>();
     m_log_ = pm_->FindModule<ILogModule>();
@@ -131,7 +131,7 @@ bool NavigationDataModule::SetMapDataLayer(const int scene, const int group, con
     return false;
 }
 
-bool NavigationDataModule::Destory() { return true; }
+bool NavigationDataModule::Destroy() { return true; }
 
 bool NavigationDataModule::Update() { return true; }
 

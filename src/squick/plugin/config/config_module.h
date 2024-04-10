@@ -36,7 +36,7 @@ class ConfigModule : public ICommonConfigModule {
     virtual ~ConfigModule(){};
 
     virtual bool Start();
-    virtual bool Destory();
+    virtual bool Destroy();
     virtual bool Update();
     virtual bool AfterStart();
 

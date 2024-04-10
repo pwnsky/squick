@@ -10,6 +10,6 @@ bool NodeModule::AfterStart() {
     return true;
 }
 
-bool NodeModule::Destory() { return true; }
+bool NodeModule::Destroy() { return true; }
 
 } // namespace player::server

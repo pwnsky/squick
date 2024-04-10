@@ -69,8 +69,8 @@ class CellModule : public ICellModule {
 
     virtual bool Start();
     virtual bool AfterStart();
-    virtual bool BeforeDestory();
-    virtual bool Destory();
+    virtual bool BeforeDestroy();
+    virtual bool Destroy();
     virtual bool Update();
 
     virtual const bool CreateGroupCell(const int &sceneID, const int &groupID);
@@ -161,7 +161,7 @@ class CellModule : public ICellModule {
     std::vector<CELL_MOVE_EVENT_FUNCTOR_PTR> mMoveOutEventHandler;
 
   private:
-    IKernelModule *m_kernel_;
+    IWorldModule *m_world_;
     IClassModule *m_class_;
     ILogModule *m_log_;
     IElementModule *m_element_;

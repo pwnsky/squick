@@ -8,6 +8,8 @@ mkdir deploy\bin
 mkdir deploy\config
 mkdir deploy\src\proto
 mkdir deploy\src\lua
+mkdir deploy\data\logs
+mkdir deploy\data\crash
 
 xcopy /s /e /y bin deploy\bin
 echo d | xcopy /s /e /y script deploy\script

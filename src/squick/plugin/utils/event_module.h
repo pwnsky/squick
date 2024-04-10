@@ -17,8 +17,8 @@ class EventModule : public IEventModule {
 
     virtual bool Start();
     virtual bool AfterStart();
-    virtual bool BeforeDestory();
-    virtual bool Destory();
+    virtual bool BeforeDestroy();
+    virtual bool Destroy();
     virtual bool Update();
 
     virtual bool DoEvent(const int eventID, const DataList &valueList);
@@ -41,7 +41,7 @@ class EventModule : public IEventModule {
     virtual bool AddCommonEventCallBack(const OBJECT_EVENT_FUNCTOR cb);
 
   private:
-    //IKernelModule *m_kernel_;
+    //IWorldModule *m_world_;
 
   private:
     // for module

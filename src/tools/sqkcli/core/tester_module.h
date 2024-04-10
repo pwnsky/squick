@@ -22,7 +22,7 @@ class TesterModule : public ITesterModule {
 
     virtual bool Start();
     virtual bool AfterStart();
-    virtual bool Destory();
+    virtual bool Destroy();
     virtual bool Update();
 
   protected:

@@ -82,23 +82,23 @@ bool TestModule::Update() {
     return true;
 }
 
-bool TestModule::BeforeDestory() {
+bool TestModule::BeforeDestroy() {
     std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
         IModule *pTestModule = pm_->FindTestModule(pModule->name);
-        pTestModule->BeforeDestory();
+        pTestModule->BeforeDestroy();
     }
 
     return true;
 }
 
-bool TestModule::Destory() {
+bool TestModule::Destroy() {
     std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
         IModule *pTestModule = pm_->FindTestModule(pModule->name);
-        pTestModule->Destory();
+        pTestModule->Destroy();
     }
 
     return true;

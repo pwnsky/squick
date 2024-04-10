@@ -8,20 +8,20 @@
 #endif
 
 bool DataTailModule::Start() {
-    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_world_ = pm_->FindModule<IWorldModule>();
     m_element_ = pm_->FindModule<IElementModule>();
     m_class_ = pm_->FindModule<IClassModule>();
     m_log_ = pm_->FindModule<ILogModule>();
     return true;
 }
 
-bool DataTailModule::Destory() { return true; }
+bool DataTailModule::Destroy() { return true; }
 
 bool DataTailModule::Update() { return true; }
 
 bool DataTailModule::AfterStart() {
 #ifdef SQUICK_DEBUG_MODE
-    m_kernel_->AddClassCallBack(excel::Player::ThisName(), this, &DataTailModule::OnClassObjectEvent);
+    m_world_->AddClassCallBack(excel::Player::ThisName(), this, &DataTailModule::OnClassObjectEvent);
 #endif
     return true;
 }
@@ -78,7 +78,7 @@ int DataTailModule::OnClassObjectEvent(const Guid &self, const std::string &clas
 void DataTailModule::StartTrail(const Guid &self) { TrailObjectData(self); }
 
 void DataTailModule::LogObjectData(const Guid &self) {
-    std::shared_ptr<IObject> xObject = m_kernel_->GetObject(self);
+    std::shared_ptr<IObject> xObject = m_world_->GetObject(self);
     if (nullptr == xObject) {
         return;
     }
@@ -142,7 +142,7 @@ int DataTailModule::OnObjectPropertyEvent(const Guid &self, const std::string &p
 
 int DataTailModule::OnObjectRecordEvent(const Guid &self, const RECORD_EVENT_DATA &eventData, const SquickData &oldVar, const SquickData &newVar) {
     std::ostringstream stream;
-    std::shared_ptr<IRecord> xRecord = m_kernel_->FindRecord(self, eventData.recordName);
+    std::shared_ptr<IRecord> xRecord = m_world_->FindRecord(self, eventData.recordName);
     if (nullptr == xRecord) {
         return 0;
     }
@@ -199,7 +199,7 @@ int DataTailModule::OnObjectRecordEvent(const Guid &self, const RECORD_EVENT_DAT
 }
 
 int DataTailModule::TrailObjectData(const Guid &self) {
-    std::shared_ptr<IObject> xObject = m_kernel_->GetObject(self);
+    std::shared_ptr<IObject> xObject = m_world_->GetObject(self);
     if (nullptr == xObject) {
         return -1;
     }
@@ -208,7 +208,7 @@ int DataTailModule::TrailObjectData(const Guid &self) {
     if (nullptr != xPropertyManager) {
         std::shared_ptr<IProperty> xProperty = xPropertyManager->First();
         while (nullptr != xProperty) {
-            m_kernel_->AddPropertyCallBack(self, xProperty->GetKey(), this, &DataTailModule::OnObjectPropertyEvent);
+            m_world_->AddPropertyCallBack(self, xProperty->GetKey(), this, &DataTailModule::OnObjectPropertyEvent);
 
             xProperty = xPropertyManager->Next();
         }
@@ -218,7 +218,7 @@ int DataTailModule::TrailObjectData(const Guid &self) {
     if (nullptr != xRecordManager) {
         std::shared_ptr<IRecord> xRecord = xRecordManager->First();
         while (nullptr != xRecord) {
-            m_kernel_->AddRecordCallBack(self, xRecord->GetName(), this, &DataTailModule::OnObjectRecordEvent);
+            m_world_->AddRecordCallBack(self, xRecord->GetName(), this, &DataTailModule::OnObjectRecordEvent);
 
             xRecord = xRecordManager->Next();
         }
