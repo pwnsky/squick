@@ -37,7 +37,7 @@ class ActorModule : public IActorModule {
   private:
     bool test = false;
     int64_t guid_index_ = 0;
-    //IKernelModule *m_kernel_;
+    //IWorldModule *m_world_;
     IThreadPoolModule *m_thread_pool_;
 
     std::map<Guid, std::shared_ptr<IActor>> mxActorMap;

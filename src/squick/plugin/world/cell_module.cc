@@ -7,7 +7,7 @@ CellModule::CellModule(IPluginManager *p) { pm_ = p; }
 CellModule::~CellModule() {}
 
 bool CellModule::Start() {
-    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_world_ = pm_->FindModule<IWorldModule>();
     m_class_ = pm_->FindModule<IClassModule>();
     m_element_ = pm_->FindModule<IElementModule>();
     m_log_ = pm_->FindModule<ILogModule>();
@@ -17,7 +17,7 @@ bool CellModule::Start() {
 }
 
 bool CellModule::AfterStart() {
-    m_kernel_->AddClassCallBack(excel::Player::ThisName(), this, &CellModule::OnObjectEvent);
+    m_world_->AddClassCallBack(excel::Player::ThisName(), this, &CellModule::OnObjectEvent);
 
     // NF SYNC
     /*X
@@ -214,30 +214,30 @@ const Guid CellModule::OnObjectLeave(const Guid &self, const int &sceneID, const
 }
 
 bool CellModule::GetCellObjectList(const int sceneID, const int groupID, const Vector3 &pos, DataList &list, ECELL_AROUND around) {
-    return m_kernel_->GetGroupObjectList(sceneID, groupID, list);
+    return m_world_->GetGroupObjectList(sceneID, groupID, list);
 }
 
 bool CellModule::GetCellObjectList(const int sceneID, const int groupID, const Vector3 &pos, DataList &list, const Guid &noSelf, ECELL_AROUND around) {
-    return m_kernel_->GetGroupObjectList(sceneID, groupID, list, noSelf);
+    return m_world_->GetGroupObjectList(sceneID, groupID, list, noSelf);
 }
 
 bool CellModule::GetCellObjectList(const int sceneID, const int groupID, const Vector3 &pos, DataList &list, const bool bPlayer, ECELL_AROUND around) {
-    return m_kernel_->GetGroupObjectList(sceneID, groupID, list, bPlayer);
+    return m_world_->GetGroupObjectList(sceneID, groupID, list, bPlayer);
 }
 
 bool CellModule::GetCellObjectList(const int sceneID, const int groupID, const Vector3 &pos, DataList &list, const bool bPlayer, const Guid &noSelf,
                                    ECELL_AROUND around) {
-    return m_kernel_->GetGroupObjectList(sceneID, groupID, list, bPlayer, noSelf);
+    return m_world_->GetGroupObjectList(sceneID, groupID, list, bPlayer, noSelf);
 }
 
 bool CellModule::GetCellObjectList(const int sceneID, const int groupID, const Vector3 &pos, const std::string &className, DataList &list,
                                    ECELL_AROUND around) {
-    return m_kernel_->GetGroupObjectList(sceneID, groupID, className, list);
+    return m_world_->GetGroupObjectList(sceneID, groupID, className, list);
 }
 
 bool CellModule::GetCellObjectList(const int sceneID, const int groupID, const Vector3 &pos, const std::string &className, DataList &list, const Guid &noSelf,
                                    ECELL_AROUND around) {
-    return m_kernel_->GetGroupObjectList(sceneID, groupID, className, list, noSelf);
+    return m_world_->GetGroupObjectList(sceneID, groupID, className, list, noSelf);
 }
 
 const Guid CellModule::ComputeCellID(const int nX, const int nY, const int nZ) {
@@ -376,15 +376,15 @@ int CellModule::AddMoveOutEventCallBack(CELL_MOVE_EVENT_FUNCTOR_PTR functorPtr) 
 
 int CellModule::OnObjectEvent(const Guid &self, const std::string &classNames, const CLASS_OBJECT_EVENT classEvent, const DataList &var) {
     if (CLASS_OBJECT_EVENT::COE_CREATE_FINISH == classEvent) {
-        m_kernel_->AddPropertyCallBack(self, excel::IObject::Position(), this, &CellModule::OnPositionEvent);
+        m_world_->AddPropertyCallBack(self, excel::IObject::Position(), this, &CellModule::OnPositionEvent);
     }
 
     return 0;
 }
 
 int CellModule::OnPositionEvent(const Guid &self, const std::string &propertyName, const SquickData &oldVar, const SquickData &newVar, const INT64 reason) {
-    const int sceneID = m_kernel_->GetPropertyInt32(self, excel::IObject::SceneID());
-    const int groupID = m_kernel_->GetPropertyInt32(self, excel::IObject::GroupID());
+    const int sceneID = m_world_->GetPropertyInt32(self, excel::IObject::SceneID());
+    const int groupID = m_world_->GetPropertyInt32(self, excel::IObject::GroupID());
     const Vector3 &oldVec = oldVar.GetVector3();
     const Vector3 &newVec = newVar.GetVector3();
 

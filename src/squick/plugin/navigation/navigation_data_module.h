@@ -39,7 +39,7 @@ class NavigationDataModule : public INavigationDataModule {
 
     //////////////////////////////////////////////////////////////////////////
 
-    IKernelModule *m_kernel_;
+    IWorldModule *m_world_;
     IClassModule *m_class_;
     ILogModule *m_log_;
     IElementModule *m_element_;

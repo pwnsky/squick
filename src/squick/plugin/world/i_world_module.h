@@ -8,7 +8,7 @@
 #include <squick/core/i_object.h>
 #include <squick/plugin/config/export.h>
 #include <string>
-class IKernelModule : public IModule {
+class IWorldModule : public IModule {
 
   public:
     template <typename BaseType>

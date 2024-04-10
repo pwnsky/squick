@@ -32,7 +32,7 @@ class DataTailModule : public IDataTailModule {
     int OnObjectRecordEvent(const Guid &self, const RECORD_EVENT_DATA &eventData, const SquickData &oldVar, const SquickData &newVar);
 
   private:
-    IKernelModule *m_kernel_;
+    IWorldModule *m_world_;
     IElementModule *m_element_;
     IClassModule *m_class_;
     ILogModule *m_log_;

@@ -36,7 +36,7 @@
     }
 
 bool LuaScriptModule::Awake() {
-    m_kernel_ = pm_->FindModule<IKernelModule>();
+    m_world_ = pm_->FindModule<IWorldModule>();
     m_class_ = pm_->FindModule<IClassModule>();
     m_element_ = pm_->FindModule<IElementModule>();
     m_event_ = pm_->FindModule<IEventModule>();
@@ -105,16 +105,16 @@ LuaIntf::LuaContext &LuaScriptModule::GetLuaEnv() { return this->mLuaContext; }
 
 Guid LuaScriptModule::CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className, const std::string &objectIndex,
                                    const DataList &arg) {
-    std::shared_ptr<IObject> xObject = m_kernel_->CreateObject(self, sceneID, groupID, className, objectIndex, arg);
+    std::shared_ptr<IObject> xObject = m_world_->CreateObject(self, sceneID, groupID, className, objectIndex, arg);
     if (xObject) {
         return xObject->Self();
     }
     return Guid();
 }
 
-bool LuaScriptModule::ExistObject(const Guid &self) { return m_kernel_->ExistObject(self); }
+bool LuaScriptModule::ExistObject(const Guid &self) { return m_world_->ExistObject(self); }
 
-bool LuaScriptModule::DestroyObject(const Guid &self) { return m_kernel_->DestroyObject(self); }
+bool LuaScriptModule::DestroyObject(const Guid &self) { return m_world_->DestroyObject(self); }
 
 bool LuaScriptModule::EnterScene(const int sceneID, const int groupID) { return false; }
 
@@ -124,52 +124,52 @@ bool LuaScriptModule::DoEvent(const Guid &self, const int eventID, const DataLis
     return true;
 }
 
-bool LuaScriptModule::FindProperty(const Guid &self, const std::string &propertyName) { return m_kernel_->FindProperty(self, propertyName); }
+bool LuaScriptModule::FindProperty(const Guid &self, const std::string &propertyName) { return m_world_->FindProperty(self, propertyName); }
 
 bool LuaScriptModule::SetPropertyInt(const Guid &self, const std::string &propertyName, const INT64 propValue) {
-    return m_kernel_->SetPropertyInt(self, propertyName, propValue);
+    return m_world_->SetPropertyInt(self, propertyName, propValue);
 }
 
 bool LuaScriptModule::SetPropertyFloat(const Guid &self, const std::string &propertyName, const double propValue) {
-    return m_kernel_->SetPropertyFloat(self, propertyName, propValue);
+    return m_world_->SetPropertyFloat(self, propertyName, propValue);
 }
 
 bool LuaScriptModule::SetPropertyString(const Guid &self, const std::string &propertyName, const std::string &propValue) {
-    return m_kernel_->SetPropertyString(self, propertyName, propValue);
+    return m_world_->SetPropertyString(self, propertyName, propValue);
 }
 
 bool LuaScriptModule::SetPropertyObject(const Guid &self, const std::string &propertyName, const Guid &propValue) {
-    return m_kernel_->SetPropertyObject(self, propertyName, propValue);
+    return m_world_->SetPropertyObject(self, propertyName, propValue);
 }
 
 bool LuaScriptModule::SetPropertyVector2(const Guid &self, const std::string &propertyName, const Vector2 &propValue) {
-    return m_kernel_->SetPropertyVector2(self, propertyName, propValue);
+    return m_world_->SetPropertyVector2(self, propertyName, propValue);
 }
 
 bool LuaScriptModule::SetPropertyVector3(const Guid &self, const std::string &propertyName, const Vector3 &propValue) {
-    return m_kernel_->SetPropertyVector3(self, propertyName, propValue);
+    return m_world_->SetPropertyVector3(self, propertyName, propValue);
 }
 
-INT64 LuaScriptModule::GetPropertyInt(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyInt(self, propertyName); }
+INT64 LuaScriptModule::GetPropertyInt(const Guid &self, const std::string &propertyName) { return m_world_->GetPropertyInt(self, propertyName); }
 
-int LuaScriptModule::GetPropertyInt32(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyInt32(self, propertyName); }
+int LuaScriptModule::GetPropertyInt32(const Guid &self, const std::string &propertyName) { return m_world_->GetPropertyInt32(self, propertyName); }
 
-double LuaScriptModule::GetPropertyFloat(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyFloat(self, propertyName); }
+double LuaScriptModule::GetPropertyFloat(const Guid &self, const std::string &propertyName) { return m_world_->GetPropertyFloat(self, propertyName); }
 
-std::string LuaScriptModule::GetPropertyString(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyString(self, propertyName); }
+std::string LuaScriptModule::GetPropertyString(const Guid &self, const std::string &propertyName) { return m_world_->GetPropertyString(self, propertyName); }
 
-Guid LuaScriptModule::GetPropertyObject(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyObject(self, propertyName); }
+Guid LuaScriptModule::GetPropertyObject(const Guid &self, const std::string &propertyName) { return m_world_->GetPropertyObject(self, propertyName); }
 
-Vector2 LuaScriptModule::GetPropertyVector2(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyVector2(self, propertyName); }
+Vector2 LuaScriptModule::GetPropertyVector2(const Guid &self, const std::string &propertyName) { return m_world_->GetPropertyVector2(self, propertyName); }
 
-Vector3 LuaScriptModule::GetPropertyVector3(const Guid &self, const std::string &propertyName) { return m_kernel_->GetPropertyVector3(self, propertyName); }
+Vector3 LuaScriptModule::GetPropertyVector3(const Guid &self, const std::string &propertyName) { return m_world_->GetPropertyVector3(self, propertyName); }
 
 bool LuaScriptModule::AddClassCallBack(std::string &className, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
     auto callbackList = mxClassEventFuncMap.GetElement(className);
     if (!callbackList) {
         callbackList = new List<LuaCallBack>();
         mxClassEventFuncMap.AddElement(className, callbackList);
-        m_kernel_->AddClassCallBack(className, this, &LuaScriptModule::OnClassEventCB);
+        m_world_->AddClassCallBack(className, this, &LuaScriptModule::OnClassEventCB);
     }
 
     LuaCallBack callback = { luaTable };
@@ -210,7 +210,7 @@ void LuaScriptModule::OnScriptReload() {
 bool LuaScriptModule::AddPropertyCallBack(const Guid &self, std::string &propertyName, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
     LuaCallBack callback = { luaTable };
     if (AddLuaFuncToMap(mxLuaPropertyCallBackFuncMap, self, propertyName, callback)) {
-        m_kernel_->AddPropertyCallBack(self, propertyName, this, &LuaScriptModule::OnLuaPropertyCB);
+        m_world_->AddPropertyCallBack(self, propertyName, this, &LuaScriptModule::OnLuaPropertyCB);
     }
     return true;
 }
@@ -242,7 +242,7 @@ int LuaScriptModule::OnLuaPropertyCB(const Guid &self, const std::string &proper
 bool LuaScriptModule::AddRecordCallBack(const Guid &self, std::string &recordName, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
     LuaCallBack callback = { luaTable, luaFunc };
     if (AddLuaFuncToMap(mxLuaRecordCallBackFuncMap, self, recordName, callback)) {
-        m_kernel_->AddRecordCallBack(self, recordName, this, &LuaScriptModule::OnLuaRecordCB);
+        m_world_->AddRecordCallBack(self, recordName, this, &LuaScriptModule::OnLuaRecordCB);
     }
     return true;
 }
@@ -346,7 +346,7 @@ int LuaScriptModule::OnLuaHeartBeatCB(const Guid &self, const std::string &strHe
 }
 
 int LuaScriptModule::AddRow(const Guid &self, std::string &recordName, const DataList &var) {
-    std::shared_ptr<IRecord> pRecord = m_kernel_->FindRecord(self, recordName);
+    std::shared_ptr<IRecord> pRecord = m_world_->FindRecord(self, recordName);
     if (nullptr == pRecord) {
         return -1;
     }
@@ -355,7 +355,7 @@ int LuaScriptModule::AddRow(const Guid &self, std::string &recordName, const Dat
 }
 
 bool LuaScriptModule::RemRow(const Guid &self, std::string &recordName, const int row) {
-    std::shared_ptr<IRecord> pRecord = m_kernel_->FindRecord(self, recordName);
+    std::shared_ptr<IRecord> pRecord = m_world_->FindRecord(self, recordName);
     if (nullptr == pRecord) {
         return false;
     }
@@ -364,56 +364,56 @@ bool LuaScriptModule::RemRow(const Guid &self, std::string &recordName, const in
 }
 
 bool LuaScriptModule::SetRecordInt(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const INT64 value) {
-    return m_kernel_->SetRecordInt(self, recordName, row, colTag, value);
+    return m_world_->SetRecordInt(self, recordName, row, colTag, value);
 }
 
 bool LuaScriptModule::SetRecordFloat(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const double value) {
-    return m_kernel_->SetRecordFloat(self, recordName, row, colTag, value);
+    return m_world_->SetRecordFloat(self, recordName, row, colTag, value);
 }
 
 bool LuaScriptModule::SetRecordString(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const std::string &value) {
-    return m_kernel_->SetRecordString(self, recordName, row, colTag, value);
+    return m_world_->SetRecordString(self, recordName, row, colTag, value);
 }
 
 bool LuaScriptModule::SetRecordObject(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Guid &value) {
-    return m_kernel_->SetRecordObject(self, recordName, row, colTag, value);
+    return m_world_->SetRecordObject(self, recordName, row, colTag, value);
 }
 
 bool LuaScriptModule::SetRecordVector2(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Vector2 &value) {
-    return m_kernel_->SetRecordVector2(self, recordName, row, colTag, value);
+    return m_world_->SetRecordVector2(self, recordName, row, colTag, value);
 }
 
 bool LuaScriptModule::SetRecordVector3(const Guid &self, const std::string &recordName, const int row, const std::string &colTag, const Vector3 &value) {
-    return m_kernel_->SetRecordVector3(self, recordName, row, colTag, value);
+    return m_world_->SetRecordVector3(self, recordName, row, colTag, value);
 }
 
 INT64 LuaScriptModule::GetRecordInt(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    return m_kernel_->GetRecordInt(self, recordName, row, colTag);
+    return m_world_->GetRecordInt(self, recordName, row, colTag);
 }
 
 double LuaScriptModule::GetRecordFloat(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    return m_kernel_->GetRecordFloat(self, recordName, row, colTag);
+    return m_world_->GetRecordFloat(self, recordName, row, colTag);
 }
 
 std::string LuaScriptModule::GetRecordString(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    return m_kernel_->GetRecordString(self, recordName, row, colTag);
+    return m_world_->GetRecordString(self, recordName, row, colTag);
 }
 
 Guid LuaScriptModule::GetRecordObject(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    return m_kernel_->GetRecordObject(self, recordName, row, colTag);
+    return m_world_->GetRecordObject(self, recordName, row, colTag);
 }
 
 Vector2 LuaScriptModule::GetRecordVector2(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    return m_kernel_->GetRecordVector2(self, recordName, row, colTag);
+    return m_world_->GetRecordVector2(self, recordName, row, colTag);
 }
 
 Vector3 LuaScriptModule::GetRecordVector3(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
-    return m_kernel_->GetRecordVector3(self, recordName, row, colTag);
+    return m_world_->GetRecordVector3(self, recordName, row, colTag);
 }
 
 INT64 LuaScriptModule::GetNowTime() { return pm_->GetNowTime(); }
 
-Guid LuaScriptModule::CreateID() { return m_kernel_->CreateGUID(); }
+Guid LuaScriptModule::CreateID() { return m_world_->CreateGUID(); }
 
 int LuaScriptModule::AppID() { return pm_->GetAppID(); }
 

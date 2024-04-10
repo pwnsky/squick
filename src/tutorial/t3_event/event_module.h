@@ -28,7 +28,7 @@ class EventModule : public IEventModule {
     int64_t mLastTime;
 
   protected:
-    IKernelModule *m_kernel_;
+    IWorldModule *m_world_;
     IElementModule *m_element_;
     ::IEventModule *m_event_;
     IScheduleModule *m_schedule_;

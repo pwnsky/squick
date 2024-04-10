@@ -387,7 +387,7 @@ class SceneModule : public ISceneModule {
     std::vector<SCENE_EVENT_FUNCTOR_PTR> mvSceneGroupDestroyedCallback;
 
   private:
-    IKernelModule *m_kernel_;
+    IWorldModule *m_world_;
     IClassModule *m_class_;
     ILogModule *m_log_;
     IElementModule *m_element_;

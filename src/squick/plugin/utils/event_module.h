@@ -41,7 +41,7 @@ class EventModule : public IEventModule {
     virtual bool AddCommonEventCallBack(const OBJECT_EVENT_FUNCTOR cb);
 
   private:
-    //IKernelModule *m_kernel_;
+    //IWorldModule *m_world_;
 
   private:
     // for module

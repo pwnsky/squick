@@ -161,7 +161,7 @@ class CellModule : public ICellModule {
     std::vector<CELL_MOVE_EVENT_FUNCTOR_PTR> mMoveOutEventHandler;
 
   private:
-    IKernelModule *m_kernel_;
+    IWorldModule *m_world_;
     IClassModule *m_class_;
     ILogModule *m_log_;
     IElementModule *m_element_;
