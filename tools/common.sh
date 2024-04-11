@@ -5,8 +5,8 @@
 # Github: https://github.com/i0gan/Squick
 # Description: Bash script source file
 
-build_type="Release"
-#build_version="Debug"
+#build_type="Release"
+build_version="Debug"
 build_mode="dev"
 project_path=`pwd`/..
 build_path="$project_path/cache"
