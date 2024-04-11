@@ -24,10 +24,14 @@ enum ServerType {
     ST_PLAYER = 6,
     ST_GAME_MGR = 7, //
     ST_GAME = 8,     //
-    ST_MICRO = 9,  // 微服务
-    ST_CDN = 10,   // CDN
-    ST_ROBOT = 11, // 机器人: 模拟玩家
-    ST_MAX = 12,   // 最大服务类型
+    ST_MICRO = 9,   // Micro
+    ST_CDN = 10,    // CDN
+    ST_ROBOT = 11,  // Robot, AI
+    ST_GLOBAL = 12, // Global
+    ST_ROOM = 12,   // Room
+    ST_MATCH = 13,  // Match
+    ST_GM = 14,     // GM
+    ST_MAX = 15,
 };
 
 // 线程池 每一帧睡眠时间，单位毫秒

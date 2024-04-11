@@ -1,0 +1,6 @@
+set(ProjectName "match_node")
+file(GLOB soruces *.cc)
+file(GLOB headers *.h)
+add_library(${ProjectName} SHARED ${soruces} ${headers})
+LinkSquick(${ProjectName})
+SquickOut(${ProjectName} "node/match" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/match "node")
