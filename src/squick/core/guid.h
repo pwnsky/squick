@@ -1,31 +1,22 @@
-
-
-#ifndef SQUICK_IDENTID_H
-#define SQUICK_IDENTID_H
+#pragma once
 
 #include "platform.h"
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 
-class Guid {
-  private:
-    static INT64 nInstanceID;
-    static INT64 nGUIDIndex;
+static INT64 nGuidInstanceID;
+static INT64 nGUIDIndex;
 
+class Guid {
   public:
-    INT64 nData64;
+
     INT64 nHead64;
+    INT64 nData64;
+    
 
     static void SetInstanceID(INT64 id) {
-        /*
-        if (nInstanceID != 0)
-        {
-                std::cout << "ERROR-------------------- set instance id again!!!" << std::endl;
-                return;
-        }
-        */
-        nInstanceID = id;
+        nGuidInstanceID = id;
         nGUIDIndex = 0;
     }
 
@@ -62,7 +53,7 @@ class Guid {
         }
 
         Guid xID;
-        xID.nHead64 = nInstanceID;
+        xID.nHead64 = nGuidInstanceID;
         xID.nData64 = value;
 
         return xID;
@@ -128,8 +119,3 @@ class Guid {
         }
     }
 };
-/*
-INT64 Guid::nInstanceID = 0;
-INT64 Guid::nGUIDIndex = 0;
-*/
-#endif

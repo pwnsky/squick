@@ -1,11 +1,7 @@
 #pragma once
 
-#include <squick/plugin/net/i_net_module.h>
-
+#include <squick/core/base.h>
 namespace login::logic {
-
-class ILogicModule : public IModule {
-  public:
-};
+class ILogicModule : public IModule {};
 
 } // namespace login::logic

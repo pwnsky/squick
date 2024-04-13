@@ -37,9 +37,14 @@ bool LogicModule::AfterStart() {
     m_net_->AddReceiveCallBack(rpc::PlayerRPC::REQ_PLAYER_ENTER, this, &LogicModule::OnReqPlayerEnter);
     m_net_->AddReceiveCallBack(rpc::PlayerRPC::REQ_PLAYER_LEAVE, this, &LogicModule::OnReqPlayerLeave);
     m_net_->AddReceiveCallBack(rpc::TestRPC::REQ_TEST_PROXY, this, &LogicModule::OnReqTestProxy);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, this, &LogicModule::OnNAckMinWorkloadNodeInfo);
+    
     m_ws_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnectWithWS);
     m_ws_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
+    m_ws_->AddReceiveCallBack(rpc::PlayerRPC::REQ_PLAYER_ENTER, this, &LogicModule::OnReqPlayerEnter);
+    m_ws_->AddReceiveCallBack(rpc::PlayerRPC::REQ_PLAYER_LEAVE, this, &LogicModule::OnReqPlayerLeave);
+
+    // Master
+    m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, this, &LogicModule::OnNAckMinWorkloadNodeInfo);
 
     // Lobby
     m_net_client_->AddReceiveCallBack(ServerType::ST_PLAYER, this, &LogicModule::OnRecivedPlayerNodeMsg);
@@ -71,14 +76,16 @@ void LogicModule::OnNAckMinWorkloadNodeInfo(const socket_t sock, const int msg_i
 }
 
 void LogicModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-
+    
     auto pInfo = GetPlayerConnInfo(sock);
     if (pInfo == nullptr) {
+        LOG_WARN("No this player in socket: %v ", sock);
         return;
     }
 
     int player_node = GetLoadBanlanceNode(ST_PLAYER);
     if (player_node <= 0 || pInfo->player_node > 0) {
+        LOG_WARN("No player node find: %v ", player_node);
         return;
     }
 
@@ -91,9 +98,10 @@ void LogicModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const 
     req.set_login_node(pInfo->login_node);
     req.set_area(pm_->GetArea());
     req.set_proxy_sock(sock);
-    dout << "OnReqPlayerEnter: player_node: " << player_node << "\n";
     m_net_client_->SendPBByID(player_node, rpc::PlayerRPC::REQ_PLAYER_ENTER, req);
     pInfo->player_node = player_node;
+
+    LOG_INFO("ReqPlayerEnter get player node:  ", player_node);
     return;
 }
 
@@ -115,14 +123,14 @@ void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const 
 
     auto pInfo = GetPlayerConnInfoByUID(uid);
     if (pInfo != nullptr) {
-        m_log_->LogError("Uid: " + std::to_string(uid) + " has enter the game, do not try again");
+        LOG_ERROR("Uid: %v, %v", uid, " has enter the game, do not try again");
         return ;
     }
 
     pInfo = GetPlayerConnInfo(player_sock);
 
     if (pInfo == nullptr) {
-        m_log_->LogError("Uid: " + std::to_string(uid) + " no this socket: " + std::to_string(player_sock));
+        LOG_ERROR("Uid: %v no this socket: %v", uid, player_sock);
         return ;
     }
 
@@ -130,8 +138,16 @@ void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const 
     players_socks_[uid] = player_sock;
     pInfo->uid = uid;
     pInfo->status = PlayerOnline;
+    
+    LOG_INFO("Uid: %v has entered the game, sock<%v> account_id<%v> account<%v> protocol_type<%v>", 
+              uid, player_sock, pInfo->account_id.c_str(), pInfo->account.c_str(), (int)pInfo->protocol_type);
 
-    m_net_->SendMsgWithOutHead(rpc::PlayerRPC::ACK_PLAYER_ENTER, ack.SerializeAsString(), player_sock);
+    if (pInfo->protocol_type == ProtocolType::Tcp) {
+        m_net_->SendMsgWithOutHead(rpc::PlayerRPC::ACK_PLAYER_ENTER, ack.SerializeAsString(), player_sock);
+    } else if (pInfo->protocol_type == ProtocolType::WS) {
+        auto send = ack.SerializeAsString();
+        m_ws_->SendMsgWithOutHead(rpc::PlayerRPC::ACK_PLAYER_ENTER, send.data(), send.size(), player_sock);;
+    }
 }
 
 int LogicModule::GetLoadBanlanceNode(ServerType type) {

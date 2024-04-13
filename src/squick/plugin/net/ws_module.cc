@@ -534,8 +534,11 @@ std::error_code WSModule::DecodeFrame(const socket_t sock, NetObject *pNetObject
         const char *pbData = data + need;
         rpcHead xHead;
         int nMsgBodyLength = DeCode(pbData, reallen, xHead);
-        if (nMsgBodyLength > 0 && xHead.GetMsgID() > 0) {
+        if (nMsgBodyLength >= 0 && xHead.GetMsgID() > 0) {
             OnReceiveNetPack(sock, xHead.GetMsgID(), pbData + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH, nMsgBodyLength);
+        }
+        else {
+            LOG_ERROR("No this msg_id: %v", nMsgBodyLength);
         }
     } else if (fh.op == opcode::text) {
         const char *pbData = data + need;
