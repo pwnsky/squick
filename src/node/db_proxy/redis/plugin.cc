@@ -3,7 +3,6 @@
 namespace db_proxy::redis {
 
 SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){CREATE_PLUGIN(pm, Plugin)};
-
 SQUICK_EXPORT void SquickPluginUnload(IPluginManager *pm){DESTROY_PLUGIN(pm, Plugin)};
 
 const int Plugin::GetPluginVersion() { return 0; }

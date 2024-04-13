@@ -6,13 +6,15 @@ file(GLOB headers
 	*.h)
 
 add_library(${ProjectName} SHARED ${soruces} ${headers})
+
+add_definitions( -DELPP_EXPORT_SYMBOLS -DAUTO_INITIALIZE_EASYLOGGINGPP) # easylogging++ 使用
+
 if (APPLE)
 	
 elseif(UNIX)
 	target_link_libraries(${ProjectName} -ldl)
 else()
 	add_definitions( -DWIN_DLL_EXPORT=__declspec\(dllexport\) ) # memcout 导出
-	#add_definitions( -DELPP_EXPORT_SYMBOLS ) # easylogging++ 使用
 endif()
 
 SquickOut(${ProjectName} "squick" ${SQUICK_RUNTIME_LIB_PATH} ${ProjectName})

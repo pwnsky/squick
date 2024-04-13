@@ -1,18 +1,16 @@
-
-
 #include "plugin.h"
-#include "mysql_client_module.h"
+#include "mysql_module.h"
 
-SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){CREATE_PLUGIN(pm, MysqlPlugin)};
+namespace db_proxy::mysql {
+SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){CREATE_PLUGIN(pm, Plugin)};
+SQUICK_EXPORT void SquickPluginUnload(IPluginManager *pm){DESTROY_PLUGIN(pm, Plugin)};
 
-SQUICK_EXPORT void SquickPluginUnload(IPluginManager *pm){DESTROY_PLUGIN(pm, MysqlPlugin)};
+const int Plugin::GetPluginVersion() { return 0; }
 
-//////////////////////////////////////////////////////////////////////////
+const std::string Plugin::GetPluginName() { return GET_CLASS_NAME(Plugin); }
 
-const int MysqlPlugin::GetPluginVersion() { return 0; }
+void Plugin::Install() { REGISTER_MODULE(pm_, IMysqlModule, MysqlModule) }
 
-const std::string MysqlPlugin::GetPluginName() { return GET_CLASS_NAME(MysqlPlugin); }
+void Plugin::Uninstall() { UNREGISTER_MODULE(pm_, IMysqlModule, MysqlModule) }
 
-void MysqlPlugin::Install() { REGISTER_MODULE(pm_, IMysqlModule, MysqlModule) }
-
-void MysqlPlugin::Uninstall() { UNREGISTER_MODULE(pm_, IMysqlModule, MysqlModule) }
+} // namespace db_proxy::mysql

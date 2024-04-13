@@ -342,7 +342,7 @@ IModule *PluginManager::FindModule(const std::string &moduleName) {
     }
 
     if (this->GetCurrentModule()) {
-        std::cout << this->GetCurrentModule()->name << " want to find module: " << moduleName << " but got null_ptr!!!" << std::endl;
+        std::cout << this->GetCurrentModule()->name_ << " want to find module: " << moduleName << " but got null_ptr!!!" << std::endl;
     }
 
     return nullptr;

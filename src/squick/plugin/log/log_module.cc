@@ -8,7 +8,7 @@
 #include <stdarg.h>
 
 // Ref https://github.com/abumq/easyloggingpp;
-INITIALIZE_EASYLOGGINGPP
+//INITIALIZE_EASYLOGGINGPP
 
 unsigned int LogModule::idx = 0;
 
@@ -52,7 +52,7 @@ bool LogModule::Awake() {
     
     string conf_path = pm_->GetArg("logconf=", "");
     if (conf_path.empty()) {
-        conf_path = GetConfigPath(pm_->GetAppName());
+        conf_path = GetConfigPath(pm_->GetArg("type=", "default"));
     }
 
     el::Configurations conf(conf_path);
@@ -66,7 +66,7 @@ bool LogModule::Awake() {
     const std::string &fileName = pConfiguration->value();
     pConfiguration->setValue(pm_->GetWorkPath() + fileName);
 
-    int open_log = pm_->GetArg("logshow=", 0);
+    int open_log = pm_->GetArg("logshow=", 1);
     if (open_log) {
         conf.setGlobally(el::ConfigurationType::ToStandardOutput, "true");
     } else {
@@ -122,7 +122,6 @@ bool LogModule::Log(const SQUICK_LOG_LEVEL nll, const char *format, ...) {
     if (mLogHooker) {
         mLogHooker.get()->operator()(nll, mstrLocalStream);
     }
-
     switch (nll) {
     case ILogModule::NLL_DEBUG_NORMAL: {
         std::cout << termcolor::magenta;
@@ -373,3 +372,5 @@ bool LogModule::LogFatal(const Guid ident, const std::ostringstream &stream, con
 }
 
 void LogModule::SetHooker(LOG_HOOKER_FUNCTOR_PTR hooker) { mLogHooker = hooker; }
+
+el::Logger* LogModule::GetLogger() { return logger_; }

@@ -36,7 +36,7 @@ class IModule {
 
     virtual IPluginManager *GetPluginManager() const { return pm_; }
 
-    std::string name;
+    std::string name_;
     bool is_update_;
 
   protected:

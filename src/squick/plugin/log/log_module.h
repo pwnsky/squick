@@ -2,7 +2,7 @@
 
 #include "i_log_module.h"
 #include <squick/core/performance.h>
-#include "easylogging++.h"
+
 class LogModule : public ILogModule {
   public:
     LogModule(IPluginManager *p);
@@ -46,6 +46,8 @@ class LogModule : public ILogModule {
     virtual bool LogFatal(const Guid ident, const std::ostringstream &stream, const char *func = "", int line = 0);
 
     virtual void SetHooker(LOG_HOOKER_FUNCTOR_PTR hooker);
+    
+    virtual el::Logger* GetLogger() override;
 
   protected:
     virtual bool Log(const SQUICK_LOG_LEVEL nll, const char *format, ...);

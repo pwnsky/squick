@@ -7,16 +7,14 @@ bool TestModule::Awake() {
     char *c = new char[1];
     //::testing::GTEST_FLAG(output) = "xml:hello.xml";
     //::testing::StartGoogleTest(&argc, &c);
-    std::cout << "我已经运行了" << std::endl;
-    std::list<IModule *> xModules = pm_->Modules(); // 获取全部模块，
+    std::cout << "Running" << std::endl;
+    std::list<IModule *> xModules = pm_->Modules(); // Get all moduels
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pm_->FindTestModule(pModule->name);
-        //std::cout << "尝试查找：" << pModule->name << std::endl;
+        IModule *pTestModule = pm_->FindTestModule(pModule->name_);
         if (nullptr != pTestModule) {
             pTestModule->Awake();
         } else {
-            //std::cout << "查找模块出错，为空" << std::endl;
         }
     }
 
@@ -31,7 +29,7 @@ bool TestModule::Start() {
     std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pm_->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name_);
         //pTestModule->Start();
     }
 
@@ -42,7 +40,7 @@ bool TestModule::AfterStart() {
     std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pm_->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name_);
         pTestModule->AfterStart();
     }
 
@@ -53,7 +51,7 @@ bool TestModule::CheckConfig() {
     std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pm_->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name_);
         pTestModule->CheckConfig();
     }
 
@@ -64,7 +62,7 @@ bool TestModule::ReadyUpdate() {
     std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pm_->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name_);
         pTestModule->ReadyUpdate();
     }
 
@@ -75,7 +73,7 @@ bool TestModule::Update() {
     std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pm_->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name_);
         pTestModule->Update();
     }
 
@@ -86,7 +84,7 @@ bool TestModule::BeforeDestroy() {
     std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pm_->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name_);
         pTestModule->BeforeDestroy();
     }
 
@@ -97,7 +95,7 @@ bool TestModule::Destroy() {
     std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pm_->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name_);
         pTestModule->Destroy();
     }
 
@@ -108,7 +106,7 @@ bool TestModule::Finalize() {
     std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pm_->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name_);
         pTestModule->Finalize();
     }
 
@@ -119,7 +117,7 @@ bool TestModule::OnReloadPlugin() {
     std::list<IModule *> xModules = pm_->Modules();
     for (auto it : xModules) {
         IModule *pModule = it;
-        IModule *pTestModule = pm_->FindTestModule(pModule->name);
+        IModule *pTestModule = pm_->FindTestModule(pModule->name_);
         pTestModule->OnReloadPlugin();
     }
 
@@ -134,7 +132,7 @@ int TestModule::Factorial(int n) {
     return n * Factorial(n - 1);
 }
 
-// 测试用例
+// Test
 /*
 TEST(FactorialTest, HandlesPositiveInput) {
     EXPECT_EQ(1, this->Factorial(1));

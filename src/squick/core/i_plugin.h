@@ -16,7 +16,7 @@
     assert((TIsDerived<classBaseName, IModule>::Result));                                                                                                      \
     assert((TIsDerived<className, classBaseName>::Result));                                                                                                    \
     IModule *UNIQUE_NAME(pRegisterModule) = new className(pManager);                                                                                           \
-    UNIQUE_NAME(pRegisterModule)->name = (#classBaseName);                                                                                                     \
+    UNIQUE_NAME(pRegisterModule)->name_ = (#classBaseName);                                                                                                     \
     pManager->AddModule(typeid(classBaseName).name(), UNIQUE_NAME(pRegisterModule));                                                                           \
     this->AddElement(typeid(classBaseName).name(), UNIQUE_NAME(pRegisterModule));
 
@@ -69,7 +69,7 @@ class IPlugin : public IModule {
 
             bool bRet = pModule->Awake();
             if (!bRet) {
-                std::cout << pModule->name << std::endl;
+                std::cout << pModule->name_ << std::endl;
                 assert(0);
             }
         }
@@ -84,7 +84,7 @@ class IPlugin : public IModule {
             pm_->SetCurrentModule(pModule);
             bool bRet = pModule->Start();
             if (!bRet) {
-                std::cout << pModule->name << std::endl;
+                std::cout << pModule->name_ << std::endl;
                 assert(0);
             }
         }
@@ -99,7 +99,7 @@ class IPlugin : public IModule {
             pm_->SetCurrentModule(pModule);
             bool bRet = pModule->AfterStart();
             if (!bRet) {
-                std::cout << pModule->name << std::endl;
+                std::cout << pModule->name_ << std::endl;
                 assert(0);
             }
         }

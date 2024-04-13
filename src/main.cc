@@ -2,6 +2,13 @@
 #include <squick/core/base.h>
 #include <squick/core/plugin_server.h>
 #include <struct/struct.h>
+
+#if PLATFORM == PLATFORM_WIN
+#include <windows.h>
+#else
+#include <signal.h>
+#endif
+
 void BasicPluginLoader(IPluginManager *pm_) {
     // 可自行设定加载的插件
 }
@@ -81,6 +88,17 @@ void SquickExit(int sig) {
     squick_loop_ = false;
 }
 
+#if PLATFORM == PLATFORM_WIN
+BOOL WINAPI HandlerRoutine(DWORD ctrl_type) {
+    if (ctrl_type == CTRL_C_EVENT || ctrl_type == CTRL_CLOSE_EVENT || ctrl_type == CTRL_LOGOFF_EVENT || ctrl_type == CTRL_SHUTDOWN_EVENT) {
+        SquickExit(0);
+    } else {
+        std::cout << "The handler sig is not surpported: " << ctrl_type << std::endl;
+    }
+    return true;
+}
+#endif
+
 int main(int argc, char *argv[]) {
     // Force load struct.so
     void *libLoad = (void *)&rpc::_Vector3_default_instance_;
@@ -113,16 +131,21 @@ int main(int argc, char *argv[]) {
                 "       https_port   : The current node https port\n"
                 "       master_ip    : The master network ip for node connection\n"
                 "       master_port  : The master network port for node connection\n"
+                "       logshow      : Is open log output to stdout\n"
                 "Examples: ./squick type=master id=1 area=0 ip=127.0.0.1 port=10001 http_port=8888\n");
         "\n";
 #endif // DEBUG
     } else {
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList)));
     }
+    
 
-#if PLATFORM != PLATFORM_WIN
+#if PLATFORM == PLATFORM_WIN
+    SetConsoleCtrlHandler(HandlerRoutine, TRUE);
+#else
     signal(SIGINT, SquickExit);
 #endif
+
     for (auto item : serverList) {
         item->SetBasicWareLoader(BasicPluginLoader);
         item->SetMidWareLoader(MidWareLoader);

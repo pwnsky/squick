@@ -1,16 +1,15 @@
-#include <squick/core/i_plugin.h>
-#include <squick/core/i_plugin_manager.h>
+#pragma once
 
-//////////////////////////////////////////////////////////////////////////
-class MysqlPlugin : public IPlugin {
+#include <squick/core/base.h>
+
+namespace db_proxy::mysql {
+class Plugin : public IPlugin {
   public:
-    MysqlPlugin(IPluginManager *p) { pm_ = p; }
-
+    Plugin(IPluginManager *p) { pm_ = p; }
     virtual const int GetPluginVersion();
-
     virtual const std::string GetPluginName();
-
     virtual void Install();
-
     virtual void Uninstall();
 };
+
+} // namespace db_proxy::mysql

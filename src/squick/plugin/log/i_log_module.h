@@ -2,6 +2,21 @@
 #pragma once
 
 #include <squick/core/i_module.h>
+#include <squick/core/easylogging++.h>
+
+#ifdef SQUICK_DEV
+
+    #define LOG_INFO(format, ...)      m_log_->GetLogger()->info     ("[%v][%v:%v] [%v] " format, pm_->GetAppName(), __FUNCTION__, __LINE__, this->name_, __VA_ARGS__)
+    #define LOG_ERROR(format, ...)     m_log_->GetLogger()->error    ("[%v][%v:%v] [%v] " format, pm_->GetAppName(), __FUNCTION__, __LINE__, this->name_, __VA_ARGS__)
+    #define LOG_WARNNING(format, ...)  m_log_->GetLogger()->warnning ("[%v][%v:%v] [%v] " format, pm_->GetAppName(), __FUNCTION__, __LINE__, this->name_, __VA_ARGS__)
+    #define LOG_FATAL(format, ...)     m_log_->GetLogger()->fatal    ("[%v][%v:%v] [%v] " format, pm_->GetAppName(), __FUNCTION__, __LINE__, this->name_, __VA_ARGS__)
+
+#else
+    #define LOG_INFO(format, ...)      m_log_->GetLogger()->info     ("[%v] " format, this->name_, __VA_ARGS__)
+    #define LOG_ERROR(format, ...)     m_log_->GetLogger()->error    ("[%v] " format, this->name_, __VA_ARGS__)
+    #define LOG_WARNNING(format, ...)  m_log_->GetLogger()->warnning ("[%v] " format, this->name_, __VA_ARGS__)
+    #define LOG_FATAL(format, ...)     m_log_->GetLogger()->fatal    ("[%v] " format, this->name_, __VA_ARGS__)
+#endif
 
 class ILogModule : public IModule {
 
@@ -48,6 +63,8 @@ class ILogModule : public IModule {
         LOG_HOOKER_FUNCTOR_PTR functorPtr(new LOG_HOOKER_FUNCTOR(functor));
         return SetHooker(functorPtr);
     }
+
+    virtual el::Logger* GetLogger() = 0;
 
   protected:
     virtual void SetHooker(LOG_HOOKER_FUNCTOR_PTR hooker) = 0;
