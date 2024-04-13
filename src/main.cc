@@ -10,11 +10,11 @@
 #endif
 
 void BasicPluginLoader(IPluginManager *pm_) {
-    // 可自行设定加载的插件
+    // Load your basic plugins
 }
 
 void MidWareLoader(IPluginManager *pm_) {
-    // 可自行设定加载的中间件插件
+    // Load your midware plugins
 }
 
 void PrintLogo() {
@@ -102,7 +102,7 @@ BOOL WINAPI HandlerRoutine(DWORD ctrl_type) {
 int main(int argc, char *argv[]) {
     // Force load struct.so
     void *libLoad = (void *)&rpc::_Vector3_default_instance_;
-    std::vector<std::shared_ptr<PluginServer>> serverList; // 服务器列表
+    std::vector<std::shared_ptr<PluginServer>> serverList;
     std::string strArgvList;
     for (int i = 0; i < argc; i++) {
         strArgvList += " ";
@@ -119,19 +119,19 @@ int main(int argc, char *argv[]) {
 #else
         SQUICK_PRINT("<<  Squick  Help >>\n"
                 "Squick args usage:\n"
-                "       type: Set your plugin file to load and this is your server name, logger module will use it to log\n"
-                "       -d    : Run squick in background\n"
-                "       id    : Set your node id, using it to load server configure informations\n"
-                "       type  : node type to run\n"
-                "       area  : The current node area\n"
-                "       ip    : The current node network ip\n"
-                "       port  : The current node network port\n"
-                "       public_ip    : The current node network public ip\n"
-                "       http_port    : The current node http port\n"
-                "       https_port   : The current node https port\n"
-                "       master_ip    : The master network ip for node connection\n"
-                "       master_port  : The master network port for node connection\n"
-                "       logshow      : Is open log output to stdout\n"
+                "       type: Set your app type;                                    default: proxy\n"
+                "       -d    : Run squick in background                            default: not set\n"
+                "       id    : Set your node id;                                   default: id=1\n"
+                "       type  : node type to run                                    default: type=proxy\n"
+                "       area  : The current node area;                              default: area=0\n"
+                "       ip    : The current node network ip;                        default: ip=127.0.0.1\n"
+                "       port  : The current node network port;                      default: port=10002\n"
+                "       public_ip    : The current node network public ip;          default: public_ip=127.0.0.1\n"
+                "       http_port    : The current node http port;                  default: http_port=80\n"
+                "       https_port   : The current node https port;                 default: https_port=443\n"
+                "       master_ip    : The master network ip for node connection;   default: master_ip=127.0.0.1\n"
+                "       master_port  : The master network port for node connection; default: master_port=10001\n"
+                "       logshow      : Is open log output to stdout;                default: logshow=1\n"
                 "Examples: ./squick type=master id=1 area=0 ip=127.0.0.1 port=10001 http_port=8888\n");
         "\n";
 #endif // DEBUG
@@ -156,9 +156,12 @@ int main(int argc, char *argv[]) {
     uint64_t nIndex = 0;
     while (squick_loop_) {
         nIndex++;
-        std::this_thread::sleep_for(std::chrono::milliseconds(MAIN_THREAD_SLEEP_TIME));
+        SetSquickMainThreadSleep(true);
         for (auto item : serverList) {
             item->Update();
+        }
+        if (IsSquickMainThreadSleep()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(MAIN_THREAD_SLEEP_TIME));
         }
     }
 

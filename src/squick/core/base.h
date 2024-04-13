@@ -61,3 +61,6 @@ enum ServerType {
 #define SQUICK_PRINT(x) std::cout << termcolor::magenta << "SQUICK:" << x << termcolor::reset << std::endl;
 
 //#define SQUICK_PRINT SQUICK_DPRINT
+
+SQUICK_EXPORT void SetSquickMainThreadSleep(bool is_sleep);
+SQUICK_EXPORT bool IsSquickMainThreadSleep();

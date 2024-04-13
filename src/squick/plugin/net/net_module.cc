@@ -313,6 +313,8 @@ void NetModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const ch
                     m_log_->LogWarning(Guid(0, msg_id), os, __FUNCTION__, __LINE__);
             }
      */
+
+    SetSquickMainThreadSleep(false);
 }
 
 void NetModule::OnSocketNetEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
@@ -321,4 +323,5 @@ void NetModule::OnSocketNetEvent(const socket_t sock, const SQUICK_NET_EVENT eEv
         NET_EVENT_FUNCTOR *pFunc = pFunPtr.get();
         pFunc->operator()(sock, eEvent, pNet);
     }
+    SetSquickMainThreadSleep(false);
 }

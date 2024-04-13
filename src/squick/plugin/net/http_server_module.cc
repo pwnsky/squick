@@ -67,6 +67,7 @@ int HttpServerModule::StartServer(const unsigned short nPort) {
 }
 
 bool HttpServerModule::OnReceiveNetPack(std::shared_ptr<HttpRequest> req) {
+    
     if (req == nullptr) {
         return false;
     }
@@ -129,7 +130,7 @@ bool HttpServerModule::OnReceiveNetPack(std::shared_ptr<HttpRequest> req) {
         os << req->path;
         m_log_->LogWarning(Guid(), os, __FUNCTION__, __LINE__);
     }
-
+    SetSquickMainThreadSleep(false);
     return ResponseMsg(req, "", WebStatus::WEB_ERROR);
 }
 
