@@ -14,3 +14,4 @@ del /f /q /s excel.h
 
 cd ..\..\
 del /f /q /s lua\proto
+del /f /q /s lua\struct

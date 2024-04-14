@@ -50,7 +50,7 @@ int main(int argc, const char *argv[]) {
         fp.PrintData();
         fp.GenerateData();
         auto t2 = SquickGetTimeMS();
-        std::cout << "Timespan: " << (t2 - t1) << " ms" << std::endl;
+        std::cout << "Total costed time: " << (t2 - t1) << " ms" << std::endl;
     } else if (cmd == "init") {
         init::Init i;
         i.Exec();
@@ -72,6 +72,6 @@ int main(int argc, const char *argv[]) {
     } else {
         help();
     }
-
+    std::cout << "sqkctl exit 0\n";
     return 0;
 }

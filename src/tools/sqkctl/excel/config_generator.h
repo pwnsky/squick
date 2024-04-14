@@ -11,6 +11,7 @@
 #include "struct_generator.h"
 #include "third_party/common/lexical_cast.hpp"
 #include "ts_generator.h"
+#include "lua_generator.h"
 #include <squick/core/platform.h>
 
 namespace sqkctl {
