@@ -59,7 +59,7 @@ void LogicModule::NReqMinWorkloadNodeInfo() {
     rpc::NReqMinWorkloadNodeInfo pbreq;
     pbreq.add_type_list(ST_PLAYER);
     pbreq.add_type_list(ST_WORLD);
-    m_net_client_->SendPBByID(DEFAULT_NODE_MASTER_ID, rpc::NMasterRPC::NREQ_MIN_WORKLOAD_NODE_INFO, pbreq);
+    m_net_client_->SendPBByID(DEFAULT_MASTER_ID, rpc::NMasterRPC::NREQ_MIN_WORKLOAD_NODE_INFO, pbreq);
 
 }
 

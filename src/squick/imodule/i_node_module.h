@@ -9,13 +9,6 @@
 #include <squick/plugin/net/export.h>
 #include <struct/struct.h>
 
-#define DEFAULT_NODE_MASTER_ID 1
-#define DEFAULT_NODE_CPUT_COUNT 100
-#define DEFAULT_NODE_MAX_SERVER_CONNECTION 100000
-
-#define DEFAULT_NET_CLIENT_BUFFER_SIZE 1048576 // 1024 * 1024
-#define DEFAULT_NET_SERVER_BUFFER_SIZE 1048576 // 1024 * 1024
-
 class INodeBaseModule : public IModule {
   public:
     virtual bool Awake() final { return true; }
@@ -91,20 +84,20 @@ class INodeBaseModule : public IModule {
         m_net_->AddReceiveCallBack(this, &INodeBaseModule::InvalidMessage);
         m_net_->AddEventCallBack(this, &INodeBaseModule::OnServerSocketEvent);
 
-        node_info_.info->set_id(pm_->GetArg("id=", 0));
-        std::string name = pm_->GetArg("type=", "proxy") + pm_->GetArg("id=", "0");
+        node_info_.info->set_id(pm_->GetArg("id=", ARG_DEFAULT_ID));
         node_info_.info->set_type(pm_->GetAppType());
-        node_info_.info->set_port(pm_->GetArg("port=", 10000));
+        node_info_.info->set_port(pm_->GetArg("port=", ARG_DEFAULT_PORT));
 
-        node_info_.info->set_name(name);
-        node_info_.info->set_ip(pm_->GetArg("ip=", "127.0.0.1"));
-        node_info_.info->set_public_ip(pm_->GetArg("public_ip=", "127.0.0.1"));
+        node_info_.info->set_name(pm_->GetAppName());
+        node_info_.info->set_ip(pm_->GetArg("ip=", ARG_DEFAULT_IP));
+        node_info_.info->set_public_ip(pm_->GetArg("public_ip=", ARG_DEFAULT_PUBLIC_IP));
         node_info_.info->set_area(pm_->GetArea());
         node_info_.info->set_update_time(SquickGetTimeS());
-        node_info_.info->set_max_online(DEFAULT_NODE_MAX_SERVER_CONNECTION);
-        node_info_.info->set_cpu_count(DEFAULT_NODE_CPUT_COUNT);
+        node_info_.info->set_max_online(pm_->GetArg("max_conn=", ARG_DEFAULT_MAX_CONNECTION));
+        node_info_.info->set_cpu_count(pm_->GetArg("cpu_count=", ARG_DEFAULT_CPU_COUNT));
 
-        int nRet = m_net_->Listen(node_info_.info->max_online(), node_info_.info->port(), node_info_.info->cpu_count(), DEFAULT_NET_SERVER_BUFFER_SIZE);
+        int nRet = m_net_->Listen(node_info_.info->max_online(), node_info_.info->port(), node_info_.info->cpu_count(),
+                                  pm_->GetArg("net_server_buffer=", ARG_DEFAULT_NET_SERVER_BUFFER_SIZE));
         LOG_INFO("Node Listen at 0.0.0.0:%v Name :", node_info_.info->port(), node_info_.info->name());
 
         if (nRet < 0) {
@@ -124,13 +117,12 @@ class INodeBaseModule : public IModule {
         bool ret = false;
         node_info_.listen_types = types;
         ConnectData s;
-        s.id = DEFAULT_NODE_MASTER_ID;
+        s.id = DEFAULT_MASTER_ID;
         s.type = StringNodeTypeToEnum("master");
         s.ip = pm_->GetArg("master_ip=", "127.0.0.1");
         s.port = pm_->GetArg("master_port=", 10001);
         s.name = "master";
-        s.buffer_size = DEFAULT_NET_CLIENT_BUFFER_SIZE;
-
+        s.buffer_size = pm_->GetArg("net_client_buffer=", ARG_DEFAULT_NET_CLIENT_BUFFER_SIZE);
         LOG_INFO("Node Connect to %v %v:%v cur_area<%v>", s.name, s.ip, s.port, pm_->GetArg("area=", 0));
         m_net_client_->AddNode(s);
         return true;
@@ -179,7 +171,7 @@ class INodeBaseModule : public IModule {
             req.set_id(pm_->GetAppID());
             auto s = req.add_list();
             *s = *node_info_.info.get();
-            m_net_client_->SendPBByID(DEFAULT_NODE_MASTER_ID, rpc::NMasterRPC::NNTF_NODE_REPORT, req);
+            m_net_client_->SendPBByID(DEFAULT_MASTER_ID, rpc::NMasterRPC::NNTF_NODE_REPORT, req);
         }
     }
 
