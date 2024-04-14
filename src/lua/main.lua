@@ -68,8 +68,9 @@ function HotReload()
 end
 
 function Load() 
-    Require("common.init")
+    Require("struct.init")
     Require("proto.init")
+    Require("common.init")
     Require("lib.init")
     
     local node_init = {
@@ -78,7 +79,7 @@ function Load()
         end,
         [ServerType.ST_PLAYER] = function ()
             Require("node.player.init")
-            --Require("test.init")
+            Require("test.init")
         end
     }
     if(node_init[Env.app_type]) then

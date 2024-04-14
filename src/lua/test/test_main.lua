@@ -10,7 +10,7 @@ function Test:Start()
     -- 启动可以测试
 
     --Require("test.pb")
-    --Require("test.config")
+    Require("test.config")
     --Require("test.coroutine")
 end
 

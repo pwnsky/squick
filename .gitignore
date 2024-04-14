@@ -41,7 +41,7 @@
 /src/lua/config
 /src/lua/proto/code.lua
 /src/lua/proto/enum.lua
-/src/lua/struct/*.lua
+/src/lua/struct/excel.lua
 # Codeblocks
 *.layout
 *.depend

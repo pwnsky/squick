@@ -86,8 +86,8 @@ bool LuaScriptModule::ReadyUpdate() {
 // Lua热重载方式通过http接口来显示触发
 bool LuaScriptModule::Update() {
     // Update call per second
-    auto now = pm_->GetNowTime();
-    if (now - last_update_time_ > 0) {
+    auto now = SquickGetTimeMS();
+    if (now - last_update_time_ >= LUA_UPDATE_INTERVAL_TIME) {
         last_update_time_ = now;
         TRY_RUN_GLOBAL_SCRIPT_FUN0("Update");
     }
@@ -459,6 +459,9 @@ LuaIntf::LuaRef LuaScriptModule::GetConfig(const string& className) {
 LuaIntf::LuaRef LuaScriptModule::GetConfigByID(const string& id) {
 	LuaIntf::LuaRef ret = LuaIntf::LuaRef::createTable(mLuaContext);
 	auto m = m_element_->GetPropertyManager(id);
+    if (m == nullptr) {
+        return ret;
+    }
 	string key;
 	auto p = m->First(key);
 	while (p) {
