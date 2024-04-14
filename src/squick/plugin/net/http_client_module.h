@@ -31,9 +31,6 @@ class HttpClientModule : public IHttpClientModule {
 
     virtual Awaitable<HttpClientResponseData> CoGet(const std::string& strUri, const std::map<std::string, std::string>& xHeaders);
     virtual Awaitable<HttpClientResponseData> CoPost(const std::string& strUri, const std::map<std::string, std::string>& xHeaders, const std::string& strPostData, const std::string& strMemo = "");
-  private:
-
-    Guid GenRequestGUID();
 
   private:
     int request_guid_ = 0;

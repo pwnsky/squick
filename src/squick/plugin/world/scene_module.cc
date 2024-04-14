@@ -227,7 +227,7 @@ bool SceneModule::LeaveSceneGroup(const Guid &self) {
         return true;
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
+    LOG_WARN("There is no object<%v>", self.ToString());
 
     return false;
 }
@@ -967,7 +967,7 @@ bool SceneModule::SwitchScene(const Guid &self, const int nTargetSceneID, const 
         return true;
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
+    LOG_WARN("There is no object<%v>", self.ToString());
 
     return false;
 }

@@ -129,32 +129,17 @@ bool WSModule::Update() {
     return m_pNet->Update();
 }
 
-bool WSModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) {
-    rpc::MsgBase xMsg;
-    if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
-        std::ostringstream stream;
-        stream << " SendMsgPB Message to  " << sock;
-        stream << " Failed For Serialize of MsgData, MessageID " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
-
-        return false;
-    }
-
+bool WSModule::SendPBMsg(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) {
     std::string msg;
-    if (!xMsg.SerializeToString(&msg)) {
-        std::ostringstream stream;
-        stream << " SendMsgPB Message to  " << sock;
-        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
-
+    if (!xData.SerializeToString(&msg)) {
+        LOG_ERROR("SendPBMsg failed serialize to string, msg_id<%v>", msg_id);
         return false;
     }
-    SendMsgWithOutHead(msg_id, msg.c_str(), msg.length(), sock);
-
-    return true;
+    
+    return SendMsg(msg_id, msg.c_str(), msg.length(), sock);
 }
 
-bool WSModule::SendMsgWithOutHead(const int16_t msg_id, const char *msg, const size_t len, const socket_t sock /*= 0*/) {
+bool WSModule::SendMsg(const int16_t msg_id, const char *msg, const size_t len, const socket_t sock /*= 0*/) {
     std::string strOutData;
     int nAllLen = EnCode(msg_id, msg, len, strOutData);
     if (nAllLen == len + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
@@ -180,14 +165,14 @@ int WSModule::EnCode(const uint16_t umsg_id, const char *strData, const uint32_t
     return xHead.GetBodyLength() + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH;
 }
 
-bool WSModule::SendMsg(const std::string &msg, const socket_t sock, const bool text) {
+bool WSModule::SendData(const std::string &msg, const socket_t sock, const bool text) {
     auto frame = EncodeFrame(msg.data(), msg.size(), text);
     return SendRawMsg(frame, sock);
 }
 
-bool WSModule::SendMsgToAllClient(const std::string &msg, const bool text) {
+bool WSModule::SendDataToAllClient(const std::string &msg, const bool text) {
     auto frame = EncodeFrame(msg.data(), msg.size(), text);
-    bool bRet = m_pNet->SendMsgToAllClient(frame.c_str(), (uint32_t)frame.length());
+    bool bRet = m_pNet->SendDataToAllClient(frame.c_str(), (uint32_t)frame.length());
     if (!bRet) {
         std::ostringstream stream;
         stream << " SendMsgToAllClient failed";
@@ -226,7 +211,7 @@ void WSModule::OnError(const socket_t sock, const std::error_code &e) {
 }
 
 bool WSModule::SendRawMsg(const std::string &msg, const socket_t sock) {
-    bool bRet = m_pNet->SendMsg(msg.c_str(), (uint32_t)msg.length(), sock);
+    bool bRet = m_pNet->SendData(msg.c_str(), (uint32_t)msg.length(), sock);
     if (!bRet) {
         std::ostringstream stream;
         stream << " SendMsg failed fd " << sock;
@@ -280,7 +265,7 @@ void WSModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const cha
             }
         }
     } else {
-        m_log_->LogInfo("OnReceiveNetPack " + std::to_string(msg_id), __FUNCTION__, __LINE__);
+        LOG_INFO("OnReceiveNetPack msg_id<%v>", msg_id);
 #if PLATFORM != PLATFORM_WIN
         SQUICK_CRASH_TRY
 #endif

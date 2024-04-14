@@ -237,7 +237,7 @@ void LogicModule::OnConnectProxyVerify(const socket_t sock, const int msg_id, co
     if (iter == login_info_.end()) {
         LOG_ERROR("OnConnectProxyVerify: account_id<%v> is not find", req.account_id());
         ack.set_code(1);
-        m_net_->SendMsgPB(rpc::NLoginRPC::NACK_PROXY_CONNECT_VERIFY, ack, sock);
+        m_net_->SendPBToNode(rpc::NLoginRPC::NACK_PROXY_CONNECT_VERIFY, ack, sock);
         return;
     }
 
@@ -246,7 +246,7 @@ void LogicModule::OnConnectProxyVerify(const socket_t sock, const int msg_id, co
     ack.set_area_id(0);
     ack.set_account_id(req.account_id());
     ack.set_account(iter->second.account);
-    m_net_->SendMsgPB(rpc::NLoginRPC::NACK_PROXY_CONNECT_VERIFY, ack, sock);
+    m_net_->SendPBToNode(rpc::NLoginRPC::NACK_PROXY_CONNECT_VERIFY, ack, sock);
 }
 
 } // namespace login::logic

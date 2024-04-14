@@ -92,7 +92,7 @@ namespace db_proxy::mongo {
         }
         ack.set_code(code);
         ack.set_query_id(req.query_id());
-        m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_INSERT, ack, sock);
+        m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_INSERT, ack, sock);
     }
     // Ref: http://mongocxx.org/mongocxx-v3/tutorial/#specify-a-query-filter
     void MongoModule::OnReqFind(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -122,7 +122,7 @@ namespace db_proxy::mongo {
         }
         ack.set_code(code);
         ack.set_query_id(req.query_id());
-        m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_FIND, ack, sock);
+        m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_FIND, ack, sock);
     }
 
     void MongoModule::OnReqUpdate(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -149,7 +149,7 @@ namespace db_proxy::mongo {
         }
         ack.set_code(code);
         ack.set_query_id(req.query_id());
-        m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_UPDATE, ack, sock);
+        m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_UPDATE, ack, sock);
     }
 
     void MongoModule::OnReqDelete(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -173,7 +173,7 @@ namespace db_proxy::mongo {
         }
         ack.set_code(code);
         ack.set_query_id(req.query_id());
-        m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_DELETE, ack, sock);
+        m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_DELETE, ack, sock);
     }
 
     void MongoModule::OnReqCreateIndex(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -197,6 +197,6 @@ namespace db_proxy::mongo {
         }
         ack.set_code(code);
         ack.set_query_id(req.query_id());
-        m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_DELETE, ack, sock);
+        m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_DELETE, ack, sock);
     }
 }

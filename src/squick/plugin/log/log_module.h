@@ -16,11 +16,7 @@ class LogModule : public ILogModule {
     virtual bool AfterStart();
 
     virtual bool Update();
-
-    ///////////////////////////////////////////////////////////////////////
     virtual void LogStack();
-    virtual bool LogObject(const SQUICK_LOG_LEVEL nll, const Guid ident, const std::string &strDesc, const char *func = "", int line = 0);
-
     virtual bool LogDebug(const std::string &strLog, const char *func = "", int line = 0);
     virtual bool LogInfo(const std::string &strLog, const char *func = "", int line = 0);
     virtual bool LogWarning(const std::string &strLog, const char *func = "", int line = 0);

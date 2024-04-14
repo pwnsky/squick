@@ -26,24 +26,15 @@ void NodeModule::OnClientConnected(socket_t sock) {  }
 
 void NodeModule::OnClientDisconnected(socket_t sock) { m_logic_->OnClientDisconnected(sock); }
 
-void NodeModule::OnWebSocketClientEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet)
-{
-    if (eEvent & SQUICK_NET_EVENT_EOF)
-    {
-        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
+void NodeModule::OnWebSocketClientEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet) {
+    if (eEvent & SQUICK_NET_EVENT_EOF) {
         m_logic_->OnClientDisconnected(sock);
-    } else if (eEvent & SQUICK_NET_EVENT_ERROR)
-    {
-        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
+    } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
         m_logic_->OnClientDisconnected(sock);
-    } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT)
-    {
-        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
+    } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
         m_logic_->OnClientDisconnected(sock);
-    }else if (eEvent & SQUICK_NET_EVENT_CONNECTED)
-    {
-        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
+    } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
+        LOG_INFO("New websocket client connected, sock<%v>", sock);
     }
 }
-
 } // namespace proxy::server

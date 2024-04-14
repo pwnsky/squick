@@ -32,8 +32,6 @@ class ILogModule : public IModule {
     typedef std::function<void(const ILogModule::SQUICK_LOG_LEVEL, const std::string &)> LOG_HOOKER_FUNCTOR;
     typedef std::shared_ptr<LOG_HOOKER_FUNCTOR> LOG_HOOKER_FUNCTOR_PTR;
 
-    virtual bool LogObject(const SQUICK_LOG_LEVEL nll, const Guid ident, const std::string &strDesc, const char *func = "", int line = 0) = 0;
-
     virtual bool LogDebug(const std::string &strLog, const char *func = "", int line = 0) = 0;
     virtual bool LogInfo(const std::string &strLog, const char *func = "", int line = 0) = 0;
     virtual bool LogWarning(const std::string &strLog, const char *func = "", int line = 0) = 0;

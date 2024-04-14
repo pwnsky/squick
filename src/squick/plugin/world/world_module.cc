@@ -81,12 +81,12 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
 
     std::shared_ptr<SceneInfo> pContainerInfo = m_scene_->GetElement(sceneID);
     if (!pContainerInfo) {
-        m_log_->LogError(Guid(0, sceneID), "There is no scene " + std::to_string(sceneID), __FUNCTION__, __LINE__);
+        LOG_ERROR("There is no scene<%v>", sceneID);
         return pObject;
     }
 
     if (!pContainerInfo->GetElement(groupID)) {
-        m_log_->LogError("There is no group " + std::to_string(groupID), __FUNCTION__, __LINE__);
+        LOG_ERROR("There is no group<%v>", groupID);
         return pObject;
     }
 
@@ -101,7 +101,7 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
     }
 
     if (GetElement(ident)) {
-        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, ident, "The object has Exists", __FUNCTION__, __LINE__);
+        LOG_ERROR("The object<%v> has Exists", ident.ToString());
         return pObject;
     }
 
@@ -484,8 +484,7 @@ bool WorldModule::FindProperty(const Guid &self, const std::string &propertyName
         return pObject->FindProperty(propertyName);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
     return false;
 }
 
@@ -495,8 +494,7 @@ bool WorldModule::SetPropertyInt(const Guid &self, const std::string &propertyNa
         return pObject->SetPropertyInt(propertyName, nValue, reason);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
     return false;
 }
 
@@ -506,8 +504,7 @@ bool WorldModule::SetPropertyFloat(const Guid &self, const std::string &property
         return pObject->SetPropertyFloat(propertyName, dValue, reason);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
     return false;
 }
 
@@ -517,8 +514,7 @@ bool WorldModule::SetPropertyString(const Guid &self, const std::string &propert
         return pObject->SetPropertyString(propertyName, value, reason);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
     return false;
 }
 
@@ -528,8 +524,7 @@ bool WorldModule::SetPropertyObject(const Guid &self, const std::string &propert
         return pObject->SetPropertyObject(propertyName, objectValue, reason);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
     return false;
 }
 
@@ -539,8 +534,7 @@ bool WorldModule::SetPropertyVector2(const Guid &self, const std::string &proper
         return pObject->SetPropertyVector2(propertyName, value, reason);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no vector2", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
     return false;
 }
 
@@ -550,8 +544,7 @@ bool WorldModule::SetPropertyVector3(const Guid &self, const std::string &proper
         return pObject->SetPropertyVector3(propertyName, value, reason);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no vector3", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
     return false;
 }
 
@@ -561,8 +554,7 @@ INT64 WorldModule::GetPropertyInt(const Guid &self, const std::string &propertyN
         return pObject->GetPropertyInt(propertyName);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
     return NULL_INT;
 }
 
@@ -572,8 +564,7 @@ int WorldModule::GetPropertyInt32(const Guid &self, const std::string &propertyN
         return pObject->GetPropertyInt32(propertyName);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
     return (int)NULL_INT;
 }
 
@@ -583,8 +574,7 @@ double WorldModule::GetPropertyFloat(const Guid &self, const std::string &proper
         return pObject->GetPropertyFloat(propertyName);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
     return NULL_FLOAT;
 }
 
@@ -594,8 +584,7 @@ const std::string &WorldModule::GetPropertyString(const Guid &self, const std::s
         return pObject->GetPropertyString(propertyName);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
     return NULL_STR;
 }
 
@@ -605,8 +594,7 @@ const Guid &WorldModule::GetPropertyObject(const Guid &self, const std::string &
         return pObject->GetPropertyObject(propertyName);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
     return NULL_OBJECT;
 }
 
@@ -616,8 +604,7 @@ const Vector2 &WorldModule::GetPropertyVector2(const Guid &self, const std::stri
         return pObject->GetPropertyVector2(propertyName);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no vector2", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
     return NULL_VECTOR2;
 }
 
@@ -627,8 +614,7 @@ const Vector3 &WorldModule::GetPropertyVector3(const Guid &self, const std::stri
         return pObject->GetPropertyVector3(propertyName);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, propertyName + "| There is no vector3", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
     return NULL_VECTOR3;
 }
 
@@ -638,8 +624,7 @@ std::shared_ptr<IRecord> WorldModule::FindRecord(const Guid &self, const std::st
         return pObject->GetRecordManager()->GetElement(recordName);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     return nullptr;
 }
 
@@ -649,8 +634,7 @@ bool WorldModule::ClearRecord(const Guid &self, const std::string &recordName) {
         return pRecord->Clear();
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no record", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     return false;
 }
 
@@ -663,7 +647,7 @@ bool WorldModule::SetRecordInt(const Guid &self, const std::string &recordName, 
             return true;
         }
     } else {
-        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     }
 
     return false;
@@ -678,7 +662,7 @@ bool WorldModule::SetRecordInt(const Guid &self, const std::string &recordName, 
             return true;
         }
     } else {
-        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     }
 
     return false;
@@ -693,7 +677,7 @@ bool WorldModule::SetRecordFloat(const Guid &self, const std::string &recordName
             return true;
         }
     } else {
-        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     }
 
     return false;
@@ -708,7 +692,7 @@ bool WorldModule::SetRecordFloat(const Guid &self, const std::string &recordName
             return true;
         }
     } else {
-        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     }
 
     return false;
@@ -723,7 +707,7 @@ bool WorldModule::SetRecordString(const Guid &self, const std::string &recordNam
             return true;
         }
     } else {
-        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     }
 
     return false;
@@ -738,7 +722,7 @@ bool WorldModule::SetRecordString(const Guid &self, const std::string &recordNam
             return true;
         }
     } else {
-        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     }
 
     return false;
@@ -753,7 +737,7 @@ bool WorldModule::SetRecordObject(const Guid &self, const std::string &recordNam
             return true;
         }
     } else {
-        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     }
 
     return false;
@@ -768,7 +752,7 @@ bool WorldModule::SetRecordObject(const Guid &self, const std::string &recordNam
             return true;
         }
     } else {
-        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     }
 
     return false;
@@ -783,7 +767,7 @@ bool WorldModule::SetRecordVector2(const Guid &self, const std::string &recordNa
             return true;
         }
     } else {
-        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     }
 
     return false;
@@ -798,7 +782,7 @@ bool WorldModule::SetRecordVector2(const Guid &self, const std::string &recordNa
             return true;
         }
     } else {
-        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     }
 
     return false;
@@ -813,7 +797,7 @@ bool WorldModule::SetRecordVector3(const Guid &self, const std::string &recordNa
             return true;
         }
     } else {
-        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     }
 
     return false;
@@ -828,7 +812,7 @@ bool WorldModule::SetRecordVector3(const Guid &self, const std::string &recordNa
             return true;
         }
     } else {
-        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, recordName + "| There is no object", __FUNCTION__, __LINE__);
+        LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     }
 
     return false;
@@ -840,8 +824,7 @@ INT64 WorldModule::GetRecordInt(const Guid &self, const std::string &recordName,
         return pObject->GetRecordInt(recordName, row, col);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     return 0;
 }
 
@@ -851,8 +834,7 @@ INT64 WorldModule::GetRecordInt(const Guid &self, const std::string &recordName,
         return pObject->GetRecordInt(recordName, row, colTag);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     return 0;
 }
 
@@ -862,8 +844,7 @@ double WorldModule::GetRecordFloat(const Guid &self, const std::string &recordNa
         return pObject->GetRecordFloat(recordName, row, col);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     return 0.0;
 }
 
@@ -873,8 +854,7 @@ double WorldModule::GetRecordFloat(const Guid &self, const std::string &recordNa
         return pObject->GetRecordFloat(recordName, row, colTag);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     return 0.0;
 }
 
@@ -884,8 +864,7 @@ const std::string &WorldModule::GetRecordString(const Guid &self, const std::str
         return pObject->GetRecordString(recordName, row, col);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     return NULL_STR;
 }
 
@@ -895,8 +874,7 @@ const std::string &WorldModule::GetRecordString(const Guid &self, const std::str
         return pObject->GetRecordString(recordName, row, colTag);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     return NULL_STR;
 }
 
@@ -906,8 +884,7 @@ const Guid &WorldModule::GetRecordObject(const Guid &self, const std::string &re
         return pObject->GetRecordObject(recordName, row, col);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     return NULL_OBJECT;
 }
 
@@ -917,8 +894,7 @@ const Guid &WorldModule::GetRecordObject(const Guid &self, const std::string &re
         return pObject->GetRecordObject(recordName, row, colTag);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     return NULL_OBJECT;
 }
 
@@ -928,8 +904,7 @@ const Vector2 &WorldModule::GetRecordVector2(const Guid &self, const std::string
         return pObject->GetRecordVector2(recordName, row, col);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no vector2", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     return NULL_VECTOR2;
 }
 
@@ -939,8 +914,7 @@ const Vector2 &WorldModule::GetRecordVector2(const Guid &self, const std::string
         return pObject->GetRecordVector2(recordName, row, colTag);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no vector2", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     return NULL_VECTOR2;
 }
 
@@ -950,8 +924,7 @@ const Vector3 &WorldModule::GetRecordVector3(const Guid &self, const std::string
         return pObject->GetRecordVector3(recordName, row, col);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no vector3", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     return NULL_VECTOR3;
 }
 
@@ -961,8 +934,7 @@ const Vector3 &WorldModule::GetRecordVector3(const Guid &self, const std::string
         return pObject->GetRecordVector3(recordName, row, colTag);
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no vector3", __FUNCTION__, __LINE__);
-
+    LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
     return NULL_VECTOR3;
 }
 
@@ -1225,10 +1197,9 @@ bool WorldModule::LogInfo(const Guid ident) {
     if (pObject) {
         int sceneID = GetPropertyInt32(ident, excel::IObject::SceneID());
         int groupID = GetPropertyInt32(ident, excel::IObject::GroupID());
-
         m_log_->LogInfo(ident, "//----------child object list-------- SceneID = " + std::to_string(sceneID));
     } else {
-        m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, ident, "", __FUNCTION__, __LINE__);
+        LOG_ERROR("Guid<%v> There is no object", ident.ToString());
     }
 
     return true;

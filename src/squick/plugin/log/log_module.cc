@@ -58,13 +58,10 @@ bool LogModule::Awake() {
     el::Configurations conf(conf_path);
     el::Configuration *pConfiguration = conf.get(el::Level::Debug, el::ConfigurationType::Filename);
     if (pConfiguration == nullptr) {
-        std::cout << "Warnning: Use default log config, config/log/default.conf \n";
+        // Just make sure open correctly
+        SQUICK_PRINT("Warnning: Use default log config, config/log/default.conf");
         conf = el::Configurations(GetConfigPath("default"));
-        pConfiguration = conf.get(el::Level::Debug, el::ConfigurationType::Filename);
     }
-
-    const std::string &fileName = pConfiguration->value();
-    pConfiguration->setValue(pm_->GetWorkPath() + fileName);
 
     int open_log = pm_->GetArg("logshow=", 1);
     if (open_log) {
@@ -76,9 +73,6 @@ bool LogModule::Awake() {
     el::Helpers::installPreRollOutCallback(rolloutHandler);
     logger_ = el::Loggers::getLogger(pm_->GetAppName());
     logger_->configure(conf);
-
-    
-    //conf.set(el::Level::Error, el::ConfigurationType::ToFile, "true");
 
     return true;
 }
@@ -124,42 +118,32 @@ bool LogModule::Log(const SQUICK_LOG_LEVEL nll, const char *format, ...) {
     }
     switch (nll) {
     case ILogModule::NLL_DEBUG_NORMAL: {
-        std::cout << termcolor::magenta;
         logger_->debug("%v", mstrLocalStream.c_str());
     } break;
     case ILogModule::NLL_INFO_NORMAL: {
-        std::cout << termcolor::cyan;
         logger_->info("%v", mstrLocalStream.c_str());
     } break;
     case ILogModule::NLL_WARING_NORMAL: {
         std::cout << termcolor::yellow;
         logger_->warn("%v", mstrLocalStream.c_str());
+        std::cout << termcolor::reset;
     } break;
     case ILogModule::NLL_ERROR_NORMAL: {
         std::cout << termcolor::red;
         logger_->error("%v", mstrLocalStream.c_str());
-        LogStack();
+        std::cout << termcolor::reset;
     } break;
     case ILogModule::NLL_FATAL_NORMAL: {
         std::cout << termcolor::red;
         logger_->fatal("%v", mstrLocalStream.c_str());
         LogStack();
+        std::cout << termcolor::reset;
     } break;
     default: {
         std::cout << termcolor::white;
         logger_->info("%v", mstrLocalStream.c_str());
+        std::cout << termcolor::reset;
     } break;
-    }
-    std::cout << termcolor::reset;
-
-    return true;
-}
-
-bool LogModule::LogObject(const SQUICK_LOG_LEVEL nll, const Guid ident, const std::string &strDesc, const char *func, int line) {
-    if (line > 0) {
-        Log(nll, "[OBJECT] Indent[%s] %s %s %d", ident.ToString().c_str(), strDesc.c_str(), func, line);
-    } else {
-        Log(nll, "[OBJECT] Indent[%s] %s", ident.ToString().c_str(), strDesc.c_str());
     }
 
     return true;

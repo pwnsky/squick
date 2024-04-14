@@ -100,8 +100,8 @@ bool NetModule::Update() {
     return true;
 }
 
-bool NetModule::SendMsgWithOutHead(const int msg_id, const std::string &msg, const socket_t sock) {
-    bool bRet = m_pNet->SendMsgWithOutHead(msg_id, msg.c_str(), (uint32_t)msg.length(), sock);
+bool NetModule::SendMsg(const int msg_id, const std::string &msg, const socket_t sock) {
+    bool bRet = m_pNet->SendMsg(msg_id, msg.c_str(), (uint32_t)msg.length(), sock);
     if (!bRet) {
         std::ostringstream stream;
         stream << " SendMsgWithOutHead failed fd " << sock;
@@ -112,8 +112,8 @@ bool NetModule::SendMsgWithOutHead(const int msg_id, const std::string &msg, con
     return bRet;
 }
 
-bool NetModule::SendMsgToAllClientWithOutHead(const int msg_id, const std::string &msg) {
-    bool bRet = m_pNet->SendMsgToAllClientWithOutHead(msg_id, msg.c_str(), (uint32_t)msg.length());
+bool NetModule::SendMsgToAllClient(const int msg_id, const std::string &msg) {
+    bool bRet = m_pNet->SendMsgToAllClient(msg_id, msg.c_str(), (uint32_t)msg.length());
     if (!bRet) {
         std::ostringstream stream;
         stream << " SendMsgToAllClientWithOutHead failed";
@@ -124,7 +124,7 @@ bool NetModule::SendMsgToAllClientWithOutHead(const int msg_id, const std::strin
     return bRet;
 }
 
-bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const uint64_t uid, reqid_t req_id) {
+bool NetModule::SendPBToNode(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const uint64_t uid, reqid_t req_id) {
     rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
@@ -148,10 +148,10 @@ bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message
         return false;
     }
 
-    return SendMsgWithOutHead(msg_id, msg, sock);
+    return SendMsg(msg_id, msg, sock);
 }
 
-bool NetModule::SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const uint64_t uid, reqid_t req_id) {
+bool NetModule::SendToNode(const uint16_t msg_id, const std::string &xData, const socket_t sock, const uint64_t uid, reqid_t req_id) {
     rpc::MsgBase xMsg;
     xMsg.set_msg_data(xData.data(), xData.length());
     xMsg.set_uid(uid);
@@ -166,37 +166,10 @@ bool NetModule::SendMsg(const uint16_t msg_id, const std::string &xData, const s
 
         return false;
     }
-    return SendMsgWithOutHead(msg_id, msg, sock);
+    return SendMsg(msg_id, msg, sock);
 }
 
-bool NetModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) {
-    rpc::MsgBase xMsg;
-    xMsg.set_id(pm_->GetAppID());
-    if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
-        std::ostringstream stream;
-        stream << " SendMsgPB Message to  " << sock;
-        stream << " Failed For Serialize of MsgData, MessageID " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
-
-        return false;
-    }
-
-    std::string msg;
-    if (!xMsg.SerializeToString(&msg)) {
-        std::ostringstream stream;
-        stream << " SendMsgPB Message to  " << sock;
-        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
-
-        return false;
-    }
-
-    SendMsgWithOutHead(msg_id, msg, sock);
-
-    return true;
-}
-
-bool NetModule::SendMsgPBToAllClient(const uint16_t msg_id, const google::protobuf::Message &xData) {
+bool NetModule::SendPBToAllNodeClient(const uint16_t msg_id, const google::protobuf::Message &xData) {
     rpc::MsgBase xMsg;
     xMsg.set_id(pm_->GetAppID());
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
@@ -218,7 +191,7 @@ bool NetModule::SendMsgPBToAllClient(const uint16_t msg_id, const google::protob
         return false;
     }
 
-    return SendMsgToAllClientWithOutHead(msg_id, msg);
+    return SendMsgToAllClient(msg_id, msg);
 }
 
 INet *NetModule::GetNet() { return m_pNet; }
@@ -302,17 +275,11 @@ void NetModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const ch
 #if PLATFORM != PLATFORM_WIN
     SQUICK_CRASH_END
 #endif
-    /*
-            if (performance.CheckTimePoint(5))
-            {
-                    std::ostringstream os;
-                    os << "---------------net module performance problem------------------- ";
-                    os << performance.TimeScope();
-                    os << "---------- MsgID: ";
-                    os << msg_id;
-                    m_log_->LogWarning(Guid(0, msg_id), os, __FUNCTION__, __LINE__);
-            }
-     */
+
+    if (performance.CheckTimePoint(10))
+    {
+        LOG_WARN("Net handle time grate than %v, msg_id<%v>, cost time<%v>", 10, msg_id, performance.TimeScope());
+    }
 
     SetSquickMainThreadSleep(false);
 }

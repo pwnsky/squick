@@ -1,7 +1,4 @@
-
-
-#ifndef SQUICK_PERFORMANCE_H
-#define SQUICK_PERFORMANCE_H
+#pragma once
 
 #include <iostream>
 #include <time.h>
@@ -25,5 +22,3 @@ class Performance {
 
     int64_t TimeScope() { return SquickGetTimeMS() - time; }
 };
-
-#endif

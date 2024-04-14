@@ -63,7 +63,7 @@ void NodeModule::OnNReqNodeRegister(const socket_t sock, const int msg_id, const
         ack.set_code(0);
     } while (false);
 
-    m_net_->SendMsgPB(rpc::NMasterRPC::NACK_NODE_REGISTER, ack, sock);
+    m_net_->SendPBToNode(rpc::NMasterRPC::NACK_NODE_REGISTER, ack, sock);
 
     NtfSubscribNode(new_node_id);
 }
@@ -109,7 +109,7 @@ bool NodeModule::SendPBByID(const int node_id, const uint16_t msg_id, const goog
         m_log_->LogError("SendPBByID no this node id: " + to_string(node_id));
         return false;
     }
-    return m_net_->SendMsgPB(msg_id, pb, iter->second.fd);
+    return m_net_->SendPBToNode(msg_id, pb, iter->second.fd);
 }
 
 void NodeModule::OnNReqNodeUnregistered(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -180,7 +180,7 @@ void NodeModule::OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, co
         *p = *iter->second.info;
     }
     reqid_t req_id = msg_base.req_id();
-    m_net_->SendMsgPB(rpc::NMasterRPC::NACK_MIN_WORKLOAD_NODE_INFO, ack, sock, 0, req_id);
+    m_net_->SendPBToNode(rpc::NMasterRPC::NACK_MIN_WORKLOAD_NODE_INFO, ack, sock, 0, req_id);
 }
 
 int NodeModule::GetLoadBanlanceNode(ServerType type) {

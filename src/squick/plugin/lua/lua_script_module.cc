@@ -619,7 +619,7 @@ void LuaScriptModule::SendToAllServerByServerType(const ServerType server_type, 
 }
 
 void LuaScriptModule::SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, const uint64_t uid) {
-    m_net_->SendMsg(msg_id, data, fd, uid);
+    m_net_->SendToNode(msg_id, data, fd, uid);
 }
 
 void LuaScriptModule::LogInfo(const std::string &logData) { m_log_->LogInfo("LuaLog: " + logData); }
