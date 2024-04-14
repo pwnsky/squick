@@ -10,8 +10,8 @@
 #include <node/proxy/node/i_node_module.h>
 #include <vector>
 enum class ProtocolType {
-    Tcp,
-    WS,
+    Tcp = 1,
+    WS = 2,
 };
 
 enum Status {

@@ -4,10 +4,8 @@
 #include "node_module.h"
 
 namespace db_proxy::node {
-#ifdef SQUICK_DYNAMIC_PLUGIN
 SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){CREATE_PLUGIN(pm, Plugin)};
 SQUICK_EXPORT void SquickPluginUnload(IPluginManager *pm){DESTROY_PLUGIN(pm, Plugin)};
-#endif
 
 const int Plugin::GetPluginVersion() { return 0; }
 

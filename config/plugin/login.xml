@@ -5,7 +5,6 @@
 
 		<Plugin Name="node/login/node" />
 		<Plugin Name="node/login/logic" />
-		<Plugin Name="node/login/http" />
 	</Login>
 
 </XML>

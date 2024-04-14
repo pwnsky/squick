@@ -2,14 +2,7 @@
 #include "lua_pb_module.h"
 
 bool LuaPBModule::Awake() {
-    // mSourceTree.MapPath("", "../config");
-
-#ifdef SQUICK_DEV
     mSourceTree.MapPath("", "../src/proto");
-#else
-    mSourceTree.MapPath("", "../config/proto");
-#endif
-
     m_pImporter = new google::protobuf::compiler::Importer(&mSourceTree, &mErrorCollector);
     m_pFactory = new google::protobuf::DynamicMessageFactory();
 
@@ -48,7 +41,7 @@ bool LuaPBModule::ImportProtoFile(const std::string &strFile) {
     try {
         const google::protobuf::FileDescriptor *pDesc = m_pImporter->Import(strFile);
         if (!pDesc) {
-            m_log_->LogError("unknow protocol  file to import struct name: " + strFile);
+            LOG_ERROR("Unknow protobuf file to import struct name: %v", strFile);
         };
 
         ret = true;

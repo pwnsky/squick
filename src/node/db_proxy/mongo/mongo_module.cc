@@ -48,11 +48,7 @@ namespace db_proxy::mongo {
             std::cout <<url << endl;
             // Setup the connection and get a handle on the "admin" database.
             client_ = new client{ uri {url} };
-
-            string log;
-            log += "Mongo appname: ";
-            log += client_->start_session().client().uri().appname().value().data();
-            m_log_->LogInfo(log);
+            LOG_INFO("Mongo appname: %v ", client_->start_session().client().uri().appname().value().data());
         }
         catch (const std::exception& e) {
             // Handle errors.
@@ -92,7 +88,7 @@ namespace db_proxy::mongo {
         }
         ack.set_code(code);
         ack.set_query_id(req.query_id());
-        m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_INSERT, ack, sock);
+        m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_INSERT, ack, sock);
     }
     // Ref: http://mongocxx.org/mongocxx-v3/tutorial/#specify-a-query-filter
     void MongoModule::OnReqFind(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -122,7 +118,7 @@ namespace db_proxy::mongo {
         }
         ack.set_code(code);
         ack.set_query_id(req.query_id());
-        m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_FIND, ack, sock);
+        m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_FIND, ack, sock);
     }
 
     void MongoModule::OnReqUpdate(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -149,7 +145,7 @@ namespace db_proxy::mongo {
         }
         ack.set_code(code);
         ack.set_query_id(req.query_id());
-        m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_UPDATE, ack, sock);
+        m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_UPDATE, ack, sock);
     }
 
     void MongoModule::OnReqDelete(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -173,7 +169,7 @@ namespace db_proxy::mongo {
         }
         ack.set_code(code);
         ack.set_query_id(req.query_id());
-        m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_DELETE, ack, sock);
+        m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_DELETE, ack, sock);
     }
 
     void MongoModule::OnReqCreateIndex(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -197,6 +193,6 @@ namespace db_proxy::mongo {
         }
         ack.set_code(code);
         ack.set_query_id(req.query_id());
-        m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_MONGO_DELETE, ack, sock);
+        m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_DELETE, ack, sock);
     }
 }

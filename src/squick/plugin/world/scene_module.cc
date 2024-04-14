@@ -135,8 +135,7 @@ bool SceneModule::RequestEnterScene(const Guid &self, const int sceneID, const i
     const int nNowGroupID = m_world_->GetPropertyInt32(self, excel::Player::GroupID());
 
     if (nNowSceneID == sceneID && nNowGroupID == groupID) {
-        m_log_->LogInfo(self, "in same scene and group but it not a clone scene " + std::to_string(sceneID));
-
+        LOG_INFO("Guid<%v> in same scene and group but it not a clone scene<%v>, group_id<%v> ", self.ToString(), sceneID, groupID);
         return false;
     }
 
@@ -154,13 +153,12 @@ bool SceneModule::RequestEnterScene(const Guid &self, const int sceneID, const i
 
     int nEnterConditionCode = EnterSceneCondition(self, sceneID, groupID, type, argList);
     if (nEnterConditionCode != 0) {
-        m_log_->LogInfo(self, "before enter condition code: " + std::to_string(nEnterConditionCode), __FUNCTION__, __LINE__);
+        LOG_INFO("Guid<%v> before enter condition code: ", self.ToString(), nEnterConditionCode);
         return false;
     }
 
     if (!SwitchScene(self, sceneID, groupID, type, pos, 0.0f, argList)) {
-        m_log_->LogInfo(self, "SwitchScene failed " + std::to_string(sceneID));
-
+        LOG_INFO("Guid<%v> SwitchScene failed, scene_id<%v>, group_id<%v> ", self.ToString(), sceneID, groupID);
         return false;
     }
 
@@ -193,18 +191,19 @@ bool SceneModule::LeaveSceneGroup(const Guid &self) {
         int nOldSceneID = pObject->GetPropertyInt32(excel::Scene::SceneID());
         int nOldGroupID = pObject->GetPropertyInt32(excel::Scene::GroupID());
         if (nOldGroupID <= 0) {
+            //LOG_ERROR("Guid<%v> Group<%v> id is error", self.ToString(), nOldGroupID);
             // m_log_->LogError(self, "no this group == 0 " + std::to_string(nOldSceneID), __FUNCTION__, __LINE__);
             // return false;
         }
 
         std::shared_ptr<SceneInfo> pOldSceneInfo = this->GetElement(nOldSceneID);
         if (!pOldSceneInfo) {
-            m_log_->LogError(self, "no this container " + std::to_string(nOldSceneID), __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> no this scene<%v> ", self.ToString(), nOldSceneID);
             return false;
         }
 
         if (!pOldSceneInfo->GetElement(nOldGroupID)) {
-            m_log_->LogError(self, "no this group " + std::to_string(nOldGroupID), __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> no this group<%v> ", self.ToString(), nOldGroupID);
             return false;
         }
         /////////
@@ -227,7 +226,7 @@ bool SceneModule::LeaveSceneGroup(const Guid &self) {
         return true;
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
+    LOG_WARN("There is no object<%v>", self.ToString());
 
     return false;
 }
@@ -914,17 +913,17 @@ bool SceneModule::SwitchScene(const Guid &self, const int nTargetSceneID, const 
         std::shared_ptr<SceneInfo> pOldSceneInfo = this->GetElement(nOldSceneID);
         std::shared_ptr<SceneInfo> pNewSceneInfo = this->GetElement(nTargetSceneID);
         if (!pOldSceneInfo) {
-            m_log_->LogError(self, "no this container " + std::to_string(nOldSceneID), __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> no this scene<%v> ",self.ToString(), nOldSceneID);
             return false;
         }
 
         if (!pNewSceneInfo) {
-            m_log_->LogError(self, "no this container " + std::to_string(nTargetSceneID), __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> no this scene<%v> ", self.ToString(), nTargetSceneID);
             return false;
         }
 
         if (!pNewSceneInfo->GetElement(nTargetGroupID)) {
-            m_log_->LogError(self, "no this group " + std::to_string(nTargetGroupID), __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> no this group<%v> ", self.ToString(), nTargetGroupID);
             return false;
         }
         /////////
@@ -967,7 +966,7 @@ bool SceneModule::SwitchScene(const Guid &self, const int nTargetSceneID, const 
         return true;
     }
 
-    m_log_->LogObject(ILogModule::NLL_ERROR_NORMAL, self, "There is no object", __FUNCTION__, __LINE__);
+    LOG_WARN("There is no object<%v>", self.ToString());
 
     return false;
 }

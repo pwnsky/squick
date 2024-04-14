@@ -10,8 +10,11 @@ bool NodeModule::AfterStart() {
     Listen();
 
     node_info_.info->set_ws_port(pm_->GetArg("ws_port=", 10502));
-
-    m_ws_->Listen(DEFAULT_NODE_MAX_SERVER_CONNECTION, pm_->GetArg("ws_port=", 10502), DEFAULT_NODE_CPUT_COUNT, DEFAULT_NET_SERVER_BUFFER_SIZE);
+    
+    m_ws_->Listen(pm_->GetArg("max_conn=", ARG_DEFAULT_MAX_CONNECTION),
+        pm_->GetArg("ws_port=", ARG_DEFAULT_WS_PORT),
+        pm_->GetArg("cpu_count=", ARG_DEFAULT_CPU_COUNT),
+        pm_->GetArg("net_server_buffer=", ARG_DEFAULT_NET_SERVER_BUFFER_SIZE));
     m_ws_->AddEventCallBack(this, &NodeModule::OnWebSocketClientEvent);
 
     vector<int> node_types = { ServerType::ST_WORLD, ServerType::ST_LOGIN, ServerType::ST_PLAYER };
@@ -26,24 +29,15 @@ void NodeModule::OnClientConnected(socket_t sock) {  }
 
 void NodeModule::OnClientDisconnected(socket_t sock) { m_logic_->OnClientDisconnected(sock); }
 
-void NodeModule::OnWebSocketClientEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet)
-{
-    if (eEvent & SQUICK_NET_EVENT_EOF)
-    {
-        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
+void NodeModule::OnWebSocketClientEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet) {
+    if (eEvent & SQUICK_NET_EVENT_EOF) {
         m_logic_->OnClientDisconnected(sock);
-    } else if (eEvent & SQUICK_NET_EVENT_ERROR)
-    {
-        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
+    } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
         m_logic_->OnClientDisconnected(sock);
-    } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT)
-    {
-        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
+    } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
         m_logic_->OnClientDisconnected(sock);
-    }else if (eEvent & SQUICK_NET_EVENT_CONNECTED)
-    {
-        m_log_->LogInfo(Guid(0, sock), "websocket NF_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
+    } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
+        LOG_INFO("New websocket client connected, sock<%v>", sock);
     }
 }
-
 } // namespace proxy::server

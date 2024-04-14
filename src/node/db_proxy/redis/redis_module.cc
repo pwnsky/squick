@@ -57,7 +57,7 @@ namespace db_proxy::redis {
 		}
 		ack.set_code(code);
 		ack.set_query_id(req.query_id());
-		m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_REDIS_GET, ack, sock);
+		m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_REDIS_GET, ack, sock);
 	}
 
 	void RedisModule::OnReqRedisSet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -76,7 +76,7 @@ namespace db_proxy::redis {
 		}
 		ack.set_code(code);
 		ack.set_query_id(req.query_id());
-		m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_REDIS_SET, ack, sock);
+		m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_REDIS_SET, ack, sock);
 	}
 
 	void RedisModule::OnReqRedisHGet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -102,7 +102,7 @@ namespace db_proxy::redis {
 		
 		ack.set_code(code);
 		ack.set_query_id(req.query_id());
-		m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_REDIS_HGET, ack, sock);
+		m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_REDIS_HGET, ack, sock);
 	}
 
 	void RedisModule::OnReqRedisHSet(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -121,7 +121,7 @@ namespace db_proxy::redis {
 		}
 		ack.set_code(code);
 		ack.set_query_id(req.query_id());
-		m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_REDIS_HSET, ack, sock);
+		m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_REDIS_HSET, ack, sock);
 	}
 
 	void RedisModule::OnReqRedisHGetAll(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {

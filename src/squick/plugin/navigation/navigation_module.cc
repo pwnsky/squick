@@ -56,10 +56,7 @@ bool NavigationModule::RemoveNavigation(INT64 scendId) {
     std::unordered_map<INT64, std::shared_ptr<NFNavigationHandle>>::iterator iter = m_Navhandles.find(scendId);
     if (m_Navhandles.find(scendId) != m_Navhandles.end()) {
         m_Navhandles.erase(iter);
-
-        std::ostringstream strLog;
-        strLog << "Navigation::removeNavigation: (" << scendId << ") is destroyed!\n";
-        m_log_->LogInfo(strLog, __FUNCTION__, __LINE__);
+        LOG_INFO("Navigation::removeNavigation: (%v)  is destroyed!", scendId);
         return true;
     }
 

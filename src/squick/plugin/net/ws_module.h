@@ -24,10 +24,10 @@ class WSModule : public IWSModule {
 
     virtual bool Update();
 
-    virtual bool SendMsg(const std::string &msg, const socket_t sock, const bool text = true);
-    virtual bool SendMsgToAllClient(const std::string &msg, const bool text = true);
-    virtual bool SendMsgWithOutHead(const int16_t msg_id, const char *msg, const size_t len, const socket_t sock /*= 0*/);
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock);
+    virtual bool SendData(const std::string &msg, const socket_t sock, const bool text = true) override;
+    virtual bool SendDataToAllClient(const std::string &msg, const bool text = true) override;
+    virtual bool SendMsg(const int16_t msg_id, const char *msg, const size_t len, const socket_t sock /*= 0*/) override;
+    virtual bool SendPBMsg(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) override;
     int EnCode(const uint16_t umsg_id, const char *strData, const uint32_t unDataLen, std::string &strOutData);
     virtual INet *GetNet();
 
@@ -35,20 +35,15 @@ class WSModule : public IWSModule {
 
   protected:
     bool SendRawMsg(const std::string &msg, const socket_t sock);
-
     void OnReceiveNetPack(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-
     void OnSocketNetEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
-
     void KeepAlive();
 
     std::error_code HandShake(const socket_t sock, const char *msg, const uint32_t len);
-
     std::error_code DecodeFrame(const socket_t sock, NetObject *pNetObject);
     int DeCode(const char *strData, const uint32_t unAllLen, rpcHead &xHead);
 
     std::string EncodeFrame(const char *data, size_t size, bool text);
-
     std::string HashKey(const char *key, size_t len);
 
   private:

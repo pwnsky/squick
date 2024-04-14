@@ -9,11 +9,6 @@
 #include <squick/core/queue.h>
 #include <squick/plugin/log/i_log_module.h>
 #include <struct/struct.h>
-#ifdef _MSC_VER
-#pragma warning(disable : 4244 4267)
-#endif
-
-////////////////////////////////////////////////////////////////////////////
 
 class IWSModule : public IModule {
   public:
@@ -49,18 +44,17 @@ class IWSModule : public IModule {
     virtual int Listen(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount, const uint32_t expand_buffer_size) = 0;
 
     virtual void RemoveReceiveCallBack(const int msg_id) = 0;
-
     virtual bool AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb) = 0;
-
     virtual bool AddReceiveCallBack(const NET_RECEIVE_FUNCTOR_PTR &cb) = 0;
-
     virtual bool AddEventCallBack(const NET_EVENT_FUNCTOR_PTR &cb) = 0;
 
     virtual bool Update() = 0;
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) = 0;
-    virtual bool SendMsg(const std::string &msg, const socket_t sock, const bool text = true) = 0;
-    virtual bool SendMsgToAllClient(const std::string &msg, const bool text = true) = 0;
-    virtual bool SendMsgWithOutHead(const int16_t msg_id, const char* msg, const size_t len, const socket_t sock) = 0;
+
+    virtual bool SendData(const std::string& msg, const socket_t sock, const bool text = true) = 0;
+    virtual bool SendDataToAllClient(const std::string& msg, const bool text = true) = 0;
+
+    virtual bool SendMsg(const int16_t msg_id, const char* msg, const size_t len, const socket_t sock) = 0;
+    virtual bool SendPBMsg(const uint16_t msg_id, const google::protobuf::Message& xData, const socket_t sock) = 0;
 
     virtual INet *GetNet() = 0;
 };

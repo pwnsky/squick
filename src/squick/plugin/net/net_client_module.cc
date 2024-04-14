@@ -98,19 +98,14 @@ bool NetClientModule::SendByID(const int serverID, const uint16_t msg_id, const 
     if (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule.get()) {
-            if (!pNetModule->SendMsg(msg_id, strData, 0, uid, req_id)) {
-                std::ostringstream stream;
-                stream << " SendMsgWithOutHead failed " << serverID;
-                stream << " msg id " << msg_id;
-                m_log_->LogError(stream, __FUNCTION__, __LINE__);
+            // If sock is 0, that it just working on net client
+            if (!pNetModule->SendToNode(msg_id, strData, 0, uid, req_id)) {
+                LOG_ERROR("SendToNode failed, node_id<%v> msg_id<%v> ", pServer->id, msg_id);
                 return false;
             }
         }
     } else {
-        std::ostringstream stream;
-        stream << " can't find the server " << serverID;
-        stream << " msg id " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
+        LOG_ERROR("Can't find the node_id<%v>, msg_id<%v>", serverID, msg_id);
         return false;
     }
     return true;
@@ -121,11 +116,8 @@ void NetClientModule::SendToAllNode(const uint16_t msg_id, const std::string &st
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule) {
-            if (!pNetModule->SendMsg(msg_id, strData, 0, uid)) {
-                std::ostringstream stream;
-                stream << " SendMsgWithOutHead failed " << pServer->id;
-                stream << " msg id " << msg_id;
-                m_log_->LogError(stream, __FUNCTION__, __LINE__);
+            if (!pNetModule->SendToNode(msg_id, strData, 0, uid)) {
+                LOG_ERROR("SendToNode failed, node_id<%v> msg_id<%v> ", pServer->id, msg_id);
             }
         }
 
@@ -138,11 +130,8 @@ void NetClientModule::SendToAllNodeByType(const ServerType eType, const uint16_t
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule && eType == pServer->type) {
-            if (!pNetModule->SendMsg(msg_id, strData, 0, uid)) {
-                std::ostringstream stream;
-                stream << " SendMsgWithOutHead failed " << pServer->id;
-                stream << " msg id " << msg_id;
-                m_log_->LogError(stream, __FUNCTION__, __LINE__);
+            if (!pNetModule->SendToNode(msg_id, strData, 0, uid)) {
+                LOG_ERROR("SendToNode failed, node_id<%v> msg_id<%v> ", pServer->id, msg_id);
             }
         }
 
@@ -155,19 +144,13 @@ bool NetClientModule::SendPBByID(const int serverID, const uint16_t msg_id, cons
     if (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule) {
-            if (!pNetModule->SendMsgPB(msg_id, xData, 0, uid, req_id)) {
-                std::ostringstream stream;
-                stream << " SendMsgPB failed " << pServer->id;
-                stream << " msg id " << msg_id;
-                m_log_->LogError(stream, __FUNCTION__, __LINE__);
+            if (!pNetModule->SendPBToNode(msg_id, xData, 0, uid, req_id)) {
+                LOG_ERROR("SendPBToNode failed, node_id<%v> msg_id<%v> ", pServer->id, msg_id);
                 return false;
             }
         }
     } else {
-        std::ostringstream stream;
-        stream << " can't find the server " << serverID;
-        stream << " msg id " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
+        LOG_ERROR("Can't find the node_id<%v>, msg_id<%v>", serverID, msg_id);
         return false;
     }
     return true;
@@ -178,11 +161,8 @@ void NetClientModule::SendPBToAllNode(const uint16_t msg_id, const google::proto
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule) {
-            if (!pNetModule->SendMsgPB(msg_id, xData, 0, uid)) {
-                std::ostringstream stream;
-                stream << " SendMsgPB failed " << pServer->id;
-                stream << " msg id " << msg_id;
-                m_log_->LogError(stream, __FUNCTION__, __LINE__);
+            if (!pNetModule->SendPBToNode(msg_id, xData, 0, uid)) {
+                LOG_ERROR("SendPBToNode failed, node_id<%v> msg_id<%v> ", pServer->id, msg_id);
             }
         }
 
@@ -195,11 +175,8 @@ void NetClientModule::SendPBToAllNodeByType(const ServerType eType, const uint16
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
         if (pNetModule && eType == pServer->type && pServer->state == ConnectDataState::NORMAL) {
-            if (!pNetModule->SendMsgPB(msg_id, xData, 0, uid)) {
-                std::ostringstream stream;
-                stream << " SendMsgPB failed " << pServer->id;
-                stream << " msg id " << msg_id;
-                m_log_->LogError(stream, __FUNCTION__, __LINE__);
+            if (!pNetModule->SendPBToNode(msg_id, xData, 0, uid)) {
+                LOG_ERROR("SendPBToNode failed, node_id<%v> msg_id<%v> ", pServer->id, msg_id);
             }
         }
 
@@ -235,7 +212,7 @@ Awaitable<NetClientResponseData>  NetClientModule::RequestPB(const int node_id, 
 
 void NetClientModule::CoroutineBinder(Awaitable<NetClientResponseData>* awaitble) {
     if (awaitble == nullptr) {
-        dout << "awaitble is nullptr\n";
+        LOG_ERROR("awaitble is nullptr");
         return;
     }
     reqid_t req_id = awaitble->data_.req_id;
@@ -244,8 +221,7 @@ void NetClientModule::CoroutineBinder(Awaitable<NetClientResponseData>* awaitble
         co_awaitbles_[req_id] = awaitble;
     }
     else {
-        dout << "CoroutineBinder: same req id in a map, req id: " << req_id
-            << " address: " << awaitble->coro_handle_.address() << std::endl;
+        LOG_ERROR("CoroutineBinder: same req id in a map, req id<%v> address<%v> ", req_id, awaitble->coro_handle_.address());
     }
 }
 
@@ -267,7 +243,7 @@ void NetClientModule::OnAckHandler(const socket_t sock, const int msg_id, const 
 
     auto iter = co_awaitbles_.find(req_id);
     if (iter == co_awaitbles_.end()) {
-        dout << "CoroutineBinder: Not find req id in a map, req id: " << req_id << std::endl;
+        LOG_ERROR("CoroutineBinder: Not find req id in a map, req id<%v>", req_id);
         return;
     }
 
@@ -276,7 +252,6 @@ void NetClientModule::OnAckHandler(const socket_t sock, const int msg_id, const 
     awaitbale->data_.ack_msg_id = msg_id;
     awaitbale->data_.data = msg;
     awaitbale->data_.length = len;
-    dout << "CoroutineResponseHandler: coroutineid: " << awaitbale->coro_handle_.address() << endl;
 
     // resume coroutine
     if (!awaitbale->coro_handle_.done()) {
@@ -285,9 +260,6 @@ void NetClientModule::OnAckHandler(const socket_t sock, const int msg_id, const 
 
     // remove request infos
     co_awaitbles_.erase(iter);
-    
-    //dout << "client recived msg_id: [" << msg_id << "] req_id[" << msg_base.req_id() << "] msg: " << msg <<  endl;
-
     return;
 }
 
@@ -318,9 +290,8 @@ std::shared_ptr<ConnectData> NetClientModule::GetServerNetInfo(const INet *pNet)
 void NetClientModule::StartCallBacks(std::shared_ptr<ConnectData> pServerData) {
     std::ostringstream stream;
     stream << "Adding Node, NodeType: " << pServerData->type << " Node ID : " << pServerData->id << " State : " << pServerData->state
-           << " IP: " << pServerData->ip << " Port: " << pServerData->port << "\n";
-
-    m_log_->LogInfo(stream.str());
+           << " IP: " << pServerData->ip << " Port: " << pServerData->port;
+    LOG_INFO("%v", stream.str());
 
     std::shared_ptr<CallBack> xCallBack = mxCallBack.GetElement(pServerData->type);
     if (!xCallBack) {
@@ -417,13 +388,11 @@ void NetClientModule::LogServerInfo() {
         pServerData = mxServerMap.NextNude();
     }
 
-    // stream << "\nThis is a client, end to print Server Info--------------------- " << std::endl;
-
     if (error) {
         // stream << " in " << SQUICK_DEBUG_INFO << std::endl;
-        m_log_->LogError(stream.str());
+        LOG_ERROR("%v", stream.str());
     } else {
-        m_log_->LogInfo(stream.str());
+        LOG_INFO("%v", stream.str());
     }
 }
 
@@ -448,7 +417,6 @@ void NetClientModule::OnSocketEvent(const socket_t fd, const SQUICK_NET_EVENT eE
 int NetClientModule::OnConnected(const socket_t fd, INet *pNet) {
     std::shared_ptr<ConnectData> pServerInfo = GetServerNetInfo(pNet);
     if (pServerInfo) {
-        /////////////////////////////////////////////////////////////////////////////////////
         // AddServerWeightData(pServerInfo);
         pServerInfo->state = ConnectDataState::NORMAL;
 
@@ -468,7 +436,6 @@ int NetClientModule::OnConnected(const socket_t fd, INet *pNet) {
 int NetClientModule::OnDisConnected(const socket_t fd, INet *pNet) {
     std::shared_ptr<ConnectData> pServerInfo = GetServerNetInfo(pNet);
     if (nullptr != pServerInfo) {
-        /////////////////////////////////////////////////////////////////////////////////////
         // RemoveServerWeightData(pServerInfo);
         pServerInfo->state = ConnectDataState::DISCONNECT;
         pServerInfo->last_time = GetPluginManager()->GetNowTime();

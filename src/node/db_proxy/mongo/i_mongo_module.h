@@ -1,5 +1,7 @@
 #pragma once
 #include <squick/imodule/i_db_module.h>
-class IMongoModule : public IDBModule {
-  public:
-};
+namespace db_proxy::mongo {
+	class IMongoModule : public IDBModule {
+	public:
+	};
+}

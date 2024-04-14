@@ -608,7 +608,7 @@ const std::string LuaScriptModule::GetScriptPath() { return scriptPath; }
 
 void LuaScriptModule::SendToServerByServerID(const int server_id, const uint16_t msg_id, const std::string &data, const uint64_t uid) {
     if (pm_->GetAppID() == server_id) {
-        m_log_->LogError("you can send message to yourself");
+        LOG_ERROR("you can send message to yourself");
         return;
     }
     m_net_client_->SendByID(server_id, msg_id, data, uid);
@@ -619,16 +619,16 @@ void LuaScriptModule::SendToAllServerByServerType(const ServerType server_type, 
 }
 
 void LuaScriptModule::SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, const uint64_t uid) {
-    m_net_->SendMsg(msg_id, data, fd, uid);
+    m_net_->SendToNode(msg_id, data, fd, uid);
 }
 
-void LuaScriptModule::LogInfo(const std::string &logData) { m_log_->LogInfo("LuaLog: " + logData); }
+void LuaScriptModule::LogInfo(const std::string &logData) { LOG_INFO("LuaLog: %v", logData); }
 
-void LuaScriptModule::LogError(const std::string &logData) { m_log_->LogError("LuaLog: " + logData); }
+void LuaScriptModule::LogError(const std::string &logData) { LOG_ERROR("LuaLog: %v", logData); }
 
-void LuaScriptModule::LogWarning(const std::string &logData) { m_log_->LogWarning("LuaLog: " + logData); }
+void LuaScriptModule::LogWarning(const std::string &logData) { LOG_WARN("LuaLog: %v", logData); }
 
-void LuaScriptModule::LogDebug(const std::string &logData) { m_log_->LogDebug("LuaLog: " + logData); }
+void LuaScriptModule::LogDebug(const std::string &logData) { LOG_DEBUG("LuaLog: %v", logData); }
 
 void LuaScriptModule::SetVersionCode(const std::string &version) { strVersionCode = version; }
 
@@ -816,9 +816,7 @@ void LuaScriptModule::OnNetMsgCallBackAsServer(const socket_t sock, const int ms
     uint64_t uid;
     string data;
     if (!m_net_->ReceivePB(msg_id, msg, len, data, uid)) {
-        ostringstream str;
-        str << "Parse Message Failed from Packet to MsgBase! MessageID: " << msg_id;
-        m_log_->LogWarning(str);
+        LOG_WARN("Parse Message Failed from Packet to MsgBase! MessageID<%v>", msg_id);
         return;
     }
     auto msgCallBack = mxNetMsgCallBackFuncMapAsServer.GetElement(msg_id);
@@ -841,9 +839,7 @@ void LuaScriptModule::OnNetMsgCallBackAsClient(const socket_t sock, const int ms
     uint64_t uid;
     string data;
     if (!m_net_->ReceivePB(msg_id, msg, len, data, uid)) {
-        ostringstream str;
-        str << "Parse Message Failed from Packet to MsgBase! MessageID: " << msg_id;
-        m_log_->LogWarning(str);
+        LOG_WARN("Parse Message Failed from Packet to MsgBase! MessageID<%v>", msg_id);
         return;
     }
 	auto msgCallBack = mxNetMsgCallBackFuncMapAsClient.GetElement(msg_id);

@@ -73,8 +73,9 @@ void PluginServer::ProcessParameter() {
     pm_->SetArgs(argList);
 
     string type = pm_->FindParameterValue("type=");
+    string id = pm_->FindParameterValue("id=");
     pm_->SetConfigName(type + ".xml");
-    pm_->SetAppName(type);
+    pm_->SetAppName(type + "_" + id);
 
     std::string strAppID = pm_->FindParameterValue("id=");
     int appID = 0;
@@ -98,22 +99,12 @@ void PluginServer::ProcessParameter() {
         }
     }
 
-    std::string strTitleName = pm_->GetAppName() + std::to_string(pm_->GetAppID()); // +" PID" + NFGetPID();
-    if (!strTitleName.empty()) {
-        size_t pos = strTitleName.find("Server");
-        if (pos != string::npos) {
-            strTitleName.replace(pos, 6, "");
-            strTitleName = "Sqcuik" + strTitleName;
-        }
-    } else {
-        strTitleName = "SqcuikIDE";
-    }
-
+    std::string process_name = "squick_" + pm_->GetAppName();
 #if PLATFORM == PLATFORM_WIN
-    SetConsoleTitle(strTitleName.c_str());
+    SetConsoleTitle(process_name.c_str());
 #elif PLATFORM == PLATFORM_LINUX
-    prctl(PR_SET_NAME, strTitleName.c_str());
-    // setproctitle(strTitleName.c_str());
+    prctl(PR_SET_NAME, process_name.c_str());
+    // setproctitle(process_name.c_str());
 #endif
 }
 

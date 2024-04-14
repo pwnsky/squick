@@ -52,7 +52,7 @@ void ClickhouseModule::OnReqExecute(const socket_t sock, const int msg_id, const
 	}
 	ack.set_code(code);
 	ack.set_query_id(req.query_id());
-	m_net_->SendMsgPB(rpc::DbProxyRPC::ACK_CLICKHOUSE_EXECUTE, ack, sock);
+	m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_CLICKHOUSE_EXECUTE, ack, sock);
 }
 
 void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {

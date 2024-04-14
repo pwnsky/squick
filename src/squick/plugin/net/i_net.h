@@ -287,16 +287,16 @@ class INet {
     virtual bool Final() = 0;
 
     // send a message with out msg-head[auto add msg-head in this function]
-    virtual bool SendMsgWithOutHead(const int16_t msg_id, const char *msg, const size_t len, const socket_t sock = 0) = 0;
+    virtual bool SendMsg(const int16_t msg_id, const char *msg, const size_t len, const socket_t sock = 0) = 0;
 
     // send a message with out msg-head[need to add msg-head for this message by youself]
-    virtual bool SendMsg(const char *msg, const size_t len, const socket_t sock) = 0;
+    virtual bool SendData(const char *msg, const size_t len, const socket_t sock) = 0;
 
-    // send a message to all client[need to add msg-head for this message by youself]
-    virtual bool SendMsgToAllClient(const char *msg, const size_t len) = 0;
+    // send a data to all client[need to add msg-head for this message by youself]
+    virtual bool SendDataToAllClient(const char *msg, const size_t len) = 0;
 
     // send a message with out msg-head to all client[auto add msg-head in this function]
-    virtual bool SendMsgToAllClientWithOutHead(const int16_t msg_id, const char *msg, const size_t len) = 0;
+    virtual bool SendMsgToAllClient(const int16_t msg_id, const char *msg, const size_t len) = 0;
 
     virtual bool CloseNetObject(const socket_t sock) = 0;
 

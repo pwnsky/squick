@@ -176,11 +176,7 @@ bool ElementModule::CheckRef() {
 
                         const std::string &strRefValue = this->GetPropertyString(strId, pProperty->GetKey());
                         if (!strRefValue.empty() && !this->GetElement(strRefValue)) {
-                            std::string msg = "check ref failed id:" + strRefValue + ", in " + pLogicClass->GetClassName() + "=>" + strId;
-                            SQUICK_ASSERT(nRet, msg.c_str(), __FILE__, __FUNCTION__);
-
-                            m_log_->LogError(msg, __FUNCTION__, __LINE__);
-                            exit(0);
+                            LOG_FATAL("Check ref<%v> failed, class_name<%v> id<%v>", strRefValue, pLogicClass->GetClassName(), strId);
                         }
                     }
                 }

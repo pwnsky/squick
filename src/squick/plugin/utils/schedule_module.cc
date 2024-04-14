@@ -77,11 +77,7 @@ bool ScheduleModule::Update() {
     }
 
     if (performanceObject.CheckTimePoint(1)) {
-        std::ostringstream os;
-        os << "---------------module schedule performance problem ";
-        os << performanceObject.TimeScope();
-        os << "---------- ";
-        m_log_->LogWarning(Guid(), os, __FUNCTION__, __LINE__);
+        LOG_WARN("Schedule is high handle time, time_scope<%v>", performanceObject.TimeScope());
     }
 
     return true;
