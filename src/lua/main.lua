@@ -79,7 +79,7 @@ function Load()
         end,
         [ServerType.ST_PLAYER] = function ()
             Require("node.player.init")
-            Require("test.init")
+            --Require("test.init")
         end
     }
     if(node_init[Env.app_type]) then

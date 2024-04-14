@@ -203,6 +203,10 @@ function PlayerMgr:CheckCoroutne()
     local timeout = {}
     local now_time = os.time()
     local i = 1
+    if self.coroutines == nil then
+        Print("ERROR to check coroutine")
+        return;
+    end
     for index, value in pairs(self.coroutines) do
         if now_time - value.time > 5 then
             -- destroy
