@@ -1,4 +1,10 @@
 @echo off
+rem Author: i0gan
+rem Email : l418894113@gmail.com
+rem Date  : 2023-03-10
+rem Github: https://github.com/pwnsky/squick
+rem Description: Generate visual studio project
+
 set build_version="debug"
 set project_path= %~dp0\..
 set build_path=%project_path%\cache

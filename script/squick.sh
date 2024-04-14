@@ -1,4 +1,9 @@
 #!/bin/bash
+# Author: i0gan
+# Email : l418894113@gmail.com
+# Date  : 2024-04-08
+# Github: https://github.com/pwnsky/squick
+# Description: Execute squick
 
 ulimit -c unlimited
 

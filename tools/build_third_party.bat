@@ -2,7 +2,7 @@
 rem Author: i0gan
 rem Email : l418894113@gmail.com
 rem Date  : 2022-12-14
-rem Github: https://github.com/i0gan/Squick
+rem Github: https://github.com/pwnsky/squick
 rem Description: Build third party library
 
 set build_version="debug"

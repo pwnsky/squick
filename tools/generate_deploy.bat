@@ -1,5 +1,9 @@
 @echo off
-rem 生成deploy文件
+rem Author: i0gan
+rem Email : l418894113@gmail.com
+rem Date  : 2023-03-10
+rem Github: https://github.com/pwnsky/squick
+rem Description: Generate Windows deploy files
 
 del /f /q /s  ..\deploy
 

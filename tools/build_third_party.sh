@@ -2,11 +2,8 @@
 # Author: i0gan
 # Email : l418894113@gmail.com
 # Date  : 2022-09-25
-# Github: https://github.com/i0gan/Squick
+# Github: https://github.com/pwnsky/squick
 # Description: Build third party library, run on linux and macOS
-
-# 编译protobuf
-#cd protobuf-21.6
 
 # for docker env
 source common.sh

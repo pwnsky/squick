@@ -1,9 +1,9 @@
 #! /bin/bash
 # Author: i0gan
 # Email : l418894113@gmail.com
-# Date  : 2022-11-27
-# Github: https://github.com/i0gan/Squick
-# Description: 生成Linux, Macos部署文件
+# Date  : 2023-03-10
+# Github: https://github.com/pwnsky/squick
+# Description: Generate Linux or Macos deploy files
 
 echo "Generating linux or macos deploy files"
 bash init_runtime_dll.sh

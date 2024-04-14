@@ -1,4 +1,9 @@
 #!/bin/bash
+# Author: i0gan
+# Email : l418894113@gmail.com
+# Date  : 2024-04-08
+# Github: https://github.com/pwnsky/squick
+# Description: Start all nodes
 
 ./squick.sh type=master id=1 area=0 ip=127.0.0.1 port=10001 web_port=8888 &
 sleep 0.5

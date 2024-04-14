@@ -1,4 +1,9 @@
 #!/bin/bash
+# Author: i0gan
+# Email : l418894113@gmail.com
+# Date  : 2023-04-04
+# Github: https://github.com/pwnsky/squick
+# Description: Gdb to debug the squick
 
 ulimit -c unlimited
 
