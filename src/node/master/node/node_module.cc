@@ -45,7 +45,7 @@ void NodeModule::OnNReqNodeRegister(const socket_t sock, const int msg_id, const
             types.push_back(t);
             log += ", " + to_string(t);
         }
-        m_log_->LogInfo("Register node: " + std::to_string(new_node_id) + " subscribe node type: [" + log + "]");
+        LOG_INFO("Register node<%v>, subscribe node type:[ %v ]", new_node_id, log);
         AddSubscribeNode(new_node_id, types);
 
         // pack current subscribe nodes to new nodes
@@ -73,7 +73,7 @@ void NodeModule::AddSubscribeNode(int new_node_id, vector<int> types) {
         if (t != 0) {
             nodes_subscribe_[t].insert(new_node_id);
         } else {
-            m_log_->LogError("AddSubscribeNode error type: " + to_string(t));
+            LOG_ERROR("AddSubscribeNode error type<%v> ", t);
         }
     }
 }
@@ -82,7 +82,7 @@ void NodeModule::NtfSubscribNode(int new_node_id) {
     if (new_node_id == 0) return;
     auto iter = node_map_.find(new_node_id);
     if (iter == node_map_.end()) {
-        m_log_->LogError("NtfSubscribNode error id: " + to_string(new_node_id));
+        LOG_ERROR("NtfSubscribNode error id<%v>", new_node_id);
         return;
     }
 
@@ -96,7 +96,7 @@ void NodeModule::NtfSubscribNode(int new_node_id) {
             rpc::NNtfNodeAdd ntf;
             auto p = ntf.add_node_list();
             *p = *new_node;
-            m_log_->LogInfo("Ntf add: " + std::to_string(sub_id) + " new: " + std::to_string(new_node_id));
+            LOG_INFO("Ntf sub_id<%v> to add new_node<%v>", sub_id, new_node_id);
             SendPBByID(sub_id, rpc::NMasterRPC::NNTF_NODE_ADD, ntf);
         }
     }
@@ -106,7 +106,7 @@ bool NodeModule::SendPBByID(const int node_id, const uint16_t msg_id, const goog
     
     auto iter = node_map_.find(node_id);
     if (iter == node_map_.end()) {
-        m_log_->LogError("SendPBByID no this node id: " + to_string(node_id));
+        LOG_ERROR("SendPBByID no this node id<%v>", node_id);
         return false;
     }
     return m_net_->SendPBToNode(msg_id, pb, iter->second.fd);

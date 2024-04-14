@@ -7,7 +7,6 @@
 #include <third_party/nlohmann/json.hpp>
 //#include <squick/core/smart_enum.h>
 
-
 using namespace nlohmann;
 
 enum class DbType {
@@ -28,12 +27,12 @@ public:
         std::string confgi_path = pm_->GetWorkPath() + "/config/node/db.json";
         std::ifstream config_file(confgi_path);
         if (!config_file.is_open()) {
-            m_log_->LogError("The configure file is not exsist, " + confgi_path);
+            LOG_ERROR("The configure file <%v> is not exsist", confgi_path);
             return false;
         }
         config_file >> db_config_;
         config_file.close();
-        m_log_->LogInfo("The db config file is loaded " + confgi_path);
+		LOG_INFO("The db config file <%v> is loaded ", confgi_path);
 
 
 		return true;
@@ -48,7 +47,7 @@ public:
         try {
             dbs = db_config_.at(DbTypeToString(type));
             if (dbs.size() <= 0) {
-                m_log_->LogError("Load db config error, no data, db_type: " + DbTypeToString(type));
+                LOG_ERROR("Load db config error, no data, db_type<%v> ", DbTypeToString(type));
 			    return false;
 		    }
             json db = dbs[name];
@@ -58,7 +57,7 @@ public:
             password_ = db["password"];
             database_ = db["database"];
         } catch(std::exception e) {
-            m_log_->LogError("Load db config error: " + std::string(e.what()) + " db_type: " + DbTypeToString(type));
+			LOG_ERROR("Load db config error: %v db_type: %v ", std::string(e.what()), DbTypeToString(type));
             return false;
         }
 		return true;
@@ -74,17 +73,11 @@ public:
 	}
 
 	void LogInfoConnected() {
-		ostringstream log;
-		log << "Database: ";
-		log << DbTypeToString(db_type_) << " is connected, Host: " << ip_ << " Port: " << port_;
-		m_log_->LogInfo(log);
+		LOG_INFO("Database: %v is connected, Host: %v:%v ", DbTypeToString(db_type_), ip_, port_);
 	}
 
-	void LogError(const string &err_msg = "", const char *func = "", int line = 0) {
-		ostringstream log;
-		log << "Database: ";
-		log << DbTypeToString(db_type_) << " is error, Host: " << ip_ << " Port: " << port_ << " ,Error msg: " << err_msg;
-		m_log_->LogError(log, func, 0);
+	void LogError(const string& err_msg = "", const char* func = "", int line = 0) {
+		LOG_ERROR("Database: %v is error, host<%v:%v> error_msg<%v>, func<%v> line<%v>", DbTypeToString(db_type_), ip_, port_, err_msg, func, line);
 	}
 
 	string user_ = "";

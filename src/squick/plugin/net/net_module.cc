@@ -103,10 +103,7 @@ bool NetModule::Update() {
 bool NetModule::SendMsg(const int msg_id, const std::string &msg, const socket_t sock) {
     bool bRet = m_pNet->SendMsg(msg_id, msg.c_str(), (uint32_t)msg.length(), sock);
     if (!bRet) {
-        std::ostringstream stream;
-        stream << " SendMsgWithOutHead failed fd " << sock;
-        stream << " msg id " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to send msg msg_id <%v> ", msg_id);
     }
 
     return bRet;
@@ -115,10 +112,7 @@ bool NetModule::SendMsg(const int msg_id, const std::string &msg, const socket_t
 bool NetModule::SendMsgToAllClient(const int msg_id, const std::string &msg) {
     bool bRet = m_pNet->SendMsgToAllClient(msg_id, msg.c_str(), (uint32_t)msg.length());
     if (!bRet) {
-        std::ostringstream stream;
-        stream << " SendMsgToAllClientWithOutHead failed";
-        stream << " msg id " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to send msg msg_id <%v> ", msg_id);
     }
 
     return bRet;
@@ -128,10 +122,7 @@ bool NetModule::SendPBToNode(const uint16_t msg_id, const google::protobuf::Mess
     rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
-        stream << " SendMsgPB Message to  " << sock;
-        stream << " Failed For Serialize of MsgData, MessageID " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
-
+        LOG_ERROR("Failed for serialize of protobuf, msg_id <%v> ", sock, msg_id);
         return false;
     }
 
@@ -140,11 +131,7 @@ bool NetModule::SendPBToNode(const uint16_t msg_id, const google::protobuf::Mess
     xMsg.set_id(pm_->GetAppID());
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
-        std::ostringstream stream;
-        stream << " SendMsgPB Message to  " << sock;
-        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
-
+        LOG_ERROR("Failed for serialize of protobuf, msg_id <%v> ", sock, msg_id);
         return false;
     }
 
@@ -159,11 +146,7 @@ bool NetModule::SendToNode(const uint16_t msg_id, const std::string &xData, cons
     xMsg.set_id(pm_->GetAppID());
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
-        std::ostringstream stream;
-        stream << " SendMsgPB Message to  " << sock;
-        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
-
+        LOG_ERROR("Failed for serialize of protobuf, msg_id <%v> ", sock, msg_id);
         return false;
     }
     return SendMsg(msg_id, msg, sock);
@@ -173,21 +156,13 @@ bool NetModule::SendPBToAllNodeClient(const uint16_t msg_id, const google::proto
     rpc::MsgBase xMsg;
     xMsg.set_id(pm_->GetAppID());
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
-        std::ostringstream stream;
-        stream << " SendMsgPBToAllClient";
-        stream << " Failed For Serialize of MsgData, MessageID " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
-
+        LOG_ERROR("Failed for serialize of protobuf, msg_id <%v> ", msg_id);
         return false;
     }
 
     std::string msg;
     if (!xMsg.SerializeToString(&msg)) {
-        std::ostringstream stream;
-        stream << " SendMsgPBToAllClient";
-        stream << " Failed For Serialize of MsgBase, MessageID " << msg_id;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
-
+        LOG_ERROR("Failed for serialize of protobuf, msg_id <%v> ", msg_id);
         return false;
     }
 

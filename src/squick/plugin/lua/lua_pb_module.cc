@@ -41,7 +41,7 @@ bool LuaPBModule::ImportProtoFile(const std::string &strFile) {
     try {
         const google::protobuf::FileDescriptor *pDesc = m_pImporter->Import(strFile);
         if (!pDesc) {
-            m_log_->LogError("unknow protocol  file to import struct name: " + strFile);
+            LOG_ERROR("Unknow protobuf file to import struct name: %v", strFile);
         };
 
         ret = true;

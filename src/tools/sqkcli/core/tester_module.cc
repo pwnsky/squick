@@ -87,17 +87,12 @@ void TesterModule::TestProxyTransferSpeed_Ack(const socket_t sock, const int msg
 
 void TesterModule::OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet) {
     if (eEvent & SQUICK_NET_EVENT_EOF) {
-        m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_EOF", __FUNCTION__, __LINE__);
     }
     else if (eEvent & SQUICK_NET_EVENT_ERROR) {
-        m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_ERROR", __FUNCTION__, __LINE__);
     }
     else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
-        m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_TIMEOUT", __FUNCTION__, __LINE__);
     }
     else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
-        m_log_->LogInfo(Guid(0, sock), "SQUICK_NET_EVENT_CONNECTED", __FUNCTION__, __LINE__);
-
         std::cout << "Start to test ...\n";
         is_connected_ = true;
     }

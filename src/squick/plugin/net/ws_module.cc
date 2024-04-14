@@ -174,9 +174,7 @@ bool WSModule::SendDataToAllClient(const std::string &msg, const bool text) {
     auto frame = EncodeFrame(msg.data(), msg.size(), text);
     bool bRet = m_pNet->SendDataToAllClient(frame.c_str(), (uint32_t)frame.length());
     if (!bRet) {
-        std::ostringstream stream;
-        stream << " SendMsgToAllClient failed";
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
+        LOG_ERROR("SendDataToAllClient failed");
     }
 
     return bRet;
@@ -201,21 +199,14 @@ void WSModule::OnError(const socket_t sock, const std::error_code &e) {
     SQUICK_CRASH_END
 #endif
 
-    std::ostringstream stream;
-    stream << "WebSocket error: ";
-    stream << e.value();
-    stream << " ";
-    stream << e.message();
-    m_log_->LogError(stream, __FUNCTION__, __LINE__);
+    LOG_ERROR("WebSocket error: <%v>, <%v>", e.value(), e.message());
     m_pNet->CloseNetObject(sock);
 }
 
 bool WSModule::SendRawMsg(const std::string &msg, const socket_t sock) {
     bool bRet = m_pNet->SendData(msg.c_str(), (uint32_t)msg.length(), sock);
     if (!bRet) {
-        std::ostringstream stream;
-        stream << " SendMsg failed fd " << sock;
-        m_log_->LogError(stream, __FUNCTION__, __LINE__);
+        LOG_ERROR("SendRawMsg failed sock<%v>", sock);
     }
 
     return bRet;

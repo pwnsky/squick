@@ -105,15 +105,10 @@ class INodeBaseModule : public IModule {
         node_info_.info->set_cpu_count(DEFAULT_NODE_CPUT_COUNT);
 
         int nRet = m_net_->Listen(node_info_.info->max_online(), node_info_.info->port(), node_info_.info->cpu_count(), DEFAULT_NET_SERVER_BUFFER_SIZE);
-
-        std::ostringstream log;
-        log << "Node Listen at 0.0.0.0:" << node_info_.info->port() << " Name: " << node_info_.info->name();
-        m_log_->LogDebug(NULL_OBJECT, log, __FUNCTION__, __LINE__);
+        LOG_INFO("Node Listen at 0.0.0.0:%v Name :", node_info_.info->port(), node_info_.info->name());
 
         if (nRet < 0) {
-            std::ostringstream strLog;
-            strLog << "Cannot init server net, Port = " << node_info_.info->port();
-            m_log_->LogError(NULL_OBJECT, strLog, __FUNCTION__, __LINE__);
+            LOG_ERROR("Cannot init server net, Port<%v>", node_info_.info->port());
             SQUICK_ASSERT(nRet, "Cannot init server net", __FILE__, __FUNCTION__);
             exit(0);
         }
@@ -135,9 +130,8 @@ class INodeBaseModule : public IModule {
         s.port = pm_->GetArg("master_port=", 10001);
         s.name = "master";
         s.buffer_size = DEFAULT_NET_CLIENT_BUFFER_SIZE;
-        std::ostringstream log;
-        log << "Node Connect to " << s.name << " host " << s.ip << ":" << s.port << " cur_area: " << pm_->GetArg("area=", 0) << std::endl;
-        m_log_->LogDebug(NULL_OBJECT, log, __FUNCTION__, __LINE__);
+
+        LOG_INFO("Node Connect to %v %v:%v cur_area<%v>", s.name, s.ip, s.port, pm_->GetArg("area=", 0));
         m_net_client_->AddNode(s);
         return true;
     }
@@ -192,16 +186,16 @@ class INodeBaseModule : public IModule {
     // 作为服务的监听socket状态事件
     void OnServerSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
         if (eEvent & SQUICK_NET_EVENT_EOF) {
-            m_log_->LogInfo(Guid(0, sock), "Net Server: SQUICK_NET_EVENT_EOF Connection closed", __FUNCTION__, __LINE__);
+            LOG_INFO("Net Server: SQUICK_NET_EVENT_EOF Connection closed, sock<%v>", sock);
             OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
-            m_log_->LogInfo(Guid(0, sock), "Net Server: SQUICK_NET_EVENT_ERROR Got an error on the connection", __FUNCTION__, __LINE__);
+            LOG_INFO("Net Server: SQUICK_NET_EVENT_ERROR Got an error on the connection, sock<%v>", sock);
             OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
-            m_log_->LogInfo(Guid(0, sock), "Net Server: SQUICK_NET_EVENT_TIMEOUT read timeout", __FUNCTION__, __LINE__);
+            LOG_INFO("Net Server: SQUICK_NET_EVENT_TIMEOUT read timeout, sock<%v>", sock);
             OnClientDisconnected(sock);
         } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
-            m_log_->LogInfo(Guid(0, sock), "Net Server: SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
+            LOG_INFO("Net Server: SQUICK_NET_EVENT_CONNECTED connected success, sock<%v>", sock);
             OnClientConnected(sock);
         }
     }
@@ -212,17 +206,16 @@ class INodeBaseModule : public IModule {
     // 作为客户端连接socket事件
     void OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet) {
         if (eEvent & SQUICK_NET_EVENT_EOF) {
-            m_log_->LogWarning(Guid(0, sock), "Net Client: SQUICK_NET_EVENT_EOF", __FUNCTION__, __LINE__);
+            LOG_WARN("Net Client: SQUICK_NET_EVENT_EOF, sock<%v>", sock);
         }
         else if (eEvent & SQUICK_NET_EVENT_ERROR) {
-            m_log_->LogError(Guid(0, sock), "Net Client: SQUICK_NET_EVENT_ERROR", __FUNCTION__, __LINE__);
+            LOG_ERROR("Net Client: SQUICK_NET_EVENT_ERROR, sock<%v>", sock);
         }
         else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
-            m_log_->LogError(Guid(0, sock), "Net Client: SQUICK_NET_EVENT_TIMEOUT", __FUNCTION__, __LINE__);
+            LOG_ERROR("Net Client: SQUICK_NET_EVENT_TIMEOUT, sock<%v>", sock);
         }
         else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
-            m_log_->LogInfo(Guid(0, sock), "Net Client: SQUICK_NET_EVENT_CONNECTED connected success", __FUNCTION__, __LINE__);
-            
+            LOG_INFO("Net Client: SQUICK_NET_EVENT_CONNECTED connected success, sock<%v>", sock);
             OnUpperNodeConnected(pNet);
         }
     }
@@ -231,8 +224,7 @@ class INodeBaseModule : public IModule {
         std::shared_ptr<ConnectData> ts = m_net_client_->GetServerNetInfo(pNet);
         if (ts == nullptr) {
             ostringstream msg;
-            msg << " Cannot find server info ";
-            m_log_->LogWarning(msg, __FUNCTION__, __LINE__);
+            LOG_ERROR(" Cannot find server info");
             return;
         }
         ts->state = ConnectDataState::NORMAL;
@@ -248,7 +240,7 @@ class INodeBaseModule : public IModule {
         }
 
         m_net_client_->SendPBByID(ts->id, rpc::NMasterRPC::NREQ_NODE_REGISTER, req);
-        m_log_->LogInfo(Guid(0, pm_->GetAppID()), ts->name, "Register");
+        LOG_INFO("Register node <%v>", ts->name);
     }
     
     void OnNAckNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
@@ -262,7 +254,7 @@ class INodeBaseModule : public IModule {
             AddNodes(ack.node_add_list());
         }
         else {
-            m_log_->LogError(Guid(0, pm_->GetAppID()), "Register faild!");
+            LOG_ERROR("Register faild!");
         }
     }
 
@@ -278,7 +270,7 @@ class INodeBaseModule : public IModule {
 
     bool AddNodes(const google::protobuf::RepeatedPtrField<rpc::Server>& list, bool from_ntf = false) {
         for (const auto &n : list) {
-            m_log_->LogInfo("Add node from master, is_ntf: " + std::to_string(from_ntf) + " cmd, current: " + node_info_.info->name() + " add " + n.name());
+            LOG_INFO("Add node from master, is_ntf<%v> added:", from_ntf, n.name());
             ConnectData s;
             s.id = n.id();
             s.ip = n.ip();

@@ -123,12 +123,7 @@ bool HttpServerModule::OnReceiveNetPack(std::shared_ptr<HttpRequest> req) {
     }
 
     if (performance.CheckTimePoint(1)) {
-        std::ostringstream os;
-        os << "---------------net module performance problem------------------- ";
-        os << performance.TimeScope();
-        os << "---------- ";
-        os << req->path;
-        m_log_->LogWarning(Guid(), os, __FUNCTION__, __LINE__);
+        LOG_WARN("http server handle time is high, tiimescop<%v>, req_path<%v>", performance.TimeScope(), req->path);
     }
     SetSquickMainThreadSleep(false);
     return ResponseMsg(req, "", WebStatus::WEB_ERROR);

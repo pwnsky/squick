@@ -238,7 +238,7 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
                             stream << " group_id: " << groupID;
                             stream << " position: " << pObject->GetPropertyVector3(excel::IObject::Position()).ToString();
 
-                            m_log_->LogInfo(stream);
+                            LOG_INFO("%v", stream.str());
 
                             pObject->SetState(COE_CREATE_BEFORE_ATTACHDATA);
                             DoEvent(ident, className, pObject->GetState(), arg);
@@ -473,7 +473,7 @@ bool WorldModule::DestroyObject(const Guid &self) {
         return true;
     }
 
-    m_log_->LogError(self, "There is no scene " + std::to_string(sceneID), __FUNCTION__, __LINE__);
+    LOG_ERROR("Guid<%v> There is no scene<%v>", self.ToString(), sceneID);
 
     return false;
 }
@@ -642,7 +642,7 @@ bool WorldModule::SetRecordInt(const Guid &self, const std::string &recordName, 
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordInt(recordName, row, col, nValue)) {
-            m_log_->LogError(self, recordName + " error for row or col", __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> error for row or col, record_name<%v>", self.ToString(), recordName);
         } else {
             return true;
         }
@@ -657,7 +657,7 @@ bool WorldModule::SetRecordInt(const Guid &self, const std::string &recordName, 
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordInt(recordName, row, colTag, value)) {
-            m_log_->LogError(self, recordName + " error for row or col", __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> error for row or col, record_name<%v>", self.ToString(), recordName);
         } else {
             return true;
         }
@@ -672,7 +672,7 @@ bool WorldModule::SetRecordFloat(const Guid &self, const std::string &recordName
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordFloat(recordName, row, col, dwValue)) {
-            m_log_->LogError(self, recordName + " error SetRecordFloat for row  or col", __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> error for row or col, record_name<%v>", self.ToString(), recordName);
         } else {
             return true;
         }
@@ -687,7 +687,7 @@ bool WorldModule::SetRecordFloat(const Guid &self, const std::string &recordName
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordFloat(recordName, row, colTag, value)) {
-            m_log_->LogError(self, recordName + " error SetRecordFloat for row  or col", __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> error for row or col, record_name<%v>", self.ToString(), recordName);
         } else {
             return true;
         }
@@ -702,7 +702,7 @@ bool WorldModule::SetRecordString(const Guid &self, const std::string &recordNam
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordString(recordName, row, col, value)) {
-            m_log_->LogError(self, recordName + " error SetRecordString for row  or col", __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> error for row or col, record_name<%v>", self.ToString(), recordName);
         } else {
             return true;
         }
@@ -717,7 +717,7 @@ bool WorldModule::SetRecordString(const Guid &self, const std::string &recordNam
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordString(recordName, row, colTag, value)) {
-            m_log_->LogError(self, recordName + " error SetRecordObject for row  or col", __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> error for row or col, record_name<%v>", self.ToString(), recordName);
         } else {
             return true;
         }
@@ -732,7 +732,7 @@ bool WorldModule::SetRecordObject(const Guid &self, const std::string &recordNam
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordObject(recordName, row, col, objectValue)) {
-            m_log_->LogError(self, recordName + " error SetRecordObject for row  or col", __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> error for row or col, record_name<%v>", self.ToString(), recordName);
         } else {
             return true;
         }
@@ -747,7 +747,7 @@ bool WorldModule::SetRecordObject(const Guid &self, const std::string &recordNam
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordObject(recordName, row, colTag, value)) {
-            m_log_->LogError(self, recordName + " error SetRecordObject for row  or col", __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> error for row or col, record_name<%v>", self.ToString(), recordName);
         } else {
             return true;
         }
@@ -762,7 +762,7 @@ bool WorldModule::SetRecordVector2(const Guid &self, const std::string &recordNa
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordVector2(recordName, row, col, value)) {
-            m_log_->LogError(self, recordName + " error SetRecordVector2 for row  or col", __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> error for row or col, record_name<%v>", self.ToString(), recordName);
         } else {
             return true;
         }
@@ -777,7 +777,7 @@ bool WorldModule::SetRecordVector2(const Guid &self, const std::string &recordNa
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordVector2(recordName, row, colTag, value)) {
-            m_log_->LogError(self, recordName + " error SetRecordVector2 for row  or col", __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> error for row or col, record_name<%v>", self.ToString(), recordName);
         } else {
             return true;
         }
@@ -792,7 +792,7 @@ bool WorldModule::SetRecordVector3(const Guid &self, const std::string &recordNa
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordVector3(recordName, row, col, value)) {
-            m_log_->LogError(self, recordName + " error SetRecordVector3 for row  or col", __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> error for row or col, record_name<%v>", self.ToString(), recordName);
         } else {
             return true;
         }
@@ -807,7 +807,7 @@ bool WorldModule::SetRecordVector3(const Guid &self, const std::string &recordNa
     std::shared_ptr<IObject> pObject = GetElement(self);
     if (pObject) {
         if (!pObject->SetRecordVector3(recordName, row, colTag, value)) {
-            m_log_->LogError(self, recordName + " error SetRecordVector3 for row  or col", __FUNCTION__, __LINE__);
+            LOG_ERROR("Guid<%v> error for row or col, record_name<%v>", self.ToString(), recordName);
         } else {
             return true;
         }
@@ -976,7 +976,7 @@ Guid WorldModule::CreatePlayerGUID() {
     }
 
     Guid xID;
-    xID.nHead64 = (pm_->GetArea() << 32) + pm_->GetAppID();
+    xID.nHead64 = pm_->GetAppID();
     xID.nData64 = value;
 
     return xID;
@@ -1197,7 +1197,7 @@ bool WorldModule::LogInfo(const Guid ident) {
     if (pObject) {
         int sceneID = GetPropertyInt32(ident, excel::IObject::SceneID());
         int groupID = GetPropertyInt32(ident, excel::IObject::GroupID());
-        m_log_->LogInfo(ident, "//----------child object list-------- SceneID = " + std::to_string(sceneID));
+        LOG_INFO("Guid<%v> SceneID<%v>", ident.ToString(), sceneID);
     } else {
         LOG_ERROR("Guid<%v> There is no object", ident.ToString());
     }

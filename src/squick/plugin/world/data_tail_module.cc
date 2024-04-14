@@ -71,7 +71,7 @@ int DataTailModule::OnClassObjectEvent(const Guid &self, const std::string &clas
         break;
     }
 
-    m_log_->LogDebug(self, stream.str());
+    LOG_DEBUG("%v", stream.str());
     return 0;
 }
 
@@ -87,15 +87,7 @@ void DataTailModule::LogObjectData(const Guid &self) {
     if (nullptr != xPropertyManager) {
         std::shared_ptr<IProperty> xProperty = xPropertyManager->First();
         while (nullptr != xProperty) {
-            std::ostringstream stream;
-
-            stream << " Start trail ";
-            stream << xProperty->GetKey();
-            stream << "==>";
-            stream << xProperty->ToString();
-
-            m_log_->LogDebug(self, stream.str(), __FUNCTION__, __LINE__);
-
+            LOG_DEBUG("Start trail %v ==> %v ", xProperty->GetKey(), xProperty->ToString());
             xProperty = xPropertyManager->Next();
         }
     }
@@ -114,7 +106,7 @@ void DataTailModule::LogObjectData(const Guid &self) {
                     for (int j = 0; j < xDataList.GetCount(); ++j) {
                         stream << " [" << j << "] " << xDataList.ToString(j);
                     }
-                    m_log_->LogDebug(stream);
+                    LOG_DEBUG("%v", stream.str());
                 }
             }
 

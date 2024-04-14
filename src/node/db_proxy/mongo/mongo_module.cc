@@ -48,11 +48,7 @@ namespace db_proxy::mongo {
             std::cout <<url << endl;
             // Setup the connection and get a handle on the "admin" database.
             client_ = new client{ uri {url} };
-
-            string log;
-            log += "Mongo appname: ";
-            log += client_->start_session().client().uri().appname().value().data();
-            m_log_->LogInfo(log);
+            LOG_INFO("Mongo appname: %v ", client_->start_session().client().uri().appname().value().data());
         }
         catch (const std::exception& e) {
             // Handle errors.
