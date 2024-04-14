@@ -14,6 +14,7 @@
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
 
+#define LUA_UPDATE_INTERVAL_TIME 100 // ms
 
 #if PLATFORM == PLATFORM_WIN
 #elif PLATFORM == PLATFORM_LINUX

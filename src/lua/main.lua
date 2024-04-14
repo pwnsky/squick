@@ -68,8 +68,9 @@ function HotReload()
 end
 
 function Load() 
-    Require("common.init")
+    Require("struct.init")
     Require("proto.init")
+    Require("common.init")
     Require("lib.init")
     
     local node_init = {

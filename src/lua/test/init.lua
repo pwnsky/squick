@@ -1,5 +1,5 @@
 local modules = {
-    { name = "test", is_hot = true, },
+    { name = "test_main", is_hot = true, },
 }
 
 ModuleMgr:Register("test", modules)

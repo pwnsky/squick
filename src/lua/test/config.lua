@@ -7,16 +7,13 @@
 
 print(" Test config plugin from c++ layer")
 
-local list = Squick:GetConfigIDList("Server")
-for index, value in ipairs(list) do
-    print(" index: " , index, " value: ", value)
-end
+local list = Squick:GetConfigIDList(Excel.Scene.ThisName)
+print("Get " .. Excel.Scene.ThisName .. " list")
+PrintTable(list)
 
-
-local ta = Squick:GetConfig("DB")
-print("GetConfigID:")
+local ta = Squick:GetConfig(Excel.Scene.ThisName)
 PrintTable(ta)
 
-print("GetconfigByID:")
-local t = Squick:GetConfigByID("MysqlPlayerDb_1")
+print("Get property by id")
+local t = Squick:GetConfigByID("SceneID_3")
 PrintTable(t)
