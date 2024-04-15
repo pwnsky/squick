@@ -31,6 +31,6 @@ cp /lib/x86_64-linux-gnu/libcrypto.so deploy/bin
 # create dir
 cd deploy
 mkdir -p data/logs
-mkdir -p data/crash
+mkdir -p data/crashs
 
 echo "Generated all files!"

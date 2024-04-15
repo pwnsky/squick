@@ -47,7 +47,7 @@ class Exception {
         time_t now = time(0);
         tm *ltm = localtime(&now);
         std::stringstream ss;
-		ss << "../data/crash/";
+		ss << "../data/crashs/";
         ss << std::setfill('0') << std::setw(4) << 1900 + ltm->tm_year << "-" << std::setw(2) << 1 + ltm->tm_mon << "-" << std::setw(2) << ltm->tm_mday;
         ss << ".crash";
         return ss.str();

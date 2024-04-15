@@ -7,7 +7,7 @@
 
 mkdir -p ../bin
 mkdir -p ../data/logs
-mkdir -p ../data/crash
+mkdir -p ../data/crashs
 
 sys=`uname -s`
 if [ $sys == "Darwin" ];then
