@@ -174,7 +174,7 @@ bool WSModule::SendDataToAllClient(const std::string &msg, const bool text) {
     auto frame = EncodeFrame(msg.data(), msg.size(), text);
     bool bRet = m_pNet->SendDataToAllClient(frame.c_str(), (uint32_t)frame.length());
     if (!bRet) {
-        LOG_ERROR("SendDataToAllClient failed");
+        LOG_ERROR("SendDataToAllClient failed, size<%v>, is_text<%v>", msg.size(), text);
     }
 
     return bRet;

@@ -611,7 +611,7 @@ const std::string LuaScriptModule::GetScriptPath() { return scriptPath; }
 
 void LuaScriptModule::SendToServerByServerID(const int server_id, const uint16_t msg_id, const std::string &data, const uint64_t uid) {
     if (pm_->GetAppID() == server_id) {
-        LOG_ERROR("you can send message to yourself");
+        LOG_ERROR("you can send message to yourself, node_id<%v>", server_id);
         return;
     }
     m_net_client_->SendByID(server_id, msg_id, data, uid);

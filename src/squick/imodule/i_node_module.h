@@ -216,7 +216,7 @@ class INodeBaseModule : public IModule {
         std::shared_ptr<ConnectData> ts = m_net_client_->GetServerNetInfo(pNet);
         if (ts == nullptr) {
             ostringstream msg;
-            LOG_ERROR(" Cannot find server info");
+            LOG_ERROR("OnUpperNodeConnected: %v", "Cannot find server info");
             return;
         }
         ts->state = ConnectDataState::NORMAL;
@@ -246,7 +246,7 @@ class INodeBaseModule : public IModule {
             AddNodes(ack.node_add_list());
         }
         else {
-            LOG_ERROR("Register faild!");
+            LOG_ERROR("Node Register faild! sock<%v>", sock);
         }
     }
 

@@ -212,7 +212,7 @@ Awaitable<NetClientResponseData>  NetClientModule::RequestPB(const int node_id, 
 
 void NetClientModule::CoroutineBinder(Awaitable<NetClientResponseData>* awaitble) {
     if (awaitble == nullptr) {
-        LOG_ERROR("awaitble is nullptr");
+        LOG_ERROR("CoroutineBinder %v", "awaitble is nullptr");
         return;
     }
     reqid_t req_id = awaitble->data_.req_id;
