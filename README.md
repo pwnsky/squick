@@ -14,6 +14,15 @@
 
 **Version:** 1.1.0
 
+<div>
+<a target="_blank" href="https://discord.gg/vrdGbKqj">
+<img alt="Discord" src="https://img.shields.io/discord/1229785545656242226?color=%23738ADB&label=Discord&logo=discord&logoColor=white&style=flat-square"/>
+</a>
+<a target="_blank" href="https://qm.qq.com/q/IIsF3qbSsU">
+<img alt="QQ" src="https://img.shields.io/badge/QQ Group-%2312B7F5?logo=tencent-qq&logoColor=white&style=flat-square"/>
+</a>
+</div>
+
 ---
 
 ![GitHub release](https://img.shields.io/github/release/pwnsky/Squick.svg?style=flat-square)
