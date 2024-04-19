@@ -21,6 +21,8 @@ enum NMasterRPC {
     NNTF_NODE_REPORT = 508; // Report node state to master
     NNTF_NODE_ADD = 509;    // new node will ntf
     NNTF_NODE_REMOVE = 510; // remove node will ntf
+
+    NNTF_NODE_MSG_FORWARD = 511; // Forward msg
 }
 
 enum ServerState {

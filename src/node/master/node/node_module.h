@@ -19,6 +19,7 @@ class NodeModule : public INodeModule {
     void OnNReqNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
     void OnNReqNodeUnregistered(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
     void OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnNNtfNodeMsgForward(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
 
     int GetLoadBanlanceNode(ServerType type);
 
@@ -38,7 +39,7 @@ class NodeModule : public INodeModule {
 
 private:
     // 服务表
-    map<int, ServerInfo> node_map_;
+    map<int, ServerInfo> node_map_; // ikey -> node id, value -> ServerInfo
     std::map<int, std::set<int>> nodes_subscribe_; // key -> node type, value -> node ids;
 };
 

@@ -13,6 +13,7 @@ bool NodeModule::AfterStart() {
     m_net_->AddReceiveCallBack(rpc::NMasterRPC::NREQ_NODE_UNREGISTER, this, &NodeModule::OnNReqNodeUnregistered);
     m_net_->AddReceiveCallBack(rpc::NMasterRPC::NNTF_NODE_REPORT, this, &NodeModule::OnNNtfNodeReport);
     m_net_->AddReceiveCallBack(rpc::NMasterRPC::NREQ_MIN_WORKLOAD_NODE_INFO, this, &NodeModule::OnNReqMinWorkNodeInfo);
+    m_net_->AddReceiveCallBack(rpc::NMasterRPC::NNTF_NODE_MSG_FORWARD, this, &NodeModule::OnNNtfNodeMsgForward);
     Listen();
     
     return true;
@@ -181,6 +182,10 @@ void NodeModule::OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, co
     }
     reqid_t req_id = msg_base.req_id();
     m_net_->SendPBToNode(rpc::NMasterRPC::NACK_MIN_WORKLOAD_NODE_INFO, ack, sock, 0, req_id);
+}
+
+void NodeModule::OnNNtfNodeMsgForward(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    
 }
 
 int NodeModule::GetLoadBanlanceNode(ServerType type) {
