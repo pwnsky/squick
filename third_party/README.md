@@ -1,6 +1,6 @@
-# 第三方库
+# The third library
 
-|  名称   | 版本  | Github |
+|  Name   | Version  | Github |
 |  ----  | ----  |----|
 | ajson | 0.2.0 | https://github.com/lordoffox/ajson |
 | concurrentqueue | | https://github.com/cameron314/concurrentqueue |
@@ -21,4 +21,4 @@
 | mongo-c-driver | 1.26.1 | https://github.com/mongodb/mongo-c-driver |
 | mongo-cxx-driver | r3.10.1 | https://github.com/mongodb/mongo-cxx-driver |
 | clickhouse-cpp | 2.4.0 | https://github.com/ClickHouse/clickhouse-cpp |
-
+| easyloggingpp | v9.97.1 | https://github.com/abumq/easyloggingpp |

@@ -2,7 +2,7 @@
 #pragma once
 
 #include <squick/core/i_module.h>
-#include <squick/core/easylogging++.h>
+#include <third_party/easyloggingpp/easylogging++.h>
 #include <squick/core/base.h>
 
 #ifdef SQUICK_DEV

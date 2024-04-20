@@ -1,9 +1,13 @@
 set(ProjectName "core")
 
 file(GLOB soruces
-	*.cc)
+	*.cc
+    ${SolutionDir}/third_party/easyloggingpp/*.cc
+    )
 file(GLOB headers
-	*.h)
+	*.h
+    ${SolutionDir}/third_party/easyloggingpp/*.h
+    )
 
 add_library(${ProjectName} SHARED ${soruces} ${headers})
 
