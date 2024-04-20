@@ -25,18 +25,18 @@ class HttpClientModule : public IHttpClientModule {
     virtual int Get(const std::string &strUri, std::string &strResData);
     virtual int Get(const std::string &strUri, const std::map<std::string, std::string> &xHeaders, std::string &strResData);
 
-    virtual bool DoGet(const std::string& strUri, const std::map<std::string, std::string>& xHeaders, HTTP_RESP_FUNCTOR_PTR pCB);
-    virtual bool DoPost(const std::string& strUri, const std::map<std::string, std::string>& xHeaders, const std::string& strPostData,
-        HTTP_RESP_FUNCTOR_PTR pCB, const std::string& strMemo = "");
+    virtual bool DoGet(const std::string &strUri, const std::map<std::string, std::string> &xHeaders, HTTP_RESP_FUNCTOR_PTR pCB);
+    virtual bool DoPost(const std::string &strUri, const std::map<std::string, std::string> &xHeaders, const std::string &strPostData,
+                        HTTP_RESP_FUNCTOR_PTR pCB, const std::string &strMemo = "");
 
-    virtual Awaitable<HttpClientResponseData> CoGet(const std::string& strUri, const std::map<std::string, std::string>& xHeaders);
-    virtual Awaitable<HttpClientResponseData> CoPost(const std::string& strUri, const std::map<std::string, std::string>& xHeaders, const std::string& strPostData, const std::string& strMemo = "");
+    virtual Awaitable<HttpClientResponseData> CoGet(const std::string &strUri, const std::map<std::string, std::string> &xHeaders);
+    virtual Awaitable<HttpClientResponseData> CoPost(const std::string &strUri, const std::map<std::string, std::string> &xHeaders,
+                                                     const std::string &strPostData, const std::string &strMemo = "");
 
   private:
     int request_guid_ = 0;
 
   protected:
-      
     class RespData {
       public:
         RespData() {

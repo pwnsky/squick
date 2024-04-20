@@ -6,4 +6,3 @@
 #pragma once
 #include "i_event_module.h"
 #include "i_schedule_module.h"
-#include "i_thread_pool_module.h"

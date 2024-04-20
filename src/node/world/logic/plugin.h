@@ -14,4 +14,4 @@ class Plugin : public IPlugin {
     virtual void Uninstall();
 };
 
-} // namespace world::server
+} // namespace world::logic

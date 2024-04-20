@@ -85,7 +85,6 @@ int WSModule::Listen(const unsigned int nMaxClient, const unsigned short nPort, 
     return m_pNet->Listen(nMaxClient, nPort, nCpuCount, expand_buffer_size);
 }
 
-
 void WSModule::RemoveReceiveCallBack(const int msg_id) {
     std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msg_id);
     if (mxReceiveCallBack.end() != it) {
@@ -135,7 +134,7 @@ bool WSModule::SendPBMsg(const uint16_t msg_id, const google::protobuf::Message 
         LOG_ERROR("SendPBMsg failed serialize to string, msg_id<%v>", msg_id);
         return false;
     }
-    
+
     return SendMsg(msg_id, msg.c_str(), msg.length(), sock);
 }
 
@@ -174,7 +173,7 @@ bool WSModule::SendDataToAllClient(const std::string &msg, const bool text) {
     auto frame = EncodeFrame(msg.data(), msg.size(), text);
     bool bRet = m_pNet->SendDataToAllClient(frame.c_str(), (uint32_t)frame.length());
     if (!bRet) {
-        LOG_ERROR("SendDataToAllClient failed");
+        LOG_ERROR("SendDataToAllClient failed, size<%v>, is_text<%v>", msg.size(), text);
     }
 
     return bRet;
@@ -512,8 +511,7 @@ std::error_code WSModule::DecodeFrame(const socket_t sock, NetObject *pNetObject
         int nMsgBodyLength = DeCode(pbData, reallen, xHead);
         if (nMsgBodyLength >= 0 && xHead.GetMsgID() > 0) {
             OnReceiveNetPack(sock, xHead.GetMsgID(), pbData + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH, nMsgBodyLength);
-        }
-        else {
+        } else {
             LOG_ERROR("No this msg_id: %v", nMsgBodyLength);
         }
     } else if (fh.op == opcode::text) {

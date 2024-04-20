@@ -8,4 +8,4 @@ class IWS_Module : public IModule {
 
   public:
 };
-} // namespace proxy::server
+} // namespace proxy::node

@@ -1,5 +1,10 @@
 @echo off
-rem 删除缓存以及编译出来的文件
+rem Author: i0gan
+rem Email : l418894113@gmail.com
+rem Date  : 2023-03-10
+rem Github: https://github.com/pwnsky/squick
+rem Description: Clean all builded files
+
 cd ..
 del /f /q /s  client
 del /f /q /s  cache

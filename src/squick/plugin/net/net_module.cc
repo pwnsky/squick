@@ -58,7 +58,7 @@ bool NetModule::AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_P
     return true;
 }
 
-bool NetModule::AddReceiveCallBack(const int msg_id, const NET_CORO_RECEIVE_FUNCTOR_PTR& cb) {
+bool NetModule::AddReceiveCallBack(const int msg_id, const NET_CORO_RECEIVE_FUNCTOR_PTR &cb) {
     if (coro_funcs_.find(msg_id) == coro_funcs_.end()) {
         std::list<NET_CORO_RECEIVE_FUNCTOR_PTR> xList;
         xList.push_back(cb);
@@ -182,7 +182,7 @@ int NetModule::FixCoroutines(time_t now_time) {
             co.GetHandle().destroy();
 #ifdef SQUICK_DEV
             dout << "Destoy coroutine: " << co.GetHandle().address() << endl;
-#endif 
+#endif
             coroutines_.erase(now_iter);
             num++;
             continue;
@@ -192,7 +192,7 @@ int NetModule::FixCoroutines(time_t now_time) {
 #ifdef SQUICK_DEV
             dout << " This corotine has time out: " << co.GetHandle().address() << std::endl;
 #endif
-            // do not destroy 
+            // do not destroy
             if (!co.GetHandle().done()) {
                 co.GetHandle().resume();
             }
@@ -203,8 +203,8 @@ int NetModule::FixCoroutines(time_t now_time) {
 }
 
 void NetModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    //m_log_->LogInfo(pm_->GetAppName() + std::to_string(pm_->GetAppID()) + " NetModule::OnReceiveNetPack " +
-    //std::to_string(msg_id), __FILE__, __LINE__);
+    // m_log_->LogInfo(pm_->GetAppName() + std::to_string(pm_->GetAppID()) + " NetModule::OnReceiveNetPack " +
+    // std::to_string(msg_id), __FILE__, __LINE__);
 
     Performance performance;
 
@@ -216,10 +216,10 @@ void NetModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const ch
 
     auto co_it = coro_funcs_.find(msg_id);
     if (coro_funcs_.end() != co_it) {
-        std::list<NET_CORO_RECEIVE_FUNCTOR_PTR>& funcs = co_it->second;
+        std::list<NET_CORO_RECEIVE_FUNCTOR_PTR> &funcs = co_it->second;
         for (auto func_iter = funcs.begin(); func_iter != funcs.end(); ++func_iter) {
-            NET_CORO_RECEIVE_FUNCTOR_PTR& pFunPtr = *func_iter;
-            NET_CORO_RECEIVE_FUNCTOR* pFunc = pFunPtr.get();
+            NET_CORO_RECEIVE_FUNCTOR_PTR &pFunPtr = *func_iter;
+            NET_CORO_RECEIVE_FUNCTOR *pFunc = pFunPtr.get();
             auto co = pFunc->operator()(sock, msg_id, msg, len);
             coroutines_.push_back(co);
 #ifdef SQUICK_DEV
@@ -251,8 +251,7 @@ void NetModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const ch
     SQUICK_CRASH_END
 #endif
 
-    if (performance.CheckTimePoint(10))
-    {
+    if (performance.CheckTimePoint(10)) {
         LOG_WARN("Net handle time grate than %v, msg_id<%v>, cost time<%v>", 10, msg_id, performance.TimeScope());
     }
 

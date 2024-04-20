@@ -5,11 +5,11 @@ namespace gm::node {
 bool NodeModule::AfterStart() {
     Listen();
 
-    vector<int> node_types = { ServerType::ST_GLOBAL, ServerType::ST_DB_PROXY };
+    vector<int> node_types = {ServerType::ST_GLOBAL, ServerType::ST_DB_PROXY};
     AddNodesByType(node_types);
     return true;
 }
 
 bool NodeModule::Destroy() { return true; }
 
-}
+} // namespace gm::node

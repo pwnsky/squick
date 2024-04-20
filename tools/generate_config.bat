@@ -2,7 +2,7 @@
 rem Author: i0gan
 rem Email : l418894113@gmail.com
 rem Date  : 2022-11-27
-rem Github: https://github.com/i0gan/Squick
+rem Github: https://github.com/pwnsky/squick
 rem Description: Generate configuration files
 
 set config_path=..\config
@@ -25,7 +25,7 @@ if %errorlevel% equ 0 (
 ) else (
     echo "Excel to config Failed!"
     pause
-    exit
+    exit 1
 )
 
 rem copy to server
@@ -46,4 +46,3 @@ xcopy /s /e /y %config_path%\struct %client_config_path%\struct
 
 xcopy /s /e /y %config_path%\excel %client_config_path%\excel
 rd /s/q %config_path%\excel
-pause

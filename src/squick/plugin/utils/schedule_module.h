@@ -1,5 +1,6 @@
 #pragma once
 
+#include "i_schedule_module.h"
 #include <algorithm>
 #include <iostream>
 #include <set>
@@ -9,7 +10,6 @@
 #include <squick/core/map.h>
 #include <squick/core/performance.h>
 #include <squick/plugin/log/i_log_module.h>
-#include "i_schedule_module.h"
 
 #if PLATFORM != PLATFORM_WIN
 #include "squick/core/exception.h"
@@ -38,6 +38,7 @@ class ScheduleModule : public IScheduleModule {
     virtual bool RemoveSchedule(const Guid self, const std::string &scheduleName);
     virtual bool ExistSchedule(const Guid self, const std::string &scheduleName);
     virtual std::shared_ptr<ScheduleElement> GetSchedule(const Guid self, const std::string &scheduleName);
+
   protected:
     MapEx<Guid, MapEx<std::string, ScheduleElement>> mObjectScheduleMap;
 

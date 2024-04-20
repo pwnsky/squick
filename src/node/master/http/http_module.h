@@ -34,4 +34,4 @@ class HttpModule : public IHttpModule {
     IElementModule *m_element_;
 };
 
-} // namespace master::http_server
+} // namespace master::http

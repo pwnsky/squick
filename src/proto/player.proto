@@ -35,14 +35,11 @@ message AckPlayerEnter {
     PlayerData data = 3;
 }
 
-message ReqPlayerLeave {
-}
+message ReqPlayerLeave {}
 
-message AckPlayerLeave {
-}
+message AckPlayerLeave {}
 
-message ReqPlayerData {
-}
+message ReqPlayerData {}
 
 message AckPlayerData {
     int32 code = 1;

@@ -11,6 +11,6 @@ const int IModuolePlugin::GetPluginVersion() { return 0; }
 
 const std::string IModuolePlugin::GetPluginName() { return GET_CLASS_NAME(IModuolePlugin); }
 
-void IModuolePlugin::Install() { }
+void IModuolePlugin::Install() {}
 
-void IModuolePlugin::Uninstall() { }
+void IModuolePlugin::Uninstall() {}

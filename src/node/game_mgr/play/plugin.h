@@ -16,4 +16,4 @@ class Plugin : public IPlugin {
     virtual void Uninstall();
 };
 
-} // namespace game::play
+} // namespace gameplay_manager::play

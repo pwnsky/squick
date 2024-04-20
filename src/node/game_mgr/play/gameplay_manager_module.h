@@ -37,4 +37,4 @@ class GameplayManagerModule : public IGameplayManagerModule {
     std::vector<int> gameplayWaitDestroy;
 };
 
-} // namespace game::play
+} // namespace gameplay_manager::play

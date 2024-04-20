@@ -6,4 +6,4 @@ class INodeModule : public INodeBaseModule {
   public:
 };
 
-}
+} // namespace global::node

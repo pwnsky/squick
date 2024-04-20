@@ -45,7 +45,6 @@ class LuaPBModule : public ILuaPBModule {
     virtual bool Destroy() override;
     virtual bool ReadyUpdate() override;
     virtual bool Update() override;
-    
 
     virtual bool ImportProtoFile(const std::string &strFile);
 

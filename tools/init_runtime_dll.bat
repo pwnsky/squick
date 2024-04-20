@@ -2,7 +2,7 @@
 rem Author: i0gan
 rem Email : l418894113@gmail.com
 rem Date  : 2022-01-07
-rem Github: https://github.com/i0gan/Squick
+rem Github: https://github.com/pwnsky/squick
 rem Description: Copy Windows dependency library
 
 set project_path=%~dp0\..

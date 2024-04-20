@@ -26,9 +26,7 @@ bool HttpClientModule::Start() {
     return true;
 }
 
-bool HttpClientModule::AfterStart() {
-    return true;
-}
+bool HttpClientModule::AfterStart() { return true; }
 
 bool HttpClientModule::Update() {
     m_pHttpClient->Update(); // TODO
@@ -96,12 +94,12 @@ bool HttpClientModule::DoPost(const std::string &strUri, const std::map<std::str
     return m_pHttpClient->DoPost(strUri, strPostData, strMemo, pCB, xHeaders.size() == 0 ? m_xDefaultHttpHeaders : xHeaders, aid);
 }
 
-Awaitable<HttpClientResponseData> HttpClientModule::CoGet(const std::string& strUri, const std::map<std::string, std::string>& xHeaders) {
+Awaitable<HttpClientResponseData> HttpClientModule::CoGet(const std::string &strUri, const std::map<std::string, std::string> &xHeaders) {
     return m_pHttpClient->CoGet(strUri, xHeaders);
 }
 
-Awaitable<HttpClientResponseData> HttpClientModule::CoPost(const std::string& strUri, const std::map<std::string, std::string>& xHeaders,
-                                                     const std::string& strPostData, const std::string& strMemo) {
+Awaitable<HttpClientResponseData> HttpClientModule::CoPost(const std::string &strUri, const std::map<std::string, std::string> &xHeaders,
+                                                           const std::string &strPostData, const std::string &strMemo) {
     return m_pHttpClient->CoPost(strUri, strPostData, strMemo, xHeaders);
 }
 

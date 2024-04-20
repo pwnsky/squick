@@ -26,7 +26,7 @@ template <typename T, typename TD> class MapEx {
             return false;
         }
     }
-    
+
     virtual bool AddElement(const T &name, const std::shared_ptr<TD> data) {
         if (data == nullptr) {
             std::cout << "AddElement failed : " << std::endl;

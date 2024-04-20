@@ -1,6 +1,6 @@
 #include "plugin_server.h"
-#include <squick/core/exception.h>
 #include <squick/core/base.h>
+#include <squick/core/exception.h>
 
 PluginServer::PluginServer(const std::string &strArgv) {
     std::cout << "Start to run node with: " << strArgv << std::endl;

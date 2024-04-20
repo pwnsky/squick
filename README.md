@@ -2,7 +2,7 @@
 
 <img src="https://github.com/pwnsky/squick/wiki/images/logo.jpg" alt="logo" style="zoom: 33%;" />
 
-​	A highly scalable, high-performance, high-availability, cross-platform (Windows, Linux, MacOS) server-side framework. This framework is co-written using C++23 and Lua5.3 languages, surport c++ & lua coroutine feature, and the framework is split into the kernel layer, node layer and business layer to improve the scalability and maintainability of the program. Split business functions to run on different nodes to achieve decoupling of different functions and efficient utilization of resources. Using dynamic load balancing algorithms, tasks can be effectively distributed among different nodes to ensure system stability and performance.
+​	A highly scalable, high-performance, high-availability, cross-platform (Windows, Linux, MacOS) server-side framework. This framework is co-written using C++23 and Lua5.3 languages, surport c++ & lua coroutine feature, and the framework is split into the kernel layer, node layer and business layer to improve the scalability and maintainability of the program. Split business functions to run on different nodes to achieve decoupling of different functions and efficient utilization of resources. Using dynamic load balancing algorithms, tasks can be effectively distributed among different nodes to ensure system stability and performance. This project based on the [NoahGameFrame](https://github.com/ketoo/NoahGameFrame).
 
 **Wiki**: https://github.com/pwnsky/squick/wiki
 
@@ -13,6 +13,15 @@
 **QQ Group：739065686**
 
 **Version:** 1.1.0
+
+<div>
+<a target="_blank" href="https://discord.gg/vrdGbKqj">
+<img alt="Discord" src="https://img.shields.io/discord/1229785545656242226?color=%23738ADB&label=Discord&logo=discord&logoColor=white&style=flat-square"/>
+</a>
+<a target="_blank" href="https://qm.qq.com/q/IIsF3qbSsU">
+<img alt="QQ" src="https://img.shields.io/badge/QQ Group-%2312B7F5?logo=tencent-qq&logoColor=white&style=flat-square"/>
+</a>
+</div>
 
 ---
 

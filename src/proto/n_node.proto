@@ -6,9 +6,10 @@ package rpc;
 // only be used in inner node
 message MsgBase {
     int32 id = 1;       // sender node id
-    int64 uid = 6;      // player uid
-    int64 req_id = 5;   // request id
-    bytes msg_data = 3; // data
+    int32 msg_id = 2;   // real msg id
+    int64 uid = 3;      // player uid
+    int64 req_id = 4;   // request id
+    bytes msg_data = 5; // data
 }
 
 // Node RPC 0 ~ 500
@@ -18,7 +19,6 @@ enum NNodeRPC {
 }
 
 message NNtfNodeHeartBeat { int32 index = 1; }
-
 
 enum NErrorCode {
     NErrCommonSucc = 0;

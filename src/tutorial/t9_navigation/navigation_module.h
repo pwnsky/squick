@@ -13,6 +13,7 @@ class HelloWorld6 : public IHelloWorld6 {
   public:
     HelloWorld6(IPluginManager *p) { pm_ = p; }
     virtual bool AfterStart();
+
   protected:
     INavigationModule *m_pNavigationModule;
 };

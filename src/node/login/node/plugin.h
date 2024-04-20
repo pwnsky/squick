@@ -12,4 +12,4 @@ class Plugin : public IPlugin {
     virtual void Uninstall();
 };
 
-} // namespace login::server
+} // namespace login::node

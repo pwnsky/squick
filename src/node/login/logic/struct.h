@@ -2,8 +2,8 @@
 #include <list>
 #include <squick/plugin/net/i_request.h>
 #include <squick/plugin/net/i_response.h>
-#include <struct/struct.h>
 #include <string>
+#include <struct/struct.h>
 using namespace std;
 
 enum class LoginType {
@@ -57,9 +57,9 @@ AJSON(ReqLogin, type, account, password, token, signature, version, platform, de
 
 class AckLogin : public IResponse {
   public:
-    string token;   // 该token可用于RPC或http的token
-    string account_id;    // 账号ID
-    int limit_time; // token过期倒计时
+    string token;      // 该token可用于RPC或http的token
+    string account_id; // 账号ID
+    int limit_time;    // token过期倒计时
 
     string key;
     string ip;

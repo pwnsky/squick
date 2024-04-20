@@ -75,7 +75,7 @@ bool WorldModule::Update() {
 }
 
 std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className,
-                                                    const std::string &configIndex, const DataList &arg) {
+                                                   const std::string &configIndex, const DataList &arg) {
     std::shared_ptr<IObject> pObject;
     Guid ident = self;
 
@@ -982,7 +982,6 @@ Guid WorldModule::CreatePlayerGUID() {
     return xID;
 }
 
-
 bool WorldModule::CreateScene(const int sceneID) {
     std::shared_ptr<SceneInfo> pSceneInfo = m_scene_->GetElement(sceneID);
     if (pSceneInfo) {
@@ -1206,7 +1205,7 @@ bool WorldModule::LogInfo(const Guid ident) {
 }
 
 int WorldModule::OnPropertyCommonEvent(const Guid &self, const std::string &propertyName, const SquickData &oldVar, const SquickData &newVar,
-                                        const INT64 reason) {
+                                       const INT64 reason) {
     Performance performance;
 
     std::shared_ptr<IObject> xObject = GetElement(self);

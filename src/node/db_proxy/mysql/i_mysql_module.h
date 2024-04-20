@@ -6,5 +6,5 @@
 #include <squick/imodule/i_db_module.h>
 
 class IMysqlModule : public IDBModule {
-public:
+  public:
 };

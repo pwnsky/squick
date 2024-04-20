@@ -5,11 +5,11 @@ namespace player::node {
 bool NodeModule::AfterStart() {
     Listen();
 
-    vector<int> node_types = { ServerType::ST_WORLD, ServerType::ST_DB_PROXY, ServerType::ST_PLAYER };
+    vector<int> node_types = {ServerType::ST_WORLD, ServerType::ST_DB_PROXY, ServerType::ST_PLAYER};
     AddNodesByType(node_types);
     return true;
 }
 
 bool NodeModule::Destroy() { return true; }
 
-} // namespace player::server
+} // namespace player::node

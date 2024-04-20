@@ -10,13 +10,13 @@
 #include <squick/core/i_record.h>
 #include <squick/plugin/config/export.h>
 #include <squick/plugin/log/export.h>
-#include <string>
 #include <squick/plugin/utils/export.h>
+#include <squick/plugin/thread/export.h>
+#include <string>
 
 #include "i_cell_module.h"
-#include "i_world_module.h"
 #include "i_scene_module.h"
-
+#include "i_world_module.h"
 
 class WorldModule : public IWorldModule, public MapEx<Guid, IObject> {
   public:

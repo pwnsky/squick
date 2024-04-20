@@ -4,12 +4,12 @@
 #include <struct/struct.h>
 namespace world::node {
 bool NodeModule::AfterStart() {
-	Listen();
+    Listen();
 
-	vector<int> node_types = {};
-	AddNodesByType(node_types);
-	return true;
+    vector<int> node_types = {};
+    AddNodesByType(node_types);
+    return true;
 }
 bool NodeModule::Destroy() { return true; }
 
-} // namespace world::server
+} // namespace world::node

@@ -33,8 +33,8 @@ bool HttpModule::OnGetNodeList(std::shared_ptr<HttpRequest> req) {
     statusRoot["code"] = 0;
     statusRoot["msg"] = "";
     statusRoot["time"] = pm_->GetNowTime();
-    for (auto& s : nodes) {
-        auto& sd = s.second.info;
+    for (auto &s : nodes) {
+        auto &sd = s.second.info;
         json n;
         n["area"] = sd->area();
         n["type"] = sd->type();
@@ -57,4 +57,4 @@ bool HttpModule::OnGetNodeList(std::shared_ptr<HttpRequest> req) {
     return m_http_server_->ResponseMsg(req, statusRoot.dump(), WebStatus::WEB_OK);
 }
 
-} // namespace master::http_server
+} // namespace master::http

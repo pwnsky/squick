@@ -9,10 +9,10 @@
 
 #include "lua_pb_module.h"
 #include <squick/plugin/config/export.h>
-#include <squick/plugin/utils/export.h>
-#include <squick/plugin/world/export.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
+#include <squick/plugin/utils/export.h>
+#include <squick/plugin/world/export.h>
 
 #define LUA_UPDATE_INTERVAL_TIME 100 // ms
 
@@ -52,7 +52,6 @@ class LuaScriptModule : public ILuaScriptModule {
     virtual LuaIntf::LuaContext &GetLuaEnv();
 
   protected:
-
     // FOR KERNEL MODULE
     Guid CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className, const std::string &objectIndex,
                       const DataList &arg);
@@ -116,9 +115,9 @@ class LuaScriptModule : public ILuaScriptModule {
 
     // FOR ELEMENT MODULE
     bool ExistElementObject(const std::string &configName);
-    LuaIntf::LuaRef GetConfigIDList(const string& className);
-    LuaIntf::LuaRef GetConfig(const string& className);
-    LuaIntf::LuaRef GetConfigByID(const string& id);
+    LuaIntf::LuaRef GetConfigIDList(const string &className);
+    LuaIntf::LuaRef GetConfig(const string &className);
+    LuaIntf::LuaRef GetConfigByID(const string &id);
     INT64 GetElePropertyInt(const std::string &configName, const std::string &propertyName);
     double GetElePropertyFloat(const std::string &configName, const std::string &propertyName);
     std::string GetElePropertyString(const std::string &configName, const std::string &propertyName);
@@ -177,8 +176,9 @@ class LuaScriptModule : public ILuaScriptModule {
 
   protected:
     bool Register();
-    private:
-        INT64 last_update_time_ = 0;
+
+  private:
+    INT64 last_update_time_ = 0;
 
   protected:
     IElementModule *m_element_;

@@ -1,16 +1,14 @@
 #pragma once
 #include <squick/plugin/config/export.h>
-#include <squick/plugin/world/export.h>
 #include <squick/plugin/utils/export.h>
+#include <squick/plugin/world/export.h>
 
 namespace tutorial {
 class IEventModule : public IModule {};
 
 class EventModule : public IEventModule {
   public:
-    EventModule(IPluginManager *p) {
-        pm_ = p;
-    }
+    EventModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Start();
     virtual bool AfterStart();
@@ -33,4 +31,4 @@ class EventModule : public IEventModule {
     ::IEventModule *m_event_;
     IScheduleModule *m_schedule_;
 };
-}
+} // namespace tutorial

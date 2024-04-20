@@ -3,12 +3,11 @@
 #include "i_node_module.h"
 #include <map>
 
-
 namespace gameplay_manager::node {
 
 class NodeModule : public INodeModule {
   public:
-      NodeModule(IPluginManager *p) {
+    NodeModule(IPluginManager *p) {
         pm_ = p;
         is_update_ = true;
     }
@@ -31,4 +30,4 @@ class NodeModule : public INodeModule {
   protected:
 };
 
-} // namespace gameplay_manager::server
+} // namespace gameplay_manager::node

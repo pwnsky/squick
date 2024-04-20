@@ -47,7 +47,7 @@ class PluginServer {
 
   private:
     void ProcessParameter();
-    
+
     void StartDaemon();
     static bool GetFileContent(IPluginManager *p, const std::string &strFilePath, std::string &content);
 };

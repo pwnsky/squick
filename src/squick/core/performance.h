@@ -1,8 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include <time.h>
 #include <squick/core/base.h>
+#include <time.h>
 class Performance {
   private:
     int64_t time = 0;

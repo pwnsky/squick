@@ -20,4 +20,4 @@ class Gameplay : public IGameplay {
     virtual void AllPlayerJoined() override;
 };
 
-} // namespace game::play
+} // namespace gameplay_manager::play

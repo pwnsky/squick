@@ -14,9 +14,9 @@
 #include <string>
 #include <vector>
 
+#include "coroutine.h"
 #include "i_net.h"
 #include <squick/core/platform.h>
-#include "coroutine.h"
 
 #if PLATFORM == PLATFORM_WIN
 #include <fcntl.h>
@@ -53,12 +53,18 @@ enum HttpType {
 };
 
 enum class HttpContentType {
-    Html,Css, JavaScript,
-    Json, Text,
-    FontWoff, FontWoff2,
+    Html,
+    Css,
+    JavaScript,
+    Json,
+    Text,
+    FontWoff,
+    FontWoff2,
     Mp3,
     XMsvideo,
-    jpeg, Png, XIcon,
+    jpeg,
+    Png,
+    XIcon,
     Binary,
 };
 
@@ -108,7 +114,7 @@ class IHttpServer {
     virtual int StartServer(const unsigned short port, bool is_ssl = false) = 0;
 
     virtual bool ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason = "OK") = 0;
-    virtual bool SetHeader(std::shared_ptr<HttpRequest> req, const std::string& key, const std::string& value) = 0;
+    virtual bool SetHeader(std::shared_ptr<HttpRequest> req, const std::string &key, const std::string &value) = 0;
 
     virtual std::shared_ptr<HttpRequest> GetHttpRequest(const int64_t index) = 0;
 };

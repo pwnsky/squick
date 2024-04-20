@@ -1,12 +1,12 @@
 #pragma once
 
 #include "i_thread_pool_module.h"
+#include <atomic>
 #include <map>
+#include <squick/core/base.h>
 #include <squick/core/platform.h>
 #include <squick/core/queue.h>
 #include <string>
-#include <squick/core/base.h>
-#include <atomic>
 
 class ThreadCell : MemoryCounter {
   public:
@@ -23,11 +23,11 @@ class ThreadCell : MemoryCounter {
         is_quit_ = true;
         mThread->join();
     }
+
   protected:
     void Update() {
         ThreadTask task;
         while (is_quit_ == false) {
-            // 任务每0.1秒再执行
             std::this_thread::sleep_for(std::chrono::milliseconds(THREAD_POOL_SLEEP_TIME));
             {
                 // pick the first task and do it

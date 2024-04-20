@@ -4,7 +4,7 @@
 
 class IModuolePlugin : public IPlugin {
   public:
-      IModuolePlugin(IPluginManager *p) { pm_ = p; }
+    IModuolePlugin(IPluginManager *p) { pm_ = p; }
 
     virtual const int GetPluginVersion();
 

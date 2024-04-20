@@ -19,4 +19,4 @@ void Gameplay::PlayerJoin(const Guid &player) {}
 void Gameplay::PlayerQuit(const Guid &player) {}
 
 void Gameplay::AllPlayerJoined() {}
-} // namespace game::play
+} // namespace gameplay_manager::play

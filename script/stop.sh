@@ -2,8 +2,8 @@
 # Author: i0gan
 # Email : l418894113@gmail.com
 # Date  : 2022-11-27
-# Github: https://github.com/i0gan/Squick
-# Description: Stop servers for devlopment debug
+# Github: https://github.com/pwnsky/squick
+# Description: Stop all nodes
 
 ps -A|grep squick
 #pgrep squick | xargs kill -s 9

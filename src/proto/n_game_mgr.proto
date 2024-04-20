@@ -1,4 +1,4 @@
-// 描述: 游戏管理器 
+// 描述: 游戏管理器
 // 使用: 服务器
 syntax = "proto3";
 package rpc;
@@ -50,7 +50,7 @@ message ReqGameplayCreate {
     bytes key = 2;
     int32 game_id = 3;
     RoomDetails room = 4;
-    //repeated PlayerData players = 5;
+    // repeated PlayerData players = 5;
 }
 
 // 不用 GamePlay Manager 不用响应也行

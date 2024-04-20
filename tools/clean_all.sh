@@ -2,7 +2,7 @@
 # Author: i0gan
 # Email : l418894113@gmail.com
 # Date  : 2022-11-27
-# Github: https://github.com/i0gan/Squick
+# Github: https://github.com/pwnsky/squick
 # Description: Clean all generated files
 source common.sh
 
@@ -20,10 +20,20 @@ rm -rf ./data
 
 rm -rf ./deploy/*.log
 rm -rf ./deploy/data/logs
-rm -rf ./deploy/data/www
+rm -rf ./deploy/data/crash
 rm -rf ./src/struct/*.cs
 rm -rf ./src/struct/*.pb.h
 rm -rf ./src/struct/*.pb.cc
-rm -rf ./src/struct/protocol_define.h
+rm -rf ./src/struct/excel.h
 rm -rf ./third_party/build
 
+# clean third party
+third_party_path=`pwd`/../third_party
+cd $third_party_path
+
+rm -rf ./build
+find . -name "*.o" | xargs  rm -rf
+rm -rf ./lua/src/lua
+rm -rf ./lua/src/luac
+rm -rf ./lua/src/liblua.so
+rm -rf ./lua/src/liblua.a

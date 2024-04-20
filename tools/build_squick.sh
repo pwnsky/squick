@@ -3,7 +3,7 @@
 # Email : i0gan@pwnsky.com
 # Date  : 2022-09-25
 # Github: https://github.com/pwnsky/squick
-# Description: Build squick application and core plugins
+# Description: Build squick application and all plugins
 
 source common.sh
 

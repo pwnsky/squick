@@ -11,8 +11,8 @@ const int Plugin::GetPluginVersion() { return 0; }
 
 const std::string Plugin::GetPluginName() { return GET_CLASS_NAME(Plugin); }
 
-void Plugin::Install() { }
+void Plugin::Install() {}
 
-void Plugin::Uninstall() { }
+void Plugin::Uninstall() {}
 
 } // namespace world::logic

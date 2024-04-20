@@ -1,12 +1,15 @@
 #pragma once
 
-#include <squick/core/map.h>
 #include "i_node_module.h"
+#include <squick/core/map.h>
 #include <squick/plugin/net/export.h>
 namespace db_proxy::node {
 class NodeModule : public INodeModule {
   public:
-      NodeModule(IPluginManager* p) { pm_ = p; is_update_ = true; }
+    NodeModule(IPluginManager *p) {
+        pm_ = p;
+        is_update_ = true;
+    }
     virtual bool Destroy();
     virtual bool AfterStart();
 
@@ -17,4 +20,4 @@ class NodeModule : public INodeModule {
   protected:
 };
 
-} // namespace db_proxy::server
+} // namespace db_proxy::node

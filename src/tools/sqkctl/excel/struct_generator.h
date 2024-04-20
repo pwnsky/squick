@@ -139,9 +139,10 @@ class StructGenerator : public IGenerator {
                 std::cout << "save for struct error!!!!!---> " << fileName << std::endl;
             }
 
-            if(!structWriter) fclose(structWriter);
+            if (!structWriter)
+                fclose(structWriter);
         }
-        
+
         return false;
     }
 };

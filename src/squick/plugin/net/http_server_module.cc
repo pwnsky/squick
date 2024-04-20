@@ -39,7 +39,7 @@ int HttpServerModule::FixCoroutines(time_t now_time) {
             co.GetHandle().destroy();
 #ifdef SQUICK_DEV
             dout << "Destoy coroutine: " << co.GetHandle().address() << endl;
-#endif 
+#endif
             coroutines_.erase(now_iter);
             num++;
             continue;
@@ -49,7 +49,7 @@ int HttpServerModule::FixCoroutines(time_t now_time) {
 #ifdef SQUICK_DEV
             dout << " This corotine has time out: " << co.GetHandle().address() << std::endl;
 #endif
-            // do not destroy 
+            // do not destroy
             if (!co.GetHandle().done()) {
                 co.GetHandle().resume();
             }
@@ -67,7 +67,7 @@ int HttpServerModule::StartServer(const unsigned short nPort) {
 }
 
 bool HttpServerModule::OnReceiveNetPack(std::shared_ptr<HttpRequest> req) {
-    
+
     if (req == nullptr) {
         return false;
     }
@@ -84,8 +84,8 @@ bool HttpServerModule::OnReceiveNetPack(std::shared_ptr<HttpRequest> req) {
     if (co_funcs) {
         auto co_iter = co_funcs->find(req->path);
         if (co_funcs->end() != co_iter) {
-            HTTP_RECEIVE_CORO_FUNCTOR_PTR& pFunPtr = co_iter->second;
-            HTTP_RECEIVE_CORO_FUNCTOR* pFunc = pFunPtr.get();
+            HTTP_RECEIVE_CORO_FUNCTOR_PTR &pFunPtr = co_iter->second;
+            HTTP_RECEIVE_CORO_FUNCTOR *pFunc = pFunPtr.get();
             try {
                 // create a coroutine...
 
@@ -96,8 +96,7 @@ bool HttpServerModule::OnReceiveNetPack(std::shared_ptr<HttpRequest> req) {
 #endif
                 // to run this coroutine
                 co.GetHandle().resume();
-            }
-            catch (const std::exception& e) {
+            } catch (const std::exception &e) {
                 dout << "Http quest error: " << e.what() << std::endl;
                 ResponseMsg(req, "unknow error", WebStatus::WEB_INTER_ERROR);
             }
@@ -163,11 +162,11 @@ bool HttpServerModule::AddMsgCB(const std::string &strCommand, const HttpType eR
 
     return false;
 }
-bool HttpServerModule::AddMsgCB(const std::string& strCommand, const HttpType eRequestType, const HTTP_RECEIVE_CORO_FUNCTOR_PTR& cb) {
+bool HttpServerModule::AddMsgCB(const std::string &strCommand, const HttpType eRequestType, const HTTP_RECEIVE_CORO_FUNCTOR_PTR &cb) {
     auto it = coro_funcs_.GetElement(eRequestType);
     if (!it) {
-        coro_funcs_.AddElement(eRequestType,
-            std::shared_ptr<std::map<std::string, HTTP_RECEIVE_CORO_FUNCTOR_PTR>>(new std::map<std::string, HTTP_RECEIVE_CORO_FUNCTOR_PTR>()));
+        coro_funcs_.AddElement(
+            eRequestType, std::shared_ptr<std::map<std::string, HTTP_RECEIVE_CORO_FUNCTOR_PTR>>(new std::map<std::string, HTTP_RECEIVE_CORO_FUNCTOR_PTR>()));
     }
 
     it = coro_funcs_.GetElement(eRequestType);
@@ -176,8 +175,7 @@ bool HttpServerModule::AddMsgCB(const std::string& strCommand, const HttpType eR
         it->insert(std::map<std::string, HTTP_RECEIVE_CORO_FUNCTOR_PTR>::value_type(strCommand, cb));
 
         return true;
-    }
-    else {
+    } else {
         std::cout << eRequestType << " " << strCommand << "" << std::endl;
     }
 
@@ -192,7 +190,7 @@ bool HttpServerModule::AddFilterCB(const std::string &strCommand, const HTTP_FIL
     return true;
 }
 
-bool HttpServerModule::AddMiddlewareCB(const HTTP_FILTER_FUNCTOR_PTR& cb) {
+bool HttpServerModule::AddMiddlewareCB(const HTTP_FILTER_FUNCTOR_PTR &cb) {
     if (middleware_ == nullptr) {
         middleware_ = cb;
         return true;
@@ -204,6 +202,6 @@ bool HttpServerModule::ResponseMsg(std::shared_ptr<HttpRequest> req, const std::
     return m_pHttpServer->ResponseMsg(req, msg, code, strReason);
 }
 
-bool HttpServerModule::SetHeader(std::shared_ptr<HttpRequest> req, const std::string& key, const std::string& value) {
+bool HttpServerModule::SetHeader(std::shared_ptr<HttpRequest> req, const std::string &key, const std::string &value) {
     return m_pHttpServer->SetHeader(req, key, value);
 }

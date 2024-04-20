@@ -3,10 +3,10 @@
 #include <google/protobuf/dynamic_message.h>
 #include <squick/core/base.h>
 
-#include <squick/plugin/config/export.h>
-#include <squick/plugin/world/export.h>
-#include <squick/plugin/net/export.h>
 #include <node/game_mgr/node/i_node_module.h>
+#include <squick/plugin/config/export.h>
+#include <squick/plugin/net/export.h>
+#include <squick/plugin/world/export.h>
 
 namespace gameplay_manager::play {
 
@@ -59,4 +59,4 @@ class IGameplayManagerModule : public IModule {
   private:
     std::unordered_map<int, std::map<int, GAME_PLAY_RECEIVE_FUNCTOR_PTR>> mxReceiveCallBack;
 };
-} // namespace game::play
+} // namespace gameplay_manager::play

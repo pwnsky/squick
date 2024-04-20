@@ -11,4 +11,4 @@ class Plugin : public IPlugin {
     virtual void Install();
     virtual void Uninstall();
 };
-} // namespace master::server
+} // namespace master::node

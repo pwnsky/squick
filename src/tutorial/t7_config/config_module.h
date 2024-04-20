@@ -6,7 +6,7 @@ namespace tutorial {
 class ISimpleModule : public IModule {};
 
 class SimpleModule : public ISimpleModule {
-public:
+  public:
     SimpleModule(IPluginManager *p) {
         is_update_ = true;
         pm_ = p;
@@ -14,7 +14,8 @@ public:
     virtual bool Start();
     virtual bool AfterStart();
     virtual bool Update();
-private:
+
+  private:
 };
 
-}
+} // namespace tutorial

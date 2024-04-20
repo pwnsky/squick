@@ -191,9 +191,9 @@ bool SceneModule::LeaveSceneGroup(const Guid &self) {
         int nOldSceneID = pObject->GetPropertyInt32(excel::Scene::SceneID());
         int nOldGroupID = pObject->GetPropertyInt32(excel::Scene::GroupID());
         if (nOldGroupID <= 0) {
-            //LOG_ERROR("Guid<%v> Group<%v> id is error", self.ToString(), nOldGroupID);
-            // m_log_->LogError(self, "no this group == 0 " + std::to_string(nOldSceneID), __FUNCTION__, __LINE__);
-            // return false;
+            // LOG_ERROR("Guid<%v> Group<%v> id is error", self.ToString(), nOldGroupID);
+            //  m_log_->LogError(self, "no this group == 0 " + std::to_string(nOldSceneID), __FUNCTION__, __LINE__);
+            //  return false;
         }
 
         std::shared_ptr<SceneInfo> pOldSceneInfo = this->GetElement(nOldSceneID);
@@ -913,7 +913,7 @@ bool SceneModule::SwitchScene(const Guid &self, const int nTargetSceneID, const 
         std::shared_ptr<SceneInfo> pOldSceneInfo = this->GetElement(nOldSceneID);
         std::shared_ptr<SceneInfo> pNewSceneInfo = this->GetElement(nTargetSceneID);
         if (!pOldSceneInfo) {
-            LOG_ERROR("Guid<%v> no this scene<%v> ",self.ToString(), nOldSceneID);
+            LOG_ERROR("Guid<%v> no this scene<%v> ", self.ToString(), nOldSceneID);
             return false;
         }
 

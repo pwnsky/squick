@@ -1,9 +1,9 @@
-#! /bin/bash
+#!/bin/bash
 # Author: i0gan
 # Email : l418894113@gmail.com
-# Date  : 2022-05-07
+# Date  : 2023-05-07
 # Github: https://github.com/pwnsky/squick
-# Description: start 100 testers to test server
+# Description: Start 100 client to test server
 ulimit -c unlimited
 
 cd ../bin

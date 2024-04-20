@@ -28,19 +28,22 @@ class NetClientModule : public INetClientModule {
     ////////////////////////////////////////////////////////////////////////////////
     virtual bool IsConnected(const int node_id) override;
     virtual bool SendByID(const int serverID, const uint16_t msg_id, const std::string &strData, const uint64_t uid = 0, reqid_t req_id = 0) override;
-    virtual bool SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message& xData, const uint64_t uid = 0, reqid_t req_id = 0) override;
+    virtual bool SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0,
+                            reqid_t req_id = 0) override;
     virtual void SendToAllNode(const uint16_t msg_id, const std::string &strData, const uint64_t uid = 0) override;
     virtual void SendToAllNodeByType(const ServerType eType, const uint16_t msg_id, const std::string &strData, const uint64_t uid = 0) override;
     virtual void SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0) override;
     virtual void SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0) override;
-    
-    // coroutine
-    virtual Awaitable<NetClientResponseData>  Request(const int node_id, const uint16_t msg_id, const std::string& data, int ack_msg_id, const uint64_t uid = 0) override;
-    virtual Awaitable<NetClientResponseData>  RequestPB(const int node_id, const uint16_t msg_id, const google::protobuf::Message& pb, int ack_msg_id, const uint64_t uid = 0) override;
 
-    void CoroutineBinder(Awaitable<NetClientResponseData>* awaitble);
+    // coroutine
+    virtual Awaitable<NetClientResponseData> Request(const int node_id, const uint16_t msg_id, const std::string &data, int ack_msg_id,
+                                                     const uint64_t uid = 0) override;
+    virtual Awaitable<NetClientResponseData> RequestPB(const int node_id, const uint16_t msg_id, const google::protobuf::Message &pb, int ack_msg_id,
+                                                       const uint64_t uid = 0) override;
+
+    void CoroutineBinder(Awaitable<NetClientResponseData> *awaitble);
     reqid_t GenerateRequestID();
-    void OnAckHandler(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
+    void OnAckHandler(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
     virtual MapEx<int, ConnectData> &GetServerList();
 
@@ -86,6 +89,6 @@ class NetClientModule : public INetClientModule {
 
     ILogModule *m_log_;
 
-    reqid_t  last_req_id_ = 0;
-    std::map<reqid_t, Awaitable<NetClientResponseData>*> co_awaitbles_;
+    reqid_t last_req_id_ = 0;
+    std::map<reqid_t, Awaitable<NetClientResponseData> *> co_awaitbles_;
 };

@@ -11,11 +11,9 @@ bool LuaPBModule::Awake() {
     return true;
 }
 
-bool LuaPBModule::Start() {
-    return true;
-}
+bool LuaPBModule::Start() { return true; }
 
-bool LuaPBModule::AfterStart() { 
+bool LuaPBModule::AfterStart() {
     m_log_ = this->pm_->FindModule<ILogModule>();
     return true;
 }
@@ -45,9 +43,9 @@ bool LuaPBModule::ImportProtoFile(const std::string &strFile) {
         };
 
         ret = true;
+    } catch (exception e) {
     }
-    catch (exception e) {}
-    return ret; 
+    return ret;
 }
 
 void LuaPBModule::SetLuaState(lua_State *pState) { m_pLuaState = pState; }

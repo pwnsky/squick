@@ -1,8 +1,8 @@
 #include "http_server.h"
-#include <thread>
-#include <squick/core/base.h>
-#include <openssl/ssl.h>
 #include <event2/bufferevent_ssl.h>
+#include <openssl/ssl.h>
+#include <squick/core/base.h>
+#include <thread>
 bool HttpServer::Update() {
     if (mxBase) {
         event_base_loop(mxBase, EVLOOP_ONCE | EVLOOP_NONBLOCK);
@@ -236,11 +236,11 @@ bool HttpServer::ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string
     return true;
 }
 
-bool HttpServer::SetHeader(std::shared_ptr<HttpRequest> req, const std::string& key, const std::string& value) {
+bool HttpServer::SetHeader(std::shared_ptr<HttpRequest> req, const std::string &key, const std::string &value) {
     if (req == nullptr) {
         return false;
     }
-    evhttp_request* pHttpReq = (evhttp_request*)req->req;
+    evhttp_request *pHttpReq = (evhttp_request *)req->req;
     evhttp_add_header(evhttp_request_get_output_headers(pHttpReq), key.c_str(), value.c_str());
     return true;
 }
