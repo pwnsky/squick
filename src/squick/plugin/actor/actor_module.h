@@ -5,7 +5,7 @@
 #include <string>
 
 #include <squick/core/queue.h>
-#include <squick/plugin/utils/export.h>
+#include <squick/plugin/thread/export.h>
 
 #include "actor.h"
 #include "i_actor_module.h"

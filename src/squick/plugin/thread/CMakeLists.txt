@@ -1,6 +1,6 @@
-set(ProjectName "tutorial_t8_thread")
+set(ProjectName "core_thread")
 file(GLOB soruces *.cc)
 file(GLOB headers *.h)
 add_library(${ProjectName} SHARED ${soruces} ${headers})
 LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "tutorial" ${SQUICK_BUILD_PLUGIN_TUTORIAL_PATH} "t8_thread")
+SquickOut(${ProjectName} "squick/plugin" ${SQUICK_BUILD_PLUGIN_CORE_PATH} "thread")

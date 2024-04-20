@@ -28,7 +28,6 @@ class ThreadCell : MemoryCounter {
     void Update() {
         ThreadTask task;
         while (is_quit_ == false) {
-            // 任务每0.1秒再执行
             std::this_thread::sleep_for(std::chrono::milliseconds(THREAD_POOL_SLEEP_TIME));
             {
                 // pick the first task and do it

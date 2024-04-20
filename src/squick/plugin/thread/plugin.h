@@ -1,7 +1,7 @@
 #pragma once
 
 #include <squick/core/base.h>
-namespace squick::utils {
+namespace squick::thread {
 class Plugin : public IPlugin {
   public:
     Plugin(IPluginManager *p) { pm_ = p; }
@@ -10,4 +10,4 @@ class Plugin : public IPlugin {
     virtual void Install();
     virtual void Uninstall();
 };
-} // namespace utils
+} // namespace squick::thread

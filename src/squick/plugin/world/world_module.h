@@ -11,6 +11,7 @@
 #include <squick/plugin/config/export.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/utils/export.h>
+#include <squick/plugin/thread/export.h>
 #include <string>
 
 #include "i_cell_module.h"

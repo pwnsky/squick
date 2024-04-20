@@ -1,5 +1,5 @@
 #pragma
-#include <squick/plugin/utils/export.h>
+#include <squick/plugin/thread/export.h>
 #include <thread>
 
 class IThreadModule : public IModule {};
