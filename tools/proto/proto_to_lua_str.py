@@ -10,8 +10,9 @@ proto_str = ""
 is_find_package = False
 is_find_syntax  = False
 variable_name = "proto_code"
+project_path = '../..'
 def generate_lua_file():
-    with open('../client/proto/lua/proto.lua', 'w+', encoding='utf-8') as out:
+    with open( project_path + '/client/proto/lua/proto.lua', 'w+', encoding='utf-8') as out:
         out.write('''----------------------------------------------------------------------------------
 -- don't edit it, generated from .proto files by tools
 ----------------------------------------------------------------------------------

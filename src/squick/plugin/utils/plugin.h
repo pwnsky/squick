@@ -10,4 +10,4 @@ class Plugin : public IPlugin {
     virtual void Install();
     virtual void Uninstall();
 };
-} // namespace utils
+} // namespace squick::utils

@@ -11,9 +11,9 @@ set build_path=%project_path%\cache
 
 mkdir %build_path%
 rem 生成配置文件
-call "proto2code.bat"
-call "generate_config.bat"
-call "init_runtime_dll.bat"
+call "proto2code.bat" no_pause
+call "generate_config.bat" no_pause
+call "init_runtime_dll.bat" no_pause
 
 rem cmake 
 cd %build_path%\

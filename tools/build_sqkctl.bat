@@ -14,4 +14,9 @@ mkdir %build_path%\sqkctl
 cd %build_path%\sqkctl
 cmake %project_path%\src\tools\sqkctl
 cmake --build . 
-pause
+
+if "%1"=="no_pause" (
+    echo continue
+) else (
+    pause
+)

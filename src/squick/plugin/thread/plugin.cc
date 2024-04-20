@@ -7,10 +7,6 @@ SQUICK_EXPORT void SquickPluginUnload(IPluginManager *pm){DESTROY_PLUGIN(pm, Plu
 
 const int Plugin::GetPluginVersion() { return 0; }
 const std::string Plugin::GetPluginName() { return GET_CLASS_NAME(Plugin); }
-void Plugin::Install() {
-    REGISTER_MODULE(pm_, IThreadPoolModule, ThreadPoolModule)
-}
-void Plugin::Uninstall() {
-    UNREGISTER_MODULE(pm_, IThreadPoolModule, IThreadPoolModule)
-}
+void Plugin::Install() { REGISTER_MODULE(pm_, IThreadPoolModule, ThreadPoolModule) }
+void Plugin::Uninstall() { UNREGISTER_MODULE(pm_, IThreadPoolModule, IThreadPoolModule) }
 } // namespace squick::thread

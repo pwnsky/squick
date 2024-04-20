@@ -18,6 +18,19 @@ lua_out_path="../client/proto/lua"
 mkdir -p $csharp_out_path
 mkdir -p $lua_out_path
 
+# 生成Lua文件
+cd proto
+python3 gen_msgid.py
+check_err
+python3 proto_enum_to_lua.py
+check_err
+python3 proto_to_lua_str.py
+cd ..
+
+mkdir -p ../src/lua/proto
+cp "../src/lua/proto/enum.lua" $lua_out_path
+
+
 proto_files=$proto_path/*.proto
 for f in $proto_files
 do
@@ -30,11 +43,4 @@ done
 # remove nodes rpc files
 rm $csharp_out_path/N*.cs
 
-
-# 生成Lua文件
-mkdir -p ../src/lua/proto
-python3 proto_enum_to_lua.py
-check_err
-python3 proto_to_lua_str.py
-cp "../src/lua/proto/enum.lua" $lua_out_path
 check_err

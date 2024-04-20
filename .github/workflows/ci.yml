@@ -19,7 +19,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd tools
-          .\clone_thirdparty_build.bat
+          .\clone_thirdparty_build.bat no_pause
           
       - name: Building sqkctl tools for linux and macos
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
@@ -30,7 +30,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd tools
-          .\build_sqkctl.bat
+          .\build_sqkctl.bat no_pause
           
       - name: Building squick project for linux and macos
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
@@ -41,7 +41,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd tools
-          .\build_squick.bat
+          .\build_squick.bat no_pause
           
       - name: Geneating deploy files for linux and macos
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
@@ -54,6 +54,6 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd tools
-          .\generate_deploy.bat
+          .\generate_deploy.bat no_pause
           cd ..\deploy
           dir

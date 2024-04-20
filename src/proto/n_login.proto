@@ -12,14 +12,14 @@ enum NLoginRPC {
     NACK_PROXY_CONNECT_VERIFY = 6001;
 }
 
-message NReqConnectProxyVerify {
-    int64 session = 1; // 请求会话
+message NReqConnectProxyVerify { // msg_id=6000;desc=Verify the connection for client connecting proxy;
+    int64 session = 1;
     string account_id = 2;
     string key = 3;
     int32 proxy_node = 4;
 }
 
-message NAckConnectProxyVerify {
+message NAckConnectProxyVerify { // msg_id=6001;
     int64 session = 1;
     int32 code = 2;
     int32 area_id = 3;

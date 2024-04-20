@@ -6,9 +6,9 @@ import time
 parser_result = {}
 
 package_list = {}
-
+project_path = '../..'
 def generate_lua_file():
-    with open('../src/lua/proto/enum.lua', 'w+', encoding='utf-8') as out:
+    with open(project_path + '/src/lua/proto/enum.lua', 'w+', encoding='utf-8') as out:
         out.write('''----------------------------------------------------------------------------------
 -- don't edit it, generated from .proto files by tools
 ----------------------------------------------------------------------------------
@@ -92,7 +92,7 @@ def parse_proto(f):
                         add_enum_value(package_name, enum_name, name, v.strip())
 
 
-for root, dirs, files in os.walk('../src/proto/'):
+for root, dirs, files in os.walk(project_path + '/src/proto/'):
     for f in files:
         if f.endswith('.proto'):
             parse_proto(os.path.join(root, f))

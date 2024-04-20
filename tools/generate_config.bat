@@ -46,3 +46,9 @@ xcopy /s /e /y %config_path%\struct %client_config_path%\struct
 
 xcopy /s /e /y %config_path%\excel %client_config_path%\excel
 rd /s/q %config_path%\excel
+
+if "%1"=="no_pause" (
+    echo continue
+) else (
+    pause
+)

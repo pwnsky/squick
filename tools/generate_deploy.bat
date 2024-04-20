@@ -28,3 +28,9 @@ del /f /q /s *.lib
 
 cd..
 del /f /q /s *.sh
+
+if "%1"=="no_pause" (
+    echo continue
+) else (
+    pause
+)

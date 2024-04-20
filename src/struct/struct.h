@@ -7,12 +7,14 @@
 #include <squick/core/platform.h>
 
 #include "excel.h"
+#include "msg_id.h"
 
 #include "base.pb.h"
 #include "game.pb.h"
 #include "player.pb.h"
 #include "proxy.pb.h"
 #include "test.pb.h"
+#include "msg_id.pb.h"
 
 #include "n_db_proxy.pb.h"
 #include "n_game_mgr.pb.h"
@@ -21,3 +23,4 @@
 #include "n_node.pb.h"
 #include "n_player.pb.h"
 #include "n_world.pb.h"
+#include "n_msg_id.pb.h"

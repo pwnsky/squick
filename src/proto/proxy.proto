@@ -18,14 +18,16 @@ enum ProxyRPC {
     NC_ACK_KICK_OFF = 8010; // 被踢下线
 }
 
-message ReqConnectProxy {
+message ReqConnectProxy { // msg_id=8003; desc=Request to connect the proxy;
     string account_id = 1;
     string key = 2;
     int32 login_node = 3;
     uint64 signatrue = 4;
 }
 
-message AckConnectProxy { int32 code = 1; }
+message AckConnectProxy { // msg_id=8004; desc=Request to connect the proxy response;
+    int32 code = 1;
+}
 
 message ReqDisconnectProxy {}
 message AckDisconnectProxy { int32 code = 1; }

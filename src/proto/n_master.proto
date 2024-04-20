@@ -55,19 +55,23 @@ message Server {
 
 // message ServerList { repeated Server list = 1; }
 
-message NReqNodeRegister {
+message NReqNodeRegister {               // msg_id=500
     repeated int32 listen_type_list = 1; // set bind type, When new same type node connect to master, it will ntf self node.
     Server node = 2;
 }
 
-message NAckNodeRegister {
+message NAckNodeRegister { // msg_id=501
     int32 code = 1;
     repeated Server node_add_list = 2;
 }
 
-message NNtfNodeAdd { repeated Server node_list = 1; }
+message NNtfNodeAdd { // msg_id=509
+    repeated Server node_list = 1;
+}
 
-message NNtfNodeRemove { repeated Server node_list = 1; }
+message NNtfNodeRemove { // msg_id=500
+    repeated Server node_list = 1;
+}
 
 message NNtfNodeReport {
     int32 id = 1;
