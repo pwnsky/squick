@@ -15,7 +15,7 @@
 namespace gameplay::node {
 class NodeModule : public INodeModule {
   public:
-      NodeModule(IPluginManager *p) { pm_ = p; }
+    NodeModule(IPluginManager *p) { pm_ = p; }
 
     virtual bool Destroy();
     virtual bool AfterStart();
@@ -23,4 +23,4 @@ class NodeModule : public INodeModule {
   protected:
   private:
 };
-} // namespace gameplay::server
+} // namespace gameplay::node

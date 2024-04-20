@@ -7,4 +7,4 @@ namespace proxy::node {
 class INodeModule : public INodeBaseModule {
   public:
 };
-} // namespace proxy::server
+} // namespace proxy::node

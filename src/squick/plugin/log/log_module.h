@@ -17,8 +17,8 @@ class LogModule : public ILogModule {
 
     virtual bool Update();
     virtual void LogStack();
-    
-    virtual el::Logger* GetLogger() override;
+
+    virtual el::Logger *GetLogger() override;
 
   protected:
     static bool CheckLogFileExist(const char *filename);
@@ -31,5 +31,5 @@ class LogModule : public ILogModule {
     static unsigned int idx;
     uint64_t mnLogCountTotal;
     std::list<Performance> mxPerformanceList;
-    el::Logger* logger_ = nullptr;
+    el::Logger *logger_ = nullptr;
 };

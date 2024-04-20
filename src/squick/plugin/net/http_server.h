@@ -12,7 +12,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #ifndef S_ISDIR
-#define S_ISDIR(x) (((x)&S_IFMT) == S_IFDIR)
+#define S_ISDIR(x) (((x) & S_IFMT) == S_IFDIR)
 #endif
 
 #else
@@ -70,7 +70,7 @@ class HttpServer : public IHttpServer {
     virtual int StartServer(const unsigned short port, bool is_ssl);
 
     virtual bool ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason = "OK");
-    virtual bool SetHeader(std::shared_ptr<HttpRequest> req, const std::string& key, const std::string& value);
+    virtual bool SetHeader(std::shared_ptr<HttpRequest> req, const std::string &key, const std::string &value);
 
     virtual std::shared_ptr<HttpRequest> GetHttpRequest(const int64_t index);
 

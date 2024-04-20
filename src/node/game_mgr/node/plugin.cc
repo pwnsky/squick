@@ -19,4 +19,4 @@ void Plugin::Install() { REGISTER_MODULE(pm_, INodeModule, NodeModule) }
 
 void Plugin::Uninstall() { UNREGISTER_MODULE(pm_, INodeModule, NodeModule) }
 
-} // namespace gameplay_manager::server
+} // namespace gameplay_manager::node

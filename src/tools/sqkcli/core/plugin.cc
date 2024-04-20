@@ -1,7 +1,7 @@
 
 #include "plugin.h"
-#include "tester_module.h"
 #include "test_module.h"
+#include "tester_module.h"
 namespace tester::core {
 
 SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){CREATE_PLUGIN(pm, Plugin)};
@@ -12,13 +12,11 @@ const int Plugin::GetPluginVersion() { return 0; }
 
 const std::string Plugin::GetPluginName() { return GET_CLASS_NAME(Plugin); }
 
-void Plugin::Install() { 
-    REGISTER_MODULE(pm_, ITesterModule, TesterModule) 
-    //REGISTER_MODULE(pm_, ITestModule, TestModule) 
+void Plugin::Install() {
+    REGISTER_MODULE(pm_, ITesterModule, TesterModule)
+    // REGISTER_MODULE(pm_, ITestModule, TestModule)
 }
 
-void Plugin::Uninstall() { 
-    UNREGISTER_MODULE(pm_, ITesterModule, TesterModule);
-}
+void Plugin::Uninstall() { UNREGISTER_MODULE(pm_, ITesterModule, TesterModule); }
 
 } // namespace tester::core

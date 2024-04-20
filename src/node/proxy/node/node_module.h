@@ -4,16 +4,20 @@
 namespace proxy::node {
 class NodeModule : public INodeModule {
   public:
-    NodeModule(IPluginManager* p) { pm_ = p; is_update_ = true; }
+    NodeModule(IPluginManager *p) {
+        pm_ = p;
+        is_update_ = true;
+    }
     virtual bool Destroy();
     virtual bool AfterStart();
     virtual void OnClientConnected(socket_t sock) override;
     virtual void OnClientDisconnected(socket_t sock) override;
-    
-private:
-    void OnWebSocketClientEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet);
-private:
+
+  private:
+    void OnWebSocketClientEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
+
+  private:
     logic::ILogicModule *m_logic_;
-    IWSModule* m_ws_;
+    IWSModule *m_ws_;
 };
 } // namespace proxy::node

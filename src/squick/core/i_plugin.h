@@ -16,7 +16,7 @@
     assert((TIsDerived<classBaseName, IModule>::Result));                                                                                                      \
     assert((TIsDerived<className, classBaseName>::Result));                                                                                                    \
     IModule *UNIQUE_NAME(pRegisterModule) = new className(pManager);                                                                                           \
-    UNIQUE_NAME(pRegisterModule)->name_ = (#classBaseName);                                                                                                     \
+    UNIQUE_NAME(pRegisterModule)->name_ = (#classBaseName);                                                                                                    \
     pManager->AddModule(typeid(classBaseName).name(), UNIQUE_NAME(pRegisterModule));                                                                           \
     this->AddElement(typeid(classBaseName).name(), UNIQUE_NAME(pRegisterModule));
 

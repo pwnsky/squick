@@ -53,7 +53,7 @@ message Server {
     int32 https_port = 18;
 }
 
-//message ServerList { repeated Server list = 1; }
+// message ServerList { repeated Server list = 1; }
 
 message NReqNodeRegister {
     repeated int32 listen_type_list = 1; // set bind type, When new same type node connect to master, it will ntf self node.
@@ -65,34 +65,22 @@ message NAckNodeRegister {
     repeated Server node_add_list = 2;
 }
 
-message NNtfNodeAdd {
-    repeated Server node_list = 1;
-}
+message NNtfNodeAdd { repeated Server node_list = 1; }
 
-message NNtfNodeRemove {
-    repeated Server node_list = 1;
-}
+message NNtfNodeRemove { repeated Server node_list = 1; }
 
 message NNtfNodeReport {
     int32 id = 1;
     repeated Server list = 2;
 }
 
-message NReqNodeInfo {
-    repeated int32 id_list = 1;
-}
+message NReqNodeInfo { repeated int32 id_list = 1; }
 
-message NAckNodeInfo {
-    repeated Server list = 1;
-}
+message NAckNodeInfo { repeated Server list = 1; }
 
-message NReqMinWorkloadNodeInfo {
-    repeated int32 type_list = 1;
-}
+message NReqMinWorkloadNodeInfo { repeated int32 type_list = 1; }
 
-message NAckMinWorkloadNodeInfo {
-    repeated Server list = 1;
-}
+message NAckMinWorkloadNodeInfo { repeated Server list = 1; }
 
 message NReqNodeUnregister { int32 id = 1; }
 

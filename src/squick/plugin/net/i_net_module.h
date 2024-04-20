@@ -3,6 +3,7 @@
 #include <iosfwd>
 #include <iostream>
 
+#include "coroutine.h"
 #include "i_net.h"
 #include <squick/core/base.h>
 #include <squick/core/i_module.h>
@@ -11,7 +12,6 @@
 #include <squick/core/vector4.h>
 #include <squick/plugin/log/i_log_module.h>
 #include <struct/struct.h>
-#include "coroutine.h"
 
 #define NET_COROTINE_MAX_SURVIVAL_TIME 10
 
@@ -25,7 +25,7 @@ struct ServerInfo {
         info = NULL;
     }
 
-    enum class Status { 
+    enum class Status {
         Unknowing,
         Connecting,
         Connected,
@@ -106,8 +106,9 @@ class INetModule : public IModule {
     }
 
     template <typename BaseType>
-    bool AddReceiveCallBack(const int msg_id, BaseType* pBase, Coroutine<bool> (BaseType::* handleReceiver)(const socket_t, const int, const char*, const uint32_t)) {
-        NET_CORO_RECEIVE_FUNCTOR functor = 
+    bool AddReceiveCallBack(const int msg_id, BaseType *pBase,
+                            Coroutine<bool> (BaseType::*handleReceiver)(const socket_t, const int, const char *, const uint32_t)) {
+        NET_CORO_RECEIVE_FUNCTOR functor =
             std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
         NET_CORO_RECEIVE_FUNCTOR_PTR functorPtr(new NET_CORO_RECEIVE_FUNCTOR(functor));
 
@@ -121,12 +122,12 @@ class INetModule : public IModule {
         return AddEventCallBack(functorPtr);
     }
 
-    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, std::string &msgData, uint64_t& uid) {
+    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, std::string &msgData, uint64_t &uid) {
         rpc::MsgBase xMsg;
         if (!xMsg.ParseFromArray(msg, len)) {
             ostringstream str;
 #ifdef DEBUG
-            char szData[MAX_PATH] = { 0 };
+            char szData[MAX_PATH] = {0};
             NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
             std::cout << "--------------------" << szData << __FUNCTION__ << " " << __LINE__ << std::endl;
 #endif // DEBUG
@@ -141,16 +142,16 @@ class INetModule : public IModule {
         return true;
     }
 
-    static bool ReceivePB(const int msg_id, const std::string &strMsgData, google::protobuf::Message &xData, uint64_t& uid) {
+    static bool ReceivePB(const int msg_id, const std::string &strMsgData, google::protobuf::Message &xData, uint64_t &uid) {
         return ReceivePB(msg_id, strMsgData.c_str(), (uint32_t)strMsgData.length(), xData, uid);
     }
 
-    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, google::protobuf::Message &xData, uint64_t& uid) {
+    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, google::protobuf::Message &xData, uint64_t &uid) {
         rpc::MsgBase xMsg;
         if (!xMsg.ParseFromArray(msg, len)) {
-            
+
 #ifdef DEBUG
-            char szData[MAX_PATH] = { 0 };
+            char szData[MAX_PATH] = {0};
             NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from Packet to MsgBase, MessageID: %d\n", msg_id);
             std::cout << "--------------------" << szData << __FUNCTION__ << " " << __LINE__ << std::endl;
 #endif // DEBUG
@@ -159,9 +160,9 @@ class INetModule : public IModule {
         }
 
         if (!xData.ParseFromString(xMsg.msg_data())) {
-            
+
 #ifdef DEBUG
-            char szData[MAX_PATH] = { 0 };
+            char szData[MAX_PATH] = {0};
             NFSPRINTF(szData, MAX_PATH, "Parse Message Failed from MsgData to ProtocolData, MessageID: %d\n", msg_id);
             std::cout << "--------------------" << szData << __FUNCTION__ << " " << __LINE__ << std::endl;
 #endif // DEBUG
@@ -182,7 +183,7 @@ class INetModule : public IModule {
     virtual void RemoveReceiveCallBack(const int msg_id) = 0;
 
     virtual bool AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb) = 0;
-    virtual bool AddReceiveCallBack(const int msg_id, const NET_CORO_RECEIVE_FUNCTOR_PTR& cb) = 0;
+    virtual bool AddReceiveCallBack(const int msg_id, const NET_CORO_RECEIVE_FUNCTOR_PTR &cb) = 0;
 
     virtual bool AddReceiveCallBack(const NET_RECEIVE_FUNCTOR_PTR &cb) = 0;
 
@@ -192,7 +193,8 @@ class INetModule : public IModule {
 
     virtual bool SendMsg(const int msg_id, const std::string &msg, const socket_t sock) = 0;
     virtual bool SendMsgToAllClient(const int msg_id, const std::string &msg) = 0;
-    virtual bool SendPBToNode(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const uint64_t uid = 0, reqid_t req_id = 0) = 0;
+    virtual bool SendPBToNode(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const uint64_t uid = 0,
+                              reqid_t req_id = 0) = 0;
     virtual bool SendToNode(const uint16_t msg_id, const std::string &xData, const socket_t sock, const uint64_t uid = 0, reqid_t req_id = 0) = 0;
     virtual bool SendPBToAllNodeClient(const uint16_t msg_id, const google::protobuf::Message &xData) = 0;
 

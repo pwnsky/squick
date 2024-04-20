@@ -12,4 +12,4 @@ class Plugin : public IPlugin {
     virtual void Uninstall();
 };
 
-} // namespace gameplay::server
+} // namespace gameplay::node

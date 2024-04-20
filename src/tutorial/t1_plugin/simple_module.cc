@@ -14,9 +14,9 @@ bool SimpleModule::AfterStart() {
 
 // Update
 bool SimpleModule::Update() {
-    // 
+    //
     auto now_time = SquickGetTimeS();
-    if(now_time - last_update_time_ > 2) {
+    if (now_time - last_update_time_ > 2) {
         last_update_time_ = now_time;
         std::cout << "SimpleModule Update, time: " << now_time << std::endl;
     }
@@ -38,4 +38,4 @@ int SimpleModule::MyExportFunc() {
     return true;
 }
 
-}
+} // namespace tutorial

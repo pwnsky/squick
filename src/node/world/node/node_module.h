@@ -3,7 +3,7 @@
 namespace world::node {
 class NodeModule : public INodeModule {
   public:
-      NodeModule(IPluginManager *p) {
+    NodeModule(IPluginManager *p) {
         pm_ = p;
         is_update_ = true;
     }
@@ -17,4 +17,4 @@ class NodeModule : public INodeModule {
   private:
 };
 
-} // namespace world::server
+} // namespace world::node

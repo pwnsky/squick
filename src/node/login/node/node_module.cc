@@ -12,7 +12,7 @@ bool NodeModule::AfterStart() {
     m_net_->AddReceiveCallBack(this, &NodeModule::InvalidMessage);
     Listen();
 
-    vector<int> node_types = { };
+    vector<int> node_types = {};
     AddNodesByType(node_types);
     return true;
 }

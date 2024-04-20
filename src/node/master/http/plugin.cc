@@ -16,4 +16,4 @@ void Plugin::Install() { REGISTER_MODULE(pm_, IHttpModule, HttpModule) }
 
 void Plugin::Uninstall() { UNREGISTER_MODULE(pm_, IHttpModule, HttpModule) }
 
-} // namespace master::http_server
+} // namespace master::http

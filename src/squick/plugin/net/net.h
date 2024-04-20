@@ -14,7 +14,6 @@
 #include <thread>
 #include <unordered_map>
 
-
 class Net : public INet {
   public:
     Net() {

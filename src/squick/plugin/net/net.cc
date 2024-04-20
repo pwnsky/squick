@@ -276,7 +276,7 @@ bool Net::CloseNetObject(const socket_t sock) {
 // 拆包
 bool Net::Dismantle(NetObject *pObject) {
     bool bNeedDismantle = false;
-    
+
     int len = pObject->GetBuffLen();
     if (len >= IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
         rpcHead xHead;
@@ -300,7 +300,7 @@ bool Net::Dismantle(NetObject *pObject) {
 
             pObject->RemoveBuff(0, nMsgBodyLength + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH);
             bNeedDismantle = true;
-        }else {
+        } else {
             // pObject->IncreaseError();
             bNeedDismantle = false;
         }
@@ -380,8 +380,8 @@ int Net::StartClientNet() {
     int nSizeRead = (int)bufferevent_get_max_to_read(bev);
     int nSizeWrite = (int)bufferevent_get_max_to_write(bev);
 
-    //std::cout << "want to connect " << mstrIP << ":" << nPort << " SizeRead: " << nSizeRead << std::endl;
-    //std::cout << "SizeWrite: " << nSizeWrite << std::endl;
+    // std::cout << "want to connect " << mstrIP << ":" << nPort << " SizeRead: " << nSizeRead << std::endl;
+    // std::cout << "SizeWrite: " << nSizeWrite << std::endl;
 
     return sockfd;
 }
@@ -475,7 +475,7 @@ void Net::UpdateClose() {
 }
 
 void Net::log_cb(int severity, const char *msg) {
-    //LOG(FATAL) << "severity:" << severity << " " << msg;
+    // LOG(FATAL) << "severity:" << severity << " " << msg;
 }
 
 bool Net::IsServer() { return mbServer; }

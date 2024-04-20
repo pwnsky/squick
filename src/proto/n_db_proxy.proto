@@ -1,4 +1,4 @@
-// 描述: 数据库 
+// 描述: 数据库
 // 使用: 服务器
 syntax = "proto3";
 package rpc;
@@ -6,7 +6,7 @@ package rpc;
 // 30000 ~ 35000
 enum DbProxyRPC {
     DB_RPC_NONE = 0;
-    
+
     REQ_REDIS_QUERY = 30001;
     ACK_REDIS_QUERY = 30002;
     REQ_REDIS_GET = 30003;
@@ -47,7 +47,6 @@ enum DbProxyRPC {
     ACK_MYSQL_UPDATE = 31009;
     REQ_MYSQL_DELETE = 31010;
     ACK_MYSQL_DELETE = 31011;
-    
 
     REQ_CLICKHOUSE_QUERY = 31500;
     ACK_CLICKHOUSE_QUERY = 31501;
@@ -57,7 +56,6 @@ enum DbProxyRPC {
     ACK_CLICKHOUSE_SELECT = 31505;
     REQ_CLICKHOUSE_INSERT = 31506;
     ACK_CLICKHOUSE_INSERT = 31507;
-
 }
 
 // Proxy DB code

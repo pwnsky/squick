@@ -121,11 +121,11 @@ class IPluginManager {
     virtual void SetArea(const int id) = 0;
 
     virtual std::vector<std::string> GetArgs() const = 0;
-    virtual void SetArgs(const std::vector<std::string>& id) = 0;
+    virtual void SetArgs(const std::vector<std::string> &id) = 0;
 
-    virtual std::string FindParameterValue(const std::string& header) = 0;
-    
-    int GetArg(const std::string& header, int default_value) {
+    virtual std::string FindParameterValue(const std::string &header) = 0;
+
+    int GetArg(const std::string &header, int default_value) {
         std::string value = FindParameterValue(header);
         int ret_value;
         if (value.empty()) {
@@ -136,7 +136,7 @@ class IPluginManager {
         return ret_value;
     }
 
-    std::string GetArg(const std::string& header, const std::string &default_value) {
+    std::string GetArg(const std::string &header, const std::string &default_value) {
         std::string value = FindParameterValue(header);
         std::string ret_value;
         if (value.empty()) {

@@ -13,4 +13,4 @@ class Plugin : public IPlugin {
     virtual void Uninstall();
 };
 
-} // namespace player::server
+} // namespace player::node

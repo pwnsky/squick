@@ -4,5 +4,5 @@
 // Github: https://github.com/pwnsky/squick
 // Description: Export current plugin's all modules in a single header file
 #pragma once
-//#include <squick/core/easylogging++.h>
+// #include <squick/core/easylogging++.h>
 #include "i_log_module.h"

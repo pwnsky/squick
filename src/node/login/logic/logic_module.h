@@ -2,13 +2,12 @@
 #include "i_logic_module.h"
 #include <iostream>
 #include <map>
+#include <node/login/node/i_node_module.h>
 #include <squick/core/platform.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
 #include <struct/struct.h>
 #include <third_party/nlohmann/json.hpp>
-#include <node/login/node/i_node_module.h>
-#include <map>
 #include <unordered_map>
 
 struct LoginInfo {
@@ -39,12 +38,12 @@ class LogicModule : public ILogicModule {
     virtual bool Update();
 
   protected:
-    Coroutine<bool>  OnLogin(std::shared_ptr<HttpRequest> request);
+    Coroutine<bool> OnLogin(std::shared_ptr<HttpRequest> request);
     WebStatus Middleware(std::shared_ptr<HttpRequest> request);
     nlohmann::json GetUser(std::shared_ptr<HttpRequest> request);
     bool CheckAuth(const std::string &guid, const std::string &token);
 
-    void SetToken(const std::string& account_id, const std::string& user_token);
+    void SetToken(const std::string &account_id, const std::string &user_token);
     virtual void OnConnectProxyVerify(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
   private:
@@ -54,7 +53,8 @@ class LogicModule : public ILogicModule {
     IHttpServerModule *m_http_server_;
     node::INodeModule *m_node_;
     ILogModule *m_log_;
-private:
+
+  private:
     std::map<std::string, std::string> auth_token_;
     std::map<std::string, LoginInfo> login_info_;
 
@@ -62,4 +62,4 @@ private:
     int player_index = 0;
 };
 
-} // namespace login::http
+} // namespace login::logic

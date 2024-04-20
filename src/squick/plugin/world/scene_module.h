@@ -6,8 +6,8 @@
 #include <squick/plugin/log/export.h>
 
 #include "i_cell_module.h"
-#include "i_world_module.h"
 #include "i_scene_module.h"
+#include "i_world_module.h"
 #include <forward_list>
 #include <squick/plugin/config/export.h>
 #include <squick/plugin/utils/export.h>

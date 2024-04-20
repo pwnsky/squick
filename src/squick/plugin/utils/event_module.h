@@ -1,7 +1,7 @@
 #pragma once
 
 #include "i_event_module.h"
-//#include "i_kernel_module.h"
+// #include "i_kernel_module.h"
 #include <iostream>
 #include <squick/core/guid.h>
 #include <squick/core/i_object.h>
@@ -41,7 +41,7 @@ class EventModule : public IEventModule {
     virtual bool AddCommonEventCallBack(const OBJECT_EVENT_FUNCTOR cb);
 
   private:
-    //IWorldModule *m_world_;
+    // IWorldModule *m_world_;
 
   private:
     // for module

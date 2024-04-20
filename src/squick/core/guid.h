@@ -10,10 +10,8 @@ static INT64 nGUIDIndex;
 
 class Guid {
   public:
-
     INT64 nHead64;
     INT64 nData64;
-    
 
     static void SetInstanceID(INT64 id) {
         nGuidInstanceID = id;

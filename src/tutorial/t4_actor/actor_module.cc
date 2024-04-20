@@ -22,9 +22,9 @@ bool ActorModule::AfterStart() {
         }
 
         for (int i = 5; i < 10; ++i) {
-            m_actor_->AddEndFunc(i, [](ActorMessage& actorMessage) -> void {
+            m_actor_->AddEndFunc(i, [](ActorMessage &actorMessage) -> void {
                 // std::cout << "example 2 AddEndFunc " << actorMessage.id.ToString() << " MSGID: " << actorMessage.msg_id << std::endl;
-                });
+            });
         }
 
         for (int i = 0; i < messageCount; ++i) {
@@ -40,15 +40,11 @@ bool ActorModule::AfterStart() {
     }
     return true;
 }
-void ActorModule::RequestAsyEnd(ActorMessage& actorMessage) {
+void ActorModule::RequestAsyEnd(ActorMessage &actorMessage) {
     // std::cout << "Main thread: " << std::this_thread::get_id() << " Actor: " << actorMessage.id.ToString() << " MsgID: " << actorMessage.msg_id << " Data:"
     // << actorMessage.data << std::endl;
 }
 
-bool ActorModule::Update() {
+bool ActorModule::Update() { return true; }
 
-    return true;
-}
-
-
-}
+} // namespace tutorial

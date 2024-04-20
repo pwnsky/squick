@@ -41,6 +41,7 @@ class IActorModule : public IModule {
 
     // only be called by actor's processor
     virtual bool AddResult(const ActorMessage &message) = 0;
+
   protected:
     virtual bool AddEndFunc(const int subMessageID, ACTOR_PROCESS_FUNCTOR_PTR functorPtr_end) = 0;
 };

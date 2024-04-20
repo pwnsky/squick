@@ -6,7 +6,10 @@ namespace login::node {
 class NodeModule : public INodeModule {
 
   public:
-      NodeModule(IPluginManager* p) { pm_ = p; is_update_ = true; }
+    NodeModule(IPluginManager *p) {
+        pm_ = p;
+        is_update_ = true;
+    }
 
     virtual bool Destroy();
     virtual bool BeforeDestroy();
@@ -17,4 +20,4 @@ class NodeModule : public INodeModule {
     void InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 };
 
-} // namespace login::server
+} // namespace login::node

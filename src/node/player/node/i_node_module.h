@@ -6,4 +6,4 @@ class INodeModule : public INodeBaseModule {
   public:
 };
 
-} // namespace player::server
+} // namespace player::node

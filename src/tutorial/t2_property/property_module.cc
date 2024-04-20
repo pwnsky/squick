@@ -6,7 +6,7 @@
 namespace tutorial {
 
 int PropertyModule::OnPropertyCallBackEvent(const Guid &self, const std::string &propertyName, const SquickData &oldVar, const SquickData &newVar,
-                                           const int64_t reason) {
+                                            const int64_t reason) {
     std::cout << "OnPropertyCallBackEvent Property: " << propertyName << " OldValue: " << oldVar.GetInt() << " NewValue: " << newVar.GetInt() << std::endl;
     return 0;
 }
@@ -51,4 +51,4 @@ bool PropertyModule::AfterStart() {
     return true;
 }
 
-}
+} // namespace tutorial

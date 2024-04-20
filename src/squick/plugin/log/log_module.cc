@@ -8,7 +8,7 @@
 #include <stdarg.h>
 
 // Ref https://github.com/abumq/easyloggingpp;
-//INITIALIZE_EASYLOGGINGPP
+// INITIALIZE_EASYLOGGINGPP
 
 unsigned int LogModule::idx = 0;
 
@@ -49,7 +49,7 @@ LogModule::LogModule(IPluginManager *p) {
 
 bool LogModule::Awake() {
     mnLogCountTotal = 0;
-    
+
     string conf_path = pm_->GetArg("logconf=", "");
     if (conf_path.empty()) {
         conf_path = GetConfigPath(pm_->GetArg("type=", "default"));
@@ -69,7 +69,7 @@ bool LogModule::Awake() {
     } else {
         conf.setGlobally(el::ConfigurationType::ToStandardOutput, "false");
     }
-    
+
     el::Helpers::installPreRollOutCallback(rolloutHandler);
     logger_ = el::Loggers::getLogger(pm_->GetAppName());
     logger_->configure(conf);
@@ -77,10 +77,7 @@ bool LogModule::Awake() {
     return true;
 }
 
-bool LogModule::Start() {
-
-    return true;
-}
+bool LogModule::Start() { return true; }
 
 bool LogModule::Destroy() {
     el::Helpers::uninstallPreRollOutCallback();
@@ -100,4 +97,4 @@ void LogModule::LogStack() {
 #endif
 }
 
-el::Logger* LogModule::GetLogger() { return logger_; }
+el::Logger *LogModule::GetLogger() { return logger_; }

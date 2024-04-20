@@ -17,4 +17,4 @@ void Plugin::Install() { REGISTER_MODULE(pm_, IGameplayManagerModule, GameplayMa
 
 void Plugin::Uninstall() { UNREGISTER_MODULE(pm_, IGameplayManagerModule, GameplayManagerModule) }
 
-} // namespace game::play
+} // namespace gameplay_manager::play

@@ -25,7 +25,7 @@ class UDPModule : public IUDPModule {
     virtual bool AfterStart();
 
     // as client
-    virtual void Connect(const char *ip, const unsigned short nPort, const uint32_t expand_buffer_size = 0) override {};
+    virtual void Connect(const char *ip, const unsigned short nPort, const uint32_t expand_buffer_size = 0) override{};
 
     // as server
     virtual int Listen(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount = 4, const uint32_t expand_buffer_size = 0) override;

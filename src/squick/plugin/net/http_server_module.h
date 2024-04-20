@@ -23,14 +23,15 @@ class HttpServerModule : public IHttpServerModule {
     virtual bool Update();
 
     virtual bool ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string &msg, WebStatus code = WebStatus::WEB_OK, const std::string &reason = "OK");
-    virtual bool SetHeader(std::shared_ptr<HttpRequest> req, const std::string& key, const std::string& value);
+    virtual bool SetHeader(std::shared_ptr<HttpRequest> req, const std::string &key, const std::string &value);
+
   private:
     virtual bool OnReceiveNetPack(std::shared_ptr<HttpRequest> req);
     virtual WebStatus OnFilterPack(std::shared_ptr<HttpRequest> req);
     virtual bool AddMsgCB(const std::string &strCommand, const HttpType eRequestType, const HTTP_RECEIVE_FUNCTOR_PTR &cb);
-    virtual bool AddMsgCB(const std::string& strCommand, const HttpType eRequestType, const HTTP_RECEIVE_CORO_FUNCTOR_PTR& cb);
+    virtual bool AddMsgCB(const std::string &strCommand, const HttpType eRequestType, const HTTP_RECEIVE_CORO_FUNCTOR_PTR &cb);
     virtual bool AddFilterCB(const std::string &strCommand, const HTTP_FILTER_FUNCTOR_PTR &cb);
-    virtual bool AddMiddlewareCB(const HTTP_FILTER_FUNCTOR_PTR& cb);
+    virtual bool AddMiddlewareCB(const HTTP_FILTER_FUNCTOR_PTR &cb);
     int FixCoroutines(time_t now_time);
 
   private:

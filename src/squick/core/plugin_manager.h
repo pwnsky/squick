@@ -66,9 +66,9 @@ class PluginManager : public IPluginManager {
     virtual int GetArea() const override;
 
     virtual std::vector<std::string> GetArgs() const override;
-    virtual void SetArgs(const std::vector<std::string>& args) override;
+    virtual void SetArgs(const std::vector<std::string> &args) override;
 
-    virtual std::string FindParameterValue(const std::string& header) override;
+    virtual std::string FindParameterValue(const std::string &header) override;
 
     virtual int GetAppType() const override;
     virtual void SetAppType(const int type) override;

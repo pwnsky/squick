@@ -46,41 +46,61 @@ class INodeBaseModule : public IModule {
         last_update_time_ = now_time;
     }
 
-    static std::string EnumNodeTypeToString(ServerType type)
-    {
+    static std::string EnumNodeTypeToString(ServerType type) {
         switch (type) {
-        case ServerType::ST_MASTER: return "master";
-        case ServerType::ST_LOGIN: return "login";
-        case ServerType::ST_WORLD: return "world";
-        case ServerType::ST_DB_PROXY: return "db_proxy";
-        case ServerType::ST_PROXY: return "proxy";
-        case ServerType::ST_PLAYER: return "player";
-        case ServerType::ST_GAME_MGR: return "game_mgr";
-        case ServerType::ST_GAME: return "game";
-        case ServerType::ST_MICRO: return "micro";
-        case ServerType::ST_CDN: return "cdn";
-        case ServerType::ST_ROBOT: return "robot";
+        case ServerType::ST_MASTER:
+            return "master";
+        case ServerType::ST_LOGIN:
+            return "login";
+        case ServerType::ST_WORLD:
+            return "world";
+        case ServerType::ST_DB_PROXY:
+            return "db_proxy";
+        case ServerType::ST_PROXY:
+            return "proxy";
+        case ServerType::ST_PLAYER:
+            return "player";
+        case ServerType::ST_GAME_MGR:
+            return "game_mgr";
+        case ServerType::ST_GAME:
+            return "game";
+        case ServerType::ST_MICRO:
+            return "micro";
+        case ServerType::ST_CDN:
+            return "cdn";
+        case ServerType::ST_ROBOT:
+            return "robot";
         }
         return "";
     }
 
-    static ServerType StringNodeTypeToEnum(const std::string& type)
-    {
-        if (type == "master") return ServerType::ST_MASTER;
-        else if (type == "login") return ServerType::ST_LOGIN;
-        else if (type == "world") return ServerType::ST_WORLD;
-        else if (type == "db_proxy") return ServerType::ST_DB_PROXY;
-        else if (type == "proxy") return ServerType::ST_PROXY;
-        else if (type == "player") return ServerType::ST_PLAYER;
-        else if (type == "game_mgr") return ServerType::ST_GAME_MGR;
-        else if (type == "game") return ServerType::ST_GAME;
-        else if (type == "micro") return ServerType::ST_MICRO;
-        else if (type == "cdn") return ServerType::ST_CDN;
-        else if (type == "robot") return ServerType::ST_ROBOT;
+    static ServerType StringNodeTypeToEnum(const std::string &type) {
+        if (type == "master")
+            return ServerType::ST_MASTER;
+        else if (type == "login")
+            return ServerType::ST_LOGIN;
+        else if (type == "world")
+            return ServerType::ST_WORLD;
+        else if (type == "db_proxy")
+            return ServerType::ST_DB_PROXY;
+        else if (type == "proxy")
+            return ServerType::ST_PROXY;
+        else if (type == "player")
+            return ServerType::ST_PLAYER;
+        else if (type == "game_mgr")
+            return ServerType::ST_GAME_MGR;
+        else if (type == "game")
+            return ServerType::ST_GAME;
+        else if (type == "micro")
+            return ServerType::ST_MICRO;
+        else if (type == "cdn")
+            return ServerType::ST_CDN;
+        else if (type == "robot")
+            return ServerType::ST_ROBOT;
         return ServerType::ST_NONE;
     }
 
-    virtual bool Listen() {        
+    virtual bool Listen() {
         m_net_->AddReceiveCallBack(this, &INodeBaseModule::InvalidMessage);
         m_net_->AddEventCallBack(this, &INodeBaseModule::OnServerSocketEvent);
 
@@ -128,7 +148,7 @@ class INodeBaseModule : public IModule {
         return true;
     }
 
-    void InvalidMessage(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) { printf("Net || umsg_id=%d\n", msg_id); }
+    void InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) { printf("Net || umsg_id=%d\n", msg_id); }
 
     // Add upper server
     void OnDynamicServerAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
@@ -152,13 +172,9 @@ class INodeBaseModule : public IModule {
     //////////////////////////// PRIVATE ////////////////////////////
   private:
     // 热加载配置文件
-    virtual void OnReloadConfig(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    
-    }
+    virtual void OnReloadConfig(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
     // 热加载Lua脚本
-    virtual void OnReloadLua(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-
-    }
+    virtual void OnReloadLua(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
 
     // Report to upper server
     void UpdateState() {
@@ -192,27 +208,24 @@ class INodeBaseModule : public IModule {
         }
     }
 
-    virtual void OnClientConnected(socket_t sock) {};
-    virtual void OnClientDisconnected(socket_t sock) {};
+    virtual void OnClientConnected(socket_t sock){};
+    virtual void OnClientDisconnected(socket_t sock){};
 
     // 作为客户端连接socket事件
-    void OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet) {
+    void OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
         if (eEvent & SQUICK_NET_EVENT_EOF) {
             LOG_WARN("Net Client: SQUICK_NET_EVENT_EOF, sock<%v>", sock);
-        }
-        else if (eEvent & SQUICK_NET_EVENT_ERROR) {
+        } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
             LOG_ERROR("Net Client: SQUICK_NET_EVENT_ERROR, sock<%v>", sock);
-        }
-        else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
+        } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
             LOG_ERROR("Net Client: SQUICK_NET_EVENT_TIMEOUT, sock<%v>", sock);
-        }
-        else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
+        } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
             LOG_INFO("Net Client: SQUICK_NET_EVENT_CONNECTED connected success, sock<%v>", sock);
             OnUpperNodeConnected(pNet);
         }
     }
 
-    void OnUpperNodeConnected(INet* pNet) {
+    void OnUpperNodeConnected(INet *pNet) {
         std::shared_ptr<ConnectData> ts = m_net_client_->GetServerNetInfo(pNet);
         if (ts == nullptr) {
             ostringstream msg;
@@ -222,11 +235,12 @@ class INodeBaseModule : public IModule {
         ts->state = ConnectDataState::NORMAL;
 
         // target type only master can register
-        if (ts->type != ST_MASTER) return;
-        
+        if (ts->type != ST_MASTER)
+            return;
+
         rpc::NReqNodeRegister req;
         *req.mutable_node() = *node_info_.info.get();
-        
+
         for (auto type : node_info_.listen_types) {
             req.add_listen_type_list(type);
         }
@@ -234,8 +248,8 @@ class INodeBaseModule : public IModule {
         m_net_client_->SendPBByID(ts->id, rpc::NMasterRPC::NREQ_NODE_REGISTER, req);
         LOG_INFO("Register node <%v>", ts->name);
     }
-    
-    void OnNAckNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+
+    void OnNAckNodeRegister(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
         uint64_t uid;
         rpc::NAckNodeRegister ack;
         if (!m_net_->ReceivePB(msg_id, msg, len, ack, uid)) {
@@ -244,14 +258,13 @@ class INodeBaseModule : public IModule {
 
         if (ack.code() == 0) {
             AddNodes(ack.node_add_list());
-        }
-        else {
+        } else {
             LOG_ERROR("Node Register faild! sock<%v>", sock);
         }
     }
 
     // Add node ntf
-    void OnNNtfNodeAdd(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    void OnNNtfNodeAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
         uint64_t uid;
         rpc::NNtfNodeAdd ntf;
         if (!m_net_->ReceivePB(msg_id, msg, len, ntf, uid)) {
@@ -260,7 +273,7 @@ class INodeBaseModule : public IModule {
         AddNodes(ntf.node_list(), true);
     }
 
-    bool AddNodes(const google::protobuf::RepeatedPtrField<rpc::Server>& list, bool from_ntf = false) {
+    bool AddNodes(const google::protobuf::RepeatedPtrField<rpc::Server> &list, bool from_ntf = false) {
         for (const auto &n : list) {
             LOG_INFO("Add node from master, is_ntf<%v> added:", from_ntf, n.name());
             ConnectData s;
@@ -275,15 +288,11 @@ class INodeBaseModule : public IModule {
     }
 
     // Add node ntf
-    void OnNNtfNodeRemove(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    void OnNNtfNodeRemove(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
 
-    }
+    bool RemoveNodes() { return true; }
 
-    bool RemoveNodes() {
-        return true;
-    }
-
-    public:
+  public:
     ILogModule *m_log_;
     INetModule *m_net_;
     INetClientModule *m_net_client_;

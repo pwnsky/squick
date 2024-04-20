@@ -1,9 +1,7 @@
 
 #include "event_module.h"
 
-bool EventModule::Start() {
-    return true;
-}
+bool EventModule::Start() { return true; }
 
 bool EventModule::AfterStart() { return true; }
 

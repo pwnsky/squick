@@ -20,7 +20,7 @@
 // #define SQUICK_ENABLE_SSL 1
 #define SQUICK_DEBUG_INFO " in " << __FILE__ << " at " << __FUNCTION__ << ":" << __LINE__
 #if SQUICK_ENABLE_SSL
-//#define EVENT__HAVE_OPENSSL
+// #define EVENT__HAVE_OPENSSL
 #endif
 
 #define SQUICK_ARCHITECTURE_32 1
@@ -40,7 +40,7 @@
 #define SQUICK_COMP_VER _MSC_VER
 #elif defined(__GNUC__)
 #define SQUICK_COMPILER SQUICK_COMPILER_GNUC
-#define SQUICK_COMP_VER (((__GNUC__)*100) + (__GNUC_MINOR__ * 10) + __GNUC_PATCHLEVEL__)
+#define SQUICK_COMP_VER (((__GNUC__) * 100) + (__GNUC_MINOR__ * 10) + __GNUC_PATCHLEVEL__)
 
 #elif defined(__BORLANDC__)
 #define SQUICK_COMPILER SQUICK_COMPILER_BORL

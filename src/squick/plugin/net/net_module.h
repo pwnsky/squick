@@ -8,8 +8,8 @@
 #include <struct/struct.h>
 
 #include "i_net_module.h"
-#include <squick/core/exception.h>
 #include <squick/core/base.h>
+#include <squick/core/exception.h>
 #include <squick/plugin/log/export.h>
 
 class NetModule : public INetModule {
@@ -30,14 +30,15 @@ class NetModule : public INetModule {
 
     virtual void RemoveReceiveCallBack(const int msg_id);
     virtual bool AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb);
-    virtual bool AddReceiveCallBack(const int msg_id, const NET_CORO_RECEIVE_FUNCTOR_PTR& cb);
+    virtual bool AddReceiveCallBack(const int msg_id, const NET_CORO_RECEIVE_FUNCTOR_PTR &cb);
     virtual bool AddReceiveCallBack(const NET_RECEIVE_FUNCTOR_PTR &cb);
     virtual bool AddEventCallBack(const NET_EVENT_FUNCTOR_PTR &cb);
     virtual bool SendMsg(const int msg_id, const std::string &msg, const socket_t sock);
     virtual bool SendMsgToAllClient(const int msg_id, const std::string &msg);
 
-    //virtual bool SendPBToNode(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) override;
-    virtual bool SendPBToNode(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const uint64_t uid, reqid_t req_id = 0) override;
+    // virtual bool SendPBToNode(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) override;
+    virtual bool SendPBToNode(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const uint64_t uid,
+                              reqid_t req_id = 0) override;
     virtual bool SendToNode(const uint16_t msg_id, const std::string &xData, const socket_t sock, const uint64_t uid, reqid_t req_id = 0) override;
 
     virtual bool SendPBToAllNodeClient(const uint16_t msg_id, const google::protobuf::Message &xData) override;
@@ -55,7 +56,7 @@ class NetModule : public INetModule {
     std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>> mxReceiveCallBack;
     std::list<NET_EVENT_FUNCTOR_PTR> mxEventCallBackList;
     std::list<NET_RECEIVE_FUNCTOR_PTR> mxCallBackList;
-    std::map<int, std::list< NET_CORO_RECEIVE_FUNCTOR_PTR>> coro_funcs_;
+    std::map<int, std::list<NET_CORO_RECEIVE_FUNCTOR_PTR>> coro_funcs_;
     list<Coroutine<bool>> coroutines_;
     ILogModule *m_log_;
     time_t last_check_coroutines_time_ = 0;

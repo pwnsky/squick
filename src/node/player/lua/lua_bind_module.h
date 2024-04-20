@@ -33,8 +33,8 @@ class LuaBindModule : public ILuaBindModule {
 
   private:
     ILuaScriptModule *m_lua_script_;
-    //player::IPlayerManagerModule *m_player_manager_;
-    //node::INodeModule *m_node_;
+    // player::IPlayerManagerModule *m_player_manager_;
+    // node::INodeModule *m_node_;
 };
 
 } // namespace player::lua

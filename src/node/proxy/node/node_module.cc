@@ -10,26 +10,23 @@ bool NodeModule::AfterStart() {
     Listen();
 
     node_info_.info->set_ws_port(pm_->GetArg("ws_port=", 10502));
-    
-    m_ws_->Listen(pm_->GetArg("max_conn=", ARG_DEFAULT_MAX_CONNECTION),
-        pm_->GetArg("ws_port=", ARG_DEFAULT_WS_PORT),
-        pm_->GetArg("cpu_count=", ARG_DEFAULT_CPU_COUNT),
-        pm_->GetArg("net_server_buffer=", ARG_DEFAULT_NET_SERVER_BUFFER_SIZE));
+
+    m_ws_->Listen(pm_->GetArg("max_conn=", ARG_DEFAULT_MAX_CONNECTION), pm_->GetArg("ws_port=", ARG_DEFAULT_WS_PORT),
+                  pm_->GetArg("cpu_count=", ARG_DEFAULT_CPU_COUNT), pm_->GetArg("net_server_buffer=", ARG_DEFAULT_NET_SERVER_BUFFER_SIZE));
     m_ws_->AddEventCallBack(this, &NodeModule::OnWebSocketClientEvent);
 
-    vector<int> node_types = { ServerType::ST_WORLD, ServerType::ST_LOGIN, ServerType::ST_PLAYER };
+    vector<int> node_types = {ServerType::ST_WORLD, ServerType::ST_LOGIN, ServerType::ST_PLAYER};
     AddNodesByType(node_types);
     return true;
 }
 
-
 bool NodeModule::Destroy() { return true; }
 
-void NodeModule::OnClientConnected(socket_t sock) {  }
+void NodeModule::OnClientConnected(socket_t sock) {}
 
 void NodeModule::OnClientDisconnected(socket_t sock) { m_logic_->OnClientDisconnected(sock); }
 
-void NodeModule::OnWebSocketClientEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet* pNet) {
+void NodeModule::OnWebSocketClientEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
     if (eEvent & SQUICK_NET_EVENT_EOF) {
         m_logic_->OnClientDisconnected(sock);
     } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
@@ -40,4 +37,4 @@ void NodeModule::OnWebSocketClientEvent(socket_t sock, const SQUICK_NET_EVENT eE
         LOG_INFO("New websocket client connected, sock<%v>", sock);
     }
 }
-} // namespace proxy::server
+} // namespace proxy::node

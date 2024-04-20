@@ -13,4 +13,4 @@ class Plugin : public IPlugin {
     virtual void Uninstall();
 };
 
-}
+} // namespace global::node

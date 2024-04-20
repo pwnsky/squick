@@ -101,8 +101,7 @@ class LuaGenerator : public IGenerator {
                         ClassRecord::RecordColDesc *pRecordColDesc = itCol->second;
 
                         if (pRecordColDesc->index == i) {
-                            strRecordInfo +=
-                                "\t\t\t" + colTag + "=" + std::to_string(pRecordColDesc->index) + ",--" + pRecordColDesc->type + "\n";
+                            strRecordInfo += "\t\t\t" + colTag + "=" + std::to_string(pRecordColDesc->index) + ",--" + pRecordColDesc->type + "\n";
                         }
                     }
                 }
@@ -131,8 +130,7 @@ class LuaGenerator : public IGenerator {
                             ClassRecord::RecordColDesc *pRecordColDesc = itCol->second;
 
                             if (pRecordColDesc->index == i) {
-                                strRecordInfo +=
-                                    "\t\t\t" + colTag + "=" + std::to_string(pRecordColDesc->index) + ",--" + pRecordColDesc->type + "\n";
+                                strRecordInfo += "\t\t\t" + colTag + "=" + std::to_string(pRecordColDesc->index) + ",--" + pRecordColDesc->type + "\n";
                             }
                         }
                     }

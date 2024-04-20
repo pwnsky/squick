@@ -8,7 +8,7 @@ ThreadPoolModule::ThreadPoolModule(IPluginManager *p) {
 }
 
 ThreadPoolModule::~ThreadPoolModule() {
-    for (auto& t : mThreadPool) {
+    for (auto &t : mThreadPool) {
         t->Quit();
     }
 }
@@ -23,10 +23,7 @@ bool ThreadPoolModule::Start() {
 
 bool ThreadPoolModule::AfterStart() { return true; }
 
-bool ThreadPoolModule::BeforeDestroy() {
-
-    return true;
-}
+bool ThreadPoolModule::BeforeDestroy() { return true; }
 
 bool ThreadPoolModule::Destroy() { return true; }
 

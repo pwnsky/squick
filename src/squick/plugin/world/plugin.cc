@@ -2,8 +2,8 @@
 #include "cell_module.h"
 #include "data_tail_module.h"
 #include "elo_module.h"
-#include "world_module.h"
 #include "scene_module.h"
+#include "world_module.h"
 
 SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){CREATE_PLUGIN(pm, WorldPlugin)
 
@@ -20,22 +20,22 @@ const std::string WorldPlugin::GetPluginName() { return GET_CLASS_NAME(WorldPlug
 void WorldPlugin::Install() {
     REGISTER_MODULE(pm_, ISceneModule, SceneModule)
     REGISTER_MODULE(pm_, IWorldModule, WorldModule)
-    //REGISTER_MODULE(pm_, IEventModule, EventModule)
-    //REGISTER_MODULE(pm_, IScheduleModule, ScheduleModule)
+    // REGISTER_MODULE(pm_, IEventModule, EventModule)
+    // REGISTER_MODULE(pm_, IScheduleModule, ScheduleModule)
     REGISTER_MODULE(pm_, IDataTailModule, DataTailModule)
     REGISTER_MODULE(pm_, ICellModule, CellModule)
-    //REGISTER_MODULE(pm_, IThreadPoolModule, ThreadPoolModule)
+    // REGISTER_MODULE(pm_, IThreadPoolModule, ThreadPoolModule)
     REGISTER_MODULE(pm_, IELOModule, ELOModule)
 }
 
 void WorldPlugin::Uninstall() {
 
     UNREGISTER_MODULE(pm_, IELOModule, ELOModule)
-    //UNREGISTER_MODULE(pm_, IThreadPoolModule, ThreadPoolModule)
+    // UNREGISTER_MODULE(pm_, IThreadPoolModule, ThreadPoolModule)
     UNREGISTER_MODULE(pm_, ICellModule, CellModule)
     UNREGISTER_MODULE(pm_, IDataTailModule, DataTailModule)
-    //UNREGISTER_MODULE(pm_, IEventModule, EventModule)
+    // UNREGISTER_MODULE(pm_, IEventModule, EventModule)
     UNREGISTER_MODULE(pm_, IWorldModule, WorldModule)
     UNREGISTER_MODULE(pm_, ISceneModule, SceneModule)
-    //UNREGISTER_MODULE(pm_, IScheduleModule, ScheduleModule)
+    // UNREGISTER_MODULE(pm_, IScheduleModule, ScheduleModule)
 }

@@ -1,12 +1,12 @@
 #pragma once
 
 #include "i_thread_pool_module.h"
+#include <atomic>
 #include <map>
+#include <squick/core/base.h>
 #include <squick/core/platform.h>
 #include <squick/core/queue.h>
 #include <string>
-#include <squick/core/base.h>
-#include <atomic>
 
 class ThreadCell : MemoryCounter {
   public:
@@ -23,6 +23,7 @@ class ThreadCell : MemoryCounter {
         is_quit_ = true;
         mThread->join();
     }
+
   protected:
     void Update() {
         ThreadTask task;

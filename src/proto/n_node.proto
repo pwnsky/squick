@@ -20,7 +20,6 @@ enum NNodeRPC {
 
 message NNtfNodeHeartBeat { int32 index = 1; }
 
-
 enum NErrorCode {
     NErrCommonSucc = 0;
     NErrCommonFaild = 1;

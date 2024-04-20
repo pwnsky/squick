@@ -3,23 +3,23 @@
 #include "plugin.h"
 
 namespace master::node {
-    NodeModule::~NodeModule() {}
+NodeModule::~NodeModule() {}
 
 bool NodeModule::Destroy() { return true; }
 
 bool NodeModule::AfterStart() {
-    
+
     m_net_->AddReceiveCallBack(rpc::NMasterRPC::NREQ_NODE_REGISTER, this, &NodeModule::OnNReqNodeRegister);
     m_net_->AddReceiveCallBack(rpc::NMasterRPC::NREQ_NODE_UNREGISTER, this, &NodeModule::OnNReqNodeUnregistered);
     m_net_->AddReceiveCallBack(rpc::NMasterRPC::NNTF_NODE_REPORT, this, &NodeModule::OnNNtfNodeReport);
     m_net_->AddReceiveCallBack(rpc::NMasterRPC::NREQ_MIN_WORKLOAD_NODE_INFO, this, &NodeModule::OnNReqMinWorkNodeInfo);
     m_net_->AddReceiveCallBack(rpc::NMasterRPC::NNTF_NODE_MSG_FORWARD, this, &NodeModule::OnNNtfNodeMsgForward);
     Listen();
-    
+
     return true;
 }
 
-void NodeModule::OnNReqNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+void NodeModule::OnNReqNodeRegister(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     uint64_t uid;
     rpc::NReqNodeRegister req;
     if (!m_net_->ReceivePB(msg_id, msg, len, req, uid)) {
@@ -28,8 +28,8 @@ void NodeModule::OnNReqNodeRegister(const socket_t sock, const int msg_id, const
     rpc::NAckNodeRegister ack;
     int new_node_id = 0;
     ack.set_code(1);
-    do {        
-        auto& new_node = req.node();
+    do {
+        auto &new_node = req.node();
         new_node_id = new_node.id();
         if (new_node_id == pm_->GetAppID() || new_node_id == 0) {
             break;
@@ -53,10 +53,12 @@ void NodeModule::OnNReqNodeRegister(const socket_t sock, const int msg_id, const
         for (auto s : node_map_) {
             auto s_info = s.second.info;
             // except self
-            if (s_info->id() == new_node_id) continue;
+            if (s_info->id() == new_node_id)
+                continue;
 
             // except no subscribe type
-            if(!IsHaveThisType(types, s_info->type())) continue;
+            if (!IsHaveThisType(types, s_info->type()))
+                continue;
 
             auto add_node = ack.add_node_add_list();
             *add_node = *s_info;
@@ -80,7 +82,8 @@ void NodeModule::AddSubscribeNode(int new_node_id, vector<int> types) {
 }
 
 void NodeModule::NtfSubscribNode(int new_node_id) {
-    if (new_node_id == 0) return;
+    if (new_node_id == 0)
+        return;
     auto iter = node_map_.find(new_node_id);
     if (iter == node_map_.end()) {
         LOG_ERROR("NtfSubscribNode error id<%v>", new_node_id);
@@ -91,9 +94,11 @@ void NodeModule::NtfSubscribNode(int new_node_id) {
     int new_node_type = new_node->type();
     for (auto ns : nodes_subscribe_) {
         int type = ns.first;
-        if (type != new_node_type) continue;
+        if (type != new_node_type)
+            continue;
         for (auto sub_id : ns.second) {
-            if (sub_id == new_node_id) continue;
+            if (sub_id == new_node_id)
+                continue;
             rpc::NNtfNodeAdd ntf;
             auto p = ntf.add_node_list();
             *p = *new_node;
@@ -103,8 +108,8 @@ void NodeModule::NtfSubscribNode(int new_node_id) {
     }
 }
 
-bool NodeModule::SendPBByID(const int node_id, const uint16_t msg_id, const google::protobuf::Message& pb) {
-    
+bool NodeModule::SendPBByID(const int node_id, const uint16_t msg_id, const google::protobuf::Message &pb) {
+
     auto iter = node_map_.find(node_id);
     if (iter == node_map_.end()) {
         LOG_ERROR("SendPBByID no this node id<%v>", node_id);
@@ -113,24 +118,24 @@ bool NodeModule::SendPBByID(const int node_id, const uint16_t msg_id, const goog
     return m_net_->SendPBToNode(msg_id, pb, iter->second.fd);
 }
 
-void NodeModule::OnNReqNodeUnregistered(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+void NodeModule::OnNReqNodeUnregistered(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     uint64_t uid;
     rpc::NReqNodeUnregister req;
     if (!m_net_->ReceivePB(msg_id, msg, len, req, uid)) {
         return;
     }
-    
+
     int id = req.id();
     auto iter = node_map_.find(id);
     if (iter != node_map_.end()) {
         node_map_.erase(iter);
     }
-    //m_log_->LogInfo(Guid(0, id, s.name(), " UnRegistered");
+    // m_log_->LogInfo(Guid(0, id, s.name(), " UnRegistered");
 }
 
 // Master
-void NodeModule::OnNNtfNodeReport(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    
+void NodeModule::OnNNtfNodeReport(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+
     uint64_t uid;
     rpc::NNtfNodeReport ntf;
     if (!INetModule::ReceivePB(msg_id, msg, len, ntf, uid)) {
@@ -161,11 +166,11 @@ void NodeModule::OnNNtfNodeReport(const socket_t sock, const int msg_id, const c
     } while (false);
 }
 
-void NodeModule::OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+void NodeModule::OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     rpc::NReqMinWorkloadNodeInfo req;
     rpc::NAckMinWorkloadNodeInfo ack;
     string guid;
-    
+
     rpc::MsgBase msg_base;
     if (!msg_base.ParseFromArray(msg, len)) {
         return;
@@ -175,7 +180,8 @@ void NodeModule::OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, co
     }
     for (auto type : req.type_list()) {
         int id = GetLoadBanlanceNode((ServerType)type);
-        if (id == -1) continue;
+        if (id == -1)
+            continue;
         auto p = ack.add_list();
         auto iter = node_map_.find(id);
         *p = *iter->second.info;
@@ -184,14 +190,12 @@ void NodeModule::OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, co
     m_net_->SendPBToNode(rpc::NMasterRPC::NACK_MIN_WORKLOAD_NODE_INFO, ack, sock, 0, req_id);
 }
 
-void NodeModule::OnNNtfNodeMsgForward(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
-    
-}
+void NodeModule::OnNNtfNodeMsgForward(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
 
 int NodeModule::GetLoadBanlanceNode(ServerType type) {
     int node_id = -1;
     int min_workload = 99999;
-    for (auto& iter : node_map_) {
+    for (auto &iter : node_map_) {
         auto server = iter.second;
         if (server.info->type() == type && server.info->area() == pm_->GetArea()) {
             if (min_workload > server.info->workload()) {
@@ -205,6 +209,6 @@ int NodeModule::GetLoadBanlanceNode(ServerType type) {
     return node_id;
 }
 
-map<int, ServerInfo>& NodeModule::GetAllNodes() { return node_map_; }
+map<int, ServerInfo> &NodeModule::GetAllNodes() { return node_map_; }
 
-} // namespace master::server
+} // namespace master::node

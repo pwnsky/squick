@@ -2,9 +2,9 @@
 #ifndef SQUICK_HTTP_CLIENT_H
 #define SQUICK_HTTP_CLIENT_H
 
+#include "coroutine.h"
 #include "i_http_client.h"
 #include "i_http_server.h"
-#include "coroutine.h"
 
 #if PLATFORM == PLATFORM_WIN
 #include <fcntl.h>
@@ -12,7 +12,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #ifndef S_ISDIR
-#define S_ISDIR(x) (((x)&S_IFMT) == S_IFDIR)
+#define S_ISDIR(x) (((x) & S_IFMT) == S_IFDIR)
 #endif
 
 #else
@@ -84,18 +84,20 @@ class HttpClient : public IHttpClient {
     virtual bool DoPost(const std::string &strUri, const std::string &strPostData, const std::string &strMemoData, HTTP_RESP_FUNCTOR_PTR pCB,
                         const std::map<std::string, std::string> &xHeaders, const Guid id = Guid());
 
-    virtual Awaitable<HttpClientResponseData> CoGet(const std::string& url, const std::map<std::string, std::string>& xHeaders) override;
+    virtual Awaitable<HttpClientResponseData> CoGet(const std::string &url, const std::map<std::string, std::string> &xHeaders) override;
     virtual Awaitable<HttpClientResponseData> CoPost(const std::string &url, const std::string &strPostData, const std::string &strMemoData,
                                                      const std::map<std::string, std::string> &xHeaders) override;
+
   private:
     static void OnHttpReqDone(struct evhttp_request *req, void *ctx);
-    void CoroutineBinder(Awaitable<HttpClientResponseData>* http_await);
-    void CoroutineResponseHandler(const Guid id, const int state_code, const std::string& strRespData, const std::string& strMemoData);
+    void CoroutineBinder(Awaitable<HttpClientResponseData> *http_await);
+    void CoroutineResponseHandler(const Guid id, const int state_code, const std::string &strRespData, const std::string &strMemoData);
 
     bool MakeRequest(const std::string &strUri, HTTP_RESP_FUNCTOR_PTR pCB, const std::string &strPostData, const std::map<std::string, std::string> &xHeaders,
                      const HttpType eHttpType, const std::string &strMemoData, const Guid id = Guid());
-    
+
     reqid_t GenerateRequestID();
+
   private:
     std::string m_strUserAgent;
     struct event_base *m_pBase = nullptr;
@@ -104,8 +106,8 @@ class HttpClient : public IHttpClient {
     int m_nTimeOut = 30;
 
     std::list<HttpObject *> mlHttpObject;
-    reqid_t  last_req_id_ = 0;
-    std::map<reqid_t, Awaitable<HttpClientResponseData>*> co_awaitbles_;
+    reqid_t last_req_id_ = 0;
+    std::map<reqid_t, Awaitable<HttpClientResponseData> *> co_awaitbles_;
 #if SQUICK_ENABLE_SSL
     SSL_CTX *m_pSslCtx = nullptr;
 #endif

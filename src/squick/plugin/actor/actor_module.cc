@@ -32,7 +32,8 @@ bool ActorModule::Update() {
 
 std::shared_ptr<IActor> ActorModule::CreateActor() {
     guid_index_++;
-    if (guid_index_ > 0x7fffffffff) guid_index_ = 1;
+    if (guid_index_ > 0x7fffffffff)
+        guid_index_ = 1;
     Guid guid = Guid(SquickGetTimeMS(), 0);
     std::shared_ptr<IActor> pActor = std::shared_ptr<IActor>(new Actor(guid, this));
     mxActorMap.insert(std::map<Guid, std::shared_ptr<IActor>>::value_type(pActor->ID(), pActor));
@@ -108,9 +109,7 @@ bool ActorModule::ReleaseActor(const Guid nActorIndex) {
     return false;
 }
 
-bool ActorModule::AddEndFunc(const int subMessageID, ACTOR_PROCESS_FUNCTOR_PTR functorPtr_end) {
-    return mxEndFunctor.AddElement(subMessageID, functorPtr_end);
-}
+bool ActorModule::AddEndFunc(const int subMessageID, ACTOR_PROCESS_FUNCTOR_PTR functorPtr_end) { return mxEndFunctor.AddElement(subMessageID, functorPtr_end); }
 
 bool ActorModule::SendMsgToActor(const Guid actorIndex, const ActorMessage &message) {
     auto it = mxActorMap.find(actorIndex);

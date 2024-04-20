@@ -77,16 +77,13 @@ void DefaultStartUp(std::string strArgvList, std::vector<std::shared_ptr<PluginS
     AddPluginServer(serverList, "type=proxy id=500 area=0 ip=127.0.0.1 port=10501 ws_port=10502 master_ip=127.0.0.1 master_port=10001");
 }
 
-void TutorialStartUp(std::string strArgvList, std::vector<std::shared_ptr<PluginServer>>& serverList) {
+void TutorialStartUp(std::string strArgvList, std::vector<std::shared_ptr<PluginServer>> &serverList) {
     AddPluginServer(serverList, "type=tutorial/t1_plugin");
     AddPluginServer(serverList, "type=tutorial/t5_http");
 }
 
-
 bool squick_loop_ = true;
-void SquickExit(int sig) {
-    squick_loop_ = false;
-}
+void SquickExit(int sig) { squick_loop_ = false; }
 
 #if PLATFORM == PLATFORM_WIN
 BOOL WINAPI HandlerRoutine(DWORD ctrl_type) {
@@ -111,34 +108,32 @@ int main(int argc, char *argv[]) {
 
     PrintLogo();
 
-    if (argc == 1)
-    {
+    if (argc == 1) {
 #ifdef SQUICK_DEV
         DefaultStartUp(strArgvList, serverList);
-        //TutorialStartUp(strArgvList, serverList);
+        // TutorialStartUp(strArgvList, serverList);
 #else
         SQUICK_PRINT("<<  Squick  Help >>\n"
-                "Squick args usage:\n"
-                "       type: Set your app type;                                    default: proxy\n"
-                "       -d    : Run squick in background                            default: not set\n"
-                "       id    : Set your node id;                                   default: id=1\n"
-                "       type  : node type to run                                    default: type=proxy\n"
-                "       area  : The current node area;                              default: area=0\n"
-                "       ip    : The current node network ip;                        default: ip=127.0.0.1\n"
-                "       port  : The current node network port;                      default: port=10002\n"
-                "       public_ip    : The current node network public ip;          default: public_ip=127.0.0.1\n"
-                "       http_port    : The current node http port;                  default: http_port=80\n"
-                "       https_port   : The current node https port;                 default: https_port=443\n"
-                "       master_ip    : The master network ip for node connection;   default: master_ip=127.0.0.1\n"
-                "       master_port  : The master network port for node connection; default: master_port=10001\n"
-                "       logshow      : Is open log output to stdout;                default: logshow=1\n"
-                "Examples: ./squick type=master id=1 area=0 ip=127.0.0.1 port=10001 http_port=8888\n");
+                     "Squick args usage:\n"
+                     "       type: Set your app type;                                    default: proxy\n"
+                     "       -d    : Run squick in background                            default: not set\n"
+                     "       id    : Set your node id;                                   default: id=1\n"
+                     "       type  : node type to run                                    default: type=proxy\n"
+                     "       area  : The current node area;                              default: area=0\n"
+                     "       ip    : The current node network ip;                        default: ip=127.0.0.1\n"
+                     "       port  : The current node network port;                      default: port=10002\n"
+                     "       public_ip    : The current node network public ip;          default: public_ip=127.0.0.1\n"
+                     "       http_port    : The current node http port;                  default: http_port=80\n"
+                     "       https_port   : The current node https port;                 default: https_port=443\n"
+                     "       master_ip    : The master network ip for node connection;   default: master_ip=127.0.0.1\n"
+                     "       master_port  : The master network port for node connection; default: master_port=10001\n"
+                     "       logshow      : Is open log output to stdout;                default: logshow=1\n"
+                     "Examples: ./squick type=master id=1 area=0 ip=127.0.0.1 port=10001 http_port=8888\n");
         "\n";
 #endif // DEBUG
     } else {
         serverList.push_back(std::shared_ptr<PluginServer>(new PluginServer(strArgvList)));
     }
-    
 
 #if PLATFORM == PLATFORM_WIN
     SetConsoleCtrlHandler(HandlerRoutine, TRUE);

@@ -27,7 +27,7 @@ PluginManager::~PluginManager() {}
 
 bool PluginManager::LoadPlugin() {
     SQUICK_PRINT("[" + GetAppName() + "] Start to load plugin");
-    for (auto& info : plugins_) {
+    for (auto &info : plugins_) {
         SQUICK_PRINT("[" + GetAppName() + "] Loading plugin: " + info.path);
         LoadPluginLibrary(info.path);
     }
@@ -219,9 +219,9 @@ inline int PluginManager::GetArea() const { return area_; }
 
 inline std::vector<std::string> PluginManager::GetArgs() const { return args_; }
 
-inline void PluginManager::SetArgs(const std::vector<std::string> & args) { args_ = args; }
+inline void PluginManager::SetArgs(const std::vector<std::string> &args) { args_ = args; }
 
-inline std::string PluginManager::FindParameterValue(const std::string& header) {
+inline std::string PluginManager::FindParameterValue(const std::string &header) {
     for (int i = 0; i < args_.size(); i++) {
         std::string name = args_[i];
         if (name.find(header) != string::npos) {

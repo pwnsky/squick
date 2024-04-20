@@ -2,9 +2,8 @@
 #include "http_client.h"
 #include "net_module.h"
 
-
-#include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <openssl/ssl.h>
 
 #if PLATFORM == PLATFORM_WIN
 #define snprintf _snprintf
@@ -309,9 +308,9 @@ reqid_t HttpClient::GenerateRequestID() {
     return last_req_id_;
 }
 
-Awaitable<HttpClientResponseData> HttpClient::CoGet(const std::string& url, const std::map<std::string, std::string>& xHeaders) {
-    HTTP_RESP_FUNCTOR_PTR pd(
-        new HTTP_RESP_FUNCTOR(std::bind(&HttpClient::CoroutineResponseHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+Awaitable<HttpClientResponseData> HttpClient::CoGet(const std::string &url, const std::map<std::string, std::string> &xHeaders) {
+    HTTP_RESP_FUNCTOR_PTR pd(new HTTP_RESP_FUNCTOR(
+        std::bind(&HttpClient::CoroutineResponseHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
     auto req_id = GenerateRequestID();
     Awaitable<HttpClientResponseData> awaitbale;
     awaitbale.data_.req_id = req_id;
@@ -321,8 +320,8 @@ Awaitable<HttpClientResponseData> HttpClient::CoGet(const std::string& url, cons
 }
 Awaitable<HttpClientResponseData> HttpClient::CoPost(const std::string &url, const std::string &strPostData, const std::string &strMemoData,
                                                      const std::map<std::string, std::string> &xHeaders) {
-    HTTP_RESP_FUNCTOR_PTR pd(
-    new HTTP_RESP_FUNCTOR(std::bind(&HttpClient::CoroutineResponseHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+    HTTP_RESP_FUNCTOR_PTR pd(new HTTP_RESP_FUNCTOR(
+        std::bind(&HttpClient::CoroutineResponseHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
     auto req_id = GenerateRequestID();
     Awaitable<HttpClientResponseData> awaitbale;
     awaitbale.data_.req_id = req_id;
@@ -331,7 +330,7 @@ Awaitable<HttpClientResponseData> HttpClient::CoPost(const std::string &url, con
     return awaitbale;
 }
 
-void HttpClient::CoroutineBinder(Awaitable<HttpClientResponseData>* awaitble) {
+void HttpClient::CoroutineBinder(Awaitable<HttpClientResponseData> *awaitble) {
     if (awaitble == nullptr) {
         dout << "awaitble is nullptr\n";
         return;
@@ -340,14 +339,12 @@ void HttpClient::CoroutineBinder(Awaitable<HttpClientResponseData>* awaitble) {
     auto iter = co_awaitbles_.find(req_id);
     if (iter == co_awaitbles_.end()) {
         co_awaitbles_[req_id] = awaitble;
-    }
-    else {
-        dout << "CoroutineBinder: same req id in a map, req id: " << req_id
-            << " address: " << awaitble->coro_handle_.address() << std::endl;
+    } else {
+        dout << "CoroutineBinder: same req id in a map, req id: " << req_id << " address: " << awaitble->coro_handle_.address() << std::endl;
     }
 }
 
-void HttpClient::CoroutineResponseHandler(const Guid id, const int state_code, const std::string& strRespData, const std::string& strMemoData) {
+void HttpClient::CoroutineResponseHandler(const Guid id, const int state_code, const std::string &strRespData, const std::string &strMemoData) {
     dout << "CoroutineResponseHandler: \n";
     reqid_t req_id = id.nData64;
     auto iter = co_awaitbles_.find(req_id);

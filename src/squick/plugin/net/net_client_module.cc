@@ -84,7 +84,8 @@ int NetClientModule::AddEventCallBack(const ServerType eType, NET_EVENT_FUNCTOR_
     return 0;
 }
 bool NetClientModule::IsConnected(const int node_id) {
-    std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(node_id);;
+    std::shared_ptr<ConnectData> pServer = mxServerMap.GetElement(node_id);
+    ;
     if (pServer) {
         if (pServer->state == ConnectDataState::NORMAL) {
             return true;
@@ -184,8 +185,8 @@ void NetClientModule::SendPBToAllNodeByType(const ServerType eType, const uint16
     }
 }
 
-Awaitable<NetClientResponseData>  NetClientModule::Request(const int node_id, const uint16_t msg_id, const std::string& data, int ack_msg_id,
-                                                           const uint64_t uid) {
+Awaitable<NetClientResponseData> NetClientModule::Request(const int node_id, const uint16_t msg_id, const std::string &data, int ack_msg_id,
+                                                          const uint64_t uid) {
     Awaitable<NetClientResponseData> awaitbale;
 
     auto req_id = GenerateRequestID();
@@ -197,7 +198,7 @@ Awaitable<NetClientResponseData>  NetClientModule::Request(const int node_id, co
     return awaitbale;
 }
 
-Awaitable<NetClientResponseData>  NetClientModule::RequestPB(const int node_id, const uint16_t msg_id, const google::protobuf::Message& pb, int ack_msg_id,
+Awaitable<NetClientResponseData> NetClientModule::RequestPB(const int node_id, const uint16_t msg_id, const google::protobuf::Message &pb, int ack_msg_id,
                                                             const uint64_t uid) {
     Awaitable<NetClientResponseData> awaitbale;
 
@@ -210,7 +211,7 @@ Awaitable<NetClientResponseData>  NetClientModule::RequestPB(const int node_id, 
     return awaitbale;
 }
 
-void NetClientModule::CoroutineBinder(Awaitable<NetClientResponseData>* awaitble) {
+void NetClientModule::CoroutineBinder(Awaitable<NetClientResponseData> *awaitble) {
     if (awaitble == nullptr) {
         LOG_ERROR("CoroutineBinder %v", "awaitble is nullptr");
         return;
@@ -219,8 +220,7 @@ void NetClientModule::CoroutineBinder(Awaitable<NetClientResponseData>* awaitble
     auto iter = co_awaitbles_.find(req_id);
     if (iter == co_awaitbles_.end()) {
         co_awaitbles_[req_id] = awaitble;
-    }
-    else {
+    } else {
         LOG_ERROR("CoroutineBinder: same req id in a map, req id<%v> address<%v> ", req_id, awaitble->coro_handle_.address());
     }
 }
@@ -233,13 +233,14 @@ reqid_t NetClientModule::GenerateRequestID() {
     return last_req_id_;
 }
 
-void NetClientModule::OnAckHandler(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+void NetClientModule::OnAckHandler(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     rpc::MsgBase msg_base;
     if (!msg_base.ParseFromArray(msg, len)) {
         return;
     }
     reqid_t req_id = msg_base.req_id();
-    if (req_id == 0) return;
+    if (req_id == 0)
+        return;
 
     auto iter = co_awaitbles_.find(req_id);
     if (iter == co_awaitbles_.end()) {
@@ -455,7 +456,7 @@ void NetClientModule::ProcessNetConnect() {
     if (mxTempNetList.size() > 0) {
         std::list<ConnectData>::iterator it = mxTempNetList.begin();
         for (; it != mxTempNetList.end(); ++it) {
-            const ConnectData& cd = *it;
+            const ConnectData &cd = *it;
             std::shared_ptr<ConnectData> sd = mxServerMap.GetElement(cd.id);
             if (nullptr == sd) {
                 sd = std::shared_ptr<ConnectData>(new ConnectData());
@@ -481,14 +482,11 @@ void NetClientModule::ProcessNetConnect() {
                 StartCallBacks(sd);
 
                 mxServerMap.AddElement(cd.id, sd);
-            }
-            else {
+            } else {
                 // cannot connect one id twice
             }
         }
 
         mxTempNetList.clear();
     }
-
-    
 }
