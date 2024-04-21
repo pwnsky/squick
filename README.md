@@ -12,7 +12,7 @@
 
 **QQ Group：739065686**
 
-**Version:** 1.1.0
+**Version:** 1.1.1
 
 <div>
 <a target="_blank" href="https://discord.gg/vrdGbKqj">
