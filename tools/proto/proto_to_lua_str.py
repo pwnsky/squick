@@ -43,7 +43,7 @@ def parse_proto(f):
                     continue
                 proto_str += line
 
-for root, dirs, files in os.walk('../src/proto/'):
+for root, dirs, files in os.walk(project_path + '/src/proto/'):
     for f in files:
         file_name = os.path.basename(f)
         if f.endswith('.proto') and f.startswith("n_") == False:
