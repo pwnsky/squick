@@ -273,14 +273,14 @@ bool Net::CloseNetObject(const socket_t sock) {
     return false;
 }
 
-// 拆包
+// Decode the package
 bool Net::Dismantle(NetObject *pObject) {
     bool bNeedDismantle = false;
 
     int len = pObject->GetBuffLen();
     if (len >= IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
         rpcHead xHead;
-        int nMsgBodyLength = DeCode(pObject->GetBuff(), len, xHead); // 解析头部
+        int nMsgBodyLength = DeCode(pObject->GetBuff(), len, xHead); // Decode the package's header
         if (nMsgBodyLength >= 0 && xHead.GetMsgID() > 0) {
             if (mRecvCB) {
 #if PLATFORM != PLATFORM_WIN

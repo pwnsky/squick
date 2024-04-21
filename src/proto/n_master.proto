@@ -53,39 +53,49 @@ message Server {
     int32 https_port = 18;
 }
 
-// message ServerList { repeated Server list = 1; }
-
-message NReqNodeRegister {               // msg_id=500
+message NReqNodeRegister {               // msg_id=500;
     repeated int32 listen_type_list = 1; // set bind type, When new same type node connect to master, it will ntf self node.
     Server node = 2;
 }
 
-message NAckNodeRegister { // msg_id=501
+message NAckNodeRegister { // msg_id=501;
     int32 code = 1;
     repeated Server node_add_list = 2;
 }
 
-message NNtfNodeAdd { // msg_id=509
-    repeated Server node_list = 1;
+message NReqNodeUnregister { // msg_id=502;
+    int32 id = 1;
 }
 
-message NNtfNodeRemove { // msg_id=500
-    repeated Server node_list = 1;
+message NAckNodeUnregister { // msg_id=503;
+    int32 code = 1;
 }
 
-message NNtfNodeReport {
+message NReqMinWorkloadNodeInfo { // msg_id=504;
+    repeated int32 type_list = 1;
+}
+
+message NAckMinWorkloadNodeInfo { // msg_id=505;
+    repeated Server list = 1;
+}
+
+message NReqNodeInfo { // msg_id=506;
+    repeated int32 id_list = 1;
+}
+
+message NAckNodeInfo { // msg_id=507;
+    repeated Server list = 1;
+}
+
+message NNtfNodeReport { // msg_id=508; desc=Report current node status;
     int32 id = 1;
     repeated Server list = 2;
 }
 
-message NReqNodeInfo { repeated int32 id_list = 1; }
+message NNtfNodeAdd { // msg_id=509;
+    repeated Server node_list = 1;
+}
 
-message NAckNodeInfo { repeated Server list = 1; }
-
-message NReqMinWorkloadNodeInfo { repeated int32 type_list = 1; }
-
-message NAckMinWorkloadNodeInfo { repeated Server list = 1; }
-
-message NReqNodeUnregister { int32 id = 1; }
-
-message NAckNodeUnregister { int32 code = 1; }
+message NNtfNodeRemove { // msg_id=510;
+    repeated Server node_list = 1;
+}

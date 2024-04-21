@@ -775,7 +775,7 @@ const std::string &SceneModule::GetRecordString(const int scene, const int group
         return xRecord->GetString(row, col);
     }
 
-    return NULL_STR;
+    return "";
 }
 
 const Guid &SceneModule::GetRecordObject(const int scene, const int group, const std::string &recordName, const int row, const int col) {
@@ -829,7 +829,7 @@ const std::string &SceneModule::GetRecordString(const int scene, const int group
         return xRecord->GetString(row, colTag);
     }
 
-    return NULL_STR;
+    return "";
 }
 
 const Guid &SceneModule::GetRecordObject(const int scene, const int group, const std::string &recordName, const int row, const std::string &colTag) {

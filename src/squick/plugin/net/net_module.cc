@@ -21,7 +21,7 @@ NetModule::~NetModule() {
 
 bool NetModule::Start() {
     m_log_ = pm_->FindModule<ILogModule>();
-
+    m_pb_log_ = pm_->FindModule<IPbLogModule>();
     return true;
 }
 
@@ -210,6 +210,10 @@ void NetModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const ch
 
 #if PLATFORM != PLATFORM_WIN
     SQUICK_CRASH_TRY
+#endif
+    // Log PB
+#ifdef SQUICK_DEV
+    m_pb_log_->Log(msg_id, msg, len);
 #endif
 
     // corotine first handle

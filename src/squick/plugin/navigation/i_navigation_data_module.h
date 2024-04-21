@@ -1,9 +1,11 @@
 #pragma once
 
+#include <squick/core/guid.h>
 #include <squick/core/i_module.h>
+#include <squick/core/map.h>
+#include <squick/core/vector3.h>
 #include <third_party/ajson/ajson.hpp>
 #include <third_party/nlohmann/json.hpp>
-
 using json = nlohmann::json;
 
 class TileConfig {

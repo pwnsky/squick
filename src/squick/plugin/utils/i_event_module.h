@@ -1,8 +1,11 @@
 #pragma once
 
 #include <iostream>
+#include <squick/core/data_list.h>
+#include <squick/core/guid.h>
 #include <squick/core/i_module.h>
-
+#include <squick/core/i_object.h>
+#include <squick/core/map_ex.h>
 class IEventModule : public IModule {
   public:
   protected:

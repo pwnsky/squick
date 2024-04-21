@@ -3,6 +3,7 @@
 #include "platform.h"
 #include <functional>
 #include <list>
+#include <squick/core/guid.h>
 #include <vector>
 
 class IPlugin;

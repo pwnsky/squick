@@ -2,7 +2,8 @@
 
 #include "i_common_config_module.h"
 #include <squick/core/i_plugin_manager.h>
-
+#include <squick/core/map_ex.h>
+#include <squick/core/platform.h>
 class ConfigModule : public ICommonConfigModule {
   public:
   public:
@@ -23,7 +24,7 @@ class ConfigModule : public ICommonConfigModule {
             if (pStr) {
                 return *pStr;
             }
-            return NULL_STR;
+            return "";
         }
     };
 

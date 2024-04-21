@@ -4,6 +4,7 @@
 #include <atomic>
 #include <map>
 #include <squick/core/base.h>
+#include <squick/core/memory_counter.h>
 #include <squick/core/platform.h>
 #include <squick/core/queue.h>
 #include <string>

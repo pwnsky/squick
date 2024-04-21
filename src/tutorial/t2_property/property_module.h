@@ -1,6 +1,7 @@
 #pragma once
 
 #include <squick/core/base.h>
+#include <squick/core/i_property.h>
 namespace tutorial {
 class IPropertyModule : public IModule {};
 

@@ -128,7 +128,7 @@
 #pragma warning(disable : 4091)
 #include <Windows.h>
 #define SQUICK_EXPORT extern "C" __declspec(dllexport)
-
+#define SQUICK_CPP_EXPORT extern __declspec(dllexport)
 #include <Dbghelp.h>
 // If we're not including this from a client build, specify that the stuff
 // should get exported. Otherwise, import it.
@@ -232,7 +232,7 @@ warn_unusedarg off #     pragma warn_emptydecl off #     pragma warn_possunwant 
 #define MAX_PATH 255
 
 #define SQUICK_EXPORT extern "C" __attribute((visibility("default")))
-
+#define SQUICK_CPP_EXPORT extern __attribute((visibility("default")))
 #endif
 
 //----------------------------------------------------------------------------

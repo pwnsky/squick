@@ -13,7 +13,6 @@
 #include <squick/plugin/net/export.h>
 #include <squick/plugin/utils/export.h>
 #include <squick/plugin/world/export.h>
-
 #define LUA_UPDATE_INTERVAL_TIME 100 // ms
 
 #if PLATFORM == PLATFORM_WIN

@@ -1,6 +1,5 @@
 
 #include "lua_pb_module.h"
-
 bool LuaPBModule::Awake() {
     mSourceTree.MapPath("", "../src/proto");
     m_pImporter = new google::protobuf::compiler::Importer(&mSourceTree, &mErrorCollector);
@@ -93,12 +92,12 @@ const std::string LuaPBModule::Encode(const std::string &strMsgTypeName, const L
 
     const google::protobuf::Descriptor *pDesc = m_pImporter->pool()->FindMessageTypeByName(strMsgTypeName);
     if (!pDesc) {
-        return NULL_STR;
+        return "";
     }
 
     const google::protobuf::Message *pProtoType = m_pFactory->GetPrototype(pDesc);
     if (!pProtoType) {
-        return NULL_STR;
+        return "";
     }
 
     // GC
@@ -110,7 +109,7 @@ const std::string LuaPBModule::Encode(const std::string &strMsgTypeName, const L
         return xMessageBody->SerializeAsString();
     }
 
-    return NULL_STR;
+    return "";
 }
 
 LuaIntf::LuaRef LuaPBModule::MessageToTbl(const google::protobuf::Message &message) const {
