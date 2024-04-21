@@ -8,6 +8,7 @@
 #include <squick/core/platform.h>
 #include <squick/core/queue.h>
 #include <string>
+#include <memory>
 
 class ThreadCell : MemoryCounter {
   public:

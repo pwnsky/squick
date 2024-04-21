@@ -3,6 +3,7 @@
 #include <squick/core/i_module.h>
 #include <squick/core/memory_counter.h>
 #include <squick/core/platform.h>
+#include <memory>
 
 class ActorMessage;
 class IComponent;
