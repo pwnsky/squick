@@ -20,3 +20,9 @@ cd %build_path%\
 echo %project_path%
 cmake %project_path% -DMODE=dev
 cmake --build . -j8
+
+if "%1"=="no_pause" (
+    echo continue
+) else (
+    pause
+)

@@ -1,6 +1,2 @@
 syntax = "proto3";
 package rpc;
-
-enum NWorldRPC {
-    NWORLD_RPC_NONE = 0;
-}

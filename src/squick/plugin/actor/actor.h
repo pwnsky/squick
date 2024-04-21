@@ -4,6 +4,7 @@
 #include "i_component_module.h"
 #include <map>
 #include <squick/core/guid.h>
+#include <squick/core/map_ex.h>
 #include <squick/core/platform.h>
 #include <squick/core/queue.h>
 #include <string>

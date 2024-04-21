@@ -87,7 +87,7 @@ DATA_TYPE ClassModule::ComputerType(const char *pstrTypeName, SquickData &var) {
         var.SetInt(NULL_INT);
         return var.GetType();
     } else if (0 == strcmp(pstrTypeName, "string")) {
-        var.SetString(NULL_STR);
+        var.SetString("");
         return var.GetType();
     } else if (0 == strcmp(pstrTypeName, "float")) {
         var.SetFloat(NULL_FLOAT);

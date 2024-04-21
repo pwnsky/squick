@@ -1,6 +1,5 @@
 local PlayerMgr = Module
 
-
 function PlayerMgr:Init()
     if self.players == nil then
         self.players = {}
@@ -16,9 +15,9 @@ end
 
 
 function PlayerMgr:Start()
-    Net:Register(PlayerRPC.REQ_PLAYER_ENTER, self, self.OnReqPlayerEnter)
-    Net:Register(PlayerRPC.REQ_PLAYER_DATA, self, self.OnReqPlayerData)
-    Net:Register(PlayerRPC.REQ_PLAYER_LEAVE, self, self.OnReqPlayerLeave)
+    Net:Register(MsgId.IdReqPlayerEnter, self, self.OnReqPlayerEnter)
+    Net:Register(MsgId.IdReqPlayerData, self, self.OnReqPlayerData)
+    Net:Register(MsgId.IdReqPlayerLeave, self, self.OnReqPlayerLeave)
 
     self:Init()
 end
@@ -158,7 +157,7 @@ function PlayerMgr:OnReqPlayerEnter(uid, msg_data, msg_id, fd)
             }
         }
         
-        Net:SendPBByFD(fd, PlayerRPC.ACK_PLAYER_ENTER, "rpc.AckPlayerEnter", ack, uid)
+        Net:SendPBByFD(fd, MsgId.IdAckPlayerEnter, "rpc.AckPlayerEnter", ack, uid)
     end, uid, msg_data, msg_id, fd)
 end
 
@@ -167,7 +166,6 @@ end
 
 function PlayerMgr:OnReqPlayerLeave(uid, msg_data, msg_id, fd)
     self:AsyncHnalder(function(uid, msg_data, msg_id, fd)
-        --local req = Squick:Decode("rpc.PlayerLeaveEvent", msg_data);
         local update = {}
         update["last_offline_time"] = os.time()
         update["node.proxy_fd"] = 0
@@ -261,7 +259,7 @@ function PlayerMgr:OnReqPlayerData(uid, msg_data, msg_id, fd)
         last_offline_time = player.last_offline_time,
         platform = player.platform
     }
-    self:SendToPlayer(uid, PlayerRPC.ACK_PLAYER_DATA, Squick:Encode("rpc.AckPlayerData", { data = player_data } ))
+    self:SendToPlayer(uid, MsgId.IdAckPlayerData, Squick:Encode("rpc.AckPlayerData", { data = player_data } ))
 end
 
 function PlayerMgr:CachePlayerData(uid, player_data)

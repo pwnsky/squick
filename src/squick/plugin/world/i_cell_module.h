@@ -4,9 +4,10 @@
 #include <array>
 #include <iostream>
 #include <list>
+#include <squick/core/data_list.h>
 #include <squick/core/guid.h>
 #include <squick/core/i_module.h>
-
+#include <squick/core/vector3.h>
 class SceneCellInfo;
 
 enum ECELL_DIRECTION {

@@ -115,3 +115,10 @@ cmake --install . --prefix=./install --config Debug
 xcopy /s /e /y Debug ..\lib
 cd %third_party_path%
 
+
+if "%1"=="no_pause" (
+    echo continue
+) else (
+    pause
+)
+

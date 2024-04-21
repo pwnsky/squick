@@ -84,3 +84,7 @@ third_party/lua/src/liblua.so
 
 .pytest_cache
 __pycache__
+src/proto/msg_id.proto
+src/struct/msg_id.h
+src/struct/msg_id.cc
+src/proto/n_msg_id.proto

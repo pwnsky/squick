@@ -11,7 +11,6 @@ set excel_path=..\resource\excel
 set excel_path_gen=../resource/excel
 set struct_path=..\src\struct
 set lua_struct_path=..\src\lua\struct
-set lua_proto_path=
 set client_config_path=..\client
 set lua_src_path=..\src\lua
 
@@ -46,3 +45,9 @@ xcopy /s /e /y %config_path%\struct %client_config_path%\struct
 
 xcopy /s /e /y %config_path%\excel %client_config_path%\excel
 rd /s/q %config_path%\excel
+
+if "%1"=="no_pause" (
+    echo continue
+) else (
+    pause
+)

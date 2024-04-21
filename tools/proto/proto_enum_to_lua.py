@@ -4,11 +4,11 @@ import os
 import collections
 import time
 parser_result = {}
-
 package_list = {}
-
-def generate_lua_file():
-    with open('../src/lua/proto/enum.lua', 'w+', encoding='utf-8') as out:
+project_path = '../..'
+# 
+def generate_lua_file(path):
+    with open(path, 'w+', encoding='utf-8') as out:
         out.write('''----------------------------------------------------------------------------------
 -- don't edit it, generated from .proto files by tools
 ----------------------------------------------------------------------------------
@@ -92,9 +92,20 @@ def parse_proto(f):
                         add_enum_value(package_name, enum_name, name, v.strip())
 
 
-for root, dirs, files in os.walk('../src/proto/'):
+for root, dirs, files in os.walk(project_path + '/src/proto/'):
     for f in files:
         if f.endswith('.proto'):
             parse_proto(os.path.join(root, f))
 
-generate_lua_file()
+generate_lua_file(project_path + '/src/lua/proto/enum.lua')
+
+
+parser_result = {}
+package_list = {}
+# generate the client
+for root, dirs, files in os.walk(project_path + '/src/proto/'):
+    for f in files:
+        if f.endswith('.proto') and f.startswith("n_") == False:
+            parse_proto(os.path.join(root, f))
+
+generate_lua_file(project_path + '/client/proto/lua/enum.lua')

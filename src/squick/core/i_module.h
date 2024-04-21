@@ -1,10 +1,6 @@
 #pragma once
 
-#include "data_list.h"
 #include "i_plugin_manager.h"
-#include "list.h"
-#include "map.h"
-#include "smart_enum.h"
 #include <string>
 
 class IModule {

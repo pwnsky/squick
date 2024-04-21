@@ -479,7 +479,7 @@ LuaIntf::LuaRef LuaScriptModule::GetConfigByID(const string &id) {
             ret[key] = p->GetVector3().ToString();
             break;
         default:
-            ret[key] = NULL_STR;
+            ret[key] = "";
             break;
         }
         p = m->Next(key);

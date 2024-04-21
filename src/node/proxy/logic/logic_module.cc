@@ -32,24 +32,24 @@ bool LogicModule::AfterStart() {
     m_ws_ = pm_->FindModule<IWSModule>();
 
     m_net_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
-    m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_HEARTBEAT, this, &LogicModule::OnHeartbeat);
-    m_net_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnectWithTcp);
-    m_net_->AddReceiveCallBack(rpc::PlayerRPC::REQ_PLAYER_ENTER, this, &LogicModule::OnReqPlayerEnter);
-    m_net_->AddReceiveCallBack(rpc::PlayerRPC::REQ_PLAYER_LEAVE, this, &LogicModule::OnReqPlayerLeave);
+    m_net_->AddReceiveCallBack(rpc::IdReqHeartBeat, this, &LogicModule::OnHeartbeat);
+    m_net_->AddReceiveCallBack(rpc::IdReqConnectProxy, this, &LogicModule::OnReqConnectWithTcp);
+    m_net_->AddReceiveCallBack(rpc::IdReqPlayerEnter, this, &LogicModule::OnReqPlayerEnter);
+    m_net_->AddReceiveCallBack(rpc::IdReqPlayerLeave, this, &LogicModule::OnReqPlayerLeave);
     m_net_->AddReceiveCallBack(rpc::TestRPC::REQ_TEST_PROXY, this, &LogicModule::OnReqTestProxy);
 
-    m_ws_->AddReceiveCallBack(rpc::ProxyRPC::REQ_CONNECT_PROXY, this, &LogicModule::OnReqConnectWithWS);
+    m_ws_->AddReceiveCallBack(rpc::IdReqConnectProxy, this, &LogicModule::OnReqConnectWithWS);
     m_ws_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
-    m_ws_->AddReceiveCallBack(rpc::PlayerRPC::REQ_PLAYER_ENTER, this, &LogicModule::OnReqPlayerEnter);
-    m_ws_->AddReceiveCallBack(rpc::PlayerRPC::REQ_PLAYER_LEAVE, this, &LogicModule::OnReqPlayerLeave);
+    m_ws_->AddReceiveCallBack(rpc::IdReqPlayerEnter, this, &LogicModule::OnReqPlayerEnter);
+    m_ws_->AddReceiveCallBack(rpc::IdReqPlayerLeave, this, &LogicModule::OnReqPlayerLeave);
 
     // Master
     m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, this, &LogicModule::OnNAckMinWorkloadNodeInfo);
 
     // Lobby
     m_net_client_->AddReceiveCallBack(ServerType::ST_PLAYER, this, &LogicModule::OnRecivedPlayerNodeMsg);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_LOGIN, rpc::NLoginRPC::NACK_PROXY_CONNECT_VERIFY, this, &LogicModule::OnNAckConnectVerify);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_PLAYER, rpc::PlayerRPC::ACK_PLAYER_ENTER, this, &LogicModule::OnAckPlayerEnter);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_LOGIN, rpc::IdNAckConnectProxyVerify, this, &LogicModule::OnNAckConnectVerify);
+    m_net_client_->AddReceiveCallBack(ServerType::ST_PLAYER, rpc::IdAckPlayerEnter, this, &LogicModule::OnAckPlayerEnter);
     return true;
 }
 
@@ -59,7 +59,7 @@ void LogicModule::NReqMinWorkloadNodeInfo() {
     rpc::NReqMinWorkloadNodeInfo pbreq;
     pbreq.add_type_list(ST_PLAYER);
     pbreq.add_type_list(ST_WORLD);
-    m_net_client_->SendPBByID(DEFAULT_MASTER_ID, rpc::NMasterRPC::NREQ_MIN_WORKLOAD_NODE_INFO, pbreq);
+    m_net_client_->SendPBByID(DEFAULT_MASTER_ID, rpc::IdNReqMinWorkloadNodeInfo, pbreq);
 }
 
 void LogicModule::OnNAckMinWorkloadNodeInfo(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
@@ -97,7 +97,7 @@ void LogicModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const 
     req.set_login_node(pInfo->login_node);
     req.set_area(pm_->GetArea());
     req.set_proxy_sock(sock);
-    m_net_client_->SendPBByID(player_node, rpc::PlayerRPC::REQ_PLAYER_ENTER, req);
+    m_net_client_->SendPBByID(player_node, rpc::IdReqPlayerEnter, req);
     pInfo->player_node = player_node;
 
     LOG_INFO("ReqPlayerEnter get player node:  ", player_node);
@@ -141,9 +141,9 @@ void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const 
              pInfo->account.c_str(), (int)pInfo->protocol_type);
 
     if (pInfo->protocol_type == ProtocolType::Tcp) {
-        m_net_->SendMsg(rpc::PlayerRPC::ACK_PLAYER_ENTER, ack.SerializeAsString(), player_sock);
+        m_net_->SendMsg(rpc::IdAckPlayerEnter, ack.SerializeAsString(), player_sock);
     } else if (pInfo->protocol_type == ProtocolType::WS) {
-        m_ws_->SendPBMsg(rpc::PlayerRPC::ACK_PLAYER_ENTER, ack, player_sock);
+        m_ws_->SendPBMsg(rpc::IdAckPlayerEnter, ack, player_sock);
         ;
     }
 }
@@ -182,7 +182,7 @@ void LogicModule::OnClientDisconnected(const socket_t sock) {
     if (pInfo->player_node > 0) {
         // when a net-object bind a account then tell that game-server
         rpc::NNtfPlayerOffline ntf;
-        m_net_client_->SendPBByID(pInfo->player_node, rpc::NPlayerRPC::NNTF_PLAYER_OFFLINE, ntf);
+        m_net_client_->SendPBByID(pInfo->player_node, rpc::IdNNtfPlayerOffline, ntf);
     }
 
     LOG_INFO("The client is disconnected, account_id<%v>", pInfo->account_id);
@@ -262,9 +262,9 @@ void LogicModule::OnHeartbeat(const socket_t sock, const int msg_id, const char 
     std::string msgData(msg, len);
     pInfo->last_ping = SquickGetTimeMS();
     if (pInfo->protocol_type == ProtocolType::Tcp) {
-        m_net_->SendMsg(rpc::ProxyRPC::ACK_HEARTBEAT, msgData, sock);
+        m_net_->SendMsg(rpc::IdAckHeartBeat, msgData, sock);
     } else if (pInfo->protocol_type == ProtocolType::WS) {
-        m_ws_->SendMsg(rpc::ProxyRPC::ACK_HEARTBEAT, msgData.data(), msgData.size(), sock);
+        m_ws_->SendMsg(rpc::IdAckHeartBeat, msgData.data(), msgData.size(), sock);
     }
 }
 
@@ -387,7 +387,7 @@ void LogicModule::OnReqConnect(ProtocolType type, const socket_t sock, const int
     //
     // send rand id
     // Modify ...
-    m_net_client_->SendPBByID(login_node, rpc::NLoginRPC::NREQ_PROXY_CONNECT_VERIFY, nreq);
+    m_net_client_->SendPBByID(login_node, rpc::IdNReqConnectProxyVerify, nreq);
 }
 
 void LogicModule::OnNAckConnectVerify(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
@@ -424,9 +424,9 @@ void LogicModule::OnNAckConnectVerify(const socket_t sock, const int msg_id, con
         rpc::AckConnectProxy ack;
         ack.set_code(0);
         if (s.protocol_type == ProtocolType::Tcp) {
-            m_net_->SendMsg(rpc::ProxyRPC::ACK_CONNECT_PROXY, ack.SerializeAsString(), s.sock);
+            m_net_->SendMsg(rpc::IdAckConnectProxy, ack.SerializeAsString(), s.sock);
         } else if (s.protocol_type == ProtocolType::WS) {
-            m_ws_->SendPBMsg(rpc::ProxyRPC::ACK_CONNECT_PROXY, ack, s.sock);
+            m_ws_->SendPBMsg(rpc::IdAckConnectProxy, ack, s.sock);
             ;
         }
 

@@ -8,6 +8,7 @@
 #include <struct/struct.h>
 
 #include "i_net_module.h"
+#include "i_pb_log_module.h"
 #include <squick/core/base.h>
 #include <squick/core/exception.h>
 #include <squick/plugin/log/export.h>
@@ -59,5 +60,6 @@ class NetModule : public INetModule {
     std::map<int, std::list<NET_CORO_RECEIVE_FUNCTOR_PTR>> coro_funcs_;
     list<Coroutine<bool>> coroutines_;
     ILogModule *m_log_;
+    IPbLogModule *m_pb_log_;
     time_t last_check_coroutines_time_ = 0;
 };

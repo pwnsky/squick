@@ -69,7 +69,7 @@ WSModule::~WSModule() {
 
 bool WSModule::Start() {
     m_log_ = pm_->FindModule<ILogModule>();
-
+    m_pb_log_ = pm_->FindModule<IPbLogModule>();
     return true;
 }
 
@@ -145,6 +145,10 @@ bool WSModule::SendMsg(const int16_t msg_id, const char *msg, const size_t len, 
         auto frame = EncodeFrame(strOutData.data(), strOutData.size(), false);
         return SendRawMsg(frame, sock);
     }
+
+#ifdef SQUICK_DEV
+    m_pb_log_->Log("Send Msg by m_ws_net: ", msg_id, msg, len);
+#endif
 
     return false;
 }
