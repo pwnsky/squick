@@ -1,16 +1,6 @@
-// 描述: 登录验证
-// 使用: 服务器, 客户端
+// Desc: Login rpc, 6000 ~ 7000
 syntax = "proto3";
 package rpc;
-
-// 6000 ~ 7000
-// RPC用于服务器之间的通信，不与客户端通信
-enum NLoginRPC {
-    NLOGIN_RPC_NONE = 0;
-
-    NREQ_PROXY_CONNECT_VERIFY = 6000; // 来自代理服务器的验证请求
-    NACK_PROXY_CONNECT_VERIFY = 6001;
-}
 
 message NReqConnectProxyVerify { // msg_id=6000;desc=Verify the connection for client connecting proxy;
     int64 session = 1;

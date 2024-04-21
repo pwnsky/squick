@@ -105,7 +105,9 @@ bool NetModule::SendMsg(const int msg_id, const std::string &msg, const socket_t
     if (!bRet) {
         LOG_ERROR("Failed to send msg msg_id <%v> ", msg_id);
     }
-
+#ifdef SQUICK_DEV
+    m_pb_log_->Log("Send Msg by m_net: ", msg_id, msg.data(), msg.length());
+#endif
     return bRet;
 }
 
@@ -213,11 +215,10 @@ void NetModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const ch
 #endif
     // Log PB
 #ifdef SQUICK_DEV
-    m_pb_log_->Log(msg_id, msg, len);
+    m_pb_log_->Log("Received Msg by m_net: ", msg_id, msg, len);
 #endif
 
     // corotine first handle
-
     auto co_it = coro_funcs_.find(msg_id);
     if (coro_funcs_.end() != co_it) {
         std::list<NET_CORO_RECEIVE_FUNCTOR_PTR> &funcs = co_it->second;
@@ -227,7 +228,7 @@ void NetModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const ch
             auto co = pFunc->operator()(sock, msg_id, msg, len);
             coroutines_.push_back(co);
 #ifdef SQUICK_DEV
-            dout << "Net Module create a new coroutine: " << co.GetHandle().address() << endl;
+            LOG_DEBUG("Net Module create a new coroutine: %v", co.GetHandle().address());
 #endif
             co.GetHandle().resume();
         }

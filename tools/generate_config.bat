@@ -11,7 +11,6 @@ set excel_path=..\resource\excel
 set excel_path_gen=../resource/excel
 set struct_path=..\src\struct
 set lua_struct_path=..\src\lua\struct
-set lua_proto_path=
 set client_config_path=..\client
 set lua_src_path=..\src\lua
 

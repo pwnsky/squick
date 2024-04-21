@@ -1,13 +1,6 @@
-// 描述: 玩家RPC
-// 使用: 服务器,客户端
+// Desc: PlayerRPC 12000 ~ 15000
 syntax = "proto3";
 package rpc;
-
-// PlayerRPC 12000 ~ 15000
-enum NPlayerRPC {
-    NPLAYER_RPC_NONE = 0;
-    NNTF_PLAYER_OFFLINE = 12001;
-}
 
 enum PlayerOfflineReason {
     PLAYER_OFFLINE_REASON_NONE = 0;    // Unknown

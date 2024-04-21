@@ -61,12 +61,15 @@ std::string PbLogModule::GetMessageInfo(const std::string &name, const std::stri
     return "";
 }
 
-void PbLogModule::Log(const int msg_id, const char *data, const uint32_t length) {
+void PbLogModule::Log(const std::string &prefix, const int msg_id, const char *data, const uint32_t length) {
     std::ostringstream out;
     std::string msg_name = GetMessageNameByID(msg_id);
     bool is_node_msg = false;
 
-    if (msg_name.find("rpc.NR") == 0) {
+    if (pm_->GetAppType() != ServerType::ST_PROXY) {
+        // inner msg
+        is_node_msg = true;
+    } else if (msg_name.find("rpc.NR") == 0) {
         is_node_msg = true;
     } else if (msg_name.find("rpc.NN") == 0) {
         is_node_msg = true;
@@ -80,8 +83,10 @@ void PbLogModule::Log(const int msg_id, const char *data, const uint32_t length)
         rpc::MsgBase base;
         base.ParseFromString(std::string(data, length));
         body_info = GetMessageInfo(msg_name, base.msg_data());
+    } else if (!msg_name.empty() && is_node_msg == false) {
+        body_info = GetMessageInfo(msg_name, std::string(data, length));
     }
 
-    out << "Recive the message, msg_id = " << msg_id << " " << msg_name << "\n{\n" << body_info << "\n}";
+    out << prefix << " msg_id = " << msg_id << " " << msg_name << "\n{\n" << body_info << "\n}";
     LOG_DEBUG("%v", out.str());
 }

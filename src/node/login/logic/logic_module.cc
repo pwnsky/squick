@@ -20,7 +20,7 @@ bool LogicModule::AfterStart() {
     m_http_server_->AddMiddleware(this, &LogicModule::Middleware);
     m_http_server_->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnLogin);
 
-    m_net_->AddReceiveCallBack(rpc::NLoginRPC::NREQ_PROXY_CONNECT_VERIFY, this, &LogicModule::OnConnectProxyVerify);
+    m_net_->AddReceiveCallBack(rpc::IdNReqConnectProxyVerify, this, &LogicModule::OnConnectProxyVerify);
     m_http_server_->StartServer(pm_->GetArg("http_port=", 80));
 
     return true;
@@ -62,8 +62,8 @@ Coroutine<bool> LogicModule::OnLogin(std::shared_ptr<HttpRequest> request) {
         // find min work load proxy
         rpc::NReqMinWorkloadNodeInfo pbreq;
         pbreq.add_type_list(ST_PROXY);
-        auto data = co_await m_net_client_->RequestPB(DEFAULT_MASTER_ID, rpc::NMasterRPC::NREQ_MIN_WORKLOAD_NODE_INFO, pbreq,
-                                                      rpc::NMasterRPC::NACK_MIN_WORKLOAD_NODE_INFO);
+        auto data = co_await m_net_client_->RequestPB(DEFAULT_MASTER_ID, rpc::IdNReqMinWorkloadNodeInfo, pbreq,
+                                                      rpc::IdNAckMinWorkloadNodeInfo);
         if (data.error) {
             ack.code = IResponse::SERVER_ERROR;
             ack.msg = "Get min workload proxy info from master error, network error\n";
@@ -234,7 +234,7 @@ void LogicModule::OnConnectProxyVerify(const socket_t sock, const int msg_id, co
     if (iter == login_info_.end()) {
         LOG_ERROR("OnConnectProxyVerify: account_id<%v> is not find", req.account_id());
         ack.set_code(1);
-        m_net_->SendPBToNode(rpc::NLoginRPC::NACK_PROXY_CONNECT_VERIFY, ack, sock);
+        m_net_->SendPBToNode(rpc::IdNAckConnectProxyVerify, ack, sock);
         return;
     }
 
@@ -243,7 +243,7 @@ void LogicModule::OnConnectProxyVerify(const socket_t sock, const int msg_id, co
     ack.set_area_id(0);
     ack.set_account_id(req.account_id());
     ack.set_account(iter->second.account);
-    m_net_->SendPBToNode(rpc::NLoginRPC::NACK_PROXY_CONNECT_VERIFY, ack, sock);
+    m_net_->SendPBToNode(rpc::IdNAckConnectProxyVerify, ack, sock);
 }
 
 } // namespace login::logic

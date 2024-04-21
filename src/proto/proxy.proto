@@ -1,22 +1,7 @@
-// 描述: 代理服务器RPC
-// 使用: 服务器,客户端
+// Desc: 8000 ~ 10000
 syntax = "proto3";
 package rpc;
 import "base.proto";
-
-// 8000 ~ 10000
-enum ProxyRPC {
-    PROXY_RPC_NONE = 0;
-    REQ_HEARTBEAT = 8001; // 心跳包
-    ACK_HEARTBEAT = 8002; // 代理服务器响应
-
-    REQ_CONNECT_PROXY = 8003;
-    ACK_CONNECT_PROXY = 8004;
-    REQ_DISCONNECT_PROXY = 8005;
-    ACK_DISCONNECT_PROXY = 8006;
-
-    NC_ACK_KICK_OFF = 8010; // 被踢下线
-}
 
 message ReqConnectProxy { // msg_id=8003; desc=Request to connect the proxy;
     string account_id = 1;
@@ -29,11 +14,20 @@ message AckConnectProxy { // msg_id=8004; desc=Request to connect the proxy resp
     int32 code = 1;
 }
 
-message ReqDisconnectProxy {}
-message AckDisconnectProxy { int32 code = 1; }
+message ReqDisconnectProxy { // msg_id=8005;
+}
+message AckDisconnectProxy { // msg_id=8007;
+    int32 code = 1;
+}
 
-message ReqHeartBeat { int32 index = 1; }
+message ReqHeartBeat { // msg_id=8008;
+    int32 index = 1;
+}
 
-message AckHeartBeat { int32 index = 1; }
+message AckHeartBeat { // msg_id=8009;
+    int32 index = 1;
+}
 
-message AckKickOff { int64 time = 1; }
+message AckKickOff { // msg_id=8010;
+    int64 time = 1;
+}

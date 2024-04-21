@@ -1,29 +1,6 @@
-// 描述: 登录验证
-// 使用: 服务器, 客户端
+// Desc: Master RPC 500 ~ 1000
 syntax = "proto3";
 package rpc;
-
-// Master RPC 500 ~ 1000
-enum NMasterRPC {
-    NMASTER_RPC_NONE = 0;
-    NREQ_NODE_REGISTER = 500;
-    NACK_NODE_REGISTER = 501;
-
-    NREQ_NODE_UNREGISTER = 502;
-    NACK_NODE_UNREGISTER = 503;
-
-    NREQ_MIN_WORKLOAD_NODE_INFO = 504;
-    NACK_MIN_WORKLOAD_NODE_INFO = 505;
-
-    NREQ_NODE_INFO = 506;
-    NACK_NODE_INFO = 507;
-
-    NNTF_NODE_REPORT = 508; // Report node state to master
-    NNTF_NODE_ADD = 509;    // new node will ntf
-    NNTF_NODE_REMOVE = 510; // remove node will ntf
-
-    NNTF_NODE_MSG_FORWARD = 511; // Forward msg
-}
 
 enum ServerState {
     ServerCrash = 0;
@@ -98,4 +75,8 @@ message NNtfNodeAdd { // msg_id=509;
 
 message NNtfNodeRemove { // msg_id=510;
     repeated Server node_list = 1;
+}
+
+message NNtfNodeMsgForward { // msg_id=511;
+    bytes data = 1;
 }

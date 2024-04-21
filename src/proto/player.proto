@@ -5,19 +5,8 @@ package rpc;
 import "base.proto";
 
 // PlayerRPC 12000 ~ 15000
-enum PlayerRPC {
-    PLAYER_RPC_NONE = 0;
 
-    REQ_PLAYER_ENTER = 12004;
-    ACK_PLAYER_ENTER = 12005;
-    REQ_PLAYER_LEAVE = 12006;
-    ACK_PLAYER_LEAVE = 12007;
-
-    REQ_PLAYER_DATA = 12002; // 获取玩家详细全部数据
-    ACK_PLAYER_DATA = 12003; //
-}
-
-message ReqPlayerEnter {
+message ReqPlayerEnter { // msg_id=12004;
     string account = 1;
     string account_id = 2;
     string ip = 3;
@@ -29,19 +18,22 @@ message ReqPlayerEnter {
     int64 proxy_sock = 9;
 }
 
-message AckPlayerEnter {
+message AckPlayerEnter { // msg_id=12005;
     int32 code = 1;
     int64 proxy_sock = 2;
     PlayerData data = 3;
 }
 
-message ReqPlayerLeave {}
+message ReqPlayerLeave { // msg_id=12006;
+}
 
-message AckPlayerLeave {}
+message AckPlayerLeave { // msg_id=12007;
+}
 
-message ReqPlayerData {}
+message ReqPlayerData { // msg_id=12008;
+}
 
-message AckPlayerData {
+message AckPlayerData { // msg_id=12009;
     int32 code = 1;
     PlayerData data = 2;
 }

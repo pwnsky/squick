@@ -3,6 +3,7 @@
 #include "i_ws_module.h"
 #include "net_module.h"
 #include <iostream>
+#include "i_pb_log_module.h"
 
 class WSModule : public IWSModule {
   public:
@@ -55,4 +56,5 @@ class WSModule : public IWSModule {
     std::list<NET_RECEIVE_FUNCTOR_PTR> mxCallBackList;
 
     ILogModule *m_log_;
+    IPbLogModule* m_pb_log_;
 };

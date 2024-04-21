@@ -20,16 +20,19 @@ def generate_proto_file():
         out.write('''
 syntax = "proto3";
 package rpc;
-enum MsgID {
-NoneMsgID = 0;
+enum MsgId {
+MsgIdZero = 0;
 ''')
         for msg_id, value in parser_result.items():
             if value["is_node_proto"]:
                 continue
             name = value["name"]
             desc = value["desc"]
+            sp = name.split(".")
+            package_name = sp[0]
+            message_name = sp[1]
             print("msg_id: " + str(msg_id) + " msg_name: " + name)
-            line = "    ID" + name + " = " + str(msg_id) + "; // message: " + name + " desc: " + desc + "\n"
+            line = "    Id" + message_name + " = " + str(msg_id) + "; // message: " + name + " desc: " + desc + "\n"
             out.write(line)
         out.write("}")
 
@@ -40,16 +43,18 @@ def generate_node_proto_file():
         out.write('''
 syntax = "proto3";
 package rpc;
-enum NMsgID {
-NoneNMsgID = 0;
+enum NMsgId {
+NMsgIdZero = 0;
 ''')
         for msg_id, value in parser_result.items():
             if value["is_node_proto"] == False:
                 continue
             name = value["name"]
             desc = value["desc"]
-            print("msg_id: " + str(msg_id) + " msg_name: " + name)
-            line = "    ID" + name + " = " + str(msg_id) + "; // message: " + name + " desc: " + desc + "\n"
+            sp = name.split(".")
+            package_name = sp[0]
+            message_name = sp[1]
+            line = "    Id" + message_name + " = " + str(msg_id) + "; // message: " + name + " desc: " + desc + "\n"
             out.write(line)
         out.write("}")
 
@@ -68,7 +73,6 @@ def generate_cpp_file():
         for msg_id, value in parser_result.items():
             name = value["name"]
             desc = value["desc"]
-            print("msg_id: " + str(msg_id) + " msg_name: " + name)
             cc_code += "        case " + str(msg_id) + ': return "'  + name + '";\n'
         cc_code += "        default: return \"\";\n    }\n"
         cc_code += "    return \"\";\n}\n"

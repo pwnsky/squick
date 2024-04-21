@@ -1,5 +1,4 @@
-// 描述: 各服务器之间的通信RPC
-// 使用: 服务器,客户端
+// Desc: Node RPC 0 ~ 500
 syntax = "proto3";
 package rpc;
 
@@ -12,13 +11,9 @@ message MsgBase {
     bytes msg_data = 5; // data
 }
 
-// Node RPC 0 ~ 500
-enum NNodeRPC {
-    NNODE_RPC_NONE = 0;
-    NNTF_NODE_HEARTBEAT = 1; // 服务端之间心跳包
+message NNtfNodeHeartBeat { // msg_id=1;
+    int32 index = 1;
 }
-
-message NNtfNodeHeartBeat { int32 index = 1; }
 
 enum NErrorCode {
     NErrCommonSucc = 0;

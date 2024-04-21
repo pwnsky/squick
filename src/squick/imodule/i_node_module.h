@@ -9,6 +9,7 @@
 #include <squick/plugin/net/export.h>
 #include <struct/struct.h>
 
+#define NODE_REPORT_TIME 10
 class INodeBaseModule : public IModule {
   public:
     virtual bool Awake() final { return true; }
@@ -28,7 +29,7 @@ class INodeBaseModule : public IModule {
     virtual bool Update() override final {
         // calc work load
         CalcWorkLoad();
-        if (last_report_time_ + 3 > pm_->GetNowTime()) {
+        if (last_report_time_ + NODE_REPORT_TIME > pm_->GetNowTime()) {
             return true;
         }
         if (last_report_time_ > 0) {
@@ -131,9 +132,9 @@ class INodeBaseModule : public IModule {
     // Add upper server
     bool AddNodesByType(const vector<int> &types) {
         m_net_client_->AddEventCallBack(ST_MASTER, this, &INodeBaseModule::OnClientSocketEvent);
-        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::NMasterRPC::NNTF_NODE_ADD, this, &INodeBaseModule::OnNNtfNodeAdd);
-        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::NMasterRPC::NNTF_NODE_REMOVE, this, &INodeBaseModule::OnNNtfNodeRemove);
-        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::NMasterRPC::NACK_NODE_REGISTER, this, &INodeBaseModule::OnNAckNodeRegister);
+        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::IdNNtfNodeAdd, this, &INodeBaseModule::OnNNtfNodeAdd);
+        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::IdNNtfNodeRemove, this, &INodeBaseModule::OnNNtfNodeRemove);
+        m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::IdNAckNodeRegister, this, &INodeBaseModule::OnNAckNodeRegister);
         bool ret = false;
         node_info_.listen_types = types;
         ConnectData s;
@@ -187,7 +188,7 @@ class INodeBaseModule : public IModule {
             req.set_id(pm_->GetAppID());
             auto s = req.add_list();
             *s = *node_info_.info.get();
-            m_net_client_->SendPBByID(DEFAULT_MASTER_ID, rpc::NMasterRPC::NNTF_NODE_REPORT, req);
+            m_net_client_->SendPBByID(DEFAULT_MASTER_ID, rpc::IdNNtfNodeReport, req);
         }
     }
 
@@ -245,7 +246,7 @@ class INodeBaseModule : public IModule {
             req.add_listen_type_list(type);
         }
 
-        m_net_client_->SendPBByID(ts->id, rpc::NMasterRPC::NREQ_NODE_REGISTER, req);
+        m_net_client_->SendPBByID(ts->id, rpc::IdNReqNodeRegister, req);
         LOG_INFO("Register node <%v>", ts->name);
     }
 

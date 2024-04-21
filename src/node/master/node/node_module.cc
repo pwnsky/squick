@@ -9,11 +9,11 @@ bool NodeModule::Destroy() { return true; }
 
 bool NodeModule::AfterStart() {
 
-    m_net_->AddReceiveCallBack(rpc::NMasterRPC::NREQ_NODE_REGISTER, this, &NodeModule::OnNReqNodeRegister);
-    m_net_->AddReceiveCallBack(rpc::NMasterRPC::NREQ_NODE_UNREGISTER, this, &NodeModule::OnNReqNodeUnregistered);
-    m_net_->AddReceiveCallBack(rpc::NMasterRPC::NNTF_NODE_REPORT, this, &NodeModule::OnNNtfNodeReport);
-    m_net_->AddReceiveCallBack(rpc::NMasterRPC::NREQ_MIN_WORKLOAD_NODE_INFO, this, &NodeModule::OnNReqMinWorkNodeInfo);
-    m_net_->AddReceiveCallBack(rpc::NMasterRPC::NNTF_NODE_MSG_FORWARD, this, &NodeModule::OnNNtfNodeMsgForward);
+    m_net_->AddReceiveCallBack(rpc::IdNReqNodeRegister, this, &NodeModule::OnNReqNodeRegister);
+    m_net_->AddReceiveCallBack(rpc::IdNReqNodeUnregister, this, &NodeModule::OnNReqNodeUnregistered);
+    m_net_->AddReceiveCallBack(rpc::IdNNtfNodeReport, this, &NodeModule::OnNNtfNodeReport);
+    m_net_->AddReceiveCallBack(rpc::IdNReqMinWorkloadNodeInfo, this, &NodeModule::OnNReqMinWorkNodeInfo);
+    m_net_->AddReceiveCallBack(rpc::IdNNtfNodeMsgForward, this, &NodeModule::OnNNtfNodeMsgForward);
     Listen();
 
     return true;
@@ -66,7 +66,7 @@ void NodeModule::OnNReqNodeRegister(const socket_t sock, const int msg_id, const
         ack.set_code(0);
     } while (false);
 
-    m_net_->SendPBToNode(rpc::NMasterRPC::NACK_NODE_REGISTER, ack, sock);
+    m_net_->SendPBToNode(rpc::IdNAckNodeRegister, ack, sock);
 
     NtfSubscribNode(new_node_id);
 }
@@ -103,7 +103,7 @@ void NodeModule::NtfSubscribNode(int new_node_id) {
             auto p = ntf.add_node_list();
             *p = *new_node;
             LOG_INFO("Ntf sub_id<%v> to add new_node<%v>", sub_id, new_node_id);
-            SendPBByID(sub_id, rpc::NMasterRPC::NNTF_NODE_ADD, ntf);
+            SendPBByID(sub_id, rpc::IdNNtfNodeAdd, ntf);
         }
     }
 }
@@ -187,7 +187,7 @@ void NodeModule::OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, co
         *p = *iter->second.info;
     }
     reqid_t req_id = msg_base.req_id();
-    m_net_->SendPBToNode(rpc::NMasterRPC::NACK_MIN_WORKLOAD_NODE_INFO, ack, sock, 0, req_id);
+    m_net_->SendPBToNode(rpc::IdNAckMinWorkloadNodeInfo, ack, sock, 0, req_id);
 }
 
 void NodeModule::OnNNtfNodeMsgForward(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
