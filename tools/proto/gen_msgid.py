@@ -21,7 +21,7 @@ def generate_proto_file():
 syntax = "proto3";
 package rpc;
 enum MsgId {
-MsgIdZero = 0;
+    MsgIdZero = 0;
 ''')
         for msg_id, value in parser_result.items():
             if value["is_node_proto"]:
@@ -44,7 +44,7 @@ def generate_node_proto_file():
 syntax = "proto3";
 package rpc;
 enum NMsgId {
-NMsgIdZero = 0;
+    NMsgIdZero = 0;
 ''')
         for msg_id, value in parser_result.items():
             if value["is_node_proto"] == False:
@@ -143,6 +143,9 @@ for root, dirs, files in os.walk(project_path + '/src/proto/'):
                 is_node_proto = True
             parse_proto(os.path.join(root, f), is_node_proto)
             all_proto_files.append(f.split('/').pop())
+
+# sort msg_id
+parser_result = dict(sorted(parser_result.items()))
 
 generate_proto_file()
 generate_node_proto_file()

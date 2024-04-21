@@ -9,10 +9,10 @@
 
 #include <squick/imodule/i_node_module.h>
 
-namespace gameplay::node {
+namespace game::node {
 class INodeModule : public INodeBaseModule {
   public:
   protected:
   private:
 };
-} // namespace gameplay::node
+} // namespace game::node

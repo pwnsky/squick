@@ -1,6 +1,6 @@
-set(ProjectName "game_mgr_node")
+set(ProjectName "ds_mgr_logic")
 file(GLOB soruces *.cc)
 file(GLOB headers *.h)
 add_library(${ProjectName} SHARED ${soruces} ${headers})
 LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "node/game_mgr" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/game_mgr "node")
+SquickOut(${ProjectName} "node/ds_mgr" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/ds_mgr "logic")

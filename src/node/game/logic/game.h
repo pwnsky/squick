@@ -1,15 +1,15 @@
 #pragma once
 
-#include "i_gameplay.h"
+#include "i_game.h"
 #include <list>
 #include <vector>
 
-namespace gameplay_manager::play {
+namespace game::logic {
 
-class Gameplay : public IGameplay {
+class Game : public IGame {
   public:
-    Gameplay();
-    virtual ~Gameplay();
+    Game();
+    virtual ~Game();
     virtual void Awake() override;
     virtual void Start() override;
     virtual void Update() override;
@@ -20,4 +20,4 @@ class Gameplay : public IGameplay {
     virtual void AllPlayerJoined() override;
 };
 
-} // namespace gameplay_manager::play
+} // namespace game::logic

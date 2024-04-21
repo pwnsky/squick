@@ -5,12 +5,12 @@
 
 #pragma once
 
-#include "i_gameplay_manager_module.h"
+#include "i_game_mgr_module.h"
 #include <squick/core/base.h>
 
-namespace gameplay_manager::play {
+namespace game::logic {
 using namespace rpc;
-class IGameplay {
+class IGame {
   public:
     enum Status {
         CREATING,
@@ -22,10 +22,10 @@ class IGameplay {
         DESTROYED,
     };
 
-    IGameplay() { status = CREATED; }
+    IGame() { status = CREATED; }
 
     // 析构函数采用虚函数，不然子类没法正确释放内存
-    virtual ~IGameplay() { status = DESTROYED; }
+    virtual ~IGame() { status = DESTROYED; }
 
     virtual void PlayerJoin(const Guid &player) = 0;
     virtual void PlayerQuit(const Guid &player) = 0;
@@ -39,7 +39,7 @@ class IGameplay {
 
     inline void SetStatus(Status status) { this->status = status; }
 
-    inline void DoInit(int id, IGameplayManagerModule *playManager) {
+    inline void DoInit(int id, IGameMgrModule *playManager) {
         this->manager = playManager;
         this->id = id;
         status = STOPED;
@@ -47,7 +47,7 @@ class IGameplay {
 
     inline void DoAwake() {
         dout << "Game Play Parent Awake!\n";
-        MsgBind(GameBaseRPC::REQ_GAME_JOIN, this, &IGameplay::OnReqGameJoin);
+        MsgBind(GameBaseRPC::REQ_GAME_JOIN, this, &IGame::OnReqGameJoin);
         Awake();
     };
 
@@ -130,8 +130,6 @@ class IGameplay {
             pEntryInfo->set_index(player.index);
             pEntryInfo->set_name(player.name);
             pEntryInfo->set_account(player.account);
-            pEntryInfo->set_mask(player.glove);
-            pEntryInfo->set_glove(player.mask);
         }
 
         // 发送当前所有玩家给加入者
@@ -157,7 +155,6 @@ class IGameplay {
         //}
     }
 
-    // 玩家退出
     void DoPlayerQuit(const Guid &p) {
         auto iter = base_players.find(p);
         if (iter == base_players.end()) {
@@ -165,7 +162,6 @@ class IGameplay {
             return;
         }
         auto &player = iter->second;
-        // 暂时不删除
         player.isOnline = false;
         onlinePlayerCount--;
         dout << "Online Count: " << onlinePlayerCount << std::endl;
@@ -173,17 +169,14 @@ class IGameplay {
     }
 
     void SendToPlayer(int msg_id, google::protobuf::Message &xMsg, const Guid &player) {
-        // dout << " 发送给客户端: " << player.ToString() << "   MSGID: " << msg_id << std::endl;
-
         // manager->m_node_->SendPBToPlayer(msg_id, xMsg, player);
     }
 
-    //
     void BroadcastToPlayers(int msg_id, google::protobuf::Message &xMsg) {
         for (auto const &iter : base_players) {
             auto &player = iter.second;
             if (player.isOnline == true) {
-                // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msg_id << std::endl;
+
                 // manager->m_node_->SendPBToPlayer(msg_id, xMsg, player.guid);
             }
         }
@@ -197,24 +190,21 @@ class IGameplay {
                 continue;
             }
             if (player.isOnline == true) {
-                // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msg_id << std::endl;
                 // manager->m_node_->SendPBToPlayer(msg_id, xMsg, player.guid);
             }
         }
     }
 
-    // 广播给在游玩的玩家
     void BroadcastToActivePlayers(int msg_id, google::protobuf::Message &xMsg) {
         for (auto const &iter : base_players) {
             auto &player = iter.second;
             if (player.isOnline && player.isActive) {
-                // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msg_id << std::endl;
+
                 // manager->m_node_->SendPBToPlayer(msg_id, xMsg, player.guid);
             }
         }
     }
 
-    // 广播给在游玩的玩家
     void BroadcastToActivePlayersExcept(int msg_id, google::protobuf::Message &xMsg, const Guid &exceptPlayer) {
         for (auto const &iter : base_players) {
             auto &player = iter.second;
@@ -222,7 +212,6 @@ class IGameplay {
                 continue;
             }
             if (player.isOnline && player.isActive) {
-                // dout << " 广播发送给客户端: " << player.first.ToString() << "   MSGID: " << msg_id << std::endl;
                 // manager->m_node_->SendPBToPlayer(msg_id, xMsg, player.guid);
             }
         }
@@ -262,18 +251,16 @@ class IGameplay {
         bool isActive = true;
         string name;
         string account;
-        int mask;
-        int glove;
     };
 
     int GetID() { return id; }
 
   private:
     int onlinePlayerCount = 0;
-    IGameplayManagerModule *manager = nullptr;
+    IGameMgrModule *manager = nullptr;
     int id = 0;
     Status status = Status::CREATING;
     map<Guid, BasePlayer> base_players;
     int index_id = 0;
 };
-} // namespace gameplay_manager::play
+} // namespace game::logic

@@ -9,8 +9,8 @@ local DbProxyID = 0;
 Redis = Redis and Redis or QueryAsync
 
 function Redis:Bind()
-    Net:ClientRegister(ServerType.ST_DB_PROXY, DbProxyRPC.ACK_REDIS_GET, self, self.AckGetString)
-    Net:ClientRegister(ServerType.ST_DB_PROXY, DbProxyRPC.ACK_REDIS_SET, self, self.AckSetString)
+    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckRedisGet, self, self.AckGetString)
+    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckRedisSet, self, self.AckSetString)
     DbProxyID = GetDbProxyID()
 end
 
@@ -20,14 +20,14 @@ function Redis:GetStringAsync(key)
         query_id = query_id,
         key = key,
     }
-    Net:SendToServer(DbProxyID, DbProxyRPC.REQ_REDIS_GET, Squick:Encode("rpc.ReqRedisGet", req))
+    Net:SendToServer(DbProxyID, NMsgId.IdNReqRedisGet, Squick:Encode("rpc.NReqRedisGet", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data.value
 end
 
 function Redis:AckGetString(guid, msg_data, msg_id, fd)
-    local data =  Squick:Decode("rpc.AckRedisGet", msg_data);
+    local data =  Squick:Decode("rpc.NAckRedisGet", msg_data);
     self:QueryResume(data.query_id, data)
 end
 
@@ -42,14 +42,14 @@ function Redis:SetStringAsync(key, value, ttl)
         value = value,
         ttl = ttl,
     }
-    Net:SendToServer(DbProxyID, DbProxyRPC.REQ_REDIS_SET, Squick:Encode("rpc.ReqRedisSet", req))
+    Net:SendToServer(DbProxyID, NMsgId.IdNReqRedisSet, Squick:Encode("rpc.NReqRedisSet", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data.code
 end
 
 function Redis:AckSetString(guid, msg_data, msg_id, fd)
-    local data =  Squick:Decode("rpc.AckRedisSet", msg_data);
+    local data =  Squick:Decode("rpc.NAckRedisSet", msg_data);
     self:QueryResume(data.query_id, data)
 end
 

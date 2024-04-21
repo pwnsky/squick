@@ -62,8 +62,7 @@ Coroutine<bool> LogicModule::OnLogin(std::shared_ptr<HttpRequest> request) {
         // find min work load proxy
         rpc::NReqMinWorkloadNodeInfo pbreq;
         pbreq.add_type_list(ST_PROXY);
-        auto data = co_await m_net_client_->RequestPB(DEFAULT_MASTER_ID, rpc::IdNReqMinWorkloadNodeInfo, pbreq,
-                                                      rpc::IdNAckMinWorkloadNodeInfo);
+        auto data = co_await m_net_client_->RequestPB(DEFAULT_MASTER_ID, rpc::IdNReqMinWorkloadNodeInfo, pbreq, rpc::IdNAckMinWorkloadNodeInfo);
         if (data.error) {
             ack.code = IResponse::SERVER_ERROR;
             ack.msg = "Get min workload proxy info from master error, network error\n";

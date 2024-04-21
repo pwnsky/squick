@@ -18,12 +18,11 @@ MongoModule::~MongoModule() {}
 bool MongoModule::AfterStart() {
     Connect();
 
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_QUERY, this, &MongoModule::OnReqQuery);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_INSERT, this, &MongoModule::OnReqInsert);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_FIND, this, &MongoModule::OnReqFind);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_UPDATE, this, &MongoModule::OnReqUpdate);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_DELETE, this, &MongoModule::OnReqDelete);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_MONGO_CREATE_INDEX, this, &MongoModule::OnReqCreateIndex);
+    m_net_->AddReceiveCallBack(rpc::IdNReqMongoInsert, this, &MongoModule::OnReqInsert);
+    m_net_->AddReceiveCallBack(rpc::IdNReqMongoFind, this, &MongoModule::OnReqFind);
+    m_net_->AddReceiveCallBack(rpc::IdNReqMongoUpdate, this, &MongoModule::OnReqUpdate);
+    m_net_->AddReceiveCallBack(rpc::IdNReqMongoDelete, this, &MongoModule::OnReqDelete);
+    m_net_->AddReceiveCallBack(rpc::IdNReqMongoCreateIndex, this, &MongoModule::OnReqCreateIndex);
     return true;
 }
 
@@ -63,8 +62,8 @@ void MongoModule::OnReqQuery(const socket_t sock, const int msg_id, const char *
 
 void MongoModule::OnReqInsert(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
-    rpc::ReqMongoInsert req;
-    rpc::AckMongoInsert ack;
+    rpc::NReqMongoInsert req;
+    rpc::NAckMongoInsert ack;
 
     try {
         uint64_t tmp;
@@ -84,13 +83,13 @@ void MongoModule::OnReqInsert(const socket_t sock, const int msg_id, const char 
     }
     ack.set_code(code);
     ack.set_query_id(req.query_id());
-    m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_INSERT, ack, sock);
+    m_net_->SendPBToNode(rpc::IdNAckMongoInsert, ack, sock);
 }
 // Ref: http://mongocxx.org/mongocxx-v3/tutorial/#specify-a-query-filter
 void MongoModule::OnReqFind(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
-    rpc::ReqMongoFind req;
-    rpc::AckMongoFind ack;
+    rpc::NReqMongoFind req;
+    rpc::NAckMongoFind ack;
 
     try {
         uint64_t tmp;
@@ -115,13 +114,13 @@ void MongoModule::OnReqFind(const socket_t sock, const int msg_id, const char *m
     }
     ack.set_code(code);
     ack.set_query_id(req.query_id());
-    m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_FIND, ack, sock);
+    m_net_->SendPBToNode(rpc::IdNAckMongoFind, ack, sock);
 }
 
 void MongoModule::OnReqUpdate(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
-    rpc::ReqMongoUpdate req;
-    rpc::AckMongoUpdate ack;
+    rpc::NReqMongoUpdate req;
+    rpc::NAckMongoUpdate ack;
     try {
         uint64_t tmp;
         assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
@@ -141,13 +140,13 @@ void MongoModule::OnReqUpdate(const socket_t sock, const int msg_id, const char 
     }
     ack.set_code(code);
     ack.set_query_id(req.query_id());
-    m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_UPDATE, ack, sock);
+    m_net_->SendPBToNode(rpc::IdNAckMongoUpdate, ack, sock);
 }
 
 void MongoModule::OnReqDelete(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
-    rpc::ReqMongoDelete req;
-    rpc::AckMongoDelete ack;
+    rpc::NReqMongoDelete req;
+    rpc::NAckMongoDelete ack;
     try {
         uint64_t tmp;
         assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
@@ -164,13 +163,13 @@ void MongoModule::OnReqDelete(const socket_t sock, const int msg_id, const char 
     }
     ack.set_code(code);
     ack.set_query_id(req.query_id());
-    m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_DELETE, ack, sock);
+    m_net_->SendPBToNode(rpc::IdNAckMongoDelete, ack, sock);
 }
 
 void MongoModule::OnReqCreateIndex(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
-    rpc::ReqMongoCreateIndex req;
-    rpc::AckMongoCreateIndex ack;
+    rpc::NReqMongoCreateIndex req;
+    rpc::NAckMongoCreateIndex ack;
     try {
         uint64_t tmp;
         assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
@@ -187,6 +186,6 @@ void MongoModule::OnReqCreateIndex(const socket_t sock, const int msg_id, const 
     }
     ack.set_code(code);
     ack.set_query_id(req.query_id());
-    m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_MONGO_DELETE, ack, sock);
+    m_net_->SendPBToNode(rpc::IdNAckMongoCreateIndex, ack, sock);
 }
 } // namespace db_proxy::mongo

@@ -2,7 +2,7 @@
 #include <squick/core/i_plugin.h>
 #include <squick/core/i_plugin_manager.h>
 
-namespace gameplay::node {
+namespace game::node {
 class Plugin : public IPlugin {
   public:
     Plugin(IPluginManager *p) { pm_ = p; }
@@ -12,4 +12,4 @@ class Plugin : public IPlugin {
     virtual void Uninstall();
 };
 
-} // namespace gameplay::node
+} // namespace game::node

@@ -1,0 +1,9 @@
+<XML>
+    <GameMgr>
+		<Plugin Name="core/net" />
+		<Plugin Name="core/log" />
+		
+		<Plugin Name="node/ds_mgr/node" />
+		<Plugin Name="node/ds_mgr/logic" />
+    </GameMgr>
+</XML>

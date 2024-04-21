@@ -18,11 +18,7 @@ bool ClickhouseModule::AfterStart() {
 
     Connect();
 
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_QUERY, this, &ClickhouseModule::OnReqQuery);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_EXECUTE, this, &ClickhouseModule::OnReqExecute);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_INSERT, this, &ClickhouseModule::OnReqInsert);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_SELECT, this, &ClickhouseModule::OnReqSelect);
-
+    m_net_->AddReceiveCallBack(rpc::IdNReqClickhouseExecute, this, &ClickhouseModule::OnReqExecute);
     return true;
 }
 
@@ -34,8 +30,8 @@ void ClickhouseModule::OnReqQuery(const socket_t sock, const int msg_id, const c
 
 void ClickhouseModule::OnReqExecute(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_CLICKHOUSE_SUCCESS;
-    rpc::ReqClickhouseExecute req;
-    rpc::AckMongoInsert ack;
+    rpc::NReqClickhouseExecute req;
+    rpc::NAckClickhouseExecute ack;
     uint64_t uid;
     if (!m_net_->ReceivePB(msg_id, msg, len, req, uid)) {
         return;
@@ -49,7 +45,7 @@ void ClickhouseModule::OnReqExecute(const socket_t sock, const int msg_id, const
     }
     ack.set_code(code);
     ack.set_query_id(req.query_id());
-    m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_CLICKHOUSE_EXECUTE, ack, sock);
+    m_net_->SendPBToNode(rpc::IdNAckClickhouseExecute, ack, sock);
 }
 
 void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}

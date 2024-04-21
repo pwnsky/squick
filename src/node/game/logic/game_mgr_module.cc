@@ -1,10 +1,10 @@
 
 
-#include "gameplay_manager_module.h"
+#include "game_mgr_module.h"
 
-namespace gameplay_manager::play {
+namespace game::logic {
 
-bool GameplayManagerModule::Start() {
+bool GameMgrModule::Start() {
     m_element_ = pm_->FindModule<IElementModule>();
     m_class_ = pm_->FindModule<IClassModule>();
     m_net_ = pm_->FindModule<INetModule>();
@@ -13,16 +13,16 @@ bool GameplayManagerModule::Start() {
     return true;
 }
 
-bool GameplayManagerModule::AfterStart() { return true; }
+bool GameMgrModule::AfterStart() { return true; }
 
-bool GameplayManagerModule::ReadyUpdate() { return true; }
+bool GameMgrModule::ReadyUpdate() { return true; }
 
-bool GameplayManagerModule::Destroy() { return true; }
+bool GameMgrModule::Destroy() { return true; }
 
-bool GameplayManagerModule::Update() {
+bool GameMgrModule::Update() {
     static int64_t lastGameplayUpdate = SquickGetTimeMS();
     int64_t nowTime = SquickGetTimeMS();
-    if (nowTime - lastGameplayUpdate >= 50) // 20fps刷新
+    if (nowTime - lastGameplayUpdate >= 50) // 20fps
     {
         lastGameplayUpdate = nowTime;
         if (m_gameplay.size() > 0) {
@@ -33,18 +33,18 @@ bool GameplayManagerModule::Update() {
                     continue;
                 }
 
-                if (game.second->GetStatus() == IGameplay::RUNNING) {
+                if (game.second->GetStatus() == IGame::RUNNING) {
                     game.second->DoUpdate();
-                } else if (game.second->GetStatus() == IGameplay::GAMEOVER) {
+                } else if (game.second->GetStatus() == IGame::GAMEOVER) {
                     gameplayWaitDestroy.push_back(game.first);
                 }
             }
         }
 
-        // 自动释放已经结束的gameplay
+        // Destroy
         if (gameplayWaitDestroy.size() > 0) {
             for (auto g : gameplayWaitDestroy) {
-                GameplayDestroy(g);
+                GameDestroy(g);
             }
             gameplayWaitDestroy.clear();
         }
@@ -53,10 +53,10 @@ bool GameplayManagerModule::Update() {
     return true;
 }
 
-bool GameplayManagerModule::GameplayCreate(int id, const string &key) {
+bool GameMgrModule::GameCreate(int id, const string &key) {
     dout << "GamePlay Create!\n";
     if (m_gameplay[id] == nullptr) {
-        IGameplay *game = new Gameplay();
+        IGame *game = new Game();
         game->DoInit(id, this);
         game->DoAwake();
         game->DoStart();
@@ -65,23 +65,23 @@ bool GameplayManagerModule::GameplayCreate(int id, const string &key) {
     return true;
 }
 
-bool GameplayManagerModule::GameplayDestroy(int id) {
+bool GameMgrModule::GameDestroy(int id) {
     auto iter = m_gameplay.find(id);
     if (iter != m_gameplay.end()) {
         if (iter->second) {
             iter->second->DoDestroy();
             delete iter->second;
         }
-        dout << "Gameplay销毁\n";
+        LOG_INFO("Game destroy<%v>", id);
         m_gameplay.erase(iter);
         return true;
     } else {
-        dout << "Gameplay没有找到\n";
+        LOG_ERROR("Not found this game<%v>", id);
     }
     return false;
 }
 
-bool GameplayManagerModule::GameplayPlayerQuit(const Guid &player) {
+bool GameMgrModule::DoGamePlayerQuit(const Guid &player) {
     dout << "Player: " << player.ToString() << " quit \n";
     // int id = m_player_manager_->GetPlayerGameplayID(player);
     int id = -1;
@@ -94,9 +94,9 @@ bool GameplayManagerModule::GameplayPlayerQuit(const Guid &player) {
         auto gameplay = m_gameplay[id];
         if (gameplay != nullptr) {
             gameplay->DoPlayerQuit(player);
-            // 检查是否可以销毁该gameplay
+            // Check can destroy this game
             if (gameplay->OnlinePlayerCount() < 1) {
-                return GameplayDestroy(id);
+                return GameDestroy(id);
             }
         } else {
             dout << "This player not in game." << std::endl;
@@ -107,21 +107,20 @@ bool GameplayManagerModule::GameplayPlayerQuit(const Guid &player) {
     return false;
 }
 
-bool GameplayManagerModule::SingleGameplayCreate(int id, const string &key) {
-    dout << "启动 独立的Gameplay服务器 id: " << id << " key: " << key << std::endl;
+bool GameMgrModule::SingleGameCreate(int id, const string &key) {
     rpc::ReqGameplayCreate xMsg;
     xMsg.set_id(id);
     xMsg.set_key(key);
-    xMsg.set_game_id(pm_->GetAppID()); // 获取当前Game ID
+    xMsg.set_game_id(pm_->GetAppID());
 
     // m_pGameServerNet_ServerModule->SendMsgPBToGameplayManager(GameplayManagerRPC::REQ_GAMEPLAY_CREATE, xMsg);
     // m_node_->SendToServer(GameplayManagerRPC::REQ_GAMEPLAY_CREATE, )
     return true;
 }
 
-bool GameplayManagerModule::SingleGameplayDestroy(int id) { return true; }
+bool GameMgrModule::SingleGameDestroy(int id) { return true; }
 
-void GameplayManagerModule::OnRecv(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void GameMgrModule::OnRecv(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     rpc::MsgBase xMsg;
     if (!xMsg.ParseFromArray(msg, len)) {
         char szData[MAX_PATH] = {0};
@@ -138,24 +137,23 @@ void GameplayManagerModule::OnRecv(const socket_t sock, const int msg_id, const 
 
     auto iter = m_gameplay.find(group_id);
     if (iter == m_gameplay.end()) {
-        dout << "不存在该 group: " << group_id << " msg_id: " << msg_id << std::endl;
+        dout << "no this group: " << group_id << " msg_id: " << msg_id << std::endl;
         return;
     }
 
     auto gameplay = iter->second;
     if (gameplay != nullptr) {
-        GAME_PLAY_RECEIVE_FUNCTOR_PTR &ptr = GetCallback(msg_id, group_id);
+        GAME_MGR_RECEIVE_FUNCTOR_PTR &ptr = GetCallback(msg_id, group_id);
         if (ptr != nullptr) {
-            GAME_PLAY_RECEIVE_FUNCTOR *pFunc = ptr.get();
+            GAME_MGR_RECEIVE_FUNCTOR *pFunc = ptr.get();
             pFunc->operator()(clientID, msg_id, xMsg.msg_data());
         } else {
-            dout << "不存在该 callback! msg_id: " << msg_id << std::endl;
+            dout << "no this callback! msg_id: " << msg_id << std::endl;
         }
 
     } else {
-        dout << "不存在该 group: " << group_id << " msg_id: " << msg_id << std::endl;
-        // 不存在该group，可能已销毁
+        dout << "no this group: " << group_id << " msg_id: " << msg_id << std::endl;
     }
 }
 
-} // namespace gameplay_manager::play
+} // namespace game::logic
