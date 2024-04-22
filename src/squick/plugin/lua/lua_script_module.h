@@ -173,6 +173,12 @@ class LuaScriptModule : public ILuaScriptModule {
     void OnNetMsgCallBackAsServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     void OnNetMsgCallBackAsClient(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
+    void AddHttpServerCallBack(const int method, const std::string& path, const LuaIntf::LuaRef& luaTable, const LuaIntf::LuaRef& luaFunc);
+    bool HttpServerCallBack(std::shared_ptr<HttpRequest> req);
+    void HttpServerResponse(int web_status, const std::string &content);
+    void DelHttpServerCallBack(const int method, const std::string& path);
+    
+
   protected:
     bool Register();
 
@@ -188,7 +194,9 @@ class LuaScriptModule : public ILuaScriptModule {
     INetClientModule *m_net_client_;
     INetModule *m_net_;
     ILogModule *m_log_;
-    ILuaPBModule *m_pLuaPBModule;
+    ILuaPBModule *m_lua_pb_;
+    IHttpServerModule *m_http_server_;
+    IHttpClientModule *m_http_client_;
 
   protected:
     std::string strVersionCode;
@@ -201,8 +209,11 @@ class LuaScriptModule : public ILuaScriptModule {
     Map<std::string, List<LuaCallBack>> mxClassEventFuncMap;
     Map<int, List<LuaCallBack>> mxNetMsgCallBackFuncMapAsServer;
     Map<int, List<LuaCallBack>> mxNetMsgCallBackFuncMapAsClient;
+    Map<std::string, List<LuaCallBack>> http_server_callbacks_;
 
     std::string scriptPath = "";
     int hotFixNotifyFd = -1;
     char hotFixInotifyEventBuf[512];
+
+    queue<std::shared_ptr<HttpRequest>> http_requests_;
 };

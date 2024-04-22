@@ -25,28 +25,27 @@ bool GameMgrModule::Update() {
     if (nowTime - lastGameplayUpdate >= 50) // 20fps
     {
         lastGameplayUpdate = nowTime;
-        if (m_gameplay.size() > 0) {
-            for (auto &game : m_gameplay) {
+        if (games_.size() > 0) {
+            for (auto &game : games_) {
                 if (game.second == nullptr) {
-                    dout << "No this Gameplay: gameplayID: " << game.first << std::endl;
-                    gameplayWaitDestroy.push_back(game.first);
+                    dead_games_.push_back(game.first);
                     continue;
                 }
 
                 if (game.second->GetStatus() == IGame::RUNNING) {
                     game.second->DoUpdate();
                 } else if (game.second->GetStatus() == IGame::GAMEOVER) {
-                    gameplayWaitDestroy.push_back(game.first);
+                    dead_games_.push_back(game.first);
                 }
             }
         }
 
         // Destroy
-        if (gameplayWaitDestroy.size() > 0) {
-            for (auto g : gameplayWaitDestroy) {
+        if (dead_games_.size() > 0) {
+            for (auto g : dead_games_) {
                 GameDestroy(g);
             }
-            gameplayWaitDestroy.clear();
+            dead_games_.clear();
         }
     }
 
@@ -54,26 +53,25 @@ bool GameMgrModule::Update() {
 }
 
 bool GameMgrModule::GameCreate(int id, const string &key) {
-    dout << "GamePlay Create!\n";
-    if (m_gameplay[id] == nullptr) {
+    if (games_[id] == nullptr) {
         IGame *game = new Game();
         game->DoInit(id, this);
         game->DoAwake();
         game->DoStart();
-        m_gameplay[id] = game;
+        games_[id] = game;
     }
     return true;
 }
 
 bool GameMgrModule::GameDestroy(int id) {
-    auto iter = m_gameplay.find(id);
-    if (iter != m_gameplay.end()) {
+    auto iter = games_.find(id);
+    if (iter != games_.end()) {
         if (iter->second) {
             iter->second->DoDestroy();
             delete iter->second;
         }
         LOG_INFO("Game destroy<%v>", id);
-        m_gameplay.erase(iter);
+        games_.erase(iter);
         return true;
     } else {
         LOG_ERROR("Not found this game<%v>", id);
@@ -82,16 +80,15 @@ bool GameMgrModule::GameDestroy(int id) {
 }
 
 bool GameMgrModule::DoGamePlayerQuit(const Guid &player) {
-    dout << "Player: " << player.ToString() << " quit \n";
     // int id = m_player_manager_->GetPlayerGameplayID(player);
     int id = -1;
 
     if (id != -1) {
-        auto iter = m_gameplay.find(id);
-        if (iter == m_gameplay.end()) {
+        auto iter = games_.find(id);
+        if (iter == games_.end()) {
             dout << "No this gameplay: " << id << std::endl;
         }
-        auto gameplay = m_gameplay[id];
+        auto gameplay = games_[id];
         if (gameplay != nullptr) {
             gameplay->DoPlayerQuit(player);
             // Check can destroy this game
@@ -135,8 +132,8 @@ void GameMgrModule::OnRecv(const socket_t sock, const int msg_id, const char *ms
     if (group_id == -1)
         return;
 
-    auto iter = m_gameplay.find(group_id);
-    if (iter == m_gameplay.end()) {
+    auto iter = games_.find(group_id);
+    if (iter == games_.end()) {
         dout << "no this group: " << group_id << " msg_id: " << msg_id << std::endl;
         return;
     }

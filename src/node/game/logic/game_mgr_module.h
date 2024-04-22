@@ -32,8 +32,8 @@ class GameMgrModule : public IGameMgrModule {
     virtual void OnRecv(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) override;
 
   private:
-    std::unordered_map<int, IGame *> m_gameplay;
-    std::vector<int> gameplayWaitDestroy;
+    std::unordered_map<int, IGame *> games_;
+    std::vector<int> dead_games_;
 };
 
 } // namespace game::logic
