@@ -117,6 +117,7 @@ class Diff {
         for (auto f : unpatchedFilesMap) {
             cout << "   " << f.first << endl;
         }
+		return 0;
     }
 };
 } // namespace sqkctl::diff
