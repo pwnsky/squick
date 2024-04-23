@@ -36,7 +36,6 @@ end
 
 -- Select
 function Clickhouse:SelectAsync(db, sql)
-    Print("Clickhouse okkkkk????")
     local query_id = self:QueryInit()
     local req = {
         query_id = query_id,

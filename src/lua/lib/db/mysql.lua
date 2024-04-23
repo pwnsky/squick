@@ -36,7 +36,6 @@ end
 
 -- Select
 function Mysql:SelectAsync(db, sql)
-    Print("okkkkk????")
     local query_id = self:QueryInit()
     local req = {
         query_id = query_id,
