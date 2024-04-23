@@ -149,27 +149,36 @@ void MysqlModule::OnReqInsert(const socket_t sock, const int msg_id, const char*
         auto schema = session_->getSchema(req.database());
         auto table = schema.getTable(req.table());
 
-        Row row;
         std::vector<std::string> columns;
-        int i = 0;
-        for (auto& d : req.data()) {
-            columns.push_back(d.field());
-            switch (d.type()) {
-            case rpc::MysqlDataTypeNumber: {
-                row.set(i, std::stoi(d.values(0)));
-            }break;
-            case rpc::MysqlDataTypeString: {
-                row.set(i, d.values(0));
-            }break;
+        
+        int nums = req.data()[0].values_size(); // batch num
+        int affected_count = 0;
+        bool is_set_columns = false;
+        Row row;
+        for (int col = 0; col < nums; col++) {
+            int j = 0;
+            row.clear();
+            for (auto& d : req.data()) {
+                if (is_set_columns == false) {
+                    columns.push_back(d.field());
+                }
+                
+                switch (d.type()) {
+                case rpc::MysqlDataTypeNumber: {
+                    row.set(j, std::stoi(d.values(col)));
+                }break;
+                case rpc::MysqlDataTypeString: {
+                    row.set(j, d.values(col));
+                }break;
 
+                }
+                j++;
             }
-            i++;
-            dout << " I: " << i << std::endl;
+            is_set_columns = true;
+            auto result = table.insert(columns).values(row).execute();
+            affected_count += result.getAffectedItemsCount();
         }
-
-        auto insert = table.insert("account", "account_id");
-        insert.values(row);
-        insert.execute();
+        LOG_INFO(" Insert affected count<%v> ", affected_count);
     }
     catch (const std::exception& e) {
         LogError(e.what(), __func__, __LINE__);

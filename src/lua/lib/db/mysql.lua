@@ -54,11 +54,11 @@ function Mysql:AckSelect(guid, msg_data, msg_id, fd)
 end
 
 -- Insert
-function Mysql:InsertAsync(db, table, data)
+function Mysql:InsertAsync(database, table, data)
     local query_id = self:QueryInit()
     local req = {
         query_id = query_id,
-        db = db,
+        database = database,
         table = table,
         data = data,
     }
