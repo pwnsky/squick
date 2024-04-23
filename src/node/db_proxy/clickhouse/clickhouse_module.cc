@@ -156,6 +156,7 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
             }
         }
         client_->Insert(req.table(), block);
+        LOG_INFO("Insert to clickhouse table<%v> ColumnCount<%v> RowCount<%v>", req.table(), block.GetColumnCount(), block.GetRowCount());
     }
     catch (std::exception e) {
         code = rpc::DB_PROXY_CODE_CLICKHOUSE_EXCEPTION;
@@ -164,7 +165,7 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
 
     ack.set_code(code);
     ack.set_query_id(req.query_id());
-    m_net_->SendPBToNode(rpc::IdNAckClickhouseExecute, ack, sock);
+    m_net_->SendPBToNode(rpc::IdNAckClickhouseInsert, ack, sock);
 }
 
 void ClickhouseModule::OnReqSelect(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
@@ -174,7 +175,11 @@ void ClickhouseModule::OnReqSelect(const socket_t sock, const int msg_id, const 
     uint64_t uid;
     try {
         assert(m_net_->ReceivePB(msg_id, msg, len, req, uid));
+        std::vector<Block> all_blocks;
         client_->Select(req.sql(), [&](const Block& block) {
+            all_blocks.push_back(block);
+        });
+        for (auto& block : all_blocks) {
             for (size_t col = 0; col < block.GetColumnCount(); ++col) {
                 auto type_code = block[col]->GetType().GetCode();
                 auto ack_data = ack.add_data();
@@ -221,21 +226,24 @@ void ClickhouseModule::OnReqSelect(const socket_t sock, const int msg_id, const 
                         ack_data->set_type(rpc::ClickHouseDataTypeFloat64);
                         ack_data->add_values(std::to_string(block[col]->As<ColumnFloat64>()->At(row)));
                         break;
-                    case Type::Code::String:
+                    case Type::Code::String: {
                         ack_data->set_type(rpc::ClickHouseDataTypeString);
-                        ack_data->add_values(block[col]->As<ColumnString>()->At(row).data());
-                        break;
+                        std::string db_string(block[col]->As<ColumnString>()->At(row));
+                        ack_data->add_values(db_string);
+                    } break;
                     default:
                         LOG_ERROR("Not surpport this clickhouse data type: %v", (int)type_code);
                         break;
                     }
                 }
             }
+        }
 
-            ack.set_code(code);
-            ack.set_query_id(req.query_id());
-            m_net_->SendPBToNode(rpc::IdNAckClickhouseSelect, ack, sock);
-        });
+        ack.set_code(code);
+        ack.set_query_id(req.query_id());
+        m_net_->SendPBToNode(rpc::IdNAckClickhouseSelect, ack, sock);
+        LOG_INFO("Clickhouse select callbacks: sql<%v> col<%v>", req.sql(), ack.data_size());
+
     } catch (std::exception e) {
         
         LogError(e.what(), __func__, __LINE__);
