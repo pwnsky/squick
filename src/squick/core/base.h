@@ -11,7 +11,7 @@
 #include "termcolor.h"
 #include <iostream>
 
-#define SQUICK_VERSION "1.1.0"
+#define SQUICK_VERSION "1.1.1"
 #define SERVER_NAME "Squick/" SQUICK_VERSION
 
 enum ServerType {

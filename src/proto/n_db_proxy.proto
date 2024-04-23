@@ -22,6 +22,25 @@ enum DbProxyCode {
     DB_PROXY_CODE_CLICKHOUSE_EXCEPTION = 1502;
 }
 
+enum ClickhouseDataType {
+    ClickHouseDataTypeNone = 0;
+    ClickHouseDataTypeUInt8 = 1;
+    ClickHouseDataTypeUInt16 = 2;
+    ClickHouseDataTypeUInt32 = 3;
+    ClickHouseDataTypeUInt64 = 4;
+
+    ClickHouseDataTypeInt8 = 5;
+    ClickHouseDataTypeInt16 = 6;
+    ClickHouseDataTypeInt32 = 7;
+    ClickHouseDataTypeInt64 = 8;
+    ClickHouseDataTypeInt128 = 9;
+
+    ClickHouseDataTypeFloat32 = 10;
+    ClickHouseDataTypeFloat64 = 11;
+
+    ClickHouseDataTypeString = 12;
+}
+
 message Data {
     int32 type = 1;
     bytes value = 2;
@@ -30,6 +49,12 @@ message Data {
 message List {
     int32 type = 1;
     repeated bytes values = 2;
+}
+
+message ClickhouseData {
+    string field = 1;
+    int32 type = 2;
+    repeated bytes values = 3;
 }
 
 message NReqRedisGet { // msg_id=30003;
@@ -104,7 +129,20 @@ message NAckClickhouseSelect { // msg_id=30103;
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
-    repeated List result = 4;
+    repeated ClickhouseData data = 4;
+}
+
+message NReqClickhouseInsert { // msg_id=30104;
+    int32 query_id = 1;
+    string database = 2;
+    string table = 3;
+    repeated ClickhouseData data = 4;
+}
+
+message NAckClickhouseInsert { // msg_id=30105;
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
 }
 
 // Insert one

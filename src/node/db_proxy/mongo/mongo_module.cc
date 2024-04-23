@@ -47,7 +47,7 @@ bool MongoModule::Connect() {
         std::cout << url << endl;
         // Setup the connection and get a handle on the "admin" database.
         client_ = new client{uri{url}};
-        LOG_INFO("Mongo appname: %v ", client_->start_session().client().uri().appname().value().data());
+        //LOG_INFO("Mongo appname: %v ", client_->start_session().client().uri().appname().value().data());
     } catch (const std::exception &e) {
         // Handle errors.
         LogError(e.what(), __func__, __LINE__);
