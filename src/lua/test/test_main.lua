@@ -28,7 +28,8 @@ function Test:Delay()
     -- 需要一定连接时间的测试
     -- Require("test.mongo")
     -- Require("test.redis")
-    Require("test.clickhouse")
+    -- Require("test.clickhouse")
+    Require("test.mysql")
 end
 
 function Test:Destroy()

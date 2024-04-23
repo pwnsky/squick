@@ -6,7 +6,7 @@
 -----------------------------------------------------------------------------
 
 local DbProxyID = 0;
-Mongo = Mongo and Mongo or QueryAsync
+Mongo = Mongo and Mongo or Object(QueryAsync).new()
 
 function Mongo:Bind()
     Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckMongoInsert, self, self.AckInsert)

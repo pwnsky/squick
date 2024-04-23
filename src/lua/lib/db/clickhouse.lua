@@ -6,8 +6,7 @@
 -----------------------------------------------------------------------------
 
 local DbClickhouseID = 0;
-Clickhouse = Clickhouse and Clickhouse or QueryAsync
-
+Clickhouse = Clickhouse and Clickhouse or Object(QueryAsync).new()
 
 function Clickhouse:Bind()
     Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckClickhouseExecute, self, self.AckExecute)
@@ -37,6 +36,7 @@ end
 
 -- Select
 function Clickhouse:SelectAsync(db, sql)
+    Print("Clickhouse okkkkk????")
     local query_id = self:QueryInit()
     local req = {
         query_id = query_id,

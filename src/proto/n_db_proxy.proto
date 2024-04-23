@@ -41,6 +41,12 @@ enum ClickhouseDataType {
     ClickHouseDataTypeString = 12;
 }
 
+enum MysqlDataType {
+    MysqlDataTypeNone = 0;
+    MysqlDataTypeNumber = 1;
+    MysqlDataTypeString = 2;
+}
+
 message Data {
     int32 type = 1;
     bytes value = 2;
@@ -52,6 +58,12 @@ message List {
 }
 
 message ClickhouseData {
+    string field = 1;
+    int32 type = 2;
+    repeated bytes values = 3;
+}
+
+message MysqlData {
     string field = 1;
     int32 type = 2;
     repeated bytes values = 3;
@@ -225,4 +237,55 @@ message NAckMongoCreateIndex { // msg_id=30209;
     bytes msg = 2;
     int32 query_id = 3;
     string result_json = 4;
+}
+
+
+message NReqMysqlExecute { // msg_id=30300;
+    int32 query_id = 1;
+    string sql = 2;
+}
+
+message NAckMysqlExecute { // msg_id=30301;
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+}
+
+message NReqMysqlSelect { // msg_id=30302;
+    int32 query_id = 1;
+    string sql = 2;
+}
+
+message NAckMysqlSelect { // msg_id=30303;
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    repeated MysqlData data = 4;
+}
+
+message NReqMysqlInsert { // msg_id=30304;
+    int32 query_id = 1;
+    string database = 2;
+    string table = 3;
+    repeated MysqlData data = 4;
+}
+
+message NAckMysqlInsert { // msg_id=30305;
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+}
+
+message NReqMysqlUpdate { // msg_id=30306;
+    int32 query_id = 1;
+    string database = 2;
+    string table = 3;
+    string where = 4;
+    repeated MysqlData data = 5;
+}
+
+message NAckMysqlUpdate { // msg_id=30307;
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
 }
