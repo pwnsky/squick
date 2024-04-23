@@ -175,10 +175,9 @@ void ClickhouseModule::OnReqSelect(const socket_t sock, const int msg_id, const 
     uint64_t uid;
     try {
         assert(m_net_->ReceivePB(msg_id, msg, len, req, uid));
-        std::vector<Block> all_blocks;
-        Block merged_block;
         std::map<std::string, rpc::ClickhouseData *> all_field_data;
         client_->Select(req.sql(), [&](const Block& block) {
+            // This lamda callback func will called many times, merge these blocks to one
             if (block.GetRowCount() <= 0) {
                 return;
             }
