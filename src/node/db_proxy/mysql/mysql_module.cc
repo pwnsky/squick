@@ -140,6 +140,45 @@ void MysqlModule::OnReqSelect(const socket_t sock, const int msg_id, const char*
 }
 
 void MysqlModule::OnReqInsert(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    int code = rpc::DbProxyCode::DB_PROXY_CODE_MYSQL_SUCCESS;
+    rpc::NReqMysqlInsert req;
+    rpc::NAckMysqlInsert ack;
+    uint64_t uid;
+    try {
+        assert(m_net_->ReceivePB(msg_id, msg, len, req, uid));
+        auto schema = session_->getSchema(req.database());
+        auto table = schema.getTable(req.table());
+
+        Row row;
+        std::vector<std::string> columns;
+        int i = 0;
+        for (auto& d : req.data()) {
+            columns.push_back(d.field());
+            switch (d.type()) {
+            case rpc::MysqlDataTypeNumber: {
+                row.set(i, std::stoi(d.values(0)));
+            }break;
+            case rpc::MysqlDataTypeString: {
+                row.set(i, d.values(0));
+            }break;
+
+            }
+            i++;
+            dout << " I: " << i << std::endl;
+        }
+
+        auto insert = table.insert("account", "account_id");
+        insert.values(row);
+        insert.execute();
+    }
+    catch (const std::exception& e) {
+        LogError(e.what(), __func__, __LINE__);
+        code = rpc::DbProxyCode::DB_PROXY_CODE_MYSQL_EXCEPTION;
+        ack.set_msg(e.what());
+    }
+    ack.set_code(code);
+    ack.set_query_id(req.query_id());
+    m_net_->SendPBToNode(rpc::IdNAckMysqlInsert, ack, sock);
 }
 
 void MysqlModule::OnReqUpdate(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {

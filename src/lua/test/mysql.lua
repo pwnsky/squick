@@ -7,7 +7,15 @@
 print("Mysql db test")
 
 local co = coroutine.create(function()
-    PrintTable(Mysql)
+
+    local data = {
+        { field = "account", type = MysqlDataType.MysqlDataTypeString, values = { "123456" }},
+        { field = "account_id", type = ClickhouseDataType.ClickHouseDataTypeString, values = { "account_id_test" }},
+    }
+    
+    local code = Mysql:InsertAsync("player", "account", data)
+    print("code ", code)
+
     local result = Mysql:SelectAsync("", "select * from player.account limit 2")
     print("mysql select recived: ")
     PrintTable(result)
