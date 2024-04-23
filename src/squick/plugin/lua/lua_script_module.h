@@ -22,6 +22,7 @@
 
 #include <fcntl.h>
 #include <limits.h>
+#include <queue>
 
 class ILuaScriptModule : public IModule {
   public:

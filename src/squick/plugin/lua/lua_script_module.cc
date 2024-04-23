@@ -874,7 +874,7 @@ void LuaScriptModule::AddHttpServerCallBack(const int method, const std::string 
 
 void LuaScriptModule::HttpServerResponse(int web_status, const std::string& content) {
     if (http_requests_.size() == 0) {
-        LOG_ERROR("No request, http_requests size == 0");
+        LOG_ERROR("No request, http_requests size == %v", 0);
         return;
     }
     m_http_server_->ResponseMsg(http_requests_.front(), content, (WebStatus)web_status);
