@@ -12,6 +12,7 @@ function Mysql:Bind()
     Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckMysqlExecute, self, self.AckExecute)
     Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckMysqlSelect, self, self.AckSelect)
     Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckMysqlInsert, self, self.AckInsert)
+    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckMysqlUpdate, self, self.AckUpdate)
     DbMysqlID = GetDbProxyID()
 end
 
@@ -70,6 +71,28 @@ end
 
 function Mysql:AckInsert(guid, msg_data, msg_id, fd)
     local data =  Squick:Decode("rpc.NAckMysqlInsert", msg_data);
+    self:QueryResume(data.query_id, data)
+end
+
+-- Update
+function Mysql:UpdateAsync(database, table, data, where, limit)
+    local query_id = self:QueryInit()
+    local req = {
+        query_id = query_id,
+        database = database,
+        table = table,
+        data = data,
+        where = where,
+        limit = limit,
+    }
+    Net:SendToNode(DbMysqlID, NMsgId.IdNReqMysqlUpdate, Squick:Encode("rpc.NReqMysqlUpdate", req))
+    local data = self:QueryAwait(query_id)
+    self:QueryClean(query_id)
+    return data
+end
+
+function Mysql:AckUpdate(guid, msg_data, msg_id, fd)
+    local data =  Squick:Decode("rpc.NAckMysqlUpdate", msg_data);
     self:QueryResume(data.query_id, data)
 end
 

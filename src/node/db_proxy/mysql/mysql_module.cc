@@ -191,5 +191,44 @@ void MysqlModule::OnReqInsert(const socket_t sock, const int msg_id, const char*
 }
 
 void MysqlModule::OnReqUpdate(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
+    int code = rpc::DbProxyCode::DB_PROXY_CODE_MYSQL_SUCCESS;
+    rpc::NReqMysqlUpdate req;
+    rpc::NAckMysqlUpdate ack;
+    uint64_t uid;
+    try {
+        assert(m_net_->ReceivePB(msg_id, msg, len, req, uid));
+        auto schema = session_->getSchema(req.database());
+        auto table = schema.getTable(req.table());
+        std::vector<std::string> columns;
+        auto table_update = table.update();
+        for (auto data : req.data()) {
+            columns.push_back(data.field());
+            std::string value = data.values()[0];
+            switch (data.type()) {
+            case rpc::MysqlDataTypeNumber: {
+                table_update.set(data.field(),std::stoi(value));
+            }break;
+            case rpc::MysqlDataTypeString: {
+                table_update.set(data.field(), value);
+            }break;
+            }
+        }
+        if (!req.where().empty()) {
+            table_update.where(req.where());
+        }
+        if (req.limit() > 0) {
+            table_update.limit(req.limit());
+        }
+        table_update.execute();  
+    }
+    catch (const std::exception& e) {
+        LogError(e.what(), __func__, __LINE__);
+        code = rpc::DbProxyCode::DB_PROXY_CODE_MYSQL_EXCEPTION;
+        ack.set_msg(e.what());
+    }
+    ack.set_code(code);
+    ack.set_query_id(req.query_id());
+    m_net_->SendPBToNode(rpc::IdNAckMysqlUpdate, ack, sock);
 }
+
 } // namespace db_proxy::mysql

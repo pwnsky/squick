@@ -280,8 +280,9 @@ message NReqMysqlUpdate { // msg_id=30306;
     int32 query_id = 1;
     string database = 2;
     string table = 3;
-    string where = 4;
-    repeated MysqlData data = 5;
+    repeated MysqlData data = 4;
+    string where = 5;
+    int32 limit = 6;
 }
 
 message NAckMysqlUpdate { // msg_id=30307;
