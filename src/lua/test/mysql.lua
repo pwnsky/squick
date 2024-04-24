@@ -24,7 +24,7 @@ local co = coroutine.create(function()
         { field = "account", type = MysqlDataType.MysqlDataTypeString, values = { "updated_123456" }},
         { field = "account_id", type = MysqlDataType.MysqlDataTypeString, values = { "updated_account_id_test" }},
     }
-    local result = Mysql:UpdateAsync("player", "account", data, "account=123456", 1)
+    local result = Mysql:UpdateAsync("player", "account", data, "account='123456'", 1)
     print("mysql update recived: ")
     PrintTable(result)
 end)
