@@ -1,16 +1,17 @@
 
 #include "mongo_module.h"
-#include <string>
-
 #include <cstdint>
 #include <iostream>
+#include <string>
 #include <vector>
 
 namespace db_proxy::mongo {
+
+instance inst{};
+
 MongoModule::MongoModule(IPluginManager *p) {
     is_update_ = true;
     pm_ = p;
-    srand((unsigned)time(NULL));
 }
 
 MongoModule::~MongoModule() {}
@@ -38,9 +39,6 @@ bool MongoModule::Connect() {
             return false;
         }
 
-        // Create an instance.
-        instance inst{}; // 一个线程只能有一个实例
-
         // ref: https://www.mongodb.com/docs/manual/reference/connection-string/
         // ref: https://www.kancloud.cn/noahs/linux/1425614
         string url = "mongodb://" + user_ + ":" + password_ + "@" + ip_ + ":" + std::to_string(port_);
@@ -48,7 +46,6 @@ bool MongoModule::Connect() {
         // Setup the connection and get a handle on the "admin" database.
         client_ = new client{uri{url}};
         client_->start_session();
-        //LOG_INFO("Mongo appname: %v ", .uri().appname().value().data());
     } catch (const std::exception &e) {
         // Handle errors.
         LogError(e.what(), __func__, __LINE__);

@@ -789,7 +789,7 @@ bool LuaScriptModule::Register() {
         .addFunction("SendByFD", &LuaScriptModule::SendByFD)                                       // as server
 
         // http server
-        .addFunction("AddHttpServerCallBack", &LuaScriptModule::AddHttpServerCallBack)       // as server
+        .addFunction("AddHttpServerCallBack", &LuaScriptModule::AddHttpServerCallBack) // as server
         .addFunction("DelHttpServerCallBack", &LuaScriptModule::DelHttpServerCallBack)
 
         // http client
@@ -860,8 +860,7 @@ void LuaScriptModule::OnNetMsgCallBackAsClient(const socket_t sock, const int ms
     }
 }
 
-
-void LuaScriptModule::AddHttpServerCallBack(const int method, const std::string &path, const LuaIntf::LuaRef& luaTable, const LuaIntf::LuaRef& luaFunc) {
+void LuaScriptModule::AddHttpServerCallBack(const int method, const std::string &path, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
     std::string id = std::to_string(method) + path;
     auto callbacks = http_server_callbacks_.GetElement(id);
     if (!callbacks) {
@@ -869,10 +868,10 @@ void LuaScriptModule::AddHttpServerCallBack(const int method, const std::string 
         http_server_callbacks_.AddElement(id, callbacks);
         m_http_server_->AddRequestHandler(path, (HttpType)method, this, &LuaScriptModule::HttpServerCallBack);
     }
-    callbacks->Add({ luaTable, luaFunc });
+    callbacks->Add({luaTable, luaFunc});
 }
 
-void LuaScriptModule::HttpServerResponse(int web_status, const std::string& content) {
+void LuaScriptModule::HttpServerResponse(int web_status, const std::string &content) {
     if (http_requests_.size() == 0) {
         LOG_ERROR("No request, http_requests size == %v", 0);
         return;
@@ -891,11 +890,9 @@ bool LuaScriptModule::HttpServerCallBack(std::shared_ptr<HttpRequest> req) {
                 http_requests_.push(req);
                 callback.func.call<LuaIntf::LuaRef>(callback.self, req->id, (int)req->type, req->headers, req->body);
                 http_requests_.pop();
-            }
-            catch (LuaIntf::LuaException& e) {
+            } catch (LuaIntf::LuaException &e) {
                 cout << e.what() << endl;
-            }
-            catch (...) {
+            } catch (...) {
             }
             Ret = callbacks->Next(callback);
         }
@@ -903,6 +900,4 @@ bool LuaScriptModule::HttpServerCallBack(std::shared_ptr<HttpRequest> req) {
     return true;
 }
 
-void LuaScriptModule::DelHttpServerCallBack(const int method, const std::string& path) {
-    std::string uri = std::to_string(method) + path;
-}
+void LuaScriptModule::DelHttpServerCallBack(const int method, const std::string &path) { std::string uri = std::to_string(method) + path; }

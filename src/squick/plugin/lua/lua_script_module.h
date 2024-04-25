@@ -174,11 +174,10 @@ class LuaScriptModule : public ILuaScriptModule {
     void OnNetMsgCallBackAsServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     void OnNetMsgCallBackAsClient(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
-    void AddHttpServerCallBack(const int method, const std::string& path, const LuaIntf::LuaRef& luaTable, const LuaIntf::LuaRef& luaFunc);
+    void AddHttpServerCallBack(const int method, const std::string &path, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
     bool HttpServerCallBack(std::shared_ptr<HttpRequest> req);
     void HttpServerResponse(int web_status, const std::string &content);
-    void DelHttpServerCallBack(const int method, const std::string& path);
-    
+    void DelHttpServerCallBack(const int method, const std::string &path);
 
   protected:
     bool Register();

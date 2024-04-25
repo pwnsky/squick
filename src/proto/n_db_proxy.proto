@@ -239,7 +239,6 @@ message NAckMongoCreateIndex { // msg_id=30209;
     string result_json = 4;
 }
 
-
 message NReqMysqlExecute { // msg_id=30300;
     int32 query_id = 1;
     string sql = 2;

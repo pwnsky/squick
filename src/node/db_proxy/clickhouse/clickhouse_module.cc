@@ -59,7 +59,7 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
         assert(m_net_->ReceivePB(msg_id, msg, len, req, uid));
 
         Block block;
-        for (auto& d : req.data()) {
+        for (auto &d : req.data()) {
             switch (d.type()) {
             case rpc::ClickHouseDataTypeUInt8: {
                 auto db_value = std::make_shared<ColumnUInt8>();
@@ -68,7 +68,7 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
                     db_value->Append(v);
                 }
                 block.AppendColumn(d.field(), db_value);
-            }break;
+            } break;
             case rpc::ClickHouseDataTypeUInt16: {
                 auto db_value = std::make_shared<ColumnUInt16>();
                 for (auto f : d.values()) {
@@ -76,7 +76,7 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
                     db_value->Append(v);
                 }
                 block.AppendColumn(d.field(), db_value);
-            }break;
+            } break;
             case rpc::ClickHouseDataTypeUInt32: {
                 auto db_value = std::make_shared<ColumnUInt32>();
                 for (auto f : d.values()) {
@@ -92,7 +92,7 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
                     db_value->Append(v);
                 }
                 block.AppendColumn(d.field(), db_value);
-            }break;
+            } break;
             case rpc::ClickHouseDataTypeInt8: {
                 auto db_value = std::make_shared<ColumnInt8>();
                 for (auto f : d.values()) {
@@ -100,7 +100,7 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
                     db_value->Append(v);
                 }
                 block.AppendColumn(d.field(), db_value);
-            }break;
+            } break;
             case rpc::ClickHouseDataTypeInt16: {
                 auto db_value = std::make_shared<ColumnInt16>();
                 for (auto f : d.values()) {
@@ -108,7 +108,7 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
                     db_value->Append(v);
                 }
                 block.AppendColumn(d.field(), db_value);
-            }break;
+            } break;
             case rpc::ClickHouseDataTypeInt32: {
                 auto db_value = std::make_shared<ColumnInt32>();
                 for (auto f : d.values()) {
@@ -116,7 +116,7 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
                     db_value->Append(v);
                 }
                 block.AppendColumn(d.field(), db_value);
-            }break;
+            } break;
             case rpc::ClickHouseDataTypeInt64: {
                 auto db_value = std::make_shared<ColumnInt64>();
                 for (auto f : d.values()) {
@@ -124,9 +124,9 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
                     db_value->Append(v);
                 }
                 block.AppendColumn(d.field(), db_value);
-            }break;
+            } break;
             case rpc::ClickHouseDataTypeInt128: {
-            }break;
+            } break;
             case rpc::ClickHouseDataTypeFloat32: {
                 auto db_value = std::make_shared<ColumnFloat32>();
                 for (auto f : d.values()) {
@@ -134,7 +134,7 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
                     db_value->Append(v);
                 }
                 block.AppendColumn(d.field(), db_value);
-            }break;
+            } break;
             case rpc::ClickHouseDataTypeFloat64: {
                 auto db_value = std::make_shared<ColumnFloat64>();
                 for (auto f : d.values()) {
@@ -142,14 +142,14 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
                     db_value->Append(v);
                 }
                 block.AppendColumn(d.field(), db_value);
-            }break;
+            } break;
             case rpc::ClickHouseDataTypeString: {
                 auto db_value = std::make_shared<ColumnString>();
                 for (auto f : d.values()) {
                     db_value->Append(f);
                 }
                 block.AppendColumn(d.field(), db_value);
-            }break;
+            } break;
             default: {
                 LOG_ERROR("Not surpport this clickhouse data type: %v", d.type());
             } break;
@@ -157,8 +157,7 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
         }
         client_->Insert(req.table(), block);
         LOG_INFO("Insert to clickhouse table<%v> ColumnCount<%v> RowCount<%v>", req.table(), block.GetColumnCount(), block.GetRowCount());
-    }
-    catch (std::exception e) {
+    } catch (std::exception e) {
         code = rpc::DB_PROXY_CODE_CLICKHOUSE_EXCEPTION;
         LogError(e.what(), __func__, __LINE__);
     }
@@ -176,7 +175,7 @@ void ClickhouseModule::OnReqSelect(const socket_t sock, const int msg_id, const 
     try {
         assert(m_net_->ReceivePB(msg_id, msg, len, req, uid));
         std::map<std::string, rpc::ClickhouseData *> all_field_data;
-        client_->Select(req.sql(), [&](const Block& block) {
+        client_->Select(req.sql(), [&](const Block &block) {
             // This lamda callback func will called many times, merge these blocks to one
             if (block.GetRowCount() <= 0) {
                 return;
@@ -185,7 +184,7 @@ void ClickhouseModule::OnReqSelect(const socket_t sock, const int msg_id, const 
                 auto type_code = block[col]->GetType().GetCode();
                 std::string field_name = block.GetColumnName(col);
                 auto field_iter = all_field_data.find(field_name);
-                rpc::ClickhouseData *field_data  = nullptr;
+                rpc::ClickhouseData *field_data = nullptr;
                 if (field_iter == all_field_data.end()) {
                     field_data = ack.add_data();
                     field_data->set_field(field_name);
@@ -193,7 +192,7 @@ void ClickhouseModule::OnReqSelect(const socket_t sock, const int msg_id, const 
                 } else {
                     field_data = field_iter->second;
                 }
-                
+
                 for (size_t row = 0; row < block.GetRowCount(); ++row) {
                     switch (type_code) {
                     case Type::Code::UInt8:
