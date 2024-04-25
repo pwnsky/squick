@@ -26,7 +26,7 @@ enum ServerType {
     ST_GAME = 8,     //
     ST_MICRO = 9,    // Micro
     ST_CDN = 10,     // CDN
-    ST_ROBOT = 11,   // Robot, AI
+    ST_WEB = 11,     // Web
     ST_GLOBAL = 12,  // Global
     ST_ROOM = 12,    // Room
     ST_MATCH = 13,   // Match

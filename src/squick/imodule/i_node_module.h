@@ -69,8 +69,8 @@ class INodeBaseModule : public IModule {
             return "micro";
         case ServerType::ST_CDN:
             return "cdn";
-        case ServerType::ST_ROBOT:
-            return "robot";
+        case ServerType::ST_WEB:
+            return "web";
         }
         return "";
     }
@@ -96,8 +96,8 @@ class INodeBaseModule : public IModule {
             return ServerType::ST_MICRO;
         else if (type == "cdn")
             return ServerType::ST_CDN;
-        else if (type == "robot")
-            return ServerType::ST_ROBOT;
+        else if (type == "web")
+            return ServerType::ST_WEB;
         return ServerType::ST_NONE;
     }
 

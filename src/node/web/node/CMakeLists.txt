@@ -1,6 +1,6 @@
-set(ProjectName "gm_node")
+set(ProjectName "web_node")
 file(GLOB soruces *.cc)
 file(GLOB headers *.h)
 add_library(${ProjectName} SHARED ${soruces} ${headers})
 LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "node/gm" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/gm "node")
+SquickOut(${ProjectName} "node/web" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/web "node")

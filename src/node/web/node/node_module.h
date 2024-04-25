@@ -2,7 +2,7 @@
 
 #include "i_node_module.h"
 
-namespace gm::node {
+namespace web::node {
 class NodeModule : public INodeModule {
   public:
     NodeModule(IPluginManager *p) {
@@ -16,4 +16,4 @@ class NodeModule : public INodeModule {
   private:
 };
 
-} // namespace gm::node
+} // namespace web::node

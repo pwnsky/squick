@@ -1,9 +1,8 @@
 #pragma once
 
-#include <squick/core/i_plugin.h>
-#include <squick/core/i_plugin_manager.h>
+#include <squick/core/base.h>
 
-namespace gm::node {
+namespace web::logic {
 class Plugin : public IPlugin {
   public:
     Plugin(IPluginManager *p) { pm_ = p; }
@@ -13,4 +12,4 @@ class Plugin : public IPlugin {
     virtual void Uninstall();
 };
 
-} // namespace gm::node
+} // namespace web::logic
