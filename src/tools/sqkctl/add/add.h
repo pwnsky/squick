@@ -122,6 +122,7 @@ class Add {
         base.close();
 
         cout << " Add files to files directory finished!\n";
+        return 0;
     }
 
   private:

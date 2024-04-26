@@ -1,0 +1,6 @@
+set(ProjectName "ds_mgr_node")
+file(GLOB soruces *.cc)
+file(GLOB headers *.h)
+add_library(${ProjectName} SHARED ${soruces} ${headers})
+LinkSquick(${ProjectName})
+SquickOut(${ProjectName} "node/ds_mgr" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/ds_mgr "node")

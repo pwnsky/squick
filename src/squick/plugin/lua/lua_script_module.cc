@@ -43,9 +43,11 @@ bool LuaScriptModule::Awake() {
     m_net_client_ = pm_->FindModule<INetClientModule>();
     m_net_ = pm_->FindModule<INetModule>();
     m_log_ = pm_->FindModule<ILogModule>();
-    m_pLuaPBModule = pm_->FindModule<ILuaPBModule>();
+    m_lua_pb_ = pm_->FindModule<ILuaPBModule>();
+    m_http_client_ = pm_->FindModule<IHttpClientModule>();
+    m_http_server_ = pm_->FindModule<IHttpServerModule>();
 
-    LuaPBModule *p = (LuaPBModule *)(m_pLuaPBModule);
+    LuaPBModule *p = (LuaPBModule *)(m_lua_pb_);
     p->SetLuaState(mLuaContext.state());
     Register();
     scriptPath = "../src/lua";
@@ -584,17 +586,17 @@ void LuaScriptModule::AddMsgCallBackAsClient(const ServerType serverType, const 
 }
 
 bool LuaScriptModule::ImportProtoFile(const std::string &fileName) {
-    LuaPBModule *p = (LuaPBModule *)m_pLuaPBModule;
+    LuaPBModule *p = (LuaPBModule *)m_lua_pb_;
     return p->ImportProtoFile(fileName);
 }
 
 const std::string LuaScriptModule::Encode(const std::string &msgTypeName, const LuaIntf::LuaRef &luaTable) {
-    LuaPBModule *p = (LuaPBModule *)m_pLuaPBModule;
+    LuaPBModule *p = (LuaPBModule *)m_lua_pb_;
     return p->Encode(msgTypeName, luaTable);
 }
 
 LuaIntf::LuaRef LuaScriptModule::Decode(const std::string &msgTypeName, const std::string &data) {
-    LuaPBModule *p = (LuaPBModule *)m_pLuaPBModule;
+    LuaPBModule *p = (LuaPBModule *)m_lua_pb_;
     return p->Decode(msgTypeName, data);
 }
 
@@ -786,6 +788,12 @@ bool LuaScriptModule::Register() {
         .addFunction("SendToAllServerByServerType", &LuaScriptModule::SendToAllServerByServerType) // as client
         .addFunction("SendByFD", &LuaScriptModule::SendByFD)                                       // as server
 
+        // http server
+        .addFunction("AddHttpServerCallBack", &LuaScriptModule::AddHttpServerCallBack) // as server
+        .addFunction("DelHttpServerCallBack", &LuaScriptModule::DelHttpServerCallBack)
+
+        // http client
+
         // Log
         .addFunction("LogInfo", &LuaScriptModule::LogInfo)
         .addFunction("LogError", &LuaScriptModule::LogError)
@@ -851,3 +859,45 @@ void LuaScriptModule::OnNetMsgCallBackAsClient(const socket_t sock, const int ms
         }
     }
 }
+
+void LuaScriptModule::AddHttpServerCallBack(const int method, const std::string &path, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
+    std::string id = std::to_string(method) + path;
+    auto callbacks = http_server_callbacks_.GetElement(id);
+    if (!callbacks) {
+        callbacks = new List<LuaCallBack>();
+        http_server_callbacks_.AddElement(id, callbacks);
+        m_http_server_->AddRequestHandler(path, (HttpType)method, this, &LuaScriptModule::HttpServerCallBack);
+    }
+    callbacks->Add({luaTable, luaFunc});
+}
+
+void LuaScriptModule::HttpServerResponse(int web_status, const std::string &content) {
+    if (http_requests_.size() == 0) {
+        LOG_ERROR("No request, http_requests size == %v", 0);
+        return;
+    }
+    m_http_server_->ResponseMsg(http_requests_.front(), content, (WebStatus)web_status);
+}
+
+bool LuaScriptModule::HttpServerCallBack(std::shared_ptr<HttpRequest> req) {
+    std::string id = std::to_string(req->type) + req->path;
+    auto callbacks = http_server_callbacks_.GetElement(id);
+    if (callbacks) {
+        LuaCallBack callback;
+        auto Ret = callbacks->First(callback);
+        while (Ret) {
+            try {
+                http_requests_.push(req);
+                callback.func.call<LuaIntf::LuaRef>(callback.self, req->id, (int)req->type, req->headers, req->body);
+                http_requests_.pop();
+            } catch (LuaIntf::LuaException &e) {
+                cout << e.what() << endl;
+            } catch (...) {
+            }
+            Ret = callbacks->Next(callback);
+        }
+    }
+    return true;
+}
+
+void LuaScriptModule::DelHttpServerCallBack(const int method, const std::string &path) { std::string uri = std::to_string(method) + path; }

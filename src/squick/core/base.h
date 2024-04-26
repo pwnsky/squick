@@ -11,7 +11,7 @@
 #include "termcolor.h"
 #include <iostream>
 
-#define SQUICK_VERSION "1.1.0"
+#define SQUICK_VERSION "1.1.1"
 #define SERVER_NAME "Squick/" SQUICK_VERSION
 
 enum ServerType {
@@ -26,7 +26,7 @@ enum ServerType {
     ST_GAME = 8,     //
     ST_MICRO = 9,    // Micro
     ST_CDN = 10,     // CDN
-    ST_ROBOT = 11,   // Robot, AI
+    ST_WEB = 11,     // Web
     ST_GLOBAL = 12,  // Global
     ST_ROOM = 12,    // Room
     ST_MATCH = 13,   // Match

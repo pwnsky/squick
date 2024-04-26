@@ -3,12 +3,12 @@
 #include "i_thread_pool_module.h"
 #include <atomic>
 #include <map>
+#include <memory>
 #include <squick/core/base.h>
 #include <squick/core/memory_counter.h>
 #include <squick/core/platform.h>
 #include <squick/core/queue.h>
 #include <string>
-#include <memory>
 
 class ThreadCell : MemoryCounter {
   public:

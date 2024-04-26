@@ -1,7 +1,7 @@
 #pragma once
+#include <functional>
 #include <squick/core/i_module.h>
 #include <thread>
-#include <functional>
 
 class ThreadTask;
 typedef std::function<void(ThreadTask &)> TASK_PROCESS_FUNCTOR;

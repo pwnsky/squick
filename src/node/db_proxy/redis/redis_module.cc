@@ -19,13 +19,10 @@ RedisModule::~RedisModule() {}
 bool RedisModule::AfterStart() {
 
     Connect();
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_CLICKHOUSE_QUERY, this, &RedisModule::OnReqQuery);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_REDIS_GET, this, &RedisModule::OnReqRedisGet);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_REDIS_SET, this, &RedisModule::OnReqRedisSet);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_REDIS_HGET, this, &RedisModule::OnReqRedisHGet);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_REDIS_HSET, this, &RedisModule::OnReqRedisHGet);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_REDIS_HGETALL, this, &RedisModule::OnReqRedisHGetAll);
-    m_net_->AddReceiveCallBack(rpc::DbProxyRPC::REQ_REDIS_HMSET, this, &RedisModule::OnReqRedisHMSet);
+    m_net_->AddReceiveCallBack(rpc::IdNReqRedisGet, this, &RedisModule::OnReqRedisGet);
+    m_net_->AddReceiveCallBack(rpc::IdNReqRedisSet, this, &RedisModule::OnReqRedisSet);
+    m_net_->AddReceiveCallBack(rpc::IdNReqRedisHGet, this, &RedisModule::OnReqRedisHGet);
+    m_net_->AddReceiveCallBack(rpc::IdNReqRedisHSet, this, &RedisModule::OnReqRedisHGet);
     return true;
 }
 
@@ -35,8 +32,8 @@ bool RedisModule::Destroy() { return true; }
 
 void RedisModule::OnReqRedisGet(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_SUCCESS;
-    rpc::ReqRedisGet req;
-    rpc::AckRedisGet ack;
+    rpc::NReqRedisGet req;
+    rpc::NAckRedisGet ack;
 
     try {
         uint64_t tmp;
@@ -56,13 +53,13 @@ void RedisModule::OnReqRedisGet(const socket_t sock, const int msg_id, const cha
     }
     ack.set_code(code);
     ack.set_query_id(req.query_id());
-    m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_REDIS_GET, ack, sock);
+    m_net_->SendPBToNode(rpc::IdNAckRedisGet, ack, sock);
 }
 
 void RedisModule::OnReqRedisSet(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_SUCCESS;
-    rpc::ReqRedisSet req;
-    rpc::AckRedisSet ack;
+    rpc::NReqRedisSet req;
+    rpc::NAckRedisSet ack;
     try {
         uint64_t tmp;
         assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
@@ -74,13 +71,13 @@ void RedisModule::OnReqRedisSet(const socket_t sock, const int msg_id, const cha
     }
     ack.set_code(code);
     ack.set_query_id(req.query_id());
-    m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_REDIS_SET, ack, sock);
+    m_net_->SendPBToNode(rpc::IdNAckRedisSet, ack, sock);
 }
 
 void RedisModule::OnReqRedisHGet(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_SUCCESS;
-    rpc::ReqRedisHGet req;
-    rpc::AckRedisHGet ack;
+    rpc::NReqRedisHGet req;
+    rpc::NAckRedisHGet ack;
     try {
         uint64_t tmp;
         assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
@@ -98,13 +95,13 @@ void RedisModule::OnReqRedisHGet(const socket_t sock, const int msg_id, const ch
 
     ack.set_code(code);
     ack.set_query_id(req.query_id());
-    m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_REDIS_HGET, ack, sock);
+    m_net_->SendPBToNode(rpc::IdNAckRedisHGet, ack, sock);
 }
 
 void RedisModule::OnReqRedisHSet(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_SUCCESS;
-    rpc::ReqRedisHSet req;
-    rpc::AckRedisHSet ack;
+    rpc::NReqRedisHSet req;
+    rpc::NAckRedisHSet ack;
     try {
         uint64_t tmp;
         assert(m_net_->ReceivePB(msg_id, msg, len, req, tmp));
@@ -116,7 +113,7 @@ void RedisModule::OnReqRedisHSet(const socket_t sock, const int msg_id, const ch
     }
     ack.set_code(code);
     ack.set_query_id(req.query_id());
-    m_net_->SendPBToNode(rpc::DbProxyRPC::ACK_REDIS_HSET, ack, sock);
+    m_net_->SendPBToNode(rpc::IdNAckRedisHSet, ack, sock);
 }
 
 void RedisModule::OnReqRedisHGetAll(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}

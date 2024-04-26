@@ -15,7 +15,7 @@ bool HttpModule::AfterStart() {
     // http://127.0.0.1/json
     m_http_server_->AddRequestHandler("/node/list", HttpType::SQUICK_HTTP_REQ_GET, this, &HttpModule::OnGetNodeList);
 
-    m_http_server_->StartServer(pm_->GetArg("http_port = ", 8888));
+    m_http_server_->StartServer(pm_->GetArg("http_port=", ARG_DEFAULT_HTTP_PORT));
     return true;
 }
 

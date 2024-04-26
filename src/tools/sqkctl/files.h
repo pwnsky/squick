@@ -9,7 +9,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#else if PLATFORM == PLATFORM_WIN
+#elif PLATFORM == PLATFORM_WIN
 #include <corecrt_io.h>
 #include <io.h>
 #endif

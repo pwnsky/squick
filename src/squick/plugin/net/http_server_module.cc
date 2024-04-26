@@ -71,12 +71,6 @@ bool HttpServerModule::OnReceiveNetPack(std::shared_ptr<HttpRequest> req) {
     if (req == nullptr) {
         return false;
     }
-    if (middleware_) {
-        auto webstate = middleware_->operator()(req);
-        if (webstate != WEB_OK) {
-            return false;
-        }
-    }
 
     Performance performance;
     // first find coro funcs
@@ -133,6 +127,17 @@ WebStatus HttpServerModule::OnFilterPack(std::shared_ptr<HttpRequest> req) {
         return WebStatus::WEB_INTER_ERROR;
     }
 
+    if (middleware_) {
+        auto webstate = middleware_->operator()(req);
+        if (webstate == WebStatus::WEB_IGNORE) {
+
+        } else if (webstate == WebStatus::WEB_RETURN) {
+            return webstate;
+        } else {
+            return webstate;
+        }
+    }
+
     auto itPath = mMsgFliterMap.find(req->path);
     if (mMsgFliterMap.end() != itPath) {
         HTTP_FILTER_FUNCTOR_PTR &pFunPtr = itPath->second;
@@ -140,7 +145,7 @@ WebStatus HttpServerModule::OnFilterPack(std::shared_ptr<HttpRequest> req) {
         return pFunc->operator()(req);
     }
 
-    return WebStatus::WEB_OK;
+    return WebStatus::WEB_IGNORE;
 }
 
 bool HttpServerModule::AddMsgCB(const std::string &strCommand, const HttpType eRequestType, const HTTP_RECEIVE_FUNCTOR_PTR &cb) {

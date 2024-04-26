@@ -1,62 +1,6 @@
-// 描述: 数据库
-// 使用: 服务器
+// desc: msg_id range (30000 ~ 35000)
 syntax = "proto3";
 package rpc;
-
-// 30000 ~ 35000
-enum DbProxyRPC {
-    DB_RPC_NONE = 0;
-
-    REQ_REDIS_QUERY = 30001;
-    ACK_REDIS_QUERY = 30002;
-    REQ_REDIS_GET = 30003;
-    ACK_REDIS_GET = 30004;
-    REQ_REDIS_SET = 30005;
-    ACK_REDIS_SET = 30006;
-    REQ_REDIS_HGET = 30007;
-    ACK_REDIS_HGET = 30008;
-    REQ_REDIS_HSET = 30009;
-    ACK_REDIS_HSET = 30010;
-    REQ_REDIS_HGETALL = 30011;
-    ACK_REDIS_HGETALL = 30012;
-    REQ_REDIS_HMSET = 30013;
-    ACK_REDIS_HMSET = 30014;
-
-    REQ_MONGO_QUERY = 30500;
-    ACK_MONGO_QUERY = 30501;
-    REQ_MONGO_INSERT = 30502;
-    ACK_MONGO_INSERT = 30503;
-    REQ_MONGO_FIND = 30504;
-    ACK_MONGO_FIND = 30505;
-    REQ_MONGO_UPDATE = 30506;
-    ACK_MONGO_UPDATE = 30507;
-    REQ_MONGO_DELETE = 30508;
-    ACK_MONGO_DELETE = 30509;
-    REQ_MONGO_CREATE_INDEX = 30510;
-    ACK_MONGO_CREATE_INDEX = 30511;
-
-    REQ_MYSQL_QUERY = 31000;
-    ACK_MYSQL_QUERY = 31001;
-    REQ_MYSQL_EXECUTE = 31002;
-    ACK_MYSQL_EXECUTE = 31003;
-    REQ_MYSQL_SELECT = 31004;
-    ACK_MYSQL_SELECT = 31005;
-    REQ_MYSQL_INSERT = 31006;
-    ACK_MYSQL_INSERT = 31007;
-    REQ_MYSQL_UPDATE = 31008;
-    ACK_MYSQL_UPDATE = 31009;
-    REQ_MYSQL_DELETE = 31010;
-    ACK_MYSQL_DELETE = 31011;
-
-    REQ_CLICKHOUSE_QUERY = 31500;
-    ACK_CLICKHOUSE_QUERY = 31501;
-    REQ_CLICKHOUSE_EXECUTE = 31502;
-    ACK_CLICKHOUSE_EXECUTE = 31503;
-    REQ_CLICKHOUSE_SELECT = 31504;
-    ACK_CLICKHOUSE_SELECT = 31505;
-    REQ_CLICKHOUSE_INSERT = 31506;
-    ACK_CLICKHOUSE_INSERT = 31507;
-}
 
 // Proxy DB code
 enum DbProxyCode {
@@ -78,6 +22,31 @@ enum DbProxyCode {
     DB_PROXY_CODE_CLICKHOUSE_EXCEPTION = 1502;
 }
 
+enum ClickhouseDataType {
+    ClickHouseDataTypeNone = 0;
+    ClickHouseDataTypeUInt8 = 1;
+    ClickHouseDataTypeUInt16 = 2;
+    ClickHouseDataTypeUInt32 = 3;
+    ClickHouseDataTypeUInt64 = 4;
+
+    ClickHouseDataTypeInt8 = 5;
+    ClickHouseDataTypeInt16 = 6;
+    ClickHouseDataTypeInt32 = 7;
+    ClickHouseDataTypeInt64 = 8;
+    ClickHouseDataTypeInt128 = 9;
+
+    ClickHouseDataTypeFloat32 = 10;
+    ClickHouseDataTypeFloat64 = 11;
+
+    ClickHouseDataTypeString = 12;
+}
+
+enum MysqlDataType {
+    MysqlDataTypeNone = 0;
+    MysqlDataTypeNumber = 1;
+    MysqlDataTypeString = 2;
+}
+
 message Data {
     int32 type = 1;
     bytes value = 2;
@@ -88,45 +57,57 @@ message List {
     repeated bytes values = 2;
 }
 
-message ReqRedisGet {
+message ClickhouseData {
+    string field = 1;
+    int32 type = 2;
+    repeated bytes values = 3;
+}
+
+message MysqlData {
+    string field = 1;
+    int32 type = 2;
+    repeated bytes values = 3;
+}
+
+message NReqRedisGet { // msg_id=30003;
     int32 query_id = 1;
     string key = 2;
 }
 
-message AckRedisGet {
+message NAckRedisGet { // msg_id=30004;
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
     bytes value = 4;
 }
 
-message ReqRedisSet {
+message NReqRedisSet { // msg_id=30005;
     int32 query_id = 1;
     string key = 2;
     bytes value = 3;
     int64 ttl = 4;
 }
 
-message AckRedisSet {
+message NAckRedisSet { // msg_id=30006;
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
 }
 
-message ReqRedisHGet {
+message NReqRedisHGet { // msg_id=30007;
     int32 query_id = 1;
     string key = 2;
     string field = 3;
 }
 
-message AckRedisHGet {
+message NAckRedisHGet { // msg_id=30008;
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
     bytes value = 4;
 }
 
-message ReqRedisHSet {
+message NReqRedisHSet { // msg_id=30009;
     int32 query_id = 1;
     string key = 2;
     string field = 3;
@@ -134,44 +115,57 @@ message ReqRedisHSet {
     int64 ttl = 5;
 }
 
-message AckRedisHSet {
+message NAckRedisHSet { // msg_id=30010;
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
 }
 
-message ReqClickhouseExecute {
+message NReqClickhouseExecute { // msg_id=30100;
     int32 query_id = 1;
     string sql = 2;
 }
 
-message AckClickhouseExecute {
+message NAckClickhouseExecute { // msg_id=30101;
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
 }
 
-message ReqClickhouseSelect {
+message NReqClickhouseSelect { // msg_id=30102;
     int32 query_id = 1;
     string sql = 2;
 }
 
-message AckClickhouseSelect {
+message NAckClickhouseSelect { // msg_id=30103;
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
-    repeated List result = 4;
+    repeated ClickhouseData data = 4;
+}
+
+message NReqClickhouseInsert { // msg_id=30104;
+    int32 query_id = 1;
+    string database = 2;
+    string table = 3;
+    repeated ClickhouseData data = 4;
+}
+
+message NAckClickhouseInsert { // msg_id=30105;
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
 }
 
 // Insert one
-message ReqMongoInsert {
+message NReqMongoInsert { // msg_id=30200;
     int32 query_id = 1;
     string db = 2;
     string collection = 3;
     string insert_json = 4;
 }
 
-message AckMongoInsert {
+message NAckMongoInsert { // msg_id=30201;
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
@@ -179,7 +173,7 @@ message AckMongoInsert {
 }
 
 // Find many
-message ReqMongoFind {
+message NReqMongoFind { // msg_id=30202;
     int32 query_id = 1;
     string db = 2;
     string collection = 3;
@@ -189,7 +183,7 @@ message ReqMongoFind {
     string sort_json = 7;
 }
 
-message AckMongoFind {
+message NAckMongoFind { // msg_id=30203;
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
@@ -198,7 +192,7 @@ message AckMongoFind {
 }
 
 // Default: Update many
-message ReqMongoUpdate {
+message NReqMongoUpdate { // msg_id=30204;
     int32 query_id = 1;
     string db = 2;
     string collection = 3;
@@ -206,7 +200,7 @@ message ReqMongoUpdate {
     string update_json = 5;
 }
 
-message AckMongoUpdate {
+message NAckMongoUpdate { // msg_id=30205;
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
@@ -216,14 +210,14 @@ message AckMongoUpdate {
 }
 
 // Default: Delete many
-message ReqMongoDelete {
+message NReqMongoDelete { // msg_id=30206;
     int32 query_id = 1;
     string db = 2;
     string collection = 3;
     string condition_json = 4;
 }
 
-message AckMongoDelete {
+message NAckMongoDelete { // msg_id=30207;
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
@@ -231,16 +225,67 @@ message AckMongoDelete {
 }
 
 // Create index
-message ReqMongoCreateIndex {
+message NReqMongoCreateIndex { // msg_id=30208;
     int32 query_id = 1;
     string db = 2;
     string collection = 3;
     string condition_json = 4;
 }
 
-message AckMongoCreateIndex {
+message NAckMongoCreateIndex { // msg_id=30209;
     int32 code = 1;
     bytes msg = 2;
     int32 query_id = 3;
     string result_json = 4;
+}
+
+message NReqMysqlExecute { // msg_id=30300;
+    int32 query_id = 1;
+    string sql = 2;
+}
+
+message NAckMysqlExecute { // msg_id=30301;
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+}
+
+message NReqMysqlSelect { // msg_id=30302;
+    int32 query_id = 1;
+    string sql = 2;
+}
+
+message NAckMysqlSelect { // msg_id=30303;
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+    repeated MysqlData data = 4;
+}
+
+message NReqMysqlInsert { // msg_id=30304;
+    int32 query_id = 1;
+    string database = 2;
+    string table = 3;
+    repeated MysqlData data = 4;
+}
+
+message NAckMysqlInsert { // msg_id=30305;
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
+}
+
+message NReqMysqlUpdate { // msg_id=30306;
+    int32 query_id = 1;
+    string database = 2;
+    string table = 3;
+    repeated MysqlData data = 4;
+    string where = 5;
+    int32 limit = 6;
+}
+
+message NAckMysqlUpdate { // msg_id=30307;
+    int32 code = 1;
+    bytes msg = 2;
+    int32 query_id = 3;
 }

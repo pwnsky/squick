@@ -38,6 +38,8 @@ enum WebStatus {
     WEB_ERROR = 404,
     WEB_INTER_ERROR = 500,
     WEB_TIMEOUT = 503,
+    WEB_IGNORE = 1000, // Ignore
+    WEB_RETURN = 1000, // Return
 };
 
 enum HttpType {

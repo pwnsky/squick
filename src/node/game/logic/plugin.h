@@ -1,8 +1,9 @@
 #pragma once
 
-#include <squick/core/base.h>
+#include <squick/core/i_plugin.h>
+#include <squick/core/i_plugin_manager.h>
 
-namespace gameplay::play {
+namespace game::logic {
 class Plugin : public IPlugin {
   public:
     Plugin(IPluginManager *p) { pm_ = p; }
@@ -15,4 +16,4 @@ class Plugin : public IPlugin {
     virtual void Uninstall();
 };
 
-} // namespace gameplay::play
+} // namespace game::logic

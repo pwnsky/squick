@@ -135,6 +135,7 @@ sqkctl patch
 
         readme_file.write(readme_file_content.c_str(), readme_file_content.size());
         readme_file.close();
+        return 0;
     }
 
   private:

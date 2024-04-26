@@ -68,7 +68,8 @@ void AddPluginServer(std::vector<std::shared_ptr<PluginServer>> &serverList, con
 }
 // Just for debug or dev
 void DefaultStartUp(std::string strArgvList, std::vector<std::shared_ptr<PluginServer>> &serverList) {
-    AddPluginServer(serverList, "type=master id=1 area=0 ip=127.0.0.1 port=10001 http_port=8888");
+    AddPluginServer(serverList, "type=master id=1 area=0 ip=127.0.0.1 port=10001 http_port=50000");
+    AddPluginServer(serverList, "type=web id=10 area=0 ip=127.0.0.1 port=10010 http_port=8888 master_ip=127.0.0.1 master_port=10001");
     AddPluginServer(serverList, "type=world id=100 area=0 ip=127.0.0.1 port=10101 master_ip=127.0.0.1 master_port=10001");
     AddPluginServer(serverList, "type=db_proxy id=300 area=0 ip=127.0.0.1 port=10201 master_ip=127.0.0.1 master_port=10001");
     AddPluginServer(serverList, "type=login id=2 area=0 ip=127.0.0.1 port=10301 http_port=8088 master_ip=127.0.0.1 master_port=10001");
