@@ -42,6 +42,7 @@ class LogicModule : public ILogicModule {
 
     void SetToken(const std::string &account_id, const std::string &user_token);
     bool LoadConfig();
+    bool OnAuthCheck(std::shared_ptr<HttpRequest> request);
 
   private:
     string MakeToken(string sguid);

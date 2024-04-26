@@ -20,6 +20,8 @@ bool LogicModule::Destroy() { return true; }
 bool LogicModule::AfterStart() {
     m_http_server_->AddMiddleware(this, &LogicModule::Middleware);
     m_http_server_->AddRequestHandler(WEB_BASE_PATH"/login", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnLogin);
+    m_http_server_->AddRequestHandler(WEB_BASE_PATH"/auth_check", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnAuthCheck);
+    m_http_server_->AddRequestHandler(WEB_BASE_PATH"/auth_check", HttpType::SQUICK_HTTP_REQ_GET, this, &LogicModule::OnAuthCheck);
     m_http_server_->StartServer(pm_->GetArg("http_port=", ARG_DEFAULT_HTTP_PORT));
     LoadConfig();
     return true;
@@ -56,6 +58,16 @@ bool LogicModule::LoadConfig() {
 
 bool LogicModule::Update() {
     m_http_server_->Update();
+    return true;
+}
+
+bool LogicModule::OnAuthCheck(std::shared_ptr<HttpRequest> request) {
+    IResponse rsp;
+    rsp.code = IResponse::SUCCESS;
+    rsp.msg = "authed";
+    ajson::string_stream rep_ss;
+    ajson::save_to(rep_ss, rsp);
+    m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
     return true;
 }
 
@@ -113,7 +125,7 @@ Coroutine<bool> LogicModule::OnLogin(std::shared_ptr<HttpRequest> request) {
         string cookie = "Session=" + base64_encode(j.dump()) + ";Path=/;Max-Age=1209600;SameSite=None;Secure=False";
         m_http_server_->SetHeader(request, "Set-Cookie", cookie.c_str());
 
-        LOG_INFO("Account %v has logined, account_id<%v>", req.account, account_id);
+        LOG_INFO("Account %v has logined, account_id<%v> cookie<%v>", req.account, account_id, cookie);
 
     } while (false);
 
