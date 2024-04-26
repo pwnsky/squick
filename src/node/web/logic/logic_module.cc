@@ -110,7 +110,7 @@ Coroutine<bool> LogicModule::OnLogin(std::shared_ptr<HttpRequest> request) {
         j["login_time"] = login_time;
         SetToken(account_id, token);
 
-        string cookie = "Session=" + base64_encode(j.dump()) + ";Path=/;Max-Age=1209600";
+        string cookie = "Session=" + base64_encode(j.dump()) + ";Path=/;Max-Age=1209600;SameSite=None;Secure=False";
         m_http_server_->SetHeader(request, "Set-Cookie", cookie.c_str());
 
         LOG_INFO("Account %v has logined, account_id<%v>", req.account, account_id);
@@ -160,15 +160,17 @@ WebStatus LogicModule::Middleware(std::shared_ptr<HttpRequest> req) {
     for (auto iter : config_response_header_) {
         m_http_server_->SetHeader(req, iter.first, iter.second);
     }
+
     m_http_server_->SetHeader(req, "Server", SERVER_NAME);
+
+    if (req->type == SQUICK_HTTP_REQ_OPTIONS) {
+        m_http_server_->ResponseMsg(req, "", WebStatus::WEB_OK);
+        return WebStatus::WEB_RETURN;
+    }
 
     // check uri
     if (white_uri_list_.find(req->path) != white_uri_list_.end()) {
-        return WebStatus::WEB_OK;
-    }
-    LOG_WARN("Options: %v, type: ", "okkkkkkkk", (int)req->type);
-    if (req->type == SQUICK_HTTP_REQ_OPTIONS) {
-        
+        return WebStatus::WEB_IGNORE;
     }
 
     string account_id;
@@ -178,11 +180,10 @@ WebStatus LogicModule::Middleware(std::shared_ptr<HttpRequest> req) {
         account_id = info["account_id"];
         token = info["token"];
     } catch (exception e) {
-        m_http_server_->ResponseMsg(req, "{\"code\":-1, \"msg\"=\"Forbiden\"}", WebStatus::WEB_AUTH);
         return WebStatus::WEB_AUTH;
     }
     if (CheckAuth(account_id, token)) {
-        return WebStatus::WEB_OK;
+        return WebStatus::WEB_IGNORE;
     }
     return WebStatus::WEB_AUTH;
 }

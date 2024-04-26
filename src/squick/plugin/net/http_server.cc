@@ -47,9 +47,9 @@ int HttpServer::StartServer(const unsigned short port, bool is_ssl = false) {
         perror("bind prot");
         return 1;
     }
+    evhttp_set_allowed_methods(http, EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS);
 
     evhttp_set_gencb(http, listener_cb, (void *)this);
-
     return 0;
 }
 
@@ -165,14 +165,14 @@ void HttpServer::listener_cb(struct evhttp_request *req, void *arg) {
     }
 
     if (pNet->mFilter) {
-        // return 401
         try {
             WebStatus xWebStatus = pNet->mFilter(pRequest);
-            if (xWebStatus != WebStatus::WEB_OK) {
-
+            if (xWebStatus == WebStatus::WEB_IGNORE) {
+                
+            } else if (xWebStatus == WebStatus::WEB_RETURN) {
+                return;
+            } else {
                 pNet->mxHttpRequestPool.push_back(pRequest);
-
-                // 401
                 pNet->ResponseMsg(pRequest, "Filter error", xWebStatus);
                 return;
             }

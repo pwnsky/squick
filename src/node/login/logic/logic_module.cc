@@ -174,7 +174,7 @@ WebStatus LogicModule::Middleware(std::shared_ptr<HttpRequest> req) {
 
     for (auto &w : white_list) {
         if (w == req->path) {
-            return WebStatus::WEB_OK;
+            return WebStatus::WEB_IGNORE;
         }
     }
     string account_id;
@@ -184,11 +184,10 @@ WebStatus LogicModule::Middleware(std::shared_ptr<HttpRequest> req) {
         account_id = info["account_id"];
         token = info["token"];
     } catch (exception e) {
-        m_http_server_->ResponseMsg(req, "{\"code\":-1, \"msg\"=\"Forbiden\"}", WebStatus::WEB_AUTH);
         return WebStatus::WEB_AUTH;
     }
     if (CheckAuth(account_id, token)) {
-        return WebStatus::WEB_OK;
+        return WebStatus::WEB_IGNORE;
     }
     return WebStatus::WEB_AUTH;
 }
