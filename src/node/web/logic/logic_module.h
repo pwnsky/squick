@@ -8,7 +8,8 @@
 #include <squick/plugin/net/export.h>
 #include <struct/struct.h>
 #include <third_party/nlohmann/json.hpp>
-#include <unordered_map>
+#include <map>
+#include <set>
 
 struct LoginInfo {
     std::string account;
@@ -36,10 +37,11 @@ class LogicModule : public ILogicModule {
   protected:
     Coroutine<bool> OnLogin(std::shared_ptr<HttpRequest> request);
     WebStatus Middleware(std::shared_ptr<HttpRequest> request);
-    nlohmann::json GetUser(std::shared_ptr<HttpRequest> request);
+    json GetUser(std::shared_ptr<HttpRequest> request);
     bool CheckAuth(const std::string &guid, const std::string &token);
 
     void SetToken(const std::string &account_id, const std::string &user_token);
+    bool LoadConfig();
 
   private:
     string MakeToken(string sguid);
@@ -52,9 +54,11 @@ class LogicModule : public ILogicModule {
   private:
     std::map<std::string, std::string> auth_token_;
     std::map<std::string, LoginInfo> login_info_;
-
+    std::set<std::string> white_uri_list_;
+    std::map<std::string, std::string> config_response_header_;
   private:
     int player_index = 0;
+    json web_config_;
 };
 
 } // namespace login::logic

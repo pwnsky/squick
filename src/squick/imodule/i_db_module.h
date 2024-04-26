@@ -24,15 +24,15 @@ class IDBModule : public IModule {
         m_net_ = pm_->FindModule<INetModule>();
         m_log_ = pm_->FindModule<ILogModule>();
 
-        std::string confgi_path = pm_->GetWorkPath() + "/config/node/db.json";
-        std::ifstream config_file(confgi_path);
+        std::string config_path = pm_->GetWorkPath() + "/config/node/db.json";
+        std::ifstream config_file(config_path);
         if (!config_file.is_open()) {
-            LOG_ERROR("The configure file <%v> is not exsist", confgi_path);
+            LOG_ERROR("The configure file <%v> is not exsist", config_path);
             return false;
         }
         config_file >> db_config_;
         config_file.close();
-        LOG_INFO("The db config file <%v> is loaded ", confgi_path);
+        LOG_INFO("The db config file <%v> is loaded ", config_path);
 
         return true;
     }

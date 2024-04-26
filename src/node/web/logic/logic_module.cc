@@ -3,7 +3,7 @@
 #include <third_party/common/base64.hpp>
 #include <third_party/common/sha256.h>
 #define SQUICK_HASH_SALT "7e82e88dfd98952b713c0d20170ce12b"
-
+#define WEB_BASE_PATH "/api"
 namespace web::logic {
 bool LogicModule::Start() {
     m_http_server_ = pm_->FindModule<IHttpServerModule>();
@@ -19,9 +19,38 @@ bool LogicModule::Destroy() { return true; }
 
 bool LogicModule::AfterStart() {
     m_http_server_->AddMiddleware(this, &LogicModule::Middleware);
-    m_http_server_->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnLogin);
+    m_http_server_->AddRequestHandler(WEB_BASE_PATH"/login", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnLogin);
     m_http_server_->StartServer(pm_->GetArg("http_port=", ARG_DEFAULT_HTTP_PORT));
+    LoadConfig();
+    return true;
+}
 
+bool LogicModule::LoadConfig() {
+    std::string config_path = pm_->GetWorkPath() + "/config/node/web.json";
+    std::ifstream config_file(config_path);
+    if (!config_file.is_open()) {
+        LOG_ERROR("The configure file <%v> is not exsist", config_path);
+        return false;
+    }
+    config_file >> web_config_;
+    config_file.close();
+    
+    try {
+        json header = web_config_.at("ResponseHttpHeader");
+        for (auto iter = header.begin(); iter != header.end(); ++iter) {
+            config_response_header_[iter.key()] = iter.value();
+        }
+        json white_uri_list = web_config_.at("WhiteUriList");
+        for (auto v : white_uri_list) {
+            white_uri_list_.insert(v);
+        }
+    }
+    catch (std::exception err) {
+        LOG_ERROR("Get config from json is error <%v>", err.what());
+        return false;
+    }
+
+    LOG_INFO("The db config file <%v> is loaded ", config_path);
     return true;
 }
 
@@ -128,18 +157,20 @@ nlohmann::json LogicModule::GetUser(std::shared_ptr<HttpRequest> req) {
 WebStatus LogicModule::Middleware(std::shared_ptr<HttpRequest> req) {
     // Check auth:
     // Cookie: Session= base64( AES( json_str{'guid' : "xxxx", "token" : "xxxx"} ) );
-    m_http_server_->SetHeader(req, "Server", SERVER_NAME);
-    // 不用授权可访问的白名单
-    vector<string> white_list = {
-        "/login",
-        "/cdn",
-    };
-
-    for (auto &w : white_list) {
-        if (w == req->path) {
-            return WebStatus::WEB_OK;
-        }
+    for (auto iter : config_response_header_) {
+        m_http_server_->SetHeader(req, iter.first, iter.second);
     }
+    m_http_server_->SetHeader(req, "Server", SERVER_NAME);
+
+    // check uri
+    if (white_uri_list_.find(req->path) != white_uri_list_.end()) {
+        return WebStatus::WEB_OK;
+    }
+    LOG_WARN("Options: %v, type: ", "okkkkkkkk", (int)req->type);
+    if (req->type == SQUICK_HTTP_REQ_OPTIONS) {
+        
+    }
+
     string account_id;
     string token;
     auto info = GetUser(req);
