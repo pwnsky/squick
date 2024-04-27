@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "i_logic_module.h"
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>

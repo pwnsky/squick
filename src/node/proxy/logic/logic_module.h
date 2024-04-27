@@ -4,8 +4,8 @@
 #include <squick/plugin/config/export.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
-#include <squick/plugin/utils/export.h>
 #include <squick/plugin/node/export.h>
+#include <squick/plugin/utils/export.h>
 
 #include "i_logic_module.h"
 #include <vector>

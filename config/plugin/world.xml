@@ -1,14 +1,13 @@
 <XML>
-	<World>
-		<Plugin Name="core/net" />
-		<Plugin Name="core/log" />
+    <World>
+        <Plugin Name="core/net" />
+        <Plugin Name="core/log" />
         <Plugin Name="core/config" />
-		<Plugin Name="core/world" />
+        <Plugin Name="core/world" />
         <Plugin Name="core/utils" />
         <Plugin Name="core/thread" />
-		<Plugin Name="core/lua" />
+        <Plugin Name="core/lua" />
         <Plugin Name="core/node" />
-		
-		<Plugin Name="node/world/logic" />
-	</World>
+        <Plugin Name="node/world/logic" />
+    </World>
 </XML>

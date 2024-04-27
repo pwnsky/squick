@@ -1,9 +1,8 @@
 <XML>    
     <Master>
-		<Plugin Name="core/net" />
-		<Plugin Name="core/log" />
+        <Plugin Name="core/net" />
+        <Plugin Name="core/log" />
         <Plugin Name="core/node" />
-		
-		<Plugin Name="node/master/logic" />
+        <Plugin Name="node/master/logic" />
     </Master>
 </XML>

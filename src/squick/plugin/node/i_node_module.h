@@ -10,5 +10,5 @@
 class INodeModule : public IModule {
   public:
     virtual ServerInfo &GetNodeInfo() = 0;
-    virtual bool AddSubscribeNode(const vector<int>& types) = 0;
+    virtual bool AddSubscribeNode(const vector<int> &types) = 0;
 };

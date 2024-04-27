@@ -1,9 +1,8 @@
 <XML>
-	<Tester>
-		<Plugin Name="core/net" />
-		<Plugin Name="core/config" />
-		<Plugin Name="core/log" />
-		
-		<Plugin Name="sqkcli/core" />
-	</Tester>
+    <Tester>
+        <Plugin Name="core/net" />
+        <Plugin Name="core/config" />
+        <Plugin Name="core/log" />
+        <Plugin Name="sqkcli/core" />
+    </Tester>
 </XML>

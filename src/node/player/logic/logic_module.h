@@ -35,7 +35,6 @@ class LogicModule : public ILogicModule {
   private:
     ILuaScriptModule *m_lua_script_;
     INodeModule *m_node_;
-
 };
 
 } // namespace player::logic

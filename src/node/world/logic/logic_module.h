@@ -11,6 +11,7 @@ class LogicModule : public ILogicModule {
         is_update_ = true; // Update
     }
     virtual bool Start() override;
+
   private:
     INodeModule *m_node_;
 };

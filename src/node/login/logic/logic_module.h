@@ -2,10 +2,10 @@
 #include "i_logic_module.h"
 #include <iostream>
 #include <map>
-#include <squick/plugin/node/export.h>
 #include <squick/core/platform.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
+#include <squick/plugin/node/export.h>
 #include <struct/struct.h>
 #include <third_party/nlohmann/json.hpp>
 #include <unordered_map>

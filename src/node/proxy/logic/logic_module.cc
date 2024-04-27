@@ -60,7 +60,7 @@ bool LogicModule::AfterStart() {
 
     vector<int> node_types = {ServerType::ST_WORLD, ServerType::ST_LOGIN, ServerType::ST_PLAYER};
     m_node_->AddSubscribeNode(node_types);
-    
+
     return true;
 }
 

@@ -1,15 +1,14 @@
 <XML>
-        <Player>
-        <!-- The order is priority for destroy -->
-            <Plugin Name="core/log"/>
-		    <Plugin Name="core/net"/>
-		    <Plugin Name="core/config"/>
-		    <Plugin Name="core/world" />
-            <Plugin Name="core/utils" />
-            <Plugin Name="core/thread" />
-		    <Plugin Name="core/lua" />
-            <Plugin Name="core/node" />
-
-            <Plugin Name="node/player/logic" />
-        </Player>
+    <Player>
+    <!-- The order is priority for destroy -->
+        <Plugin Name="core/log"/>
+        <Plugin Name="core/net"/>
+        <Plugin Name="core/config"/>
+        <Plugin Name="core/world" />
+        <Plugin Name="core/utils" />
+        <Plugin Name="core/thread" />
+        <Plugin Name="core/lua" />
+        <Plugin Name="core/node" />
+        <Plugin Name="node/player/logic" />
+    </Player>
 </XML>
