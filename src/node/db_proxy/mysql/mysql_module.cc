@@ -146,7 +146,7 @@ void MysqlModule::OnReqInsert(const socket_t sock, const int msg_id, const char 
     uint64_t uid;
     try {
         if (!session_) {
-            throw exception("sessions_ is nullptr");
+            throw exception();
         }
         assert(m_net_->ReceivePB(msg_id, msg, len, req, uid));
         auto schema = session_->getSchema(req.database());
