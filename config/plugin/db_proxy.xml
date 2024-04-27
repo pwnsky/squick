@@ -2,11 +2,12 @@
 	<DbProxy>
 		<Plugin Name="core/net" />
 		<Plugin Name="core/log" />
-		
-		<Plugin Name="node/db_proxy/node" />
+		<Plugin Name="core/node" />
+        
 		<Plugin Name="node/db_proxy/mysql" />
 		<Plugin Name="node/db_proxy/mongo" />
 		<Plugin Name="node/db_proxy/redis" />
 		<Plugin Name="node/db_proxy/clickhouse" />
+        <Plugin Name="node/db_proxy/logic" />
     </DbProxy>
 </XML>

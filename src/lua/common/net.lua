@@ -8,6 +8,7 @@
 Net = {}
 -- function Table:func(uid, msg_data, msg_id, fd)
 function Net:Register(msg_id, this, func)
+    Squick:LogInfo("Lua Register msg: " .. tostring(msg_id))
     Squick:AddMsgCallBackAsServer(msg_id, this, func)
 end
 

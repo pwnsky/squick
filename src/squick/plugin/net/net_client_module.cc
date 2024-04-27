@@ -491,6 +491,4 @@ void NetClientModule::ProcessNetConnect() {
     }
 }
 
-int NetClientModule::GetConnections() {
-    return mxServerTypeMap.Count();
-}
+int NetClientModule::GetConnections() { return mxServerTypeMap.Count(); }

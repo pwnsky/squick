@@ -5,9 +5,9 @@
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
 #include <squick/plugin/utils/export.h>
+#include <squick/plugin/node/export.h>
 
 #include "i_logic_module.h"
-#include <node/proxy/node/i_node_module.h>
 #include <vector>
 enum class ProtocolType {
     Tcp = 1,
@@ -82,7 +82,7 @@ class LogicModule : public ILogicModule {
     int OnHeatbeatCheck(const Guid &self, const std::string &heartBeat, const float time, const int count);
 
     void OnWS(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnWebSocketClientEvent(socket_t sockIndex, const SQUICK_NET_EVENT eEvent, INet *pNet);
+    void OnSocketEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 
     int GetLoadBanlanceNode(ServerType type);
     PlayerConnInfo *GetPlayerConnInfoByUID(const uint64_t uid);
@@ -102,7 +102,7 @@ class LogicModule : public ILogicModule {
     INetModule *m_net_;
     IWSModule *m_ws_;
     INetClientModule *m_net_client_;
-    node::INodeModule *m_node_;
+    INodeModule *m_node_;
 
   private:
     time_t last_update_work_load_info_time_ = 0;

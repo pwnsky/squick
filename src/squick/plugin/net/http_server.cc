@@ -168,7 +168,7 @@ void HttpServer::listener_cb(struct evhttp_request *req, void *arg) {
         try {
             WebStatus xWebStatus = pNet->mFilter(pRequest);
             if (xWebStatus == WebStatus::WEB_IGNORE) {
-                
+
             } else if (xWebStatus == WebStatus::WEB_RETURN) {
                 return;
             } else {

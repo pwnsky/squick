@@ -28,7 +28,7 @@ bool LogicModule::AfterStart() {
     m_net_client_ = pm_->FindModule<INetClientModule>();
     m_log_ = pm_->FindModule<ILogModule>();
     m_schedule_ = pm_->FindModule<IScheduleModule>();
-    m_node_ = pm_->FindModule<node::INodeModule>();
+    m_node_ = pm_->FindModule<INodeModule>();
     m_ws_ = pm_->FindModule<IWSModule>();
 
     m_net_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
@@ -50,7 +50,30 @@ bool LogicModule::AfterStart() {
     m_net_client_->AddReceiveCallBack(ServerType::ST_PLAYER, this, &LogicModule::OnRecivedPlayerNodeMsg);
     m_net_client_->AddReceiveCallBack(ServerType::ST_LOGIN, rpc::IdNAckConnectProxyVerify, this, &LogicModule::OnNAckConnectVerify);
     m_net_client_->AddReceiveCallBack(ServerType::ST_PLAYER, rpc::IdAckPlayerEnter, this, &LogicModule::OnAckPlayerEnter);
+
+    auto &node_info = m_node_->GetNodeInfo();
+    node_info.info->set_ws_port(pm_->GetArg("ws_port=", 10502));
+    m_ws_->Listen(pm_->GetArg("max_conn=", ARG_DEFAULT_MAX_CONNECTION), pm_->GetArg("ws_port=", ARG_DEFAULT_WS_PORT),
+                  pm_->GetArg("cpu_count=", ARG_DEFAULT_CPU_COUNT), pm_->GetArg("net_server_buffer=", ARG_DEFAULT_NET_SERVER_BUFFER_SIZE));
+    m_ws_->AddEventCallBack(this, &LogicModule::OnSocketEvent);
+    m_net_->AddEventCallBack(this, &LogicModule::OnSocketEvent);
+
+    vector<int> node_types = {ServerType::ST_WORLD, ServerType::ST_LOGIN, ServerType::ST_PLAYER};
+    m_node_->AddSubscribeNode(node_types);
+    
     return true;
+}
+
+void LogicModule::OnSocketEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {
+    if (eEvent & SQUICK_NET_EVENT_EOF) {
+        OnClientDisconnected(sock);
+    } else if (eEvent & SQUICK_NET_EVENT_ERROR) {
+        OnClientDisconnected(sock);
+    } else if (eEvent & SQUICK_NET_EVENT_TIMEOUT) {
+        OnClientDisconnected(sock);
+    } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
+        LOG_INFO("New socket client connected, sock<%v>", sock);
+    }
 }
 
 // request per 5 sec

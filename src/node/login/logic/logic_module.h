@@ -2,7 +2,7 @@
 #include "i_logic_module.h"
 #include <iostream>
 #include <map>
-#include <node/login/node/i_node_module.h>
+#include <squick/plugin/node/export.h>
 #include <squick/core/platform.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
@@ -51,7 +51,7 @@ class LogicModule : public ILogicModule {
     INetClientModule *m_net_client_;
     INetModule *m_net_;
     IHttpServerModule *m_http_server_;
-    node::INodeModule *m_node_;
+    INodeModule *m_node_;
     ILogModule *m_log_;
 
   private:

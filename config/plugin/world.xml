@@ -7,8 +7,8 @@
         <Plugin Name="core/utils" />
         <Plugin Name="core/thread" />
 		<Plugin Name="core/lua" />
+        <Plugin Name="core/node" />
 		
-		<Plugin Name="node/world/node" />
 		<Plugin Name="node/world/logic" />
 	</World>
 </XML>

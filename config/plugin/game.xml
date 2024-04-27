@@ -2,8 +2,8 @@
 	<Game>
 		<Plugin Name="core/net" />
 		<Plugin Name="core/log" />
+        <Plugin Name="core/node" />
 		
-		<Plugin Name="node/game/node" />
         <Plugin Name="node/game/logic" />
 	</Game>
 </XML>

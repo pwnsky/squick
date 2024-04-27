@@ -2,8 +2,8 @@
     <Login>
 		<Plugin Name="core/net" />
 		<Plugin Name="core/log" />
+        <Plugin Name="core/node" />
 
-		<Plugin Name="node/web/node" />
 		<Plugin Name="node/web/logic" />
 	</Login>
 
