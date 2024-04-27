@@ -14,4 +14,8 @@ bool NodeModule::AfterStart() {
     return true;
 }
 
+ServerInfo* NodeModule::GetNodeInfo() {
+    return &node_info_;
+}
+
 } // namespace master::node

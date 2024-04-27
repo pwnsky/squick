@@ -2,11 +2,13 @@
 #include "logic_module.h"
 #include "plugin.h"
 #include <third_party/nlohmann/json.hpp>
+#define DEFAULT_MASTER_UPDATE_SELF_TIME 10
 namespace master::logic {
 using json = nlohmann::json;
 bool LogicModule::Start() {
     m_net_ = pm_->FindModule<INetModule>();
     m_log_ = pm_->FindModule<ILogModule>();
+    m_node_ = pm_->FindModule<node::INodeModule>();
     return true;
 }
 bool LogicModule::AfterStart() {
@@ -22,12 +24,27 @@ bool LogicModule::AfterStart() {
     m_http_server_->AddRequestHandler("/node/list", HttpType::SQUICK_HTTP_REQ_GET, this, &LogicModule::OnGetNodeList);
     m_http_server_->StartServer(pm_->GetArg("http_port=", ARG_DEFAULT_HTTP_PORT));
 
+    UpdateStatus();
     return true;
 }
 
 bool LogicModule::Destroy() { return true; }
-bool LogicModule::Update() { return true; }
+bool LogicModule::Update() {
 
+    if (last_report_time_ + DEFAULT_MASTER_UPDATE_SELF_TIME > pm_->GetNowTime()) {
+        return true;
+    }
+    if (last_report_time_ > 0) {
+        UpdateStatus();
+    }
+    last_report_time_ = pm_->GetNowTime();
+
+    return true;
+}
+
+void LogicModule::UpdateStatus() {
+    node_map_[pm_->GetAppID()] = *m_node_->GetNodeInfo();
+}
 
 void LogicModule::OnNReqNodeRegister(const socket_t sock, const int msg_id, const char* msg, const uint32_t len) {
     uint64_t uid;
@@ -259,6 +276,8 @@ bool LogicModule::OnGetNodeList(std::shared_ptr<HttpRequest> req) {
         n["ws_port"] = sd->ws_port();
         n["http_port"] = sd->http_port();
         n["https_port"] = sd->https_port();
+        n["connections"] = sd->connections();
+        n["net_client_connections"] = sd->net_client_connections();
 
         statusRoot["node_list"][to_string(sd->id())] = n;
     }

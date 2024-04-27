@@ -51,6 +51,8 @@ class NetClientModule : public INetClientModule {
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const int serverID);
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const INet *pNet);
 
+    virtual int GetConnections() override;
+
   protected:
     void StartCallBacks(std::shared_ptr<ConnectData> pServerData);
 

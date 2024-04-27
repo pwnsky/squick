@@ -27,12 +27,13 @@ class INodeBaseModule : public IModule {
     }
 
     virtual bool Update() override final {
-        // calc work load
-        CalcWorkLoad();
+        
         if (last_report_time_ + NODE_REPORT_TIME > pm_->GetNowTime()) {
             return true;
         }
         if (last_report_time_ > 0) {
+            // calc work load
+            CalcWorkLoad();
             UpdateState();
         }
         last_report_time_ = pm_->GetNowTime();
@@ -179,9 +180,10 @@ class INodeBaseModule : public IModule {
 
     // Report to upper server
     void UpdateState() {
-
         node_info_.info->set_update_time(SquickGetTimeS());
         node_info_.info->set_workload(workload_);
+        node_info_.info->set_connections(m_net_->GetNet()->GetConnections());
+        node_info_.info->set_net_client_connections(m_net_client_->GetConnections());
         // Update status to master
         if (pm_->GetAppType() != ST_MASTER) {
             rpc::NNtfNodeReport req;

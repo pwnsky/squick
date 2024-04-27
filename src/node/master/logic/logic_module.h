@@ -4,12 +4,12 @@
 #include <struct/struct.h>
 #include <squick/plugin/net/export.h>
 #include <squick/plugin/log/export.h>
-
+#include "../node/i_node_module.h"
 namespace master::logic {
 class LogicModule : public ILogicModule {
 
   public:
-    LogicModule(IPluginManager *p) { pm_ = p; }
+    LogicModule(IPluginManager* p) { pm_ = p; is_update_ = true; }
 
     virtual bool Start() override;
     virtual bool AfterStart() override;
@@ -29,6 +29,7 @@ class LogicModule : public ILogicModule {
     void NtfSubscribNode(int new_node_id);
 
     bool SendPBByID(const int node_id, const uint16_t msg_id, const google::protobuf::Message& pb);
+    void UpdateStatus();
 
     inline bool IsHaveThisType(const vector<int>& types, int type) {
         for (auto t : types) {
@@ -48,7 +49,9 @@ private:
 
     INetModule* m_net_;
     ILogModule* m_log_;
+    node::INodeModule* m_node_;
     IHttpServerModule* m_http_server_;
+    time_t last_report_time_;
 };
 
 } // namespace master::logic

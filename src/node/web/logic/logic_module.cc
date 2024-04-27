@@ -265,6 +265,8 @@ Coroutine<bool> LogicModule::OnGetAllNodes(std::shared_ptr<HttpRequest> request)
         n["ws_port"] = sd.ws_port();
         n["http_port"] = sd.http_port();
         n["https_port"] = sd.https_port();
+        n["connections"] = sd.connections();
+        n["net_client_connections"] = sd.net_client_connections();
         node_list.push_back(n);
     }
     rsp["node_list"] = node_list;

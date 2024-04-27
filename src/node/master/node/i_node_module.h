@@ -4,6 +4,7 @@
 namespace master::node {
 class INodeModule : public INodeBaseModule {
   public:
+	  virtual ServerInfo* GetNodeInfo() = 0;
 };
 
 } // namespace master::node

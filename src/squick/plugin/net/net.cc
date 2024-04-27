@@ -516,6 +516,10 @@ bool Net::SendMsgToAllClient(const int16_t msg_id, const char *msg, const size_t
     return false;
 }
 
+int Net::GetConnections() {
+    return mmObject.size();
+}
+
 int Net::EnCode(const uint16_t umsg_id, const char *strData, const uint32_t unDataLen, std::string &strOutData) {
     rpcHead xHead;
     xHead.SetMsgID(umsg_id);

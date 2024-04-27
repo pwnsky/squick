@@ -490,3 +490,7 @@ void NetClientModule::ProcessNetConnect() {
         mxTempNetList.clear();
     }
 }
+
+int NetClientModule::GetConnections() {
+    return mxServerTypeMap.Count();
+}

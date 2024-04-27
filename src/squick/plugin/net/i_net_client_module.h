@@ -113,4 +113,6 @@ class INetClientModule : public IModule {
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const ServerType eType) = 0;
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const int serverID) = 0;
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const INet *pNet) = 0;
+
+    virtual int GetConnections() = 0;
 };

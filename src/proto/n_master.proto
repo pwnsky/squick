@@ -28,6 +28,7 @@ message Server {
     int32 ws_port = 16;
     int32 http_port = 17;
     int32 https_port = 18;
+    int32 net_client_connections = 19;
 }
 
 message NReqNodeRegister {               // msg_id=500;
