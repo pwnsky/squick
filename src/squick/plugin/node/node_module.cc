@@ -43,58 +43,58 @@ inline void NodeModule::CalcWorkLoad() {
     last_update_time_ = now_time;
 }
 
-std::string NodeModule::EnumNodeTypeToString(ServerType type) {
+std::string NodeModule::EnumNodeTypeToString(rpc::NodeType type) {
     switch (type) {
-    case ServerType::ST_MASTER:
+    case rpc::ST_MASTER:
         return "master";
-    case ServerType::ST_LOGIN:
+    case rpc::ST_LOGIN:
         return "login";
-    case ServerType::ST_WORLD:
+    case rpc::ST_WORLD:
         return "world";
-    case ServerType::ST_DB_PROXY:
+    case rpc::ST_DB_PROXY:
         return "db_proxy";
-    case ServerType::ST_PROXY:
+    case rpc::ST_PROXY:
         return "proxy";
-    case ServerType::ST_PLAYER:
+    case rpc::ST_PLAYER:
         return "player";
-    case ServerType::ST_GAME_MGR:
+    case rpc::ST_GAME_MGR:
         return "game_mgr";
-    case ServerType::ST_GAME:
+    case rpc::ST_GAME:
         return "game";
-    case ServerType::ST_MICRO:
+    case rpc::ST_MICRO:
         return "micro";
-    case ServerType::ST_CDN:
+    case rpc::ST_CDN:
         return "cdn";
-    case ServerType::ST_WEB:
+    case rpc::ST_WEB:
         return "web";
     }
     return "";
 }
 
-ServerType NodeModule::StringNodeTypeToEnum(const std::string &type) {
+rpc::NodeType NodeModule::StringNodeTypeToEnum(const std::string &type) {
     if (type == "master")
-        return ServerType::ST_MASTER;
+        return rpc::ST_MASTER;
     else if (type == "login")
-        return ServerType::ST_LOGIN;
+        return rpc::ST_LOGIN;
     else if (type == "world")
-        return ServerType::ST_WORLD;
+        return rpc::ST_WORLD;
     else if (type == "db_proxy")
-        return ServerType::ST_DB_PROXY;
+        return rpc::ST_DB_PROXY;
     else if (type == "proxy")
-        return ServerType::ST_PROXY;
+        return rpc::ST_PROXY;
     else if (type == "player")
-        return ServerType::ST_PLAYER;
+        return rpc::ST_PLAYER;
     else if (type == "game_mgr")
-        return ServerType::ST_GAME_MGR;
+        return rpc::ST_GAME_MGR;
     else if (type == "game")
-        return ServerType::ST_GAME;
+        return rpc::ST_GAME;
     else if (type == "micro")
-        return ServerType::ST_MICRO;
+        return rpc::ST_MICRO;
     else if (type == "cdn")
-        return ServerType::ST_CDN;
+        return rpc::ST_CDN;
     else if (type == "web")
-        return ServerType::ST_WEB;
-    return ServerType::ST_NONE;
+        return rpc::ST_WEB;
+    return rpc::ST_NONE;
 }
 
 bool NodeModule::Listen() {
@@ -127,10 +127,10 @@ bool NodeModule::Listen() {
 
 // Add upper server
 bool NodeModule::AddSubscribeNode(const vector<int> &types) {
-    m_net_client_->AddEventCallBack(ST_MASTER, this, &NodeModule::OnClientSocketEvent);
-    m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::IdNNtfNodeAdd, this, &NodeModule::OnNNtfNodeAdd);
-    m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::IdNNtfNodeRemove, this, &NodeModule::OnNNtfNodeRemove);
-    m_net_client_->AddReceiveCallBack(ST_MASTER, rpc::IdNAckNodeRegister, this, &NodeModule::OnNAckNodeRegister);
+    m_net_client_->AddEventCallBack(rpc::ST_MASTER, this, &NodeModule::OnClientSocketEvent);
+    m_net_client_->AddReceiveCallBack(rpc::ST_MASTER, rpc::IdNNtfNodeAdd, this, &NodeModule::OnNNtfNodeAdd);
+    m_net_client_->AddReceiveCallBack(rpc::ST_MASTER, rpc::IdNNtfNodeRemove, this, &NodeModule::OnNNtfNodeRemove);
+    m_net_client_->AddReceiveCallBack(rpc::ST_MASTER, rpc::IdNAckNodeRegister, this, &NodeModule::OnNAckNodeRegister);
     bool ret = false;
     node_info_.listen_types = types;
     ConnectData s;
@@ -155,14 +155,14 @@ void NodeModule::OnDynamicServerAdd(const socket_t sock, const int msg_id, const
         return;
     }
     for (int i = 0; i < ntf.node_list().size(); ++i) {
-        const rpc::Server &sd = ntf.node_list(i);
+        const rpc::Node &sd = ntf.node_list(i);
         // type
         ConnectData s;
         s.id = sd.id();
         s.ip = sd.ip();
         s.port = sd.port();
         s.name = sd.name();
-        s.type = (ServerType)sd.type();
+        s.type = sd.type();
         m_net_client_->AddNode(s);
     }
 }
@@ -178,7 +178,7 @@ void NodeModule::UpdateState() {
     node_info_.info->set_connections(m_net_->GetNet()->GetConnections());
     node_info_.info->set_net_client_connections(m_net_client_->GetConnections());
     // Update status to master
-    if (pm_->GetAppType() != ST_MASTER) {
+    if (pm_->GetAppType() != rpc::ST_MASTER) {
         rpc::NNtfNodeReport req;
         req.set_id(pm_->GetAppID());
         auto s = req.add_list();
@@ -231,7 +231,7 @@ void NodeModule::OnUpperNodeConnected(INet *pNet) {
     ts->state = ConnectDataState::NORMAL;
 
     // target type only master can register
-    if (ts->type != ST_MASTER)
+    if (ts->type != rpc::ST_MASTER)
         return;
 
     rpc::NReqNodeRegister req;
@@ -269,7 +269,7 @@ void NodeModule::OnNNtfNodeAdd(const socket_t sock, const int msg_id, const char
     AddNodes(ntf.node_list(), true);
 }
 
-bool NodeModule::AddNodes(const google::protobuf::RepeatedPtrField<rpc::Server> &list, bool from_ntf) {
+bool NodeModule::AddNodes(const google::protobuf::RepeatedPtrField<rpc::Node> &list, bool from_ntf) {
     for (const auto &n : list) {
         LOG_INFO("Add node from master, is_ntf<%v> added:", from_ntf, n.name());
         ConnectData s;
@@ -277,7 +277,7 @@ bool NodeModule::AddNodes(const google::protobuf::RepeatedPtrField<rpc::Server> 
         s.ip = n.ip();
         s.port = n.port();
         s.name = n.name();
-        s.type = (ServerType)n.type();
+        s.type = n.type();
         m_net_client_->AddNode(s);
     }
     return true;

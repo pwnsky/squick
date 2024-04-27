@@ -10,6 +10,8 @@
 
 **Unreal SDK**: [squick-unreal-sdk](https://github.com/pwnsky/squick-unreal-sdk)
 
+**Web Admin**: [squick-web](https://github.com/pwnsky/squick-web)
+
 **QQ Group：739065686**
 
 **Version:** 1.1.1

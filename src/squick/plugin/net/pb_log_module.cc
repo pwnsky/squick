@@ -66,7 +66,7 @@ void PbLogModule::Log(const std::string &prefix, const int msg_id, const char *d
     std::string msg_name = GetMessageNameByID(msg_id);
     bool is_node_msg = false;
 
-    if (pm_->GetAppType() != ServerType::ST_PROXY) {
+    if (pm_->GetAppType() != rpc::ST_PROXY) {
         // inner msg
         is_node_msg = true;
     } else if (msg_name.find("rpc.NR") == 0) {

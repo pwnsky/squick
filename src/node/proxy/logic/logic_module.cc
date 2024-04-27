@@ -44,12 +44,12 @@ bool LogicModule::AfterStart() {
     m_ws_->AddReceiveCallBack(rpc::IdReqPlayerLeave, this, &LogicModule::OnReqPlayerLeave);
 
     // Master
-    m_net_client_->AddReceiveCallBack(ServerType::ST_MASTER, this, &LogicModule::OnNAckMinWorkloadNodeInfo);
+    m_net_client_->AddReceiveCallBack(rpc::ST_MASTER, this, &LogicModule::OnNAckMinWorkloadNodeInfo);
 
     // Lobby
-    m_net_client_->AddReceiveCallBack(ServerType::ST_PLAYER, this, &LogicModule::OnRecivedPlayerNodeMsg);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_LOGIN, rpc::IdNAckConnectProxyVerify, this, &LogicModule::OnNAckConnectVerify);
-    m_net_client_->AddReceiveCallBack(ServerType::ST_PLAYER, rpc::IdAckPlayerEnter, this, &LogicModule::OnAckPlayerEnter);
+    m_net_client_->AddReceiveCallBack(rpc::ST_PLAYER, this, &LogicModule::OnRecivedPlayerNodeMsg);
+    m_net_client_->AddReceiveCallBack(rpc::ST_LOGIN, rpc::IdNAckConnectProxyVerify, this, &LogicModule::OnNAckConnectVerify);
+    m_net_client_->AddReceiveCallBack(rpc::ST_PLAYER, rpc::IdAckPlayerEnter, this, &LogicModule::OnAckPlayerEnter);
 
     auto &node_info = m_node_->GetNodeInfo();
     node_info.info->set_ws_port(pm_->GetArg("ws_port=", 10502));
@@ -58,7 +58,7 @@ bool LogicModule::AfterStart() {
     m_ws_->AddEventCallBack(this, &LogicModule::OnSocketEvent);
     m_net_->AddEventCallBack(this, &LogicModule::OnSocketEvent);
 
-    vector<int> node_types = {ServerType::ST_WORLD, ServerType::ST_LOGIN, ServerType::ST_PLAYER};
+    vector<int> node_types = {rpc::ST_WORLD, rpc::ST_LOGIN, rpc::ST_PLAYER};
     m_node_->AddSubscribeNode(node_types);
 
     return true;
@@ -80,8 +80,8 @@ void LogicModule::OnSocketEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, IN
 void LogicModule::NReqMinWorkloadNodeInfo() {
     // find min work load proxy
     rpc::NReqMinWorkloadNodeInfo pbreq;
-    pbreq.add_type_list(ST_PLAYER);
-    pbreq.add_type_list(ST_WORLD);
+    pbreq.add_type_list(rpc::ST_PLAYER);
+    pbreq.add_type_list(rpc::ST_WORLD);
     m_net_client_->SendPBByID(DEFAULT_MASTER_ID, rpc::IdNReqMinWorkloadNodeInfo, pbreq);
 }
 
@@ -105,7 +105,7 @@ void LogicModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const 
         return;
     }
 
-    int player_node = GetLoadBanlanceNode(ST_PLAYER);
+    int player_node = GetLoadBanlanceNode(rpc::ST_PLAYER);
     if (player_node <= 0 || pInfo->player_node > 0) {
         LOG_WARN("No player node find: %v ", player_node);
         return;
@@ -171,7 +171,7 @@ void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const 
     }
 }
 
-int LogicModule::GetLoadBanlanceNode(ServerType type) {
+int LogicModule::GetLoadBanlanceNode(int type) {
     auto iter = min_workload_nodes_.find(type);
     if (iter == min_workload_nodes_.end()) {
         return 0;

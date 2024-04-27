@@ -37,12 +37,12 @@ bool TesterModule::AfterStart() {
 
 void TesterModule::TestProxyTransferSpeed_Init() {
     std::cout << "Test proxy Transfer speed!\n";
-    m_net_client_->AddReceiveCallBack(ServerType::ST_PROXY, rpc::TestRPC::ACK_TEST_PROXY, this, &TesterModule::TestProxyTransferSpeed_Ack);
-    m_net_client_->AddEventCallBack(ServerType::ST_PROXY, this, &TesterModule::OnClientSocketEvent);
+    m_net_client_->AddReceiveCallBack(rpc::ST_PROXY, rpc::TestRPC::ACK_TEST_PROXY, this, &TesterModule::TestProxyTransferSpeed_Ack);
+    m_net_client_->AddEventCallBack(rpc::ST_PROXY, this, &TesterModule::OnClientSocketEvent);
 
     ConnectData s;
     s.id = 1; // Just for test
-    s.type = ServerType::ST_PROXY;
+    s.type = rpc::ST_PROXY;
     s.ip = pm_->GetArg("ip=", "127.0.0.1");
     s.port = pm_->GetArg("port=", 10501);
     s.name = "test";
@@ -55,7 +55,7 @@ void TesterModule::TestProxyTransferSpeed_Req() {
     test.set_index(test_req_index_);
     test.set_data(test_req_data_);
     test.set_req_time(SquickGetTimeMSEx());
-    m_net_client_->SendPBToAllNodeByType(ServerType::ST_PROXY, rpc::TestRPC::REQ_TEST_PROXY, test, 0);
+    m_net_client_->SendPBToAllNodeByType(rpc::ST_PROXY, rpc::TestRPC::REQ_TEST_PROXY, test, 0);
     test_req_index_++;
     test_req_data_ = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
 }

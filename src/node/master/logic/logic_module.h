@@ -26,7 +26,7 @@ class LogicModule : public ILogicModule {
     void OnNNtfNodeMsgForward(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     void OnNReqAllNodesInfo(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
-    int GetLoadBanlanceNode(ServerType type);
+    int GetLoadBanlanceNode(int type);
 
     void AddSubscribeNode(int new_node_id, vector<int> types);
     void NtfSubscribNode(int new_node_id);

@@ -84,7 +84,7 @@ class LogicModule : public ILogicModule {
     void OnWS(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     void OnSocketEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 
-    int GetLoadBanlanceNode(ServerType type);
+    int GetLoadBanlanceNode(int type);
     PlayerConnInfo *GetPlayerConnInfoByUID(const uint64_t uid);
     PlayerConnInfo *GetPlayerConnInfo(const socket_t player_sock);
     bool RemovePlayerConnInfo(const socket_t player_sock);

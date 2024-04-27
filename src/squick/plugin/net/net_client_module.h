@@ -20,10 +20,10 @@ class NetClientModule : public INetClientModule {
     virtual bool Update();
 
     virtual void AddNode(const ConnectData &xInfo);
-    virtual int AddReceiveCallBack(const ServerType eType, NET_RECEIVE_FUNCTOR_PTR functorPtr);
-    virtual int AddReceiveCallBack(const ServerType eType, const uint16_t msg_id, NET_RECEIVE_FUNCTOR_PTR functorPtr);
-    virtual int AddEventCallBack(const ServerType eType, NET_EVENT_FUNCTOR_PTR functorPtr);
-    virtual void RemoveReceiveCallBack(const ServerType eType, const uint16_t msg_id);
+    virtual int AddReceiveCallBack(const int eType, NET_RECEIVE_FUNCTOR_PTR functorPtr);
+    virtual int AddReceiveCallBack(const int eType, const uint16_t msg_id, NET_RECEIVE_FUNCTOR_PTR functorPtr);
+    virtual int AddEventCallBack(const int eType, NET_EVENT_FUNCTOR_PTR functorPtr);
+    virtual void RemoveReceiveCallBack(const int eType, const uint16_t msg_id);
 
     ////////////////////////////////////////////////////////////////////////////////
     virtual bool IsConnected(const int node_id) override;
@@ -31,9 +31,9 @@ class NetClientModule : public INetClientModule {
     virtual bool SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0,
                             reqid_t req_id = 0) override;
     virtual void SendToAllNode(const uint16_t msg_id, const std::string &strData, const uint64_t uid = 0) override;
-    virtual void SendToAllNodeByType(const ServerType eType, const uint16_t msg_id, const std::string &strData, const uint64_t uid = 0) override;
+    virtual void SendToAllNodeByType(const int eType, const uint16_t msg_id, const std::string &strData, const uint64_t uid = 0) override;
     virtual void SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0) override;
-    virtual void SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0) override;
+    virtual void SendPBToAllNodeByType(const int eType, const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0) override;
 
     // coroutine
     virtual Awaitable<NetClientResponseData> Request(const int node_id, const uint16_t msg_id, const std::string &data, int ack_msg_id,
@@ -47,7 +47,6 @@ class NetClientModule : public INetClientModule {
 
     virtual MapEx<int, ConnectData> &GetServerList();
 
-    virtual std::shared_ptr<ConnectData> GetServerNetInfo(const ServerType eType);
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const int serverID);
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const INet *pNet);
 

@@ -10,9 +10,9 @@ NetClientModule::NetClientModule(IPluginManager *p) {
 bool NetClientModule::Start() {
     m_log_ = pm_->FindModule<ILogModule>();
 
-    for (int i = 0; i < ServerType::ST_MAX; ++i) {
-        INetClientModule::AddEventCallBack((ServerType)i, this, &NetClientModule::OnSocketEvent);
-        INetClientModule::AddReceiveCallBack((ServerType)i, this, &NetClientModule::OnAckHandler);
+    for (int i = 0; i < rpc::ST_MAX; ++i) {
+        INetClientModule::AddEventCallBack(i, this, &NetClientModule::OnSocketEvent);
+        INetClientModule::AddReceiveCallBack(i, this, &NetClientModule::OnAckHandler);
     }
     return true;
 }
@@ -29,7 +29,7 @@ bool NetClientModule::Update() {
     return true;
 }
 
-void NetClientModule::RemoveReceiveCallBack(const ServerType eType, const uint16_t msg_id) {
+void NetClientModule::RemoveReceiveCallBack(const int eType, const uint16_t msg_id) {
     std::shared_ptr<CallBack> xCallBack = mxCallBack.GetElement(eType);
     if (xCallBack) {
         std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = xCallBack->mxReceiveCallBack.find(msg_id);
@@ -41,7 +41,7 @@ void NetClientModule::RemoveReceiveCallBack(const ServerType eType, const uint16
 
 void NetClientModule::AddNode(const ConnectData &xInfo) { mxTempNetList.push_back(xInfo); }
 
-int NetClientModule::AddReceiveCallBack(const ServerType eType, const uint16_t msg_id, NET_RECEIVE_FUNCTOR_PTR functorPtr) {
+int NetClientModule::AddReceiveCallBack(const int eType, const uint16_t msg_id, NET_RECEIVE_FUNCTOR_PTR functorPtr) {
     std::shared_ptr<CallBack> xCallBack = mxCallBack.GetElement(eType);
     if (!xCallBack) {
         xCallBack = std::shared_ptr<CallBack>(new CallBack);
@@ -61,7 +61,7 @@ int NetClientModule::AddReceiveCallBack(const ServerType eType, const uint16_t m
     return 0;
 }
 
-int NetClientModule::AddReceiveCallBack(const ServerType eType, NET_RECEIVE_FUNCTOR_PTR functorPtr) {
+int NetClientModule::AddReceiveCallBack(const int eType, NET_RECEIVE_FUNCTOR_PTR functorPtr) {
     std::shared_ptr<CallBack> xCallBack = mxCallBack.GetElement(eType);
     if (!xCallBack) {
         xCallBack = std::shared_ptr<CallBack>(new CallBack);
@@ -73,7 +73,7 @@ int NetClientModule::AddReceiveCallBack(const ServerType eType, NET_RECEIVE_FUNC
     return 0;
 }
 
-int NetClientModule::AddEventCallBack(const ServerType eType, NET_EVENT_FUNCTOR_PTR functorPtr) {
+int NetClientModule::AddEventCallBack(const int eType, NET_EVENT_FUNCTOR_PTR functorPtr) {
     std::shared_ptr<CallBack> xCallBack = mxCallBack.GetElement(eType);
     if (!xCallBack) {
         xCallBack = std::shared_ptr<CallBack>(new CallBack);
@@ -126,7 +126,7 @@ void NetClientModule::SendToAllNode(const uint16_t msg_id, const std::string &st
     }
 }
 
-void NetClientModule::SendToAllNodeByType(const ServerType eType, const uint16_t msg_id, const std::string &strData, const uint64_t uid) {
+void NetClientModule::SendToAllNodeByType(const int eType, const uint16_t msg_id, const std::string &strData, const uint64_t uid) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
@@ -171,7 +171,7 @@ void NetClientModule::SendPBToAllNode(const uint16_t msg_id, const google::proto
     }
 }
 
-void NetClientModule::SendPBToAllNodeByType(const ServerType eType, const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid) {
+void NetClientModule::SendPBToAllNodeByType(const int eType, const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid) {
     std::shared_ptr<ConnectData> pServer = mxServerMap.First();
     while (pServer) {
         std::shared_ptr<INetModule> pNetModule = pServer->net_module;
@@ -262,15 +262,6 @@ void NetClientModule::OnAckHandler(const socket_t sock, const int msg_id, const 
     // remove request infos
     co_awaitbles_.erase(iter);
     return;
-}
-
-std::shared_ptr<ConnectData> NetClientModule::GetServerNetInfo(const ServerType eType) {
-    std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(eType);
-    if (xConnectDataMap) {
-        return xConnectDataMap->GetElementBySuitRandom();
-    }
-
-    return nullptr;
 }
 
 std::shared_ptr<ConnectData> NetClientModule::GetServerNetInfo(const int serverID) { return mxServerMap.GetElement(serverID); }

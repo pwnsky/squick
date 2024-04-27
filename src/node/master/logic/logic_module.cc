@@ -205,7 +205,7 @@ void LogicModule::OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, c
         return;
     }
     for (auto type : req.type_list()) {
-        int id = GetLoadBanlanceNode((ServerType)type);
+        int id = GetLoadBanlanceNode(type);
         if (id == -1)
             continue;
         auto p = ack.add_list();
@@ -216,7 +216,7 @@ void LogicModule::OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, c
     m_net_->SendPBToNode(rpc::IdNAckMinWorkloadNodeInfo, ack, sock, 0, req_id);
 }
 
-int LogicModule::GetLoadBanlanceNode(ServerType type) {
+int LogicModule::GetLoadBanlanceNode(int type) {
     int node_id = -1;
     int min_workload = 0x7fffffff;
     for (auto &iter : node_map_) {

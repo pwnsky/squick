@@ -9,9 +9,9 @@ local DbClickhouseID = 0;
 Clickhouse = Clickhouse and Clickhouse or Object(QueryAsync).new()
 
 function Clickhouse:Bind()
-    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckClickhouseExecute, self, self.AckExecute)
-    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckClickhouseSelect, self, self.AckSelect)
-    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckClickhouseInsert, self, self.AckInsert)
+    Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckClickhouseExecute, self, self.AckExecute)
+    Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckClickhouseSelect, self, self.AckSelect)
+    Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckClickhouseInsert, self, self.AckInsert)
     DbClickhouseID = GetDbProxyID()
 end
 

@@ -25,7 +25,7 @@ bool LogicModule::AfterStart() {
     m_http_server_->AddRequestHandler(WEB_BASE_PATH "/auth_check", HttpType::SQUICK_HTTP_REQ_GET, this, &LogicModule::OnAuthCheck);
     m_http_server_->StartServer(pm_->GetArg("http_port=", ARG_DEFAULT_HTTP_PORT));
 
-    vector<int> node_types = {ServerType::ST_GLOBAL, ServerType::ST_DB_PROXY, ServerType::ST_PLAYER};
+    vector<int> node_types = {rpc::ST_GLOBAL, rpc::ST_DB_PROXY, rpc::ST_PLAYER};
     m_node_->AddSubscribeNode(node_types);
 
     LoadConfig();

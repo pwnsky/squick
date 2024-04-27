@@ -74,10 +74,10 @@ function Load()
     Require("lib.init")
     
     local node_init = {
-        [ServerType.ST_GAME ] = function()
+        [NodeType.ST_GAME ] = function()
             Require("node.game.init")
         end,
-        [ServerType.ST_PLAYER] = function ()
+        [NodeType.ST_PLAYER] = function ()
             Require("node.player.init")
             -- Require("test.init")
         end

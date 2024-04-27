@@ -7,7 +7,7 @@ namespace player::logic {
 bool LogicModule::Start() {
     m_lua_script_ = pm_->FindModule<ILuaScriptModule>();
     m_node_ = pm_->FindModule<INodeModule>();
-    vector<int> node_types = {ServerType::ST_WORLD, ServerType::ST_DB_PROXY, ServerType::ST_PLAYER};
+    vector<int> node_types = {rpc::ST_WORLD, rpc::ST_DB_PROXY, rpc::ST_PLAYER};
     m_node_->AddSubscribeNode(node_types);
 
     LuaBind();

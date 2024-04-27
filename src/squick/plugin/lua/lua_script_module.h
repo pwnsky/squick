@@ -130,15 +130,15 @@ class LuaScriptModule : public ILuaScriptModule {
     void AddMsgCallBackAsServer(const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
 
     // as client
-    void RemoveMsgCallBackAsClient(const ServerType serverType, const int msg_id);
-    void AddMsgCallBackAsClient(const ServerType serverType, const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
+    void RemoveMsgCallBackAsClient(const int serverType, const int msg_id);
+    void AddMsgCallBackAsClient(const int serverType, const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
 
     bool ImportProtoFile(const std::string &fileName);
     const std::string Encode(const std::string &msgTypeName, const LuaIntf::LuaRef &luaTable);
     LuaIntf::LuaRef Decode(const std::string &msgTypeName, const std::string &data);
 
     void SendToServerByServerID(const int server_id, const uint16_t msg_id, const std::string &data, const uint64_t uid);
-    void SendToAllServerByServerType(const ServerType server_type, const uint16_t msg_id, const std::string &data, const uint64_t uid);
+    void SendToAllServerByServerType(const int server_type, const uint16_t msg_id, const std::string &data, const uint64_t uid);
 
     // for net module
     void SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, const uint64_t uid);

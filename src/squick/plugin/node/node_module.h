@@ -15,8 +15,8 @@ class NodeModule : public INodeModule {
     virtual bool Update() override;
 
     inline void CalcWorkLoad();
-    static std::string EnumNodeTypeToString(ServerType type);
-    static ServerType StringNodeTypeToEnum(const std::string &type);
+    static std::string EnumNodeTypeToString(rpc::NodeType type);
+    static rpc::NodeType StringNodeTypeToEnum(const std::string &type);
 
     virtual ServerInfo &GetNodeInfo() override;
 
@@ -47,7 +47,7 @@ class NodeModule : public INodeModule {
 
     // Add node ntf
     void OnNNtfNodeAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    bool AddNodes(const google::protobuf::RepeatedPtrField<rpc::Server> &list, bool from_ntf = false);
+    bool AddNodes(const google::protobuf::RepeatedPtrField<rpc::Node> &list, bool from_ntf = false);
 
     // Add node ntf
     void OnNNtfNodeRemove(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
