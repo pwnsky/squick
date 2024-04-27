@@ -3,7 +3,7 @@
 // Date  : 2024-04-13
 // Description: DbProxy mysql databae interface
 #pragma once
-#include <squick/imodule/i_db_module.h>
+#include "../logic/i_db_module.h"
 
 class IMysqlModule : public IDBModule {
   public:

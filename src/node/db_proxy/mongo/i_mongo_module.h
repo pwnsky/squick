@@ -1,5 +1,5 @@
 #pragma once
-#include <squick/imodule/i_db_module.h>
+#include "../logic/i_db_module.h"
 namespace db_proxy::mongo {
 class IMongoModule : public IDBModule {
   public:

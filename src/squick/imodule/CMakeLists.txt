@@ -1,6 +1,0 @@
-set(ProjectName "imodule")
-file(GLOB soruces *.cc)
-file(GLOB headers *.h)
-add_library(${ProjectName} SHARED ${soruces} ${headers})
-LinkSquick(${ProjectName})
-SquickOut(${ProjectName} "squick" ${SQUICK_BUILD_PLUGIN_CORE_PATH} "imodule")
