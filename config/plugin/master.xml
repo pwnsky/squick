@@ -5,7 +5,6 @@
 		
 		<Plugin Name="node/master/logic" />
 		<Plugin Name="node/master/node" />
-		<Plugin Name="node/master/http" />
 		
     </Master>
 </XML>

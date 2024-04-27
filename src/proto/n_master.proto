@@ -80,3 +80,10 @@ message NNtfNodeRemove { // msg_id=510;
 message NNtfNodeMsgForward { // msg_id=511;
     bytes data = 1;
 }
+
+message NReqAllNodesInfo { // msg_id=512;
+}
+
+message NAckAllNodesInfo { // msg_id=513;
+    repeated Server node_list = 1;
+}
