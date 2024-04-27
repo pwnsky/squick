@@ -7,7 +7,7 @@
 namespace web::logic {
 bool LogicModule::Start() {
     m_http_server_ = pm_->FindModule<IHttpServerModule>();
-    m_node_ = pm_->FindModule<node::INodeModule>();
+    m_node_ = pm_->FindModule<INodeModule>();
     m_net_client_ = pm_->FindModule<INetClientModule>();
     m_net_ = pm_->FindModule<INetModule>();
     m_log_ = pm_->FindModule<ILogModule>();
@@ -19,10 +19,15 @@ bool LogicModule::Destroy() { return true; }
 
 bool LogicModule::AfterStart() {
     m_http_server_->AddMiddleware(this, &LogicModule::Middleware);
-    m_http_server_->AddRequestHandler(WEB_BASE_PATH"/login", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnLogin);
-    m_http_server_->AddRequestHandler(WEB_BASE_PATH"/auth_check", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnAuthCheck);
-    m_http_server_->AddRequestHandler(WEB_BASE_PATH"/auth_check", HttpType::SQUICK_HTTP_REQ_GET, this, &LogicModule::OnAuthCheck);
+    m_http_server_->AddRequestHandler(WEB_BASE_PATH "/login", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnLogin);
+    m_http_server_->AddRequestHandler(WEB_BASE_PATH "/all_nodes", HttpType::SQUICK_HTTP_REQ_GET, this, &LogicModule::OnGetAllNodes);
+    m_http_server_->AddRequestHandler(WEB_BASE_PATH "/auth_check", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnAuthCheck);
+    m_http_server_->AddRequestHandler(WEB_BASE_PATH "/auth_check", HttpType::SQUICK_HTTP_REQ_GET, this, &LogicModule::OnAuthCheck);
     m_http_server_->StartServer(pm_->GetArg("http_port=", ARG_DEFAULT_HTTP_PORT));
+
+    vector<int> node_types = {rpc::ST_GLOBAL, rpc::ST_DB_PROXY, rpc::ST_PLAYER};
+    m_node_->AddSubscribeNode(node_types);
+
     LoadConfig();
     return true;
 }
@@ -36,7 +41,7 @@ bool LogicModule::LoadConfig() {
     }
     config_file >> web_config_;
     config_file.close();
-    
+
     try {
         json header = web_config_.at("ResponseHttpHeader");
         for (auto iter = header.begin(); iter != header.end(); ++iter) {
@@ -46,8 +51,7 @@ bool LogicModule::LoadConfig() {
         for (auto v : white_uri_list) {
             white_uri_list_.insert(v);
         }
-    }
-    catch (std::exception err) {
+    } catch (std::exception err) {
         LOG_ERROR("Get config from json is error <%v>", err.what());
         return false;
     }
@@ -224,4 +228,53 @@ string LogicModule::MakeToken(string account_id) {
 }
 
 void LogicModule::SetToken(const std::string &account_id, const std::string &user_token) { auth_token_[account_id] = user_token; }
+
+Coroutine<bool> LogicModule::OnGetAllNodes(std::shared_ptr<HttpRequest> request) {
+    json rsp;
+
+    rpc::NReqAllNodesInfo pbreq;
+    auto data = co_await m_net_client_->RequestPB(DEFAULT_MASTER_ID, rpc::IdNReqAllNodesInfo, pbreq, rpc::IdNAckAllNodesInfo);
+    if (data.error) {
+        rsp["code"] = IResponse::SERVER_ERROR;
+        rsp["msg"] = "Server get network error\n";
+        m_http_server_->ResponseMsg(request, rsp.dump(), WebStatus::WEB_ERROR);
+        co_return;
+    }
+
+    uint64_t uid;
+    rpc::NAckAllNodesInfo pback;
+    if (!INetModule::ReceivePB(data.ack_msg_id, data.data, data.length, pback, uid)) {
+        rsp["code"] = IResponse::SERVER_ERROR;
+        rsp["msg"] = "Parse msg is error error\n";
+        m_http_server_->ResponseMsg(request, rsp.dump(), WebStatus::WEB_ERROR);
+        co_return;
+    }
+
+    nlohmann::json node_list = nlohmann::json::array();
+    for (auto &sd : pback.node_list()) {
+        json n;
+        n["area"] = sd.area();
+        n["type"] = sd.type();
+        n["id"] = sd.id();
+        n["name"] = sd.name();
+        n["ip"] = sd.ip();
+        n["public_ip"] = sd.public_ip();
+        n["port"] = sd.port();
+        n["cpu_count"] = sd.cpu_count();
+        n["status"] = sd.state();
+        n["workload"] = sd.workload();
+        n["max_online"] = sd.max_online();
+        n["update_time"] = sd.update_time();
+        n["ws_port"] = sd.ws_port();
+        n["http_port"] = sd.http_port();
+        n["https_port"] = sd.https_port();
+        n["connections"] = sd.connections();
+        n["net_client_connections"] = sd.net_client_connections();
+        node_list.push_back(n);
+    }
+    rsp["node_list"] = node_list;
+    rsp["code"] = IResponse::SUCCESS;
+    m_http_server_->ResponseMsg(request, rsp.dump(), WebStatus::WEB_OK);
+    co_return;
+}
 } // namespace web::logic

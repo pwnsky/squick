@@ -9,10 +9,10 @@ local DbMysqlID = 0;
 Mysql = Mysql and Mysql or Object(QueryAsync).new()
 
 function Mysql:Bind()
-    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckMysqlExecute, self, self.AckExecute)
-    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckMysqlSelect, self, self.AckSelect)
-    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckMysqlInsert, self, self.AckInsert)
-    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckMysqlUpdate, self, self.AckUpdate)
+    Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMysqlExecute, self, self.AckExecute)
+    Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMysqlSelect, self, self.AckSelect)
+    Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMysqlInsert, self, self.AckInsert)
+    Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMysqlUpdate, self, self.AckUpdate)
     DbMysqlID = GetDbProxyID()
 end
 

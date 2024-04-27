@@ -572,10 +572,10 @@ void LuaScriptModule::AddMsgCallBackAsServer(const int msg_id, const LuaIntf::Lu
     callbackList->Add({luaTable, luaFunc});
 }
 
-void LuaScriptModule::RemoveMsgCallBackAsClient(const ServerType serverType, const int msg_id) { m_net_client_->RemoveReceiveCallBack(serverType, msg_id); }
+void LuaScriptModule::RemoveMsgCallBackAsClient(const int serverType, const int msg_id) { m_net_client_->RemoveReceiveCallBack(serverType, msg_id); }
 
 // 做为服务器做为客户端连接的网络 回调
-void LuaScriptModule::AddMsgCallBackAsClient(const ServerType serverType, const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
+void LuaScriptModule::AddMsgCallBackAsClient(const int serverType, const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
     auto callbackList = mxNetMsgCallBackFuncMapAsClient.GetElement(msg_id);
     if (!callbackList) {
         callbackList = new List<LuaCallBack>();
@@ -612,7 +612,7 @@ void LuaScriptModule::SendToServerByServerID(const int server_id, const uint16_t
     m_net_client_->SendByID(server_id, msg_id, data, uid);
 }
 
-void LuaScriptModule::SendToAllServerByServerType(const ServerType server_type, const uint16_t msg_id, const std::string &data, const uint64_t uid) {
+void LuaScriptModule::SendToAllServerByServerType(const int server_type, const uint16_t msg_id, const std::string &data, const uint64_t uid) {
     m_net_client_->SendToAllNodeByType(server_type, msg_id, data, uid);
 }
 

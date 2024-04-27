@@ -3,10 +3,10 @@
 #include <google/protobuf/dynamic_message.h>
 #include <squick/core/base.h>
 
-#include <node/game/node/i_node_module.h>
 #include <squick/plugin/config/export.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
+#include <squick/plugin/node/export.h>
 
 namespace game::logic {
 
@@ -54,7 +54,7 @@ class IGameMgrModule : public IModule {
     ILogModule *m_log_;
     IClassModule *m_class_;
     IElementModule *m_element_;
-    node::INodeModule *m_node_;
+    INodeModule *m_node_;
     INetClientModule *m_net_client_;
 
   private:

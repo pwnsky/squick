@@ -9,8 +9,8 @@ local DbProxyID = 0;
 Redis = Redis and Redis or Object(QueryAsync).new()
 
 function Redis:Bind()
-    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckRedisGet, self, self.AckGetString)
-    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckRedisSet, self, self.AckSetString)
+    Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckRedisGet, self, self.AckGetString)
+    Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckRedisSet, self, self.AckSetString)
     DbProxyID = GetDbProxyID()
 end
 

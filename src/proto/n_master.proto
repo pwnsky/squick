@@ -2,21 +2,41 @@
 syntax = "proto3";
 package rpc;
 
-enum ServerState {
-    ServerCrash = 0;
-    ServerNormal = 1;
-    ServerBusy = 2;
-    ServerFrie = 3;
+enum NodeState {
+    NodeStateCrash = 0;
+    NodeStateNormal = 1;
+    NodeStateBusy = 2;
+    NodeStateFrie = 3;
 }
 
-message Server {
+enum NodeType {
+    ST_NONE = 0;     // NONE
+    ST_MASTER = 1;   //
+    ST_LOGIN = 2;    //
+    ST_WORLD = 3;    //
+    ST_DB_PROXY = 4; //
+    ST_PROXY = 5;    //
+    ST_PLAYER = 6;
+    ST_GAME_MGR = 7; //
+    ST_GAME = 8;     //
+    ST_MICRO = 9;    // Micro
+    ST_CDN = 10;    // CDN
+    ST_WEB = 11;     // Web
+    ST_GLOBAL = 12;  // Global
+    ST_ROOM = 13;    // Room
+    ST_MATCH = 14;   // Match
+    ST_GM = 15;      // GM
+    ST_MAX = 16;
+}
+
+message Node {
     int32 id = 1;
     bytes name = 2;
     bytes ip = 3;
     int32 port = 4;
     int32 max_online = 5;
     int32 cpu_count = 6;
-    ServerState state = 7;
+    NodeState state = 7;
     int32 type = 8;
     int32 area = 9;
     int32 connections = 10;
@@ -28,16 +48,17 @@ message Server {
     int32 ws_port = 16;
     int32 http_port = 17;
     int32 https_port = 18;
+    int32 net_client_connections = 19;
 }
 
 message NReqNodeRegister {               // msg_id=500;
     repeated int32 listen_type_list = 1; // set bind type, When new same type node connect to master, it will ntf self node.
-    Server node = 2;
+    Node node = 2;
 }
 
 message NAckNodeRegister { // msg_id=501;
     int32 code = 1;
-    repeated Server node_add_list = 2;
+    repeated Node node_add_list = 2;
 }
 
 message NReqNodeUnregister { // msg_id=502;
@@ -53,7 +74,7 @@ message NReqMinWorkloadNodeInfo { // msg_id=504;
 }
 
 message NAckMinWorkloadNodeInfo { // msg_id=505;
-    repeated Server list = 1;
+    repeated Node list = 1;
 }
 
 message NReqNodeInfo { // msg_id=506;
@@ -61,22 +82,29 @@ message NReqNodeInfo { // msg_id=506;
 }
 
 message NAckNodeInfo { // msg_id=507;
-    repeated Server list = 1;
+    repeated Node list = 1;
 }
 
 message NNtfNodeReport { // msg_id=508; desc=Report current node status;
     int32 id = 1;
-    repeated Server list = 2;
+    repeated Node list = 2;
 }
 
 message NNtfNodeAdd { // msg_id=509;
-    repeated Server node_list = 1;
+    repeated Node node_list = 1;
 }
 
 message NNtfNodeRemove { // msg_id=510;
-    repeated Server node_list = 1;
+    repeated Node node_list = 1;
 }
 
 message NNtfNodeMsgForward { // msg_id=511;
     bytes data = 1;
+}
+
+message NReqAllNodesInfo { // msg_id=512;
+}
+
+message NAckAllNodesInfo { // msg_id=513;
+    repeated Node node_list = 1;
 }

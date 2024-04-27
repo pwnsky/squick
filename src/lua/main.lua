@@ -50,7 +50,7 @@ function ReadyUpdate()
     ModuleMgr:Start()
 end
 
--- Update for per second
+-- Update 10 fps
 function Update()
     ModuleMgr:Update()
 end
@@ -74,12 +74,12 @@ function Load()
     Require("lib.init")
     
     local node_init = {
-        [ServerType.ST_GAME ] = function()
+        [NodeType.ST_GAME ] = function()
             Require("node.game.init")
         end,
-        [ServerType.ST_PLAYER] = function ()
+        [NodeType.ST_PLAYER] = function ()
             Require("node.player.init")
-            --Require("test.init")
+            -- Require("test.init")
         end
     }
     if(node_init[Env.app_type]) then

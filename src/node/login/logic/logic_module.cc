@@ -6,7 +6,7 @@
 namespace login::logic {
 bool LogicModule::Start() {
     m_http_server_ = pm_->FindModule<IHttpServerModule>();
-    m_node_ = pm_->FindModule<node::INodeModule>();
+    m_node_ = pm_->FindModule<INodeModule>();
     m_net_client_ = pm_->FindModule<INetClientModule>();
     m_net_ = pm_->FindModule<INetModule>();
     m_log_ = pm_->FindModule<ILogModule>();
@@ -23,6 +23,8 @@ bool LogicModule::AfterStart() {
     m_net_->AddReceiveCallBack(rpc::IdNReqConnectProxyVerify, this, &LogicModule::OnConnectProxyVerify);
     m_http_server_->StartServer(pm_->GetArg("http_port=", 80));
 
+    vector<int> node_types = {rpc::ST_DB_PROXY};
+    m_node_->AddSubscribeNode(node_types);
     return true;
 }
 
@@ -61,7 +63,7 @@ Coroutine<bool> LogicModule::OnLogin(std::shared_ptr<HttpRequest> request) {
 
         // find min work load proxy
         rpc::NReqMinWorkloadNodeInfo pbreq;
-        pbreq.add_type_list(ST_PROXY);
+        pbreq.add_type_list(rpc::ST_PROXY);
         auto data = co_await m_net_client_->RequestPB(DEFAULT_MASTER_ID, rpc::IdNReqMinWorkloadNodeInfo, pbreq, rpc::IdNAckMinWorkloadNodeInfo);
         if (data.error) {
             ack.code = IResponse::SERVER_ERROR;

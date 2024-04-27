@@ -9,11 +9,11 @@ local DbProxyID = 0;
 Mongo = Mongo and Mongo or Object(QueryAsync).new()
 
 function Mongo:Bind()
-    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckMongoInsert, self, self.AckInsert)
-    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckMongoFind, self, self.AckFind)
-    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckMongoUpdate, self, self.AckUpdate)
-    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckMongoDelete, self, self.AckDelete)
-    Net:ClientRegister(ServerType.ST_DB_PROXY, NMsgId.IdNAckMongoCreateIndex, self, self.AckCreateIndex)
+    Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMongoInsert, self, self.AckInsert)
+    Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMongoFind, self, self.AckFind)
+    Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMongoUpdate, self, self.AckUpdate)
+    Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMongoDelete, self, self.AckDelete)
+    Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMongoCreateIndex, self, self.AckCreateIndex)
     DbProxyID = GetDbProxyID()
 end
 

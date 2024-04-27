@@ -305,4 +305,6 @@ class INet {
     virtual bool IsServer() = 0;
 
     virtual bool Log(int severity, const char *msg) = 0;
+
+    virtual int GetConnections() = 0;
 };

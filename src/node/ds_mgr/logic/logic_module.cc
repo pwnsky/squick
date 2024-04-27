@@ -31,7 +31,7 @@ bool LogicModule::AfterStart() {
     }*/
 
     // 来自Game 服务器
-    m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, rpc::REQ_GAMEPLAY_CREATE, this, &LogicModule::OnReqPvpInstanceCreate);
+    m_net_client_->AddReceiveCallBack(rpc::ST_GAME, rpc::REQ_GAMEPLAY_CREATE, this, &LogicModule::OnReqPvpInstanceCreate);
     return true;
 }
 

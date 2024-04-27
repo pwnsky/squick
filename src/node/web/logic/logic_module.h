@@ -2,14 +2,13 @@
 #include "i_logic_module.h"
 #include <iostream>
 #include <map>
-#include <node/web/node/i_node_module.h>
+#include <set>
 #include <squick/core/platform.h>
 #include <squick/plugin/log/export.h>
 #include <squick/plugin/net/export.h>
+#include <squick/plugin/node/export.h>
 #include <struct/struct.h>
 #include <third_party/nlohmann/json.hpp>
-#include <map>
-#include <set>
 
 struct LoginInfo {
     std::string account;
@@ -43,13 +42,14 @@ class LogicModule : public ILogicModule {
     void SetToken(const std::string &account_id, const std::string &user_token);
     bool LoadConfig();
     bool OnAuthCheck(std::shared_ptr<HttpRequest> request);
+    Coroutine<bool> OnGetAllNodes(std::shared_ptr<HttpRequest> request);
 
   private:
     string MakeToken(string sguid);
     INetClientModule *m_net_client_;
     INetModule *m_net_;
     IHttpServerModule *m_http_server_;
-    node::INodeModule *m_node_;
+    INodeModule *m_node_;
     ILogModule *m_log_;
 
   private:
@@ -57,9 +57,10 @@ class LogicModule : public ILogicModule {
     std::map<std::string, LoginInfo> login_info_;
     std::set<std::string> white_uri_list_;
     std::map<std::string, std::string> config_response_header_;
+
   private:
     int player_index = 0;
     json web_config_;
 };
 
-} // namespace login::logic
+} // namespace web::logic

@@ -14,26 +14,6 @@
 #define SQUICK_VERSION "1.1.1"
 #define SERVER_NAME "Squick/" SQUICK_VERSION
 
-enum ServerType {
-    ST_NONE = 0,     // NONE
-    ST_MASTER = 1,   //
-    ST_LOGIN = 2,    //
-    ST_WORLD = 3,    //
-    ST_DB_PROXY = 4, //
-    ST_PROXY = 5,    //
-    ST_PLAYER = 6,
-    ST_GAME_MGR = 7, //
-    ST_GAME = 8,     //
-    ST_MICRO = 9,    // Micro
-    ST_CDN = 10,     // CDN
-    ST_WEB = 11,     // Web
-    ST_GLOBAL = 12,  // Global
-    ST_ROOM = 12,    // Room
-    ST_MATCH = 13,   // Match
-    ST_GM = 14,      // GM
-    ST_MAX = 15,
-};
-
 // 线程池 每一帧睡眠时间，单位毫秒
 #define THREAD_POOL_SLEEP_TIME 100
 // 主线程 每一帧睡眠时间，单位毫秒

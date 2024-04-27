@@ -54,6 +54,9 @@ void MysqlModule::OnReqExecute(const socket_t sock, const int msg_id, const char
     rpc::NAckMysqlExecute ack;
     uint64_t uid;
     try {
+        if (!session_) {
+            throw "session_ is nullptr";
+        }
         assert(m_net_->ReceivePB(msg_id, msg, len, req, uid));
         session_->sql(req.sql()).execute();
     } catch (const std::exception &e) {
@@ -72,6 +75,9 @@ void MysqlModule::OnReqSelect(const socket_t sock, const int msg_id, const char 
     rpc::NAckMysqlSelect ack;
     uint64_t uid;
     try {
+        if (!session_) {
+            throw "session_ is nullptr";
+        }
         assert(m_net_->ReceivePB(msg_id, msg, len, req, uid));
         SqlResult result = session_->sql(req.sql()).execute();
         auto result_data = result.fetchAll();
@@ -139,6 +145,9 @@ void MysqlModule::OnReqInsert(const socket_t sock, const int msg_id, const char 
     rpc::NAckMysqlInsert ack;
     uint64_t uid;
     try {
+        if (!session_) {
+            throw exception("sessions_ is nullptr");
+        }
         assert(m_net_->ReceivePB(msg_id, msg, len, req, uid));
         auto schema = session_->getSchema(req.database());
         auto table = schema.getTable(req.table());
@@ -176,7 +185,12 @@ void MysqlModule::OnReqInsert(const socket_t sock, const int msg_id, const char 
         LogError(e.what(), __func__, __LINE__);
         code = rpc::DbProxyCode::DB_PROXY_CODE_MYSQL_EXCEPTION;
         ack.set_msg(e.what());
+    } catch (...) {
+        LogError("Insert excption", __func__, __LINE__);
+        code = rpc::DbProxyCode::DB_PROXY_CODE_MYSQL_EXCEPTION;
+        ack.set_msg("Insert excption");
     }
+
     ack.set_code(code);
     ack.set_query_id(req.query_id());
     m_net_->SendPBToNode(rpc::IdNAckMysqlInsert, ack, sock);
@@ -188,6 +202,9 @@ void MysqlModule::OnReqUpdate(const socket_t sock, const int msg_id, const char 
     rpc::NAckMysqlUpdate ack;
     uint64_t uid;
     try {
+        if (!session_) {
+            throw "session_ is nullptr";
+        }
         assert(m_net_->ReceivePB(msg_id, msg, len, req, uid));
         auto schema = session_->getSchema(req.database());
         auto table = schema.getTable(req.table());

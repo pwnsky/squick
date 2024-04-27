@@ -72,6 +72,8 @@ class Net : public INet {
     virtual bool IsServer() override;
     virtual bool Log(int severity, const char *msg) override;
 
+    virtual int GetConnections() override;
+
   private:
     bool SendMsg(const int16_t msg_id, const char *msg, const size_t len, const std::list<socket_t> &fdList);
     bool SendData(const char *msg, const size_t len, const std::list<socket_t> &fdList);

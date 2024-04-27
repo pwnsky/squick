@@ -1,4 +1,3 @@
-#include "../node/i_node_module.h"
 #include "i_redis_module.h"
 #include <squick/plugin/net/export.h>
 #include <sw/redis++/redis++.h>

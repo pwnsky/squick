@@ -18,7 +18,7 @@
 struct ServerInfo {
     ServerInfo() {
         fd = 0;
-        info = std::shared_ptr<rpc::Server>(new rpc::Server());
+        info = std::shared_ptr<rpc::Node>(new rpc::Node());
     }
     ~ServerInfo() {
         fd = 0;
@@ -33,7 +33,7 @@ struct ServerInfo {
     };
     Status status = ServerInfo::Status::Unknowing;
     socket_t fd;
-    std::shared_ptr<rpc::Server> info;
+    std::shared_ptr<rpc::Node> info;
     vector<int> listen_types;
 };
 

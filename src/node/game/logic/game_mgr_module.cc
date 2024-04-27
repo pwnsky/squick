@@ -9,7 +9,7 @@ bool GameMgrModule::Start() {
     m_class_ = pm_->FindModule<IClassModule>();
     m_net_ = pm_->FindModule<INetModule>();
     m_net_client_ = pm_->FindModule<INetClientModule>();
-    m_node_ = pm_->FindModule<node::INodeModule>();
+    m_node_ = pm_->FindModule<INodeModule>();
     return true;
 }
 

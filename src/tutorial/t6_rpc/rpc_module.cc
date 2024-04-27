@@ -3,7 +3,7 @@
 namespace tutorial {
 bool SimpleModule::Start() {
     m_net_client_ = pm_->FindModule<INetClientModule>();
-    m_net_client_->AddReceiveCallBack(ServerType::ST_GAME, 1123, this, &SimpleModule::OnRecivedMsg);
+    m_net_client_->AddReceiveCallBack(rpc::ST_GAME, 1123, this, &SimpleModule::OnRecivedMsg);
     dout << "RPC Start ...\n";
     return true;
 }
