@@ -275,8 +275,16 @@ std::shared_ptr<ConnectData> NetClientModule::GetServerNetInfo(const INet *pNet)
             return pData;
         }
     }
-
     return std::shared_ptr<ConnectData>(NULL);
+}
+
+int NetClientModule::GetRandomNodeID(int node_type) {
+    std::shared_ptr<ConsistentHashMapEx<int, ConnectData>> xConnectDataMap = mxServerTypeMap.GetElement(node_type);
+    if (!xConnectDataMap) {
+        return 0;
+    }
+    auto node = xConnectDataMap->GetElementBySuitRandom();
+    return node->id;
 }
 
 void NetClientModule::StartCallBacks(std::shared_ptr<ConnectData> pServerData) {
@@ -360,31 +368,6 @@ void NetClientModule::ProcessUpdate() {
         }
 
         pServerData = mxServerMap.Next();
-    }
-}
-
-void NetClientModule::LogServerInfo() {
-    bool error = false;
-    std::ostringstream stream;
-    // stream << "This is a client, begin to print Server Info-------------------" << std::endl;
-
-    ConnectData *pServerData = mxServerMap.FirstNude();
-    while (nullptr != pServerData) {
-        stream << "\nNetClientModule::LogServerInfo:\nServer Info: Type: " << typeid(pServerData->type).name() << " Server ID: " << pServerData->id
-               << " State: " << pServerData->state << " IP: " << pServerData->ip << " Port: " << pServerData->port << std::endl;
-
-        if (pServerData->state != ConnectDataState::NORMAL) {
-            error = true;
-        }
-
-        pServerData = mxServerMap.NextNude();
-    }
-
-    if (error) {
-        // stream << " in " << SQUICK_DEBUG_INFO << std::endl;
-        LOG_ERROR("%v", stream.str());
-    } else {
-        LOG_INFO("%v", stream.str());
     }
 }
 
@@ -482,4 +465,4 @@ void NetClientModule::ProcessNetConnect() {
     }
 }
 
-int NetClientModule::GetConnections() { return mxServerTypeMap.Count(); }
+int NetClientModule::GetConnections() { return mxServerMap.Count(); }

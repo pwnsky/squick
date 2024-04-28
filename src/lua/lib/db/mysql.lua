@@ -5,7 +5,6 @@
 -- Description: async mysql cli
 -----------------------------------------------------------------------------
 
-local DbMysqlID = 0;
 Mysql = Mysql and Mysql or Object(QueryAsync).new()
 
 function Mysql:Bind()
@@ -13,7 +12,6 @@ function Mysql:Bind()
     Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMysqlSelect, self, self.AckSelect)
     Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMysqlInsert, self, self.AckInsert)
     Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMysqlUpdate, self, self.AckUpdate)
-    DbMysqlID = GetDbProxyID()
 end
 
 -- Execute
@@ -24,7 +22,7 @@ function Mysql:ExecuteAsync(db, sql)
         db = db,
         sql = sql,
     }
-    Net:SendToNode(DbMysqlID, NMsgId.IdNReqMysqlExecute, Squick:Encode("rpc.NReqMysqlExecute", req))
+    Net:SendToNode(GetRadmonDbProxyID(), NMsgId.IdNReqMysqlExecute, Squick:Encode("rpc.NReqMysqlExecute", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data
@@ -43,7 +41,7 @@ function Mysql:SelectAsync(db, sql)
         db = db,
         sql = sql,
     }
-    Net:SendToNode(DbMysqlID, NMsgId.IdNReqMysqlSelect, Squick:Encode("rpc.NReqMysqlSelect", req))
+    Net:SendToNode(GetRadmonDbProxyID(), NMsgId.IdNReqMysqlSelect, Squick:Encode("rpc.NReqMysqlSelect", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data
@@ -63,7 +61,7 @@ function Mysql:InsertAsync(database, table, data)
         table = table,
         data = data,
     }
-    Net:SendToNode(DbMysqlID, NMsgId.IdNReqMysqlInsert, Squick:Encode("rpc.NReqMysqlInsert", req))
+    Net:SendToNode(GetRadmonDbProxyID(), NMsgId.IdNReqMysqlInsert, Squick:Encode("rpc.NReqMysqlInsert", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data
@@ -85,7 +83,7 @@ function Mysql:UpdateAsync(database, table, data, where, limit)
         where = where,
         limit = limit,
     }
-    Net:SendToNode(DbMysqlID, NMsgId.IdNReqMysqlUpdate, Squick:Encode("rpc.NReqMysqlUpdate", req))
+    Net:SendToNode(GetRadmonDbProxyID(), NMsgId.IdNReqMysqlUpdate, Squick:Encode("rpc.NReqMysqlUpdate", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data

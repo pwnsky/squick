@@ -20,7 +20,7 @@ enum NodeType {
     ST_GAME_MGR = 7; //
     ST_GAME = 8;     //
     ST_MICRO = 9;    // Micro
-    ST_CDN = 10;    // CDN
+    ST_CDN = 10;     // CDN
     ST_WEB = 11;     // Web
     ST_GLOBAL = 12;  // Global
     ST_ROOM = 13;    // Room

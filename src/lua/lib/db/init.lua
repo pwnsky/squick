@@ -4,17 +4,8 @@
 -- Date  : 2023-09-24
 -- Description: db init
 -----------------------------------------------------------------------------
-function GetDbProxyID()
-    local id = 0
-    local area = Env.area
-    if(area == 1) then
-        id = 300
-    elseif(area == 2) then
-        id = 301
-    else
-        id = 300
-    end
-    return id
+function GetRadmonDbProxyID()
+    return Squick:GetRandomNodeID(NodeType.ST_DB_PROXY)
 end
 
 require "lib.db.redis"

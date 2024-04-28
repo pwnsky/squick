@@ -15,6 +15,7 @@ class NodeModule : public INodeModule {
     virtual bool Update() override;
 
     inline void CalcWorkLoad();
+    virtual int CalcConnectionWorkLoad(int connections) override;
     static std::string EnumNodeTypeToString(rpc::NodeType type);
     static rpc::NodeType StringNodeTypeToEnum(const std::string &type);
 

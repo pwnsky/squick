@@ -11,16 +11,7 @@ bool LogicModule::Start() {
 
 bool LogicModule::Destroy() { return true; }
 
-bool LogicModule::Update() {
-
-    time_t now_time = SquickGetTimeS();
-    if (now_time - last_update_work_load_info_time_ >= 10) {
-        NReqMinWorkloadNodeInfo();
-        last_update_work_load_info_time_ = now_time;
-    }
-
-    return true;
-}
+bool LogicModule::Update() { return true; }
 
 bool LogicModule::AfterStart() {
     m_class_ = pm_->FindModule<IClassModule>();
@@ -42,9 +33,6 @@ bool LogicModule::AfterStart() {
     m_ws_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
     m_ws_->AddReceiveCallBack(rpc::IdReqPlayerEnter, this, &LogicModule::OnReqPlayerEnter);
     m_ws_->AddReceiveCallBack(rpc::IdReqPlayerLeave, this, &LogicModule::OnReqPlayerLeave);
-
-    // Master
-    m_net_client_->AddReceiveCallBack(rpc::ST_MASTER, this, &LogicModule::OnNAckMinWorkloadNodeInfo);
 
     // Lobby
     m_net_client_->AddReceiveCallBack(rpc::ST_PLAYER, this, &LogicModule::OnRecivedPlayerNodeMsg);
@@ -73,27 +61,6 @@ void LogicModule::OnSocketEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, IN
         OnClientDisconnected(sock);
     } else if (eEvent & SQUICK_NET_EVENT_CONNECTED) {
         LOG_INFO("New socket client connected, sock<%v>", sock);
-    }
-}
-
-// request per 5 sec
-void LogicModule::NReqMinWorkloadNodeInfo() {
-    // find min work load proxy
-    rpc::NReqMinWorkloadNodeInfo pbreq;
-    pbreq.add_type_list(rpc::ST_PLAYER);
-    pbreq.add_type_list(rpc::ST_WORLD);
-    m_net_client_->SendPBByID(DEFAULT_MASTER_ID, rpc::IdNReqMinWorkloadNodeInfo, pbreq);
-}
-
-void LogicModule::OnNAckMinWorkloadNodeInfo(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
-    uint64_t uid;
-    rpc::NAckMinWorkloadNodeInfo ack;
-    if (!INetModule::ReceivePB(msg_id, msg, len, ack, uid)) {
-        return;
-    }
-
-    for (auto &info : ack.list()) {
-        min_workload_nodes_[info.type()] = info.id();
     }
 }
 
@@ -167,17 +134,10 @@ void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const 
         m_net_->SendMsg(rpc::IdAckPlayerEnter, ack.SerializeAsString(), player_sock);
     } else if (pInfo->protocol_type == ProtocolType::WS) {
         m_ws_->SendPBMsg(rpc::IdAckPlayerEnter, ack, player_sock);
-        ;
     }
 }
 
-int LogicModule::GetLoadBanlanceNode(int type) {
-    auto iter = min_workload_nodes_.find(type);
-    if (iter == min_workload_nodes_.end()) {
-        return 0;
-    }
-    return iter->second;
-}
+int LogicModule::GetLoadBanlanceNode(int type) { return m_net_client_->GetRandomNodeID(type); }
 
 void LogicModule::OnReqPlayerLeave(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
 

@@ -5,14 +5,12 @@
 -- Description: async clickhouse cli
 -----------------------------------------------------------------------------
 
-local DbClickhouseID = 0;
 Clickhouse = Clickhouse and Clickhouse or Object(QueryAsync).new()
 
 function Clickhouse:Bind()
     Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckClickhouseExecute, self, self.AckExecute)
     Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckClickhouseSelect, self, self.AckSelect)
     Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckClickhouseInsert, self, self.AckInsert)
-    DbClickhouseID = GetDbProxyID()
 end
 
 -- Execute
@@ -23,7 +21,7 @@ function Clickhouse:ExecuteAsync(db, sql)
         db = db,
         sql = sql,
     }
-    Net:SendToNode(DbClickhouseID, NMsgId.IdNReqClickhouseExecute, Squick:Encode("rpc.NReqClickhouseExecute", req))
+    Net:SendToNode(GetRadmonDbProxyID(), NMsgId.IdNReqClickhouseExecute, Squick:Encode("rpc.NReqClickhouseExecute", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data
@@ -42,7 +40,7 @@ function Clickhouse:SelectAsync(db, sql)
         db = db,
         sql = sql,
     }
-    Net:SendToNode(DbClickhouseID, NMsgId.IdNReqClickhouseSelect, Squick:Encode("rpc.NReqClickhouseSelect", req))
+    Net:SendToNode(GetRadmonDbProxyID(), NMsgId.IdNReqClickhouseSelect, Squick:Encode("rpc.NReqClickhouseSelect", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data
@@ -62,7 +60,7 @@ function Clickhouse:InsertAsync(db, table, data)
         table = table,
         data = data,
     }
-    Net:SendToNode(DbClickhouseID, NMsgId.IdNReqClickhouseInsert, Squick:Encode("rpc.NReqClickhouseInsert", req))
+    Net:SendToNode(GetRadmonDbProxyID(), NMsgId.IdNReqClickhouseInsert, Squick:Encode("rpc.NReqClickhouseInsert", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data

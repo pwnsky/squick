@@ -585,6 +585,8 @@ void LuaScriptModule::AddMsgCallBackAsClient(const int serverType, const int msg
     callbackList->Add({luaTable, luaFunc});
 }
 
+int LuaScriptModule::GetRandomNodeID(const int node_type) { return m_net_client_->GetRandomNodeID(node_type); }
+
 bool LuaScriptModule::ImportProtoFile(const std::string &fileName) {
     LuaPBModule *p = (LuaPBModule *)m_lua_pb_;
     return p->ImportProtoFile(fileName);
@@ -783,6 +785,7 @@ bool LuaScriptModule::Register() {
         .addFunction("AddMsgCallBackAsServer", &LuaScriptModule::AddMsgCallBackAsServer)       // as server
         .addFunction("RemoveMsgCallBackAsClient", &LuaScriptModule::RemoveMsgCallBackAsClient) // as client
         .addFunction("AddMsgCallBackAsClient", &LuaScriptModule::AddMsgCallBackAsClient)       // as client
+        .addFunction("GetRandomNodeID", &LuaScriptModule::GetRandomNodeID)
 
         .addFunction("SendToServerByServerID", &LuaScriptModule::SendToServerByServerID)           // as client
         .addFunction("SendToAllServerByServerType", &LuaScriptModule::SendToAllServerByServerType) // as client

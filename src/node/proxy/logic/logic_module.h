@@ -50,7 +50,7 @@ class LogicModule : public ILogicModule {
   public:
     LogicModule(IPluginManager *p) {
         pm_ = p;
-        is_update_ = true;
+        is_update_ = false;
     }
 
     virtual bool Start() override;
@@ -72,9 +72,6 @@ class LogicModule : public ILogicModule {
     void OnAckPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     void OnReqPlayerLeave(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
-    void NReqMinWorkloadNodeInfo();
-    void OnNAckMinWorkloadNodeInfo(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-
     bool SendToPlayer(uint64_t uid, const int msg_id, const string &data);
     virtual void OnClientDisconnected(socket_t sock) override;
 
@@ -93,7 +90,6 @@ class LogicModule : public ILogicModule {
     map<uint64_t, socket_t> players_socks_; // key: uid, value: sock
 
     map<socket_t, Session> sessions_;
-    map<int, int> min_workload_nodes_; // min workload nodes, key: node type, value: node id
 
   protected:
     ILogModule *m_log_;
