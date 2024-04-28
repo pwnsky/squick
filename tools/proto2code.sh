@@ -13,9 +13,11 @@ proto_bin='../third_party/build/bin/protoc'
 proto_path="../src/proto"
 cpp_out_path="../src/struct"
 csharp_out_path='../client/proto/csharp'
+python_out_path='../src/pycli/proto'
 lua_out_path="../client/proto/lua"
 
 mkdir -p $csharp_out_path
+mkdir -p $python_out_path
 mkdir -p $lua_out_path
 
 # 生成Lua文件
@@ -33,6 +35,7 @@ do
     echo $f
     $proto_bin --cpp_out=$cpp_out_path  --proto_path=$proto_path $f
     $proto_bin --csharp_out=$csharp_out_path  --proto_path=$proto_path $f
+    $proto_bin --cpython_out=$python_out_path  --proto_path=$proto_path $f
     check_err
 done
 

@@ -42,6 +42,7 @@
 /src/lua/proto/code.lua
 /src/lua/proto/enum.lua
 /src/lua/struct/excel.lua
+/src/pycli/proto
 # Codeblocks
 *.layout
 *.depend
@@ -88,3 +89,4 @@ src/proto/msg_id.proto
 src/struct/msg_id.h
 src/struct/msg_id.cc
 src/proto/n_msg_id.proto
+src/pycli/login.cookie
