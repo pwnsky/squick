@@ -8,11 +8,15 @@ set(SolutionDir ${PROJECT_SOURCE_DIR})
 message(STATUS "SolutionDir=" ${SolutionDir})
 
 # Link basic liberay
-macro(LinkSquick proName)
-	add_dependencies(${proName} core struct)
-	target_link_libraries(${proName} core struct)
-endmacro(LinkSquick)
+macro(LinkStruct proName)
+	add_dependencies(${proName} struct)
+	target_link_libraries(${proName} struct)
+endmacro(LinkStruct)
 
+macro(LinkCore proName)
+	add_dependencies(${proName} core)
+	target_link_libraries(${proName} core)
+endmacro(LinkCore)
 
 # Squick project out, Included execute project or plugin project
 macro(SquickOut proName outFolder outPath outName)
@@ -176,5 +180,6 @@ else()
 endif()
 
 
-LinkSquick(${ProjectName})
+LinkStruct(${ProjectName})
+LinkCore(${ProjectName})
 SquickOut(${ProjectName} "" ${SQUICK_BUILD_EXE_PATH} "squick")

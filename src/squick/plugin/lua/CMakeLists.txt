@@ -11,5 +11,5 @@ else()
 	target_link_libraries(${ProjectName} lua.lib libprotobufd.dll)
 endif()
 
-LinkSquick(${ProjectName})
+LinkStruct(${ProjectName})
 SquickOut(${ProjectName} "squick/plugin" ${SQUICK_BUILD_PLUGIN_CORE_PATH} "lua")
