@@ -8,4 +8,5 @@ file(GLOB headers *.h
 
 add_library(${ProjectName} SHARED ${soruces} ${headers})
 LinkStruct(${ProjectName})
+LinkCore(${ProjectName})
 SquickOut(${ProjectName} "node/login" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/login "logic")
