@@ -35,7 +35,7 @@ do
     echo $f
     $proto_bin --cpp_out=$cpp_out_path  --proto_path=$proto_path $f
     $proto_bin --csharp_out=$csharp_out_path  --proto_path=$proto_path $f
-    $proto_bin --cpython_out=$python_out_path  --proto_path=$proto_path $f
+    $proto_bin --python_out=$python_out_path  --proto_path=$proto_path $f
     check_err
 done
 
