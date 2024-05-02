@@ -16,7 +16,6 @@ RUN apt install -y dos2unix python3 vim
 COPY . /squick
 WORKDIR /squick
 RUN cd tools && chmod +x *.sh && dos2unix *.sh
-RUN cd tools/source && chmod +x *.sh && dos2unix *.sh
 RUN cd script && chmod +x *.sh && dos2unix *.sh
 RUN cd tools && bash ./build_all.sh
 RUN cd tools && bash ./generate_deploy.sh
