@@ -72,7 +72,7 @@ std::string NodeModule::EnumNodeTypeToString(rpc::NodeType type) {
     case rpc::ST_WEB:
         return "web";
     }
-    return "";
+    return std::string();
 }
 
 rpc::NodeType NodeModule::StringNodeTypeToEnum(const std::string &type) {

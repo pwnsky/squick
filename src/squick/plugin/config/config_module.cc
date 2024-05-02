@@ -36,7 +36,7 @@ const std::string &ConfigModule::GetFieldString(const std::string &strStructName
         }
     }
 
-    return "";
+    return std::string();
 }
 
 const int ConfigModule::GetFieldInt(const std::string &strStructName, const std::string &strSDKAttribute) {
@@ -53,7 +53,7 @@ const std::string &ConfigModule::GetFieldString(const std::string &strStructName
         return pSDKInfo->mmStructAttribute.GetString(strSDKAttribute);
     }
 
-    return "";
+    return std::string();
 }
 
 bool ConfigModule::LoadConfig(const std::string &strFile) {

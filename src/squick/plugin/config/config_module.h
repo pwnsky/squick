@@ -24,7 +24,7 @@ class ConfigModule : public ICommonConfigModule {
             if (pStr) {
                 return *pStr;
             }
-            return "";
+            return std::string();
         }
     };
 

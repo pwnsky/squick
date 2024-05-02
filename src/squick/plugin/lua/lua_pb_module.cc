@@ -92,12 +92,12 @@ const std::string LuaPBModule::Encode(const std::string &strMsgTypeName, const L
 
     const google::protobuf::Descriptor *pDesc = m_pImporter->pool()->FindMessageTypeByName(strMsgTypeName);
     if (!pDesc) {
-        return "";
+        return std::string();
     }
 
     const google::protobuf::Message *pProtoType = m_pFactory->GetPrototype(pDesc);
     if (!pProtoType) {
-        return "";
+        return std::string();
     }
 
     // GC
@@ -109,7 +109,7 @@ const std::string LuaPBModule::Encode(const std::string &strMsgTypeName, const L
         return xMessageBody->SerializeAsString();
     }
 
-    return "";
+    return std::string();
 }
 
 LuaIntf::LuaRef LuaPBModule::MessageToTbl(const google::protobuf::Message &message) const {

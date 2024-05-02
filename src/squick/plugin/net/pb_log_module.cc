@@ -40,13 +40,13 @@ std::string PbLogModule::GetMessageInfo(const std::string &name, const std::stri
     const google::protobuf::Descriptor *desc = importer_->pool()->FindMessageTypeByName(name);
     if (!desc) {
         LOG_ERROR("No this message: %v, get desc is null", name);
-        return "";
+        return std::string();
     }
 
     const google::protobuf::Message *proto_type = factory_->GetPrototype(desc);
     if (!proto_type) {
         LOG_ERROR("No this message: %v, get proto_type is null", name);
-        return "";
+        return std::string();
     }
 
     // GC
@@ -58,7 +58,7 @@ std::string PbLogModule::GetMessageInfo(const std::string &name, const std::stri
         LOG_ERROR("ParseFromString message: %v failed!", name);
     }
 
-    return "";
+std::string();
 }
 
 void PbLogModule::Log(const std::string &prefix, const int msg_id, const char *data, const uint32_t length) {

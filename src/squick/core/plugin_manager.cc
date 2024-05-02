@@ -230,7 +230,7 @@ inline std::string PluginManager::FindParameterValue(const std::string &header) 
         }
     }
 
-    return "";
+    return std::string();
 }
 
 inline INT64 PluginManager::GetStartTime() const { return mnStartTime; }
