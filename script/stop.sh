@@ -4,6 +4,7 @@
 # Date  : 2022-11-27
 # Github: https://github.com/pwnsky/squick
 # Description: Stop all nodes
+cd $(dirname $0)
 
 ps -A|grep squick
 #pgrep squick | xargs kill -s 9

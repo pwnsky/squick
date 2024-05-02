@@ -5,7 +5,7 @@
 # Github: https://github.com/pwnsky/squick
 # Description: Install development environment on linux
 
-
+cd $(dirname $0)
 source common.sh
 
 # for macos

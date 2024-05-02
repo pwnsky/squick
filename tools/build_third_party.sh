@@ -6,6 +6,7 @@
 # Description: Build third party library, run on linux and macOS
 
 # for docker env
+cd $(dirname $0)
 source common.sh
 git config --global --add safe.directory /mnt
 

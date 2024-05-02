@@ -4,7 +4,7 @@
 # Date  : 2022-10-01
 # Github: https://github.com/pwnsky/squick
 # Description: Install development environment on linux
-
+cd $(dirname $0)
 source common.sh
 export LD_LIBRARY_PATH=`realpath  ../third_party/build/bin`:`realpath  ../third_party/build/lib`:`realpath ../third_party/build/protobuf`
 echo $LD_LIBRARY_PATH

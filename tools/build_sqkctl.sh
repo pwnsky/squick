@@ -4,7 +4,7 @@
 # Date  : 2022-11-27
 # Github: https://github.com/pwnsky/squick
 # Description: Build sqkctl tools
-
+cd $(dirname $0)
 source common.sh
 
 echo "build_path: " $build_path

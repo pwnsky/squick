@@ -4,7 +4,7 @@
 # Date  : 2023-03-10
 # Github: https://github.com/pwnsky/squick
 # Description: Generate Linux or Macos deploy files
-
+cd $(dirname $0)
 echo "Generating linux or macos deploy files"
 bash init_runtime_dll.sh
 

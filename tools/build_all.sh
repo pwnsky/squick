@@ -4,7 +4,7 @@
 # Date  : 2022-11-27
 # Github: https://github.com/pwnsky/squick
 # Description: build script for squick
-
+cd $(dirname $0)
 bash ./clean_all.sh
 bash ./build_third_party.sh
 bash ./build_sqkctl.sh

@@ -5,6 +5,7 @@
 # Github: https://github.com/pwnsky/squick
 # Description: Build squick application and all plugins
 
+cd $(dirname $0)
 source common.sh
 
 # 将Proto文件生成代码

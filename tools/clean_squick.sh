@@ -4,7 +4,7 @@
 # Date  : 2022-11-27
 # Github: https://github.com/pwnsky/squick
 # Description: Clean all generated files
-
+cd $(dirname $0)
 rm -rf ../cache
 rm -rf ../bin
 rm -rf ../data
