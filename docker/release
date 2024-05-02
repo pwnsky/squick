@@ -15,4 +15,4 @@ ARG DEBIAN_FRONTEND=noninteractive
 COPY ./cache/docker_deploy /squick
 WORKDIR /squick
 RUN chmod +x /squick/script/*.sh
-CMD cd /squick/script && bash ./squick.sh
+CMD bash ./squick/script/squick.sh

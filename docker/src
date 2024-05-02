@@ -17,6 +17,6 @@ COPY . /squick
 WORKDIR /squick
 RUN cd tools && chmod +x *.sh && dos2unix *.sh
 RUN cd script && chmod +x *.sh && dos2unix *.sh
-RUN cd tools && bash ./build_all.sh
-RUN cd tools && bash ./generate_deploy.sh
-CMD cd deploy/script && bash ./squick.sh
+RUN bash ./tools/build_all.sh
+RUN bash ./tools/generate_deploy.sh
+CMD bash ./deploy/script/squick.sh
