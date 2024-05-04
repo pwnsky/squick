@@ -19,4 +19,4 @@ RUN cd tools && chmod +x *.sh && dos2unix *.sh
 RUN cd script && chmod +x *.sh && dos2unix *.sh
 RUN bash ./tools/build_all.sh
 RUN bash ./tools/generate_deploy.sh
-CMD bash ./deploy/script/squick.sh
+CMD bash /squick/script/squick.sh
