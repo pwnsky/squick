@@ -4,6 +4,8 @@
 # Date  : 2023-05-07
 # Github: https://github.com/pwnsky/squick
 # Description: Start 100 client to test server
+cd $(dirname $0)
+
 ulimit -c unlimited
 
 cd ../bin

@@ -5,7 +5,6 @@
 -- Description: async mongo cli
 -----------------------------------------------------------------------------
 
-local DbProxyID = 0;
 Mongo = Mongo and Mongo or Object(QueryAsync).new()
 
 function Mongo:Bind()
@@ -14,7 +13,6 @@ function Mongo:Bind()
     Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMongoUpdate, self, self.AckUpdate)
     Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMongoDelete, self, self.AckDelete)
     Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMongoCreateIndex, self, self.AckCreateIndex)
-    DbProxyID = GetDbProxyID()
 end
 
 -- Insert
@@ -26,7 +24,7 @@ function Mongo:InsertAsync(db, collection, insert_json)
         collection = collection,
         insert_json = insert_json,
     }
-    Net:SendToNode(DbProxyID, NMsgId.IdNReqMongoInsert, Squick:Encode("rpc.NReqMongoInsert", req))
+    Net:SendToNode(GetRadmonDbProxyID(), NMsgId.IdNReqMongoInsert, Squick:Encode("rpc.NReqMongoInsert", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data
@@ -46,7 +44,7 @@ function Mongo:FindAsync(db, collection, condition_json)
         collection = collection,
         condition_json = condition_json,
     }
-    Net:SendToNode(DbProxyID, NMsgId.IdNReqMongoFind, Squick:Encode("rpc.NReqMongoFind", req))
+    Net:SendToNode(GetRadmonDbProxyID(), NMsgId.IdNReqMongoFind, Squick:Encode("rpc.NReqMongoFind", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data
@@ -67,7 +65,7 @@ function Mongo:UpdateAsync(db, collection, condition_json, update_json)
         condition_json = condition_json,
         update_json = update_json,
     }
-    Net:SendToNode(DbProxyID, NMsgId.IdNReqMongoUpdate, Squick:Encode("rpc.NReqMongoUpdate", req))
+    Net:SendToNode(GetRadmonDbProxyID(), NMsgId.IdNReqMongoUpdate, Squick:Encode("rpc.NReqMongoUpdate", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data
@@ -87,7 +85,7 @@ function Mongo:DeleteAsync(db, collection, condition_json)
         collection = collection,
         condition_json = condition_json,
     }
-    Net:SendToNode(DbProxyID, NMsgId.IdNReqMongoDelete, Squick:Encode("rpc.NReqMongoDelete", req))
+    Net:SendToNode(GetRadmonDbProxyID(), NMsgId.IdNReqMongoDelete, Squick:Encode("rpc.NReqMongoDelete", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data
@@ -107,7 +105,7 @@ function Mongo:CreateIndexAsync(db, collection, condition_json)
         collection = collection,
         condition_json = condition_json,
     }
-    Net:SendToNode(DbProxyID, NMsgId.IdNReqMongoCreateIndex, Squick:Encode("rpc.NReqMongoCreateIndex", req))
+    Net:SendToNode(GetRadmonDbProxyID(), NMsgId.IdNReqMongoCreateIndex, Squick:Encode("rpc.NReqMongoCreateIndex", req))
     local data = self:QueryAwait(query_id)
     self:QueryClean(query_id)
     return data

@@ -4,6 +4,7 @@
 # Date  : 2024-04-08
 # Github: https://github.com/pwnsky/squick
 # Description: Start all nodes
+cd $(dirname $0)
 
 ./squick.sh type=master id=1 area=0 ip=127.0.0.1 port=10001 http_port=50000 logshow=0 &
 sleep 0.5

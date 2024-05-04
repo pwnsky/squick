@@ -360,7 +360,7 @@ const std::string &ElementModule::GetPropertyString(const std::string &configNam
         return pProperty->GetString();
     }
 
-    return "";
+    return std::string();
 }
 
 const Vector2 ElementModule::GetPropertyVector2(const std::string &configName, const std::string &propertyName) {

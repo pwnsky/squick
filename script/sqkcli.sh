@@ -4,6 +4,7 @@
 # Date  : 2024-4-8
 # Github: https://github.com/pwnsky/squick
 # Description: Execute sqkcli
+cd $(dirname $0)
 
 ulimit -c unlimited
 

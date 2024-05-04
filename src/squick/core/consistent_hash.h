@@ -19,7 +19,7 @@ class IVirtualNode {
 
     virtual ~IVirtualNode() { nVirtualIndex = 0; }
 
-    virtual std::string GetDataStr() const { return ""; }
+    virtual std::string GetDataStr() const { return std::string(); }
 
     std::string ToStr() const {
         std::ostringstream strInfo;

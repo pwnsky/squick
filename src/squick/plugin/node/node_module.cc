@@ -40,8 +40,12 @@ inline void NodeModule::CalcWorkLoad() {
     time_t now_time = SquickGetTimeMS();
     // The first update will int overflow, but who care?
     workload_ = (now_time - last_update_time_) * 100;
+    int total_connections = m_net_->GetNet()->GetConnections() + m_net_client_->GetConnections();
+    workload_ += ONE_CONNECTION_WORKLOAD_VALUE * total_connections;
     last_update_time_ = now_time;
 }
+
+int NodeModule::CalcConnectionWorkLoad(int connections) { return ONE_CONNECTION_WORKLOAD_VALUE * connections; }
 
 std::string NodeModule::EnumNodeTypeToString(rpc::NodeType type) {
     switch (type) {
@@ -68,7 +72,7 @@ std::string NodeModule::EnumNodeTypeToString(rpc::NodeType type) {
     case rpc::ST_WEB:
         return "web";
     }
-    return "";
+    return std::string();
 }
 
 rpc::NodeType NodeModule::StringNodeTypeToEnum(const std::string &type) {

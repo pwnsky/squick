@@ -4,7 +4,7 @@
 # Date  : 2023-03-10
 # Github: https://github.com/pwnsky/squick
 # Description: Generate Linux or Macos deploy files
-
+cd $(dirname $0)
 echo "Generating linux or macos deploy files"
 bash init_runtime_dll.sh
 
@@ -18,8 +18,6 @@ cp -r config deploy
 cp -r script deploy
 cp -r src/proto deploy/src
 cp -r src/lua deploy/src
-cp -r docker deploy
-cp -r kubernetes deploy
 
 # copy lib
 cp /lib/x86_64-linux-gnu/libssl.so.1.1    deploy/bin

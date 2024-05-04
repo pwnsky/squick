@@ -14,5 +14,6 @@ else()
 	target_link_libraries(${ProjectName} libprotobufd.dll)
 endif()
 
-LinkSquick(${ProjectName})
+LinkStruct(${ProjectName})
+LinkCore(${ProjectName})
 SquickOut(${ProjectName} "tools/sqkcli" ${SQUICK_BUILD_EXE_PATH} "sqkcli")

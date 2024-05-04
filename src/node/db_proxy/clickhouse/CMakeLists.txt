@@ -18,5 +18,6 @@ else()
 	target_link_libraries(${ProjectName} cityhash)
 endif()
 
-LinkSquick(${ProjectName})
+LinkStruct(${ProjectName})
+LinkCore(${ProjectName})
 SquickOut(${ProjectName} "node/db_proxy" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/db_proxy "clickhouse")

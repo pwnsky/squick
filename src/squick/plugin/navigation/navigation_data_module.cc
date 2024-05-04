@@ -59,7 +59,7 @@ const std::string &NavigationDataModule::GetDefaultMapData(const int scene) {
         return data->originalData;
     }
 
-    return "";
+    return std::string();
 }
 
 const std::shared_ptr<GroupNavigationData> NavigationDataModule::GetMapData(const int scene, const int group) {

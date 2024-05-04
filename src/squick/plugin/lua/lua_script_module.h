@@ -132,6 +132,7 @@ class LuaScriptModule : public ILuaScriptModule {
     // as client
     void RemoveMsgCallBackAsClient(const int serverType, const int msg_id);
     void AddMsgCallBackAsClient(const int serverType, const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
+    int GetRandomNodeID(const int node_type);
 
     bool ImportProtoFile(const std::string &fileName);
     const std::string Encode(const std::string &msgTypeName, const LuaIntf::LuaRef &luaTable);

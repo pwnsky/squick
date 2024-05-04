@@ -4,7 +4,7 @@
 # Date  : 2022-11-27
 # Github: https://github.com/pwnsky/squick
 # Description: Generate configuration files
-
+cd $(dirname $0)
 config_path="../config"
 struct_path="../src/struct"
 lua_struct_path="../src/lua/struct"

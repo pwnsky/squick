@@ -10,6 +10,8 @@
 
 **Unreal SDK**: [squick-unreal-sdk](https://github.com/pwnsky/squick-unreal-sdk)
 
+**Cocos SDK**: [squick-cocos-sdk](https://github.com/pwnsky/squick-cocos-sdk)
+
 **Web Admin**: [squick-web](https://github.com/pwnsky/squick-web)
 
 **QQ Group：739065686**
@@ -44,30 +46,28 @@ Click here quick start.
 
 Wiki: https://github.com/pwnsky/squick/wiki
 
-## Projects
 
-[BiochemicalSecrets](https://github.com/pwnsky/BiochemicalSecrets)
 
 
 ## Feature
 
-1. [30%] Distributed services, each service communicates through the network, Surport K8s cluster to manage node, and can reduce server pressure through distributed + clustering methods.
+1. [70%] Distributed services, each service communicates through the network, Surport K8s cluster to manage node, and can reduce server pressure through distributed + clustering methods.
 2. [100%] Use Lua to develop IO-intensive business code, and C++ to develop CPU-intensive services, which can be used to develop combat suits.
 3. [100%] The workload status of all nodes in the same region is self-synchronized.
-4. [40%] Provide stable services and ensure high availability of services.
-5. [50%] Optimize ultra-low CPU, memory, and network usage.
-6. [20%] It has standardized tests that allow developers to self-test various performance indicators (CPU, memory, network).
+4. [80%] Provide stable services and ensure high availability of services.
+5. [70%] Optimize ultra-low CPU, memory, and network usage.
+6. [40%] It has standardized tests that allow developers to self-test various performance indicators (CPU, memory, network).
 7. [100%] Plug-in module combination turns development functions into plug-in modules for development and expansion.
 8. [60%] Support non-stop hot updates of business(c++/lua) code.
 9. [100%] When the program crashes in the Linux environment, the Dump Stack call chain is automatically written to the crash file.
 11. [100%] Network library adds C++ 20 coroutines.
-12. [80%] Supports cross-platform, can be compiled and developed on Windows and Linux and MacOS, and can support VS for project development on Windows.
+12. [90%] Supports cross-platform, can be compiled and developed on Windows and Linux and MacOS, and can support VS for project development on Windows.
 13. [100%] Supports changing 1 to N processes or N to 1 process. A single process on a physical machine can start all servers to facilitate development and debugging. Start single or multiple servers on different physical machines.
-14. [80%] It has relatively complete automation tools, such as automated code generation, compilation, packaging, deployment, cleaning, etc.
+14. [100%] It has relatively complete automation tools, such as automated code generation, compilation, packaging, deployment, cleaning, etc.
 15. [80%] Supports mainstream protocols, such as HTTP/HTTPS, Websocket, TCP, UDP, KCP, etc.
 18. [10%] Remote debugging console.
-20. [80%] Has client sdk for Unity and UnrealEngine.
-21. [80%] High availability - database proxy server, supports mainstream MongoDb, Mysql, Redis, Clickhouse databases etc.
+20. [100%] Has client sdk for Unity and UnrealEngine.
+21. [100%] High availability - database proxy server, supports mainstream MongoDb, Mysql, Redis, Clickhouse databases etc.
 
 
 ## Server-side architecture

@@ -114,4 +114,5 @@ class INetClientModule : public IModule {
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const INet *pNet) = 0;
 
     virtual int GetConnections() = 0;
+    virtual int GetRandomNodeID(int node_type) = 0;
 };

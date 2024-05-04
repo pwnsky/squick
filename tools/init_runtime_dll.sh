@@ -4,7 +4,7 @@
 # Date  : 2022-11-27
 # Github: https://github.com/pwnsky/squick
 # Description: Build deploy files
-
+cd $(dirname $0)
 mkdir -p ../bin
 mkdir -p ../data/logs
 mkdir -p ../data/crashs

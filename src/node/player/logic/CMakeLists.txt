@@ -11,5 +11,6 @@ else()
 	target_link_libraries(${ProjectName} lua.lib )
 endif()
 
-LinkSquick(${ProjectName})
+LinkStruct(${ProjectName})
+LinkCore(${ProjectName})
 SquickOut(${ProjectName} "node/player" ${SQUICK_BUILD_PLUGIN_SERVER_PATH}/player "logic")

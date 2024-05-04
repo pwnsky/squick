@@ -585,7 +585,7 @@ const std::string &WorldModule::GetPropertyString(const Guid &self, const std::s
     }
 
     LOG_ERROR("Guid<%v> There is no property<%v>", self.ToString(), propertyName);
-    return "";
+    return std::string();
 }
 
 const Guid &WorldModule::GetPropertyObject(const Guid &self, const std::string &propertyName) {
@@ -865,7 +865,7 @@ const std::string &WorldModule::GetRecordString(const Guid &self, const std::str
     }
 
     LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
-    return "";
+    return std::string();
 }
 
 const std::string &WorldModule::GetRecordString(const Guid &self, const std::string &recordName, const int row, const std::string &colTag) {
@@ -875,7 +875,7 @@ const std::string &WorldModule::GetRecordString(const Guid &self, const std::str
     }
 
     LOG_ERROR("Guid<%v> There is no record<%v>", self.ToString(), recordName);
-    return "";
+    return std::string();
 }
 
 const Guid &WorldModule::GetRecordObject(const Guid &self, const std::string &recordName, const int row, const int col) {

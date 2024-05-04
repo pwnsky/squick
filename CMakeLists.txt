@@ -1,18 +1,24 @@
 cmake_minimum_required(VERSION 3.6)
 
+project("squick")
+
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
 set(SolutionDir ${PROJECT_SOURCE_DIR})
 message(STATUS "SolutionDir=" ${SolutionDir})
 
-# 链接Squick必要动态链接库
-macro(LinkSquick proName)
-	add_dependencies(${proName} core struct)
-	target_link_libraries(${proName} core struct)
-endmacro(LinkSquick)
+# Link basic liberay
+macro(LinkStruct proName)
+	add_dependencies(${proName} struct)
+	target_link_libraries(${proName} struct)
+endmacro(LinkStruct)
 
+macro(LinkCore proName)
+	add_dependencies(${proName} core)
+	target_link_libraries(${proName} core)
+endmacro(LinkCore)
 
-# 工程输出
+# Squick project out, Included execute project or plugin project
 macro(SquickOut proName outFolder outPath outName)
 set_target_properties( ${proName} PROPERTIES OUTPUT_NAME ${outName} )
 set_target_properties( ${proName} PROPERTIES PREFIX "")
@@ -41,19 +47,19 @@ set_target_properties( ${proName} PROPERTIES
 endmacro(SquickOut)
 
 
-# 可执行文件生成路径
+# The path for builded executed files
 set(SQUICK_BUILD_EXE_PATH ${SolutionDir}/bin)
-# 可执行文件运行依赖动态链接库存放路径
+# The path for builded executed files dependency
 set(SQUICK_RUNTIME_LIB_PATH ${SolutionDir}/bin)
-# 核心插件路径
+# The path for builded plugin files
 set(SQUICK_BUILD_PLUGIN_CORE_PATH ${SolutionDir}/bin/plugin/core)
-# 服务器插件路径
+# The path for builded node logic plugin files
 set(SQUICK_BUILD_PLUGIN_SERVER_PATH ${SolutionDir}/bin/plugin/node)
-# 拓展插件路径
+# The path for builded extern plugin files
 set(SQUICK_BUILD_PLUGIN_EXTEND_PATH ${SolutionDir}/bin/plugin/extend)
-# 测试插件路径
+# The path for builded test plugin files
 set(SQUICK_BUILD_PLUGIN_SQKCLI_PATH ${SolutionDir}/bin/plugin/sqkcli)
-# Tutorial plugins build path
+# The path for builded tutorial plugin files
 set(SQUICK_BUILD_PLUGIN_TUTORIAL_PATH ${SolutionDir}/bin/plugin/tutorial)
 
 include_directories(
@@ -127,7 +133,6 @@ endif()
 
 message("Start to build squick")
 
-
 macro(source_group_by_dir source_files)
     if(MSVC)
         set(honcur_dir ${CMAKE_CURRENT_SOURCE_DIR})
@@ -175,5 +180,6 @@ else()
 endif()
 
 
-LinkSquick(${ProjectName})
+LinkStruct(${ProjectName})
+LinkCore(${ProjectName})
 SquickOut(${ProjectName} "" ${SQUICK_BUILD_EXE_PATH} "squick")

@@ -25,7 +25,6 @@ class NetClientModule : public INetClientModule {
     virtual int AddEventCallBack(const int eType, NET_EVENT_FUNCTOR_PTR functorPtr);
     virtual void RemoveReceiveCallBack(const int eType, const uint16_t msg_id);
 
-    ////////////////////////////////////////////////////////////////////////////////
     virtual bool IsConnected(const int node_id) override;
     virtual bool SendByID(const int serverID, const uint16_t msg_id, const std::string &strData, const uint64_t uid = 0, reqid_t req_id = 0) override;
     virtual bool SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0,
@@ -51,23 +50,17 @@ class NetClientModule : public INetClientModule {
     virtual std::shared_ptr<ConnectData> GetServerNetInfo(const INet *pNet);
 
     virtual int GetConnections() override;
+    virtual int GetRandomNodeID(int node_type) override;
 
   protected:
     void StartCallBacks(std::shared_ptr<ConnectData> pServerData);
-
     void ProcessUpdate();
 
   private:
-    void LogServerInfo();
-
     void KeepState(std::shared_ptr<ConnectData> pServerData);
-
     void OnSocketEvent(const socket_t fd, const SQUICK_NET_EVENT eEvent, INet *pNet);
-
     int OnConnected(const socket_t fd, INet *pNet);
-
     int OnDisConnected(const socket_t fd, INet *pNet);
-
     void ProcessNetConnect();
 
   private:
