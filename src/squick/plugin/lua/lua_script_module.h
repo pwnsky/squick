@@ -117,7 +117,8 @@ class LuaScriptModule : public ILuaScriptModule {
     bool ExistElementObject(const std::string &configName);
     LuaIntf::LuaRef GetConfigIDList(const string &className);
     LuaIntf::LuaRef GetConfig(const string &className);
-    LuaIntf::LuaRef GetConfigByID(const string &id);
+    LuaIntf::LuaRef GetConfigRowByConfigID(const string &config_id);
+    LuaIntf::LuaRef GetConfigRow(const std::string& class_name, const string& id);
     INT64 GetElePropertyInt(const std::string &configName, const std::string &propertyName);
     double GetElePropertyFloat(const std::string &configName, const std::string &propertyName);
     std::string GetElePropertyString(const std::string &configName, const std::string &propertyName);

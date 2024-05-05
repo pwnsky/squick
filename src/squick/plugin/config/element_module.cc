@@ -190,10 +190,16 @@ bool ElementModule::CheckRef() {
     return false;
 }
 
+const std::string ElementModule::GetConfigId(const std::string& class_name, const std::string& id) {
+    return class_name + "_" + id;
+}
+
 // 加载属性
 bool ElementModule::Load(rapidxml::xml_node<> *attrNode, std::shared_ptr<IClass> pLogicClass) {
     // attrNode is the node of a object
-    std::string configID = attrNode->first_attribute("Id")->value();
+    const std::string& class_name = pLogicClass->GetClassName();
+    std::string id = attrNode->first_attribute("Id")->value();
+    std::string configID = GetConfigId(class_name, id);
     if (configID.empty()) {
         SQUICK_ASSERT(0, configID, __FILE__, __FUNCTION__);
         return false;
@@ -208,7 +214,7 @@ bool ElementModule::Load(rapidxml::xml_node<> *attrNode, std::shared_ptr<IClass>
     AddElement(configID, pElementInfo);
 
     // can find all configid by class name
-    pLogicClass->AddId(configID);
+    pLogicClass->AddId(id);
 
     // ElementConfigInfo* pElementInfo = CreateElement( configID, pElementInfo );
     std::shared_ptr<IPropertyManager> pElementPropertyManager = pElementInfo->GetPropertyManager();
@@ -316,11 +322,14 @@ bool ElementModule::Load(rapidxml::xml_node<> *attrNode, std::shared_ptr<IClass>
     SquickData xDataClassName;
     xDataClassName.SetString(pLogicClass->GetClassName());
     pElementPropertyManager->SetProperty("ClassName", xDataClassName);
-
+    
     SquickData xDataID;
-    xDataID.SetString(configID);
+    xDataID.SetString(id);
     pElementPropertyManager->SetProperty("ID", xDataID);
-    pElementPropertyManager->SetProperty("ConfigID", xDataID);
+
+    SquickData xDataConfigID;
+    xDataConfigID.SetString(configID);
+    pElementPropertyManager->SetProperty("ConfigID", xDataConfigID);
 
     return true;
 }
