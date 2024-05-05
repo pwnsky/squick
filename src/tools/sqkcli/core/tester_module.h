@@ -7,12 +7,6 @@
 
 namespace tester::core {
 
-enum class TestType {
-    None = 0,
-    Proxy = 1,
-    All = 1000,
-};
-
 class TesterModule : public ITesterModule {
 
   public:
@@ -27,13 +21,16 @@ class TesterModule : public ITesterModule {
     virtual bool Update();
 
   protected:
-    void TestProxyTransferSpeed_Init();
+    void ProxyNodeTestInit();
+    void PlayerNodeTestInit();
     void TestProxyTransferSpeed_Req();
     void TestProxyTransferSpeed_Ack(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void TReqConfig();
+    void TAckConfig(const socket_t sock, const int msg_id, const char* msg, const uint32_t len);
     void OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 
   private:
-    TestType test_type_ = TestType::None;
+    rpc::NodeType node_type_ = rpc::NodeType::ST_NONE;
     bool is_connected_ = false;
 
     int test_req_index_ = 0;

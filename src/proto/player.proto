@@ -37,3 +37,28 @@ message AckPlayerData { // msg_id=12009;
     int32 code = 1;
     PlayerData data = 2;
 }
+
+
+message TReqConfig { // msg_id=14900;
+    int32 index = 1;
+    int64 req_time = 2;
+    bytes data = 3;
+}
+
+message TAckConfig { // msg_id=14901;
+    int32 index = 1;
+    int64 req_time = 2;
+    bytes data = 3;
+}
+
+message TReqDb { // msg_id=14902;
+    int32 index = 1;
+    int64 req_time = 2;
+    bytes data = 3;
+}
+
+message TAckDb { // msg_id=14903;
+    int32 index = 1;
+    int64 req_time = 2;
+    bytes data = 3;
+}
