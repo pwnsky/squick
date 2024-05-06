@@ -1,9 +1,0 @@
-<XML>
-    <Login>
-		<Plugin Name="core/net" />
-		<Plugin Name="core/log" />
-        <Plugin Name="core/node" />
-		<Plugin Name="node/login/logic" />
-	</Login>
-
-</XML>

@@ -3,7 +3,8 @@
 #include <third_party/common/base64.hpp>
 #include <third_party/common/sha256.h>
 #define SQUICK_HASH_SALT "7e82e88dfd98952b713c0d20170ce12b"
-namespace login::logic {
+#define WEB_BASE_PATH "/api"
+namespace backstage::logic {
 bool LogicModule::Start() {
     m_http_server_ = pm_->FindModule<IHttpServerModule>();
     m_node_ = pm_->FindModule<INodeModule>();
@@ -18,18 +19,59 @@ bool LogicModule::Destroy() { return true; }
 
 bool LogicModule::AfterStart() {
     m_http_server_->AddMiddleware(this, &LogicModule::Middleware);
-    m_http_server_->AddRequestHandler("/login", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnLogin);
+    m_http_server_->AddRequestHandler(WEB_BASE_PATH "/login", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnLogin);
+    m_http_server_->AddRequestHandler(WEB_BASE_PATH "/all_nodes", HttpType::SQUICK_HTTP_REQ_GET, this, &LogicModule::OnGetAllNodes);
+    m_http_server_->AddRequestHandler(WEB_BASE_PATH "/auth_check", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnAuthCheck);
+    m_http_server_->AddRequestHandler(WEB_BASE_PATH "/auth_check", HttpType::SQUICK_HTTP_REQ_GET, this, &LogicModule::OnAuthCheck);
+    m_http_server_->StartServer(pm_->GetArg("http_port=", ARG_DEFAULT_HTTP_PORT));
 
-    m_net_->AddReceiveCallBack(rpc::IdNReqConnectProxyVerify, this, &LogicModule::OnConnectProxyVerify);
-    m_http_server_->StartServer(pm_->GetArg("http_port=", 80));
-
-    vector<int> node_types = {rpc::ST_DB_PROXY};
+    vector<int> node_types = {rpc::ST_GLOBAL, rpc::ST_DB_PROXY, rpc::ST_PLAYER};
     m_node_->AddSubscribeNode(node_types);
+
+    LoadConfig();
+    return true;
+}
+
+bool LogicModule::LoadConfig() {
+    std::string config_path = pm_->GetWorkPath() + "/config/node/web.json";
+    std::ifstream config_file(config_path);
+    if (!config_file.is_open()) {
+        LOG_ERROR("The configure file <%v> is not exsist", config_path);
+        return false;
+    }
+    config_file >> web_config_;
+    config_file.close();
+
+    try {
+        json header = web_config_.at("ResponseHttpHeader");
+        for (auto iter = header.begin(); iter != header.end(); ++iter) {
+            config_response_header_[iter.key()] = iter.value();
+        }
+        json white_uri_list = web_config_.at("WhiteUriList");
+        for (auto v : white_uri_list) {
+            white_uri_list_.insert(v);
+        }
+    } catch (std::exception err) {
+        LOG_ERROR("Get config from json is error <%v>", err.what());
+        return false;
+    }
+
+    LOG_INFO("The db config file <%v> is loaded ", config_path);
     return true;
 }
 
 bool LogicModule::Update() {
     m_http_server_->Update();
+    return true;
+}
+
+bool LogicModule::OnAuthCheck(std::shared_ptr<HttpRequest> request) {
+    IResponse rsp;
+    rsp.code = IResponse::SUCCESS;
+    rsp.msg = "authed";
+    ajson::string_stream rep_ss;
+    ajson::save_to(rep_ss, rsp);
+    m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
     return true;
 }
 
@@ -61,55 +103,19 @@ Coroutine<bool> LogicModule::OnLogin(std::shared_ptr<HttpRequest> request) {
             // check from db
         }
 
-        // find min work load proxy
-        rpc::NReqMinWorkloadNodeInfo pbreq;
-        pbreq.add_type_list(rpc::ST_PROXY);
-        auto data = co_await m_net_client_->RequestPB(DEFAULT_MASTER_ID, rpc::IdNReqMinWorkloadNodeInfo, pbreq, rpc::IdNAckMinWorkloadNodeInfo);
-        if (data.error) {
-            ack.code = IResponse::SERVER_ERROR;
-            ack.msg = "Get min workload proxy info from master error, network error\n";
-            break;
-        }
-
-        uint64_t uid;
-        rpc::NAckMinWorkloadNodeInfo pback;
-        if (!INetModule::ReceivePB(data.ack_msg_id, data.data, data.length, pback, uid)) {
-            ack.code = IResponse::SERVER_ERROR;
-            ack.msg = "Get min workload proxy info from master error, pb data is invalid\n";
-            break;
-        }
-
-        if (pback.list_size() <= 0) {
-            ack.code = IResponse::SERVER_ERROR;
-            ack.msg = "Get min workload proxy info from master error, no proxy\n";
-            break;
-        }
-
         account_id = Guid::CreateID().ToString();
-        auto proxy_info = pback.list()[0];
         string token = MakeToken(account_id);
 
         ack.code = IResponse::SUCCESS;
         ack.token = token;
         ack.account_id = account_id;
         ack.limit_time = 1209600;
-        ack.ip = proxy_info.public_ip();
-        ack.port = proxy_info.port();
-        ack.ws_port = proxy_info.ws_port();
-        ack.key = token;
-        ack.signatrue = 123456;
-        ack.login_node = pm_->GetAppID();
 
         // Cache
         auto &info = login_info_[account_id];
         info.account = req.account;
         info.account_id = account_id;
         info.login_time = SquickGetTimeS();
-        info.proxy_key = token;
-        info.proxy_node = proxy_info.id();
-        info.proxy_port = proxy_info.port();
-        info.proxy_ws_port = proxy_info.ws_port();
-        info.signatrue = ack.signatrue;
 
         time_t login_time = SquickGetTimeS();
 
@@ -120,10 +126,10 @@ Coroutine<bool> LogicModule::OnLogin(std::shared_ptr<HttpRequest> request) {
         j["login_time"] = login_time;
         SetToken(account_id, token);
 
-        string cookie = "Session=" + base64_encode(j.dump()) + ";Path=/;Max-Age=1209600";
+        string cookie = "Session=" + base64_encode(j.dump()) + ";Path=/;Max-Age=1209600;SameSite=None;Secure=False";
         m_http_server_->SetHeader(request, "Set-Cookie", cookie.c_str());
 
-        LOG_INFO("Account %v has logined, account_id<%v> proxy_node<%v>", req.account, account_id, proxy_info.id());
+        LOG_INFO("Account %v has logined, account_id<%v> cookie<%v>", req.account, account_id, cookie);
 
     } while (false);
 
@@ -167,18 +173,22 @@ nlohmann::json LogicModule::GetUser(std::shared_ptr<HttpRequest> req) {
 WebStatus LogicModule::Middleware(std::shared_ptr<HttpRequest> req) {
     // Check auth:
     // Cookie: Session= base64( AES( json_str{'guid' : "xxxx", "token" : "xxxx"} ) );
-    m_http_server_->SetHeader(req, "Server", SERVER_NAME);
-    // 不用授权可访问的白名单
-    vector<string> white_list = {
-        "/login",
-        "/cdn",
-    };
-
-    for (auto &w : white_list) {
-        if (w == req->path) {
-            return WebStatus::WEB_IGNORE;
-        }
+    for (auto iter : config_response_header_) {
+        m_http_server_->SetHeader(req, iter.first, iter.second);
     }
+
+    m_http_server_->SetHeader(req, "Server", SERVER_NAME);
+
+    if (req->type == SQUICK_HTTP_REQ_OPTIONS) {
+        m_http_server_->ResponseMsg(req, "", WebStatus::WEB_OK);
+        return WebStatus::WEB_RETURN;
+    }
+
+    // check uri
+    if (white_uri_list_.find(req->path) != white_uri_list_.end()) {
+        return WebStatus::WEB_IGNORE;
+    }
+
     string account_id;
     string token;
     auto info = GetUser(req);
@@ -219,31 +229,52 @@ string LogicModule::MakeToken(string account_id) {
 
 void LogicModule::SetToken(const std::string &account_id, const std::string &user_token) { auth_token_[account_id] = user_token; }
 
-void LogicModule::OnConnectProxyVerify(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+Coroutine<bool> LogicModule::OnGetAllNodes(std::shared_ptr<HttpRequest> request) {
+    json rsp;
+
+    rpc::NReqAllNodesInfo pbreq;
+    auto data = co_await m_net_client_->RequestPB(DEFAULT_MASTER_ID, rpc::IdNReqAllNodesInfo, pbreq, rpc::IdNAckAllNodesInfo);
+    if (data.error) {
+        rsp["code"] = IResponse::SERVER_ERROR;
+        rsp["msg"] = "Server get network error\n";
+        m_http_server_->ResponseMsg(request, rsp.dump(), WebStatus::WEB_ERROR);
+        co_return;
+    }
+
     uint64_t uid;
-
-    rpc::NReqConnectProxyVerify req;
-    if (!m_net_->ReceivePB(msg_id, msg, len, req, uid)) {
-        return;
-    }
-    // to do, auth from db
-    LOG_INFO("OnConnectProxyVerify: account_id: ", req.account_id());
-
-    rpc::NAckConnectProxyVerify ack;
-    auto iter = login_info_.find(req.account_id());
-    if (iter == login_info_.end()) {
-        LOG_ERROR("OnConnectProxyVerify: account_id<%v> is not find", req.account_id());
-        ack.set_code(1);
-        m_net_->SendPBToNode(rpc::IdNAckConnectProxyVerify, ack, sock);
-        return;
+    rpc::NAckAllNodesInfo pback;
+    if (!INetModule::ReceivePB(data.ack_msg_id, data.data, data.length, pback, uid)) {
+        rsp["code"] = IResponse::SERVER_ERROR;
+        rsp["msg"] = "Parse msg is error error\n";
+        m_http_server_->ResponseMsg(request, rsp.dump(), WebStatus::WEB_ERROR);
+        co_return;
     }
 
-    ack.set_code(0);
-    ack.set_session(req.session());
-    ack.set_area_id(0);
-    ack.set_account_id(req.account_id());
-    ack.set_account(iter->second.account);
-    m_net_->SendPBToNode(rpc::IdNAckConnectProxyVerify, ack, sock);
+    nlohmann::json node_list = nlohmann::json::array();
+    for (auto &sd : pback.node_list()) {
+        json n;
+        n["area"] = sd.area();
+        n["type"] = sd.type();
+        n["id"] = sd.id();
+        n["name"] = sd.name();
+        n["ip"] = sd.ip();
+        n["public_ip"] = sd.public_ip();
+        n["port"] = sd.port();
+        n["cpu_count"] = sd.cpu_count();
+        n["status"] = sd.state();
+        n["workload"] = sd.workload();
+        n["max_online"] = sd.max_online();
+        n["update_time"] = sd.update_time();
+        n["ws_port"] = sd.ws_port();
+        n["http_port"] = sd.http_port();
+        n["https_port"] = sd.https_port();
+        n["connections"] = sd.connections();
+        n["net_client_connections"] = sd.net_client_connections();
+        node_list.push_back(n);
+    }
+    rsp["node_list"] = node_list;
+    rsp["code"] = IResponse::SUCCESS;
+    m_http_server_->ResponseMsg(request, rsp.dump(), WebStatus::WEB_OK);
+    co_return;
 }
-
-} // namespace login::logic
+} // namespace backstage::logic

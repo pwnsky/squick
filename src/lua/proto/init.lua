@@ -14,4 +14,4 @@ Squick:ImportProto("n_db_proxy.proto");
 Squick:ImportProto("n_world.proto");
 Squick:ImportProto("n_player.proto");
 Squick:ImportProto("player.proto");
-Squick:ImportProto("n_login.proto");
+Squick:ImportProto("n_web.proto");

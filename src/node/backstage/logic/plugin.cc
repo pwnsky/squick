@@ -1,7 +1,7 @@
 #include "plugin.h"
 #include "logic_module.h"
 
-namespace login::logic {
+namespace backstage::logic {
 SQUICK_EXPORT void SquickPluginLoad(IPluginManager *pm){CREATE_PLUGIN(pm, Plugin)};
 
 SQUICK_EXPORT void SquickPluginUnload(IPluginManager *pm){DESTROY_PLUGIN(pm, Plugin)};
@@ -14,4 +14,4 @@ void Plugin::Install() { REGISTER_MODULE(pm_, ILogicModule, LogicModule) }
 
 void Plugin::Uninstall() { UNREGISTER_MODULE(pm_, ILogicModule, LogicModule) }
 
-} // namespace login::logic
+} // namespace backstage::logic
