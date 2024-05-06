@@ -60,13 +60,6 @@ class AckLogin : public IResponse {
     string token;      // 该token可用于RPC或http的token
     string account_id; // 账号ID
     int limit_time;    // token过期倒计时
-
-    string key;
-    string ip;
-    int port;
-    int ws_port;
-    int login_node;
-    uint64_t signatrue;
 };
 
-AJSON(AckLogin, code, msg, token, account_id, limit_time, key, ip, port, ws_port, login_node, signatrue)
+AJSON(AckLogin, code, msg, token, account_id, limit_time)

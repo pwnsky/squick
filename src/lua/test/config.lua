@@ -15,5 +15,5 @@ local ta = Squick:GetConfig(Excel.Scene.ThisName)
 PrintTable(ta)
 
 print("Get property by id")
-local t = Squick:GetConfigByID("SceneID_3")
+local t = Squick:GetConfigRow(Excel.Scene.ThisName, "SceneID_3")
 PrintTable(t)

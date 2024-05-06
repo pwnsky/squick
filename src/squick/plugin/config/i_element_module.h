@@ -14,6 +14,8 @@ class IElementModule : public IModule {
 
     virtual IElementModule *GetThreadElementModule() = 0;
 
+    virtual const std::string GetConfigId(const std::string &class_name, const std::string &id) = 0;
+
     // special
     virtual bool LoadSceneInfo(const std::string &fileName, const std::string &className) = 0;
 

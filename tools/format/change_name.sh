@@ -1,5 +1,5 @@
 #! /bin/bash
-dir=../../src/
+dir=../../src/node/backstage
 
 echo "This script will rename in [$dir] directory"
 

@@ -2,7 +2,7 @@
 
 #include <squick/core/base.h>
 
-namespace login::logic {
+namespace backstage::logic {
 class Plugin : public IPlugin {
   public:
     Plugin(IPluginManager *p) { pm_ = p; }
@@ -12,4 +12,4 @@ class Plugin : public IPlugin {
     virtual void Uninstall();
 };
 
-} // namespace login::logic
+} // namespace backstage::logic

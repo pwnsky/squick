@@ -12,7 +12,9 @@
 
 **Cocos SDK**: [squick-cocos-sdk](https://github.com/pwnsky/squick-cocos-sdk)
 
-**Web Admin**: [squick-web](https://github.com/pwnsky/squick-web)
+**Backstage**: [squick-backstage](https://github.com/pwnsky/squick-backstage)
+
+**Web**: [squick-web](https://github.com/pwnsky/squick-web)
 
 **QQ Group：739065686**
 

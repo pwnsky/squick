@@ -1,4 +1,4 @@
-// Desc: Login rpc, 6000 ~ 7000
+// Desc: Web rpc, 6000 ~ 7000
 syntax = "proto3";
 package rpc;
 

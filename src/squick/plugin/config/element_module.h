@@ -62,6 +62,8 @@ class ElementModule : public IElementModule, MapEx<std::string, ElementConfigInf
 
     IElementModule *GetThreadElementModule() override;
 
+    virtual const std::string GetConfigId(const std::string& class_name, const std::string& id) override;
+
     virtual bool LoadSceneInfo(const std::string &fileName, const std::string &className) override;
 
     virtual bool ExistElement(const std::string &configName) override;

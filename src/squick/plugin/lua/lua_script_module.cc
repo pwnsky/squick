@@ -446,15 +446,15 @@ LuaIntf::LuaRef LuaScriptModule::GetConfig(const string &className) {
     if (xLogicClass) {
         auto list = xLogicClass->GetIDList();
         for (auto &id : list) {
-            ret[id] = GetConfigByID(id);
+            ret[id] = GetConfigRow(className, id);
         }
     }
     return ret;
 }
 
-LuaIntf::LuaRef LuaScriptModule::GetConfigByID(const string &id) {
+LuaIntf::LuaRef LuaScriptModule::GetConfigRowByConfigID(const string &config_id) {
     LuaIntf::LuaRef ret = LuaIntf::LuaRef::createTable(mLuaContext);
-    auto m = m_element_->GetPropertyManager(id);
+    auto m = m_element_->GetPropertyManager(config_id);
     if (m == nullptr) {
         return ret;
     }
@@ -487,6 +487,10 @@ LuaIntf::LuaRef LuaScriptModule::GetConfigByID(const string &id) {
         p = m->Next(key);
     }
     return ret;
+}
+
+LuaIntf::LuaRef LuaScriptModule::GetConfigRow(const std::string& class_name, const string& id) {
+    return GetConfigRowByConfigID(m_element_->GetConfigId(class_name, id));
 }
 
 INT64 LuaScriptModule::GetElePropertyInt(const std::string &configName, const std::string &propertyName) {
@@ -773,7 +777,8 @@ bool LuaScriptModule::Register() {
         .addFunction("ExistElementObject", &LuaScriptModule::ExistElementObject)
         .addFunction("GetConfigIDList", &LuaScriptModule::GetConfigIDList)
         .addFunction("GetConfig", &LuaScriptModule::GetConfig)
-        .addFunction("GetConfigByID", &LuaScriptModule::GetConfigByID)
+        .addFunction("GetConfigRowByConfigID", &LuaScriptModule::GetConfigRowByConfigID)
+        .addFunction("GetConfigRow", &LuaScriptModule::GetConfigRow)
         .addFunction("GetElePropertyInt", &LuaScriptModule::GetElePropertyInt)
         .addFunction("GetElePropertyFloat", &LuaScriptModule::GetElePropertyFloat)
         .addFunction("GetElePropertyString", &LuaScriptModule::GetElePropertyString)
