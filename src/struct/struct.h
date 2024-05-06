@@ -18,7 +18,7 @@
 
 #include "n_db_proxy.pb.h"
 #include "n_game_mgr.pb.h"
-#include "n_login.pb.h"
+#include "n_web.pb.h"
 #include "n_master.pb.h"
 #include "n_msg_id.pb.h"
 #include "n_node.pb.h"
