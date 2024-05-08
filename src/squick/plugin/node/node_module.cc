@@ -6,17 +6,17 @@ NodeModule::NodeModule(IPluginManager *p) {
     is_update_ = true;
 }
 
-bool NodeModule::Awake() { return true; }
-
-bool NodeModule::Start() {
+bool NodeModule::Awake() {
     m_net_ = pm_->FindModule<INetModule>();
     m_log_ = pm_->FindModule<ILogModule>();
     m_net_client_ = pm_->FindModule<INetClientModule>();
     is_update_ = true;
-
     pm_->SetAppType(StringNodeTypeToEnum(pm_->GetArg("type=", "proxy")));
     pm_->SetArea(pm_->GetArg("area=", 0));
+    return true;
+}
 
+bool NodeModule::Start() {
     Listen();
     return true;
 }

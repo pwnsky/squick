@@ -34,6 +34,11 @@ end
 
 function Start()
     Env.start_time = os.time()
+    Env.app_id = Squick:AppID()
+    Env.app_type= Squick:AppType()
+    Env.app_name= Squick:AppName()
+    Env.area = Squick:Area()
+    Load()
 end
 
 function AfterStart()
@@ -42,11 +47,6 @@ end
 
 -- 在 ReadyUpdate 才进行初始化 Lua 模块，目的是让C++层的所有模块已链接完毕
 function ReadyUpdate()
-    Env.app_id = Squick:AppID()
-    Env.app_type= Squick:AppType()
-    Env.app_name= Squick:AppName()
-    Env.area = Squick:Area()
-    Load()
     ModuleMgr:Start()
 end
 
@@ -82,6 +82,6 @@ function Load()
     if(node_init[Env.app_type]) then
         node_init[Env.app_type]()
     else
-        Print("Not surppot this app type: " .. Env.app_type)
+        Print("Not surppot this app type: " .. tostring(Env.app_type))
     end
 end

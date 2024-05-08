@@ -7,34 +7,34 @@ namespace player::logic {
 bool LogicModule::Start() {
     m_lua_script_ = pm_->FindModule<ILuaScriptModule>();
     m_node_ = pm_->FindModule<INodeModule>();
+    m_log_ = pm_->FindModule<ILogModule>();
     vector<int> node_types = {rpc::ST_WORLD, rpc::ST_DB_PROXY, rpc::ST_PLAYER};
     m_node_->AddSubscribeNode(node_types);
-
-    LuaBind();
     return true;
 }
 
 bool LogicModule::Destroy() { return true; }
 
-bool LogicModule::AfterStart() { return true; }
+bool LogicModule::AfterStart() {
+    LuaBind();
+    return true;
+}
 
 bool LogicModule::Update() { return true; }
 
 bool LogicModule::LuaBind() {
     LuaScriptModule *luaModule = dynamic_cast<LuaScriptModule *>(m_lua_script_);
     LuaIntf::LuaContext &luaEnv = luaModule->GetLuaEnv();
-    // SendMsgToGate(const uint16_t msg_id, const std::string& msg, const Guid& self)
     LuaIntf::LuaBinding(luaEnv)
-        .beginClass<LogicModule>("GameServer")
-        .addFunction("send_to_player", &LogicModule::SendToPlayer)
-        .addFunction("test", &LogicModule::Test)
+        .beginClass<LogicModule>("CC")
+        .addFunction("Test", &LogicModule::Test)
         .endClass();
     // 将该模块传递到lua层
     try {
-        LuaIntf::LuaRef func(luaEnv, "init_game_server");
+        LuaIntf::LuaRef func(luaEnv, "CCLogicBind");
         func.call<LuaIntf::LuaRef>(this);
     } catch (LuaIntf::LuaException &e) {
-        cout << e.what() << endl;
+        LOG_ERROR("Call CCLogicBind is error %v", e.what());
     }
     return true;
 }
@@ -44,11 +44,7 @@ bool LogicModule::LuaBind() {
 // 所以在该动态链接库的函数参数 类型，顺序需要符合 core/lua 中已定义的函数参数顺序
 // const Guid player, const uint16_t msg_id, const std::string& data
 // 由于是跨dll进行解析，无法对已在core/lua上的Guid进行解析，所以只能传普通类型的数据。
-void LogicModule::SendToPlayer(string &player_guid_str, uint16_t msg_id, std::string &data) {
-    Guid guid = Guid(player_guid_str);
-    // m_node_->SendToPlayer(msg_id, data, guid);
-}
 
-void LogicModule::Test(const uint16_t msg_id, string &msg, int a) { std::cout << "LuaBindModule::Test\n" << msg_id << "   " << msg << a << std::endl; }
+void LogicModule::Test(const uint16_t msg_id, string &msg, int a) { std::cout << "LogicModule::Test\n" << msg_id << "   " << msg << a << std::endl; }
 
 } // namespace player::logic
