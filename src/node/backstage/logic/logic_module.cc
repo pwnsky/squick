@@ -263,8 +263,15 @@ Coroutine<bool> LogicModule::OnGetAllNodes(std::shared_ptr<HttpRequest> request)
 	// protobuf 转 json-string
 	util::Status google::protobuf::util::MessageToJsonString(const google::protobuf::Message& message, std::string* str );
 	*/
-	//std::string json_out;
-	//google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(pback, &json_out);
+
+	google::protobuf::util::JsonPrintOptions options;
+    options.preserve_proto_field_names = true;
+	options.always_print_primitive_fields = true;
+	options.always_print_enums_as_ints = true;
+	options.add_whitespace = true;
+	std::string json_out;
+	google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(pback, &json_out, options);
+	LOG_DEBUG("Protobuf to json: %v", json_out);
 
     nlohmann::json node_list = nlohmann::json::array();
     for (auto &sd : pback.node_list()) {
