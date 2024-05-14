@@ -1,0 +1,20 @@
+// Desc: MongoDb table
+syntax = "proto3";
+package rpc;
+import "base.proto";
+
+message OnlineTable {
+    bool is_online = 1;
+    int32 node_player = 2;
+    int32 node_proxy = 3;
+    int32 node_world = 4;
+    int32 node_room = 5;
+    int32 node_game = 6;
+}
+
+message PlayerTable {
+    PlayerData data = 1;
+}
+
+message FriendTable {
+}
