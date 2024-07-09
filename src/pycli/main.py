@@ -16,9 +16,11 @@ from protocol import *
 
 print("pycli:")
 
+Data = {}
+
 session = requests.session()
 session.cookies = cookiejar.LWPCookieJar(filename='./login.cookie')
-BaseUrl = 'http://127.0.0.1:8888'
+BaseUrl = 'http://127.0.0.1:8088'
 header = {
     'Referer': BaseUrl + "login",
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) Chrome/89.0.4389.82'
@@ -37,20 +39,22 @@ def login(account, password):
             cookie = requests.utils.dict_from_cookiejar(session.cookies)
             session.cookies.save(ignore_discard=True, ignore_expires=True)
             return False, resp.text
+        print("Error: ErrorCode: ", resp.status_code)
         return True, None
     except Exception as ex:
-        print(ex)
+        print("Error:", ex)
         return True, None
 
 
 def AuthConnection(ws):
     print("Begin auth")
     req = ReqConnectProxy()
-    req.account_id = '123456'
-    req.key = 'key'
-    req.login_node = 1
-    req.signatrue = 0
+    req.account_id = Data['login']['account_id']
+    req.key = Data['login']['key']
+    req.login_node = Data['login']['login_node']
+    req.signatrue = Data['login']['signatrue']
     sdata = req.SerializeToString()
+    print(sdata)
     data = Encode(IdReqConnectProxy, sdata)
     print(data)
     ws.send(data, 2) 
@@ -71,13 +75,17 @@ def OnWsOpen(ws):
 
 if __name__ == '__main__':
     # login
+    print("Begin pycli")
     err, rsp = login("pycli", "password")
     if (err):
+        print("Error...")
         exit()
     
     print("login rsp: " + rsp)
     jrsp = json.loads(rsp)
     wsUrl = 'ws://' + str(jrsp['ip']) + ':' + str(jrsp['ws_port']) + '/'
+    global LoginInfo
+    Data['login'] = jrsp
     print("connect to proxy: " + wsUrl)
     ws = websocket.WebSocketApp(wsUrl,
                               on_open=OnWsOpen,

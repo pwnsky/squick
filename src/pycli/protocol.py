@@ -16,7 +16,7 @@ print("sys", sys.path)
 def Encode(msg_id, data):
     send_data = b'' 
     send_data += (msg_id).to_bytes(2, byteorder="big", signed=False)
-    send_data += (len(data)).to_bytes(4, byteorder="big", signed=False)
+    send_data += (len(data) + 6).to_bytes(4, byteorder="big", signed=False)
     send_data += data
     return send_data
 

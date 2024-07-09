@@ -51,8 +51,8 @@ std::string NodeModule::EnumNodeTypeToString(rpc::NodeType type) {
     switch (type) {
     case rpc::ST_MASTER:
         return "master";
-    case rpc::ST_LOGIN:
-        return "login";
+    case rpc::ST_WEB:
+        return "web";
     case rpc::ST_WORLD:
         return "world";
     case rpc::ST_DB_PROXY:
@@ -69,8 +69,8 @@ std::string NodeModule::EnumNodeTypeToString(rpc::NodeType type) {
         return "micro";
     case rpc::ST_CDN:
         return "cdn";
-    case rpc::ST_WEB:
-        return "web";
+    case rpc::ST_BACKSTAGE:
+        return "backstage";
     }
     return std::string();
 }
@@ -78,8 +78,8 @@ std::string NodeModule::EnumNodeTypeToString(rpc::NodeType type) {
 rpc::NodeType NodeModule::StringNodeTypeToEnum(const std::string &type) {
     if (type == "master")
         return rpc::ST_MASTER;
-    else if (type == "login")
-        return rpc::ST_LOGIN;
+    else if (type == "web")
+        return rpc::ST_WEB;
     else if (type == "world")
         return rpc::ST_WORLD;
     else if (type == "db_proxy")
@@ -96,8 +96,8 @@ rpc::NodeType NodeModule::StringNodeTypeToEnum(const std::string &type) {
         return rpc::ST_MICRO;
     else if (type == "cdn")
         return rpc::ST_CDN;
-    else if (type == "web")
-        return rpc::ST_WEB;
+    else if (type == "backstage")
+        return rpc::ST_BACKSTAGE;
     return rpc::ST_NONE;
 }
 

@@ -36,7 +36,7 @@ bool LogicModule::AfterStart() {
 
     // Lobby
     m_net_client_->AddReceiveCallBack(rpc::ST_PLAYER, this, &LogicModule::OnRecivedPlayerNodeMsg);
-    m_net_client_->AddReceiveCallBack(rpc::ST_LOGIN, rpc::IdNAckConnectProxyVerify, this, &LogicModule::OnNAckConnectVerify);
+    m_net_client_->AddReceiveCallBack(rpc::ST_WEB, rpc::IdNAckConnectProxyVerify, this, &LogicModule::OnNAckConnectVerify);
     m_net_client_->AddReceiveCallBack(rpc::ST_PLAYER, rpc::IdAckPlayerEnter, this, &LogicModule::OnAckPlayerEnter);
 
     auto &node_info = m_node_->GetNodeInfo();
@@ -46,7 +46,7 @@ bool LogicModule::AfterStart() {
     m_ws_->AddEventCallBack(this, &LogicModule::OnSocketEvent);
     m_net_->AddEventCallBack(this, &LogicModule::OnSocketEvent);
 
-    vector<int> node_types = {rpc::ST_WORLD, rpc::ST_LOGIN, rpc::ST_PLAYER};
+    vector<int> node_types = {rpc::ST_WORLD, rpc::ST_WEB, rpc::ST_PLAYER};
     m_node_->AddSubscribeNode(node_types);
 
     return true;
@@ -343,6 +343,7 @@ void LogicModule::OnReqConnect(ProtocolType type, const socket_t sock, const int
 
     rpc::ReqConnectProxy req;
     if (!req.ParseFromArray(msg, len)) {
+        LOG_ERROR("ParseFromArray, msg_id<%v>", msg_id);
         return;
     }
     // check login_node
