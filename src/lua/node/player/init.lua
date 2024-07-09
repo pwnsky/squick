@@ -6,3 +6,9 @@ local modules = {
 ModuleMgr:Register("node.player", modules)
 
 MONGO_PLAYERS_DB = "players_" .. Env.area
+
+CC = nil
+
+function CCLogicBind(cc_context)
+    CC = cc_context
+end

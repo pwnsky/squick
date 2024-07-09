@@ -2,6 +2,11 @@
 #include "struct.h"
 #include <third_party/common/base64.hpp>
 #include <third_party/common/sha256.h>
+
+#include <google/protobuf/message.h>
+#include <google/protobuf/util/json_util.h>
+#include <google/protobuf/text_format.h>
+
 #define SQUICK_HASH_SALT "7e82e88dfd98952b713c0d20170ce12b"
 #define WEB_BASE_PATH "/api"
 namespace backstage::logic {
@@ -249,6 +254,24 @@ Coroutine<bool> LogicModule::OnGetAllNodes(std::shared_ptr<HttpRequest> request)
         m_http_server_->ResponseMsg(request, rsp.dump(), WebStatus::WEB_ERROR);
         co_return;
     }
+
+	// https://protobuf.dev/reference/cpp/api-docs/google.protobuf.util.json_util/
+
+	/*
+	// json-string 转 protobuf message
+	util::Status google::protobuf::util::JsonStringToMessage(const std::string content, google::protobuf::Message* message);
+	// protobuf 转 json-string
+	util::Status google::protobuf::util::MessageToJsonString(const google::protobuf::Message& message, std::string* str );
+	*/
+
+	google::protobuf::util::JsonPrintOptions options;
+    options.preserve_proto_field_names = true;
+	options.always_print_primitive_fields = true;
+	options.always_print_enums_as_ints = true;
+	options.add_whitespace = true;
+	std::string json_out;
+	google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(pback, &json_out, options);
+	LOG_DEBUG("Protobuf to json: %v", json_out);
 
     nlohmann::json node_list = nlohmann::json::array();
     for (auto &sd : pback.node_list()) {

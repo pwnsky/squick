@@ -8,6 +8,7 @@
 #include <squick/plugin/lua/export.h>
 #include <squick/plugin/net/export.h>
 #include <squick/plugin/node/export.h>
+#include <squick/plugin/log/export.h>
 #include <struct/struct.h>
 
 namespace player::logic {
@@ -28,13 +29,12 @@ class LogicModule : public ILogicModule {
 
   protected:
     bool LuaBind();
-
-    void SendToPlayer(string &player_guid_str, uint16_t msg_id, std::string &data);
     void Test(const uint16_t msg_id, string &msg, int a);
 
   private:
     ILuaScriptModule *m_lua_script_;
     INodeModule *m_node_;
+    ILogModule *m_log_;
 };
 
 } // namespace player::logic

@@ -3,6 +3,9 @@ local Test = Module
 function Test:Start()
     Net:Register(MsgId.IdTReqConfig, self, self.OnTReqConfig)
     Net:Register(MsgId.IdTReqDb, self, self.OnTReqDb)
+
+    -- test to call cpp
+    CC:Test(123, "str from lua", 1)
 end
 
 function Test:Update()

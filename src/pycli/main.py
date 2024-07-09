@@ -7,15 +7,18 @@ import websocket
 import _thread
 import time
 import rel
+from protocol import *
+
 # pip install websocket-client websocket rel 
 # pip install requests
 # pip install http
+# pip install protobuf
 
 print("pycli:")
 
 session = requests.session()
 session.cookies = cookiejar.LWPCookieJar(filename='./login.cookie')
-BaseUrl = 'http://127.0.0.1:8088'
+BaseUrl = 'http://127.0.0.1:8888'
 header = {
     'Referer': BaseUrl + "login",
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) Chrome/89.0.4389.82'
@@ -39,18 +42,32 @@ def login(account, password):
         print(ex)
         return True, None
 
-def on_message(ws, message):
-    print(message)
 
-def on_error(ws, error):
-    print(error)
+def AuthConnection(ws):
+    print("Begin auth")
+    req = ReqConnectProxy()
+    req.account_id = '123456'
+    req.key = 'key'
+    req.login_node = 1
+    req.signatrue = 0
+    sdata = req.SerializeToString()
+    data = Encode(IdReqConnectProxy, sdata)
+    print(data)
+    ws.send(data, 2) 
 
-def on_close(ws, close_status_code, close_msg):
+def OnWsRecv(ws, message):
+    print("Message:", message)
+
+def OnWsError(ws, error):
+    print("Error:", error)
+
+def OnWsClose(ws, close_status_code, close_msg):
     print("### closed ###")
 
-def on_open(ws):
+def OnWsOpen(ws):
     print("Opened connection")
-
+    AuthConnection(ws)
+    
 
 if __name__ == '__main__':
     # login
@@ -63,13 +80,14 @@ if __name__ == '__main__':
     wsUrl = 'ws://' + str(jrsp['ip']) + ':' + str(jrsp['ws_port']) + '/'
     print("connect to proxy: " + wsUrl)
     ws = websocket.WebSocketApp(wsUrl,
-                              on_open=on_open,
-                              on_message=on_message,
-                              on_error=on_error,
-                              on_close=on_close)
-
-    rel.signal(2, rel.abort)  # Keyboard Interrupt
-    rel.dispatch()
+                              on_open=OnWsOpen,
+                              on_message=OnWsRecv,
+                              on_error=OnWsError,
+                              on_close=OnWsClose)
 
     # Set dispatcher to automatic reconnection, 5 second reconnect delay if connection closed unexpectedly
     ws.run_forever(dispatcher=rel, reconnect=5)
+
+    rel.signal(2, rel.abort)  # Keyboard Interrupt
+    rel.dispatch()
+    print("run")
