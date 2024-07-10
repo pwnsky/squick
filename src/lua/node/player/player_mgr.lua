@@ -1,4 +1,4 @@
-local PlayerMgr = Module
+local PlayerMgr = Object(Module).new()
 
 function PlayerMgr:Init()
     if self.players == nil then
@@ -15,6 +15,7 @@ end
 
 
 function PlayerMgr:Start()
+    Squick:LogError("PlayerMgr:Start" );
     Net:Register(MsgId.IdReqPlayerEnter, self, self.OnReqPlayerEnter)
     Net:Register(MsgId.IdReqPlayerData, self, self.OnReqPlayerData)
     Net:Register(MsgId.IdReqPlayerLeave, self, self.OnReqPlayerLeave)
@@ -242,7 +243,7 @@ end
 function PlayerMgr:OnReqPlayerData(uid, msg_data, msg_id, fd)
     local player = self.players[uid]
     if player == nil then
-        Print("No this player ", uid)
+        Squick:LogError("No this player " .. uid)
         return
     end
 

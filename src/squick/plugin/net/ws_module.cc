@@ -263,20 +263,22 @@ void WSModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const cha
 #if PLATFORM != PLATFORM_WIN
         SQUICK_CRASH_TRY
 #endif
+#ifdef SQUICK_DEV
+            // Log PB
+            m_pb_log_->Log("Received Msg by m_ws: ", msg_id, msg, len);
+#endif
         auto it = mxReceiveCallBack.find(msg_id);
         if (mxReceiveCallBack.end() != it) {
             auto &xFunList = it->second;
             for (auto itList = xFunList.begin(); itList != xFunList.end(); ++itList) {
                 auto &pFunPtr = *itList;
                 auto pFunc = pFunPtr.get();
-
                 pFunc->operator()(sock, msg_id, msg, len);
             }
         } else {
             for (auto itList = mxCallBackList.begin(); itList != mxCallBackList.end(); ++itList) {
                 auto &pFunPtr = *itList;
                 auto pFunc = pFunPtr.get();
-
                 pFunc->operator()(sock, msg_id, msg, len);
             }
         }

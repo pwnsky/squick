@@ -8,7 +8,7 @@ import _thread
 import time
 import rel
 from protocol import *
-
+from logic import *
 # pip install websocket-client websocket rel 
 # pip install requests
 # pip install http
@@ -16,7 +16,7 @@ from protocol import *
 
 print("pycli:")
 
-Data = {}
+Instance = {}
 
 session = requests.session()
 session.cookies = cookiejar.LWPCookieJar(filename='./login.cookie')
@@ -49,18 +49,21 @@ def login(account, password):
 def AuthConnection(ws):
     print("Begin auth")
     req = ReqConnectProxy()
-    req.account_id = Data['login']['account_id']
-    req.key = Data['login']['key']
-    req.login_node = Data['login']['login_node']
-    req.signatrue = Data['login']['signatrue']
+    req.account_id = Instance['login']['account_id']
+    req.key = Instance['login']['key']
+    req.login_node = Instance['login']['login_node']
+    req.signatrue = Instance['login']['signatrue']
     sdata = req.SerializeToString()
-    print(sdata)
     data = Encode(IdReqConnectProxy, sdata)
-    print(data)
-    ws.send(data, 2) 
+    ws.send(data, 2)
+
+def HandleMsg(data):
+    msg_id, msg = Decode(data)
+    Instance['callback'][msg_id](msg_id, msg)
 
 def OnWsRecv(ws, message):
     print("Message:", message)
+    HandleMsg(message)
 
 def OnWsError(ws, error):
     print("Error:", error)
@@ -85,14 +88,15 @@ if __name__ == '__main__':
     jrsp = json.loads(rsp)
     wsUrl = 'ws://' + str(jrsp['ip']) + ':' + str(jrsp['ws_port']) + '/'
     global LoginInfo
-    Data['login'] = jrsp
+    Instance['login'] = jrsp
     print("connect to proxy: " + wsUrl)
     ws = websocket.WebSocketApp(wsUrl,
                               on_open=OnWsOpen,
                               on_message=OnWsRecv,
                               on_error=OnWsError,
                               on_close=OnWsClose)
-
+    Instance['ws'] = ws
+    RegisterMsg(Instance)
     # Set dispatcher to automatic reconnection, 5 second reconnect delay if connection closed unexpectedly
     ws.run_forever(dispatcher=rel, reconnect=5)
 

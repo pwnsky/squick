@@ -21,5 +21,6 @@ def Encode(msg_id, data):
     return send_data
 
 def Decode(recv_data):
-    return msg_id, data
-
+    msg_id = int.from_bytes(recv_data[0:2], byteorder='big', signed=False)
+    length = int.from_bytes(recv_data[2:6], byteorder='big', signed=False)
+    return msg_id, recv_data[6:]
