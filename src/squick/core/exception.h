@@ -125,11 +125,10 @@ class Exception {
                 signal(SIGFPE, Exception::CrashHandler);
             if (signal(SIGSEGV, Exception::CrashHandler) != Exception::CrashHandler)
                 signal(SIGSEGV, Exception::CrashHandler);
-
+            sleep(1);
             siglongjmp(Exception::ExceptStack().Jump_Buffer, 1);
         }
     }
-
     static ExceptFrame &ExceptStack();
 };
 #define SQUICK_CRASH_TRY_ROOT                                                                                                                                  \
