@@ -204,6 +204,7 @@ bool HttpServerModule::AddMiddlewareCB(const HTTP_FILTER_FUNCTOR_PTR &cb) {
 }
 
 bool HttpServerModule::ResponseMsg(std::shared_ptr<HttpRequest> req, const std::string &msg, WebStatus code, const std::string &strReason) {
+    LOG_ERROR("HTTP ResponseMsg: %v", msg);
     return m_pHttpServer->ResponseMsg(req, msg, code, strReason);
 }
 
