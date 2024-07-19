@@ -1,6 +1,7 @@
 #include "plugin_server.h"
 #include <squick/core/base.h>
 #include <squick/core/exception.h>
+#include <algorithm>
 
 PluginServer::PluginServer(const std::string &strArgv) {
     std::cout << "Start to run node with: " << strArgv << std::endl;
@@ -75,6 +76,7 @@ void PluginServer::ProcessParameter() {
     string type = pm_->FindParameterValue("type=");
     string id = pm_->FindParameterValue("id=");
     pm_->SetConfigName(type + ".xml");
+    replace(type.begin(), type.end(), '/', '_');
     pm_->SetAppName(type + "_" + id);
 
     std::string strAppID = pm_->FindParameterValue("id=");

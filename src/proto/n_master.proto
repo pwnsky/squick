@@ -12,7 +12,7 @@ enum NodeState {
 enum NodeType {
     ST_NONE = 0;     // NONE
     ST_MASTER = 1;   //
-    ST_LOGIN = 2;    //
+    ST_WEB = 2;      //
     ST_WORLD = 3;    //
     ST_DB_PROXY = 4; //
     ST_PROXY = 5;    //
@@ -21,7 +21,7 @@ enum NodeType {
     ST_GAME = 8;     //
     ST_MICRO = 9;    // Micro
     ST_CDN = 10;     // CDN
-    ST_WEB = 11;     // Web
+    ST_BACKSTAGE = 11;  // Backstage
     ST_GLOBAL = 12;  // Global
     ST_ROOM = 13;    // Room
     ST_MATCH = 14;   // Match

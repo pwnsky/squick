@@ -10,6 +10,8 @@
 #include <struct/struct.h>
 #include <third_party/nlohmann/json.hpp>
 
+
+namespace backstage::logic {
 struct LoginInfo {
     std::string account;
     std::string account_id;
@@ -17,8 +19,6 @@ struct LoginInfo {
     time_t login_time;
     int32_t limit_time;
 };
-
-namespace backstage::logic {
 class LogicModule : public ILogicModule {
     using json = nlohmann::json;
 

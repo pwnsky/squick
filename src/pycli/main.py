@@ -8,17 +8,19 @@ import _thread
 import time
 import rel
 from protocol import *
-
-# pip install websocket-client websocket rel 
+from logic import *
+# pip install websocket-client rel 
 # pip install requests
 # pip install http
 # pip install protobuf
 
 print("pycli:")
 
+Instance = {}
+
 session = requests.session()
 session.cookies = cookiejar.LWPCookieJar(filename='./login.cookie')
-BaseUrl = 'http://127.0.0.1:8888'
+BaseUrl = 'http://127.0.0.1:8088'
 header = {
     'Referer': BaseUrl + "login",
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) Chrome/89.0.4389.82'
@@ -37,26 +39,31 @@ def login(account, password):
             cookie = requests.utils.dict_from_cookiejar(session.cookies)
             session.cookies.save(ignore_discard=True, ignore_expires=True)
             return False, resp.text
+        print("Error: ErrorCode: ", resp.status_code)
         return True, None
     except Exception as ex:
-        print(ex)
+        print("Error:", ex)
         return True, None
 
 
 def AuthConnection(ws):
     print("Begin auth")
     req = ReqConnectProxy()
-    req.account_id = '123456'
-    req.key = 'key'
-    req.login_node = 1
-    req.signatrue = 0
+    req.account_id = Instance['login']['account_id']
+    req.key = Instance['login']['key']
+    req.login_node = Instance['login']['login_node']
+    req.signatrue = Instance['login']['signatrue']
     sdata = req.SerializeToString()
     data = Encode(IdReqConnectProxy, sdata)
-    print(data)
-    ws.send(data, 2) 
+    ws.send(data, 2)
+
+def HandleMsg(data):
+    msg_id, msg = Decode(data)
+    Instance['callback'][msg_id](msg_id, msg)
 
 def OnWsRecv(ws, message):
     print("Message:", message)
+    HandleMsg(message)
 
 def OnWsError(ws, error):
     print("Error:", error)
@@ -71,20 +78,25 @@ def OnWsOpen(ws):
 
 if __name__ == '__main__':
     # login
+    print("Begin pycli")
     err, rsp = login("pycli", "password")
     if (err):
+        print("Error...")
         exit()
     
     print("login rsp: " + rsp)
     jrsp = json.loads(rsp)
     wsUrl = 'ws://' + str(jrsp['ip']) + ':' + str(jrsp['ws_port']) + '/'
+    global LoginInfo
+    Instance['login'] = jrsp
     print("connect to proxy: " + wsUrl)
     ws = websocket.WebSocketApp(wsUrl,
                               on_open=OnWsOpen,
                               on_message=OnWsRecv,
                               on_error=OnWsError,
                               on_close=OnWsClose)
-
+    Instance['ws'] = ws
+    RegisterMsg(Instance)
     # Set dispatcher to automatic reconnection, 5 second reconnect delay if connection closed unexpectedly
     ws.run_forever(dispatcher=rel, reconnect=5)
 

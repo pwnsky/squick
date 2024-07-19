@@ -1,4 +1,4 @@
-local PlayerMgr = Module
+local PlayerMgr = Object(Module).new()
 
 function PlayerMgr:Init()
     if self.players == nil then
@@ -242,7 +242,7 @@ end
 function PlayerMgr:OnReqPlayerData(uid, msg_data, msg_id, fd)
     local player = self.players[uid]
     if player == nil then
-        Print("No this player ", uid)
+        Squick:LogError("No this player " .. uid)
         return
     end
 

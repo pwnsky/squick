@@ -90,6 +90,9 @@ if (APPLE)
 		/opt/homebrew/lib/
 	)
 elseif(UNIX)
+if( BUILD_VERSION STREQUAL "Debug" )
+	SET ( CMAKE_CXX_FLAGS "-g" )
+endif()
 	include_directories(
 		${SolutionDir}/third_party/
 	)

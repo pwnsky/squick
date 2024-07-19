@@ -58,7 +58,7 @@ std::string PbLogModule::GetMessageInfo(const std::string &name, const std::stri
         LOG_ERROR("ParseFromString message: %v failed!", name);
     }
 
-std::string();
+    return std::string();
 }
 
 void PbLogModule::Log(const std::string &prefix, const int msg_id, const char *data, const uint32_t length) {

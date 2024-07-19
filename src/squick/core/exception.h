@@ -115,6 +115,7 @@ class Exception {
 
     static void CrashHandler(int sig) {
 
+        static int quit_error_num = 0;
         Exception::StackTrace(sig);
         if (sig > 0) {
             if (signal(SIGILL, Exception::CrashHandler) != Exception::CrashHandler)
@@ -125,11 +126,15 @@ class Exception {
                 signal(SIGFPE, Exception::CrashHandler);
             if (signal(SIGSEGV, Exception::CrashHandler) != Exception::CrashHandler)
                 signal(SIGSEGV, Exception::CrashHandler);
-
+            if(quit_error_num > 5)
+            {
+                exit(ENOTRECOVERABLE); // 131
+            }
+            quit_error_num ++;
+            sleep(1);
             siglongjmp(Exception::ExceptStack().Jump_Buffer, 1);
         }
     }
-
     static ExceptFrame &ExceptStack();
 };
 #define SQUICK_CRASH_TRY_ROOT                                                                                                                                  \

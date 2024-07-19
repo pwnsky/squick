@@ -10,6 +10,8 @@
 #include <third_party/nlohmann/json.hpp>
 #include <unordered_map>
 
+
+namespace web::logic {
 struct LoginInfo {
     std::string account;
     std::string account_id;
@@ -21,8 +23,6 @@ struct LoginInfo {
     std::string proxy_key;
     uint64_t signatrue;
 };
-
-namespace web::logic {
 class LogicModule : public ILogicModule {
     using json = nlohmann::json;
 

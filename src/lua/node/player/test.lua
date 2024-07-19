@@ -1,4 +1,4 @@
-local Test = Module
+local Test = Object(Module).new()
 
 function Test:Start()
     Net:Register(MsgId.IdTReqConfig, self, self.OnTReqConfig)
