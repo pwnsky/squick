@@ -10,7 +10,7 @@ set project_path= %~dp0\..
 set build_path=%project_path%\cache
 
 mkdir %build_path%
-rem 生成配置文件
+rem Gen config files
 call "proto2code.bat" no_pause
 call "generate_config.bat" no_pause
 call "init_runtime_dll.bat" no_pause
