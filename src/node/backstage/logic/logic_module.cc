@@ -82,14 +82,13 @@ bool LogicModule::OnAuthCheck(std::shared_ptr<HttpRequest> request) {
 
 Coroutine<bool> LogicModule::OnLogin(std::shared_ptr<HttpRequest> request) {
     std::string res_str;
-    ReqLogin req;
-    AckLogin ack;
+    BkReqLogin req;
+    BkAckLogin ack;
     string account_id;
     ajson::load_from_buff(req, request->body.c_str());
     ajson::string_stream rep_ss;
     do {
-
-        if (req.type == LoginType::AccountPasswordLogin) {
+        if (req.type == BkLoginType::AccountPasswordLogin) {
             int al = req.account.length();
             int pl = req.password.length();
 #ifdef SQUICK_DEV

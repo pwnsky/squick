@@ -6,7 +6,7 @@
 #include <struct/struct.h>
 using namespace std;
 
-enum class LoginType {
+enum class BkLoginType {
     AccountPasswordLogin = 0,
     EmailPasswordLogin = 1,
     EmailVerifyCodeLogin = 2,
@@ -27,19 +27,19 @@ enum class ClientPlatform {
     Web = 5,
 };
 
-class AckLogout : public IResponse {
+class BkAckLogout : public IResponse {
   public:
 };
 
-class AckRefreshToken : public IResponse {
+class BkAckRefreshToken : public IResponse {
   public:
     string token;   // 该token可用于RPC或http的token
     int limit_time; // token过期倒计时
 };
 
-class ReqLogin : public IRequest {
+class BkReqLogin : public IRequest {
   public:
-    LoginType type;
+    BkLoginType type;
     string account;
     string password;
     string token;
@@ -53,13 +53,13 @@ class ReqLogin : public IRequest {
     string verify_code;
 };
 
-AJSON(ReqLogin, type, account, password, token, signature, version, platform, device, extra, email, phone, verify_code)
+AJSON(BkReqLogin, type, account, password, token, signature, version, platform, device, extra, email, phone, verify_code)
 
-class AckLogin : public IResponse {
+class BkAckLogin : public IResponse {
   public:
     string token;      // 该token可用于RPC或http的token
     string account_id; // 账号ID
     int limit_time;    // token过期倒计时
 };
 
-AJSON(AckLogin, code, msg, token, account_id, limit_time)
+AJSON(BkAckLogin, code, msg, token, account_id, limit_time)
