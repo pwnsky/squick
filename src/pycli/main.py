@@ -7,14 +7,9 @@ import websocket
 import _thread
 import time
 import rel
+import sys
 from protocol import *
 from logic import *
-# pip install websocket-client rel 
-# pip install requests
-# pip install http
-# pip install protobuf
-
-print("pycli:")
 
 Instance = {}
 

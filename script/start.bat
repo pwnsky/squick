@@ -12,6 +12,6 @@ start cmd /c " squick type=backstage id=10 area=0 ip=127.0.0.1 port=10010 http_p
 start cmd /c " squick type=world id=100 area=0 ip=127.0.0.1 port=10101 master_ip=127.0.0.1 master_port=10001"
 start cmd /c " squick type=db_proxy id=300 area=0 ip=127.0.0.1 port=10201 master_ip=127.0.0.1 master_port=10001"
 start cmd /c " squick type=web id=2 area=0 ip=127.0.0.1 port=10301 web_port=8088 master_ip=127.0.0.1 master_port=10001"
-start cmd /c " squick type=lobby id=1000 area=0 ip=127.0.0.1 port=10401 master_ip=127.0.0.1 master_port=10001"
-start cmd /c " squick type=lobby id=1001 area=0 ip=127.0.0.1 port=10402 master_ip=127.0.0.1 master_port=10001"
+start cmd /c " squick type=player id=1000 area=0 ip=127.0.0.1 port=10401 master_ip=127.0.0.1 master_port=10001"
+start cmd /c " squick type=player id=1001 area=0 ip=127.0.0.1 port=10402 master_ip=127.0.0.1 master_port=10001"
 start cmd /c " squick type=proxy id=500 area=0 ip=127.0.0.1 port=10501 ws_port=10502 master_ip=127.0.0.1 master_port=10001"
