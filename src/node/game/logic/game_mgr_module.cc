@@ -86,7 +86,7 @@ bool GameMgrModule::DoGamePlayerQuit(const Guid &player) {
     if (id != -1) {
         auto iter = games_.find(id);
         if (iter == games_.end()) {
-            dout << "No this gameplay: " << id << std::endl;
+            // dout << "No this gameplay: " << id << std::endl;
         }
         auto gameplay = games_[id];
         if (gameplay != nullptr) {
@@ -96,10 +96,10 @@ bool GameMgrModule::DoGamePlayerQuit(const Guid &player) {
                 return GameDestroy(id);
             }
         } else {
-            dout << "This player not in game." << std::endl;
+            // dout << "This player not in game." << std::endl;
         }
     } else {
-        dout << "This player not in game." << std::endl;
+        // dout << "This player not in game." << std::endl;
     }
     return false;
 }
@@ -134,7 +134,7 @@ void GameMgrModule::OnRecv(const socket_t sock, const int msg_id, const char *ms
 
     auto iter = games_.find(group_id);
     if (iter == games_.end()) {
-        dout << "no this group: " << group_id << " msg_id: " << msg_id << std::endl;
+        // dout << "no this group: " << group_id << " msg_id: " << msg_id << std::endl;
         return;
     }
 
@@ -145,11 +145,11 @@ void GameMgrModule::OnRecv(const socket_t sock, const int msg_id, const char *ms
             GAME_MGR_RECEIVE_FUNCTOR *pFunc = ptr.get();
             pFunc->operator()(clientID, msg_id, xMsg.msg_data());
         } else {
-            dout << "no this callback! msg_id: " << msg_id << std::endl;
+            // dout << "no this callback! msg_id: " << msg_id << std::endl;
         }
 
     } else {
-        dout << "no this group: " << group_id << " msg_id: " << msg_id << std::endl;
+        // dout << "no this group: " << group_id << " msg_id: " << msg_id << std::endl;
     }
 }
 

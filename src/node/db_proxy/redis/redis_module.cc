@@ -131,7 +131,6 @@ bool RedisModule::Connect() {
     try {
         // Create an Redis object, which is movable but NOT copyable.
         string url = "tcp://" + ip_ + ":" + to_string(port_);
-        dout << "connect to : " << url << std::endl;
         client_ = new Redis(url);
         client_->auth(password_);
 

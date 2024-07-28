@@ -25,16 +25,8 @@
 #define SQUICK_SSL_PRIVATE_KEY "../config/ssl/private-key.pem"
 #endif
 
-//
-// #undef SQUICK_DEV
-#ifdef SQUICK_DEV
 #define dout std::cout << "SQUICK_DEV LOG:" << __FILE__ << ":" << __LINE__ << " "
 #define eout std::cout << "ERROR: "
-#else
-// Release版本时可以将 dout 打印给注释掉
-#define stuff
-#define dout / stuff /
-#endif
 
 #define SQUICK_DPRINT(x) std::cout << termcolor::cyan << __FILE__ << ":" << __LINE__ << ":" << x << "\n" << termcolor::reset;
 #define SQUICK_PRINT(x) std::cout << termcolor::cyan << x << termcolor::reset << std::endl;

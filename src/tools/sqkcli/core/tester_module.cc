@@ -99,7 +99,6 @@ void TesterModule::TestProxyTransferSpeed_Ack(const socket_t sock, const int msg
 }
 
 void TesterModule::TReqConfig() {
-    dout << "Okkkk\n";
     rpc::TReqConfig test;
     test.set_index(test_req_index_);
     test.set_data(test_req_data_);

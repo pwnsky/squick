@@ -74,7 +74,7 @@ def OnWsOpen(ws):
 if __name__ == '__main__':
     # login
     print("Begin pycli")
-    err, rsp = login("pycli", "password")
+    err, rsp = login("pycli_1", "password")
     if (err):
         print("Error...")
         exit()

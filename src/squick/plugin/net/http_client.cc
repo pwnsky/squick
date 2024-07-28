@@ -332,7 +332,7 @@ Awaitable<HttpClientResponseData> HttpClient::CoPost(const std::string &url, con
 
 void HttpClient::CoroutineBinder(Awaitable<HttpClientResponseData> *awaitble) {
     if (awaitble == nullptr) {
-        dout << "awaitble is nullptr\n";
+        // LOG_ERROR("awaitble is nullptr", "");
         return;
     }
     reqid_t req_id = awaitble->data_.req_id;
@@ -340,23 +340,21 @@ void HttpClient::CoroutineBinder(Awaitable<HttpClientResponseData> *awaitble) {
     if (iter == co_awaitbles_.end()) {
         co_awaitbles_[req_id] = awaitble;
     } else {
-        dout << "CoroutineBinder: same req id in a map, req id: " << req_id << " address: " << awaitble->coro_handle_.address() << std::endl;
+        // LOG_ERROR("CoroutineBinder: same req id in a map, req id: %v, address %v ", req_id, awaitble->coro_handle_.address());
     }
 }
 
 void HttpClient::CoroutineResponseHandler(const Guid id, const int state_code, const std::string &strRespData, const std::string &strMemoData) {
-    dout << "CoroutineResponseHandler: \n";
     reqid_t req_id = id.nData64;
     auto iter = co_awaitbles_.find(req_id);
     if (iter == co_awaitbles_.end()) {
-        dout << "CoroutineBinder: Not find req id in a map, req id: " << req_id << std::endl;
+        // LOG_ERROR("CoroutineBinder: Not find req id in a map, req id: %v" << req_id);
         return;
     }
     auto awaitble = iter->second;
     awaitble->data_.error = 0;
     awaitble->data_.content = strRespData;
     awaitble->data_.state_code = state_code;
-    dout << "CoroutineResponseHandler: coroutineid: " << awaitble->coro_handle_.address() << endl;
 
     // resume coroutine
     if (!awaitble->coro_handle_.done()) {
