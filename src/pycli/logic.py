@@ -31,4 +31,11 @@ def HandleAckPlayerEnter(msg_id, msg):
         print("Error")
 
 def HandleAckPlayerData(msg_id, msg):
-    print("okkkk")
+    ack = AckPlayerData()
+    ack.ParseFromString(msg)
+    data = MessageToJson(ack)
+    print("Get the player data: \n", data)
+
+
+def HandleOffline(msg_id, msg):
+    print("Player offline")

@@ -9,6 +9,9 @@
 
 #include "i_logic_module.h"
 #include <vector>
+
+namespace proxy::logic {
+#define HEATBEAT_TIMEOUT 30 // seconds
 enum class ProtocolType {
     Tcp = 1,
     WS = 2,
@@ -45,7 +48,6 @@ struct Session {
     int login_node;
 };
 
-namespace proxy::logic {
 class LogicModule : public ILogicModule {
   public:
     LogicModule(IPluginManager *p) {

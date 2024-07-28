@@ -103,9 +103,6 @@ void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const 
         return;
     }
 
-    // start heatbeat
-    // m_schedule_->AddSchedule(s.account_id, "HeatbeatCheck", this, &LogicModule::OnHeatbeatCheck, 10.0f, 99999); // 每10秒check一次
-
     uid = ack.data().uid();
     socket_t player_sock = ack.proxy_sock();
 
@@ -122,7 +119,7 @@ void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const 
         return;
     }
 
-    // 在这里创建玩家表
+    // Create the player info
     players_socks_[uid] = player_sock;
     pInfo->uid = uid;
     pInfo->status = PlayerOnline;
@@ -135,6 +132,9 @@ void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const 
     } else if (pInfo->protocol_type == ProtocolType::WS) {
         m_ws_->SendPBMsg(rpc::IdAckPlayerEnter, ack, player_sock);
     }
+
+    // Start heatbeat check
+    m_schedule_->AddSchedule(Guid(0, uid), "HeatbeatCheck", this, &LogicModule::OnHeatbeatCheck, 10.0f, 99999); // 每10秒check一次
 }
 
 int LogicModule::GetLoadBanlanceNode(int type) { return m_net_client_->GetRandomNodeID(type); }
@@ -149,9 +149,16 @@ void LogicModule::OnClientDisconnected(const socket_t sock) {
         sessions_.erase(iter);
     }
 
+    // remove the tcp
     NetObject *net_obj = m_net_->GetNet()->GetNetObject(sock);
     if (net_obj) {
         m_net_->GetNet()->CloseNetObject(sock);
+    }
+
+    // remove the ws
+    NetObject *ws_net_obj = m_ws_->GetNet()->GetNetObject(sock);
+    if (ws_net_obj) {
+        m_ws_->GetNet()->CloseNetObject(sock);
     }
 
     auto pInfo = GetPlayerConnInfo(sock);
@@ -161,7 +168,7 @@ void LogicModule::OnClientDisconnected(const socket_t sock) {
 
     // 判断是否有新的连接
     // 移除schedule
-    // m_schedule_->RemoveSchedule(iter->second.account_id);
+    m_schedule_->RemoveSchedule(Guid(0, pInfo->uid));
     if (pInfo->player_node > 0) {
         // when a net-object bind a account then tell that game-server
         rpc::NNtfPlayerOffline ntf;
@@ -180,14 +187,13 @@ void LogicModule::OnRecivedPlayerNodeMsg(const socket_t sock, const int msg_id, 
         return;
     }
     SendToPlayer(msg_pak.uid(), msg_id, msg_pak.msg_data());
-    return;
 }
 
 bool LogicModule::SendToPlayer(uint64_t uid, const int msg_id, const string &data) {
 
     bool ret = false;
     try {
-        auto pInfo = GetPlayerConnInfo(uid);
+        auto pInfo = GetPlayerConnInfoByUID(uid);
         if (pInfo == nullptr) {
             throw;
         }
@@ -210,13 +216,7 @@ void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const ch
         LOG_ERROR("OnOtherMessage get player connect info is null, sock<%v> msg_id<%v>", sock, msg_id);
         return;
     }
-    rpc::MsgBase xMsg;
-    xMsg.set_uid(pInfo->uid);
-    *xMsg.mutable_msg_data() = string(msg, len);
-    std::string pak;
-    if (!xMsg.SerializeToString(&pak)) {
-        return;
-    }
+
     // 根据ID 来转发至不同服务器
     if (msg_id >= 12000 && msg_id < 30000) {
         // 转发到Player node
@@ -224,7 +224,7 @@ void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const ch
         if (node_player_id <= 0) {
             return;
         }
-        m_net_client_->SendByID(node_player_id, msg_id, pak);
+        m_net_client_->SendByID(node_player_id, msg_id, std::string(msg, len), pInfo->uid);
     } else if (msg_id >= 10000 && msg_id < 32000) {
 
     } else if (msg_id >= 30000 && msg_id < 32000) {
@@ -243,7 +243,7 @@ void LogicModule::OnHeartbeat(const socket_t sock, const int msg_id, const char 
     }
 
     std::string msgData(msg, len);
-    pInfo->last_ping = SquickGetTimeMS();
+    pInfo->last_ping = SquickGetTimeS();
     if (pInfo->protocol_type == ProtocolType::Tcp) {
         m_net_->SendMsg(rpc::IdAckHeartBeat, msgData, sock);
     } else if (pInfo->protocol_type == ProtocolType::WS) {
@@ -272,18 +272,17 @@ void LogicModule::OnReqTestProxy(const socket_t sock, const int msg_id, const ch
 }
 
 int LogicModule::OnHeatbeatCheck(const Guid &self, const std::string &heartBeat, const float time, const int count) {
-    /*
-    auto iter = players_.find(self.ToString());
-    if (iter == players_.end()) {
-        dout << "No this player to heatbeat check\n";
+    auto player_info = GetPlayerConnInfoByUID(self.GetData());
+    if (player_info == nullptr) {
+        LOG_ERROR("No this player %v to heatbeat check", self.GetData());
         return 1;
     }
-    // dout << "heatbeatcheck : " << self.ToString() << "  " << iter->second.last_ping << "  now " << SquickGetTimeMS() << std::endl;
-    time_t now = SquickGetTimeMS();
-    if (now - iter->second.last_ping > 30000) { // 大于30秒即断线
-        OnClientDisconnected(iter->second.sock);
+    time_t now = SquickGetTimeS();
+    if (now - player_info->last_ping > HEATBEAT_TIMEOUT) {
+        LOG_INFO("OnHeatbeatCheck Player %v has timeout, last ping time %v, current time: %v , can not above than: %v", player_info->uid, player_info->last_ping, now, HEATBEAT_TIMEOUT);
+        OnClientDisconnected(player_info->sock);
+        return 2;
     }
-    return 0;*/
     return 0;
 }
 
@@ -353,7 +352,7 @@ void LogicModule::OnReqConnect(ProtocolType type, const socket_t sock, const int
     Session s;
     s.account_id = req.account_id();
     s.key = req.key();
-    s.time = SquickGetTimeMS();
+    s.time = SquickGetTimeS();
     s.sock = sock;
     s.ip = pNetObject->GetIP();
     s.protocol_type = type;
@@ -416,7 +415,7 @@ void LogicModule::OnNAckConnectVerify(const socket_t sock, const int msg_id, con
 
         auto &client = players_[s.sock];
         client.sock = s.sock;
-        client.last_ping = SquickGetTimeMSEx();
+        client.last_ping = SquickGetTimeS();
         client.account_id = s.account_id;
         client.account = data.account();
         client.login_node = s.login_node;

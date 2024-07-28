@@ -9,6 +9,7 @@ from test_pb2 import *
 from game_pb2 import *
 from base_pb2 import *
 from msg_id_pb2 import *
+from google.protobuf.json_format import MessageToJson
 
 
 print("sys", sys.path)

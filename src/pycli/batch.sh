@@ -9,7 +9,7 @@ fi
 
 for ((i=1; i<=$nums; i++))
 do
-        timeout --foreground $kill_time python main.py &
+        timeout --foreground $kill_time python main.py >> batch_run.log &
         sleep $sleep_time
 done
 
