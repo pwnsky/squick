@@ -33,6 +33,7 @@ bool LogicModule::AfterStart() {
     m_ws_->AddReceiveCallBack(this, &LogicModule::OnOtherMessage);
     m_ws_->AddReceiveCallBack(rpc::IdReqPlayerEnter, this, &LogicModule::OnReqPlayerEnter);
     m_ws_->AddReceiveCallBack(rpc::IdReqPlayerLeave, this, &LogicModule::OnReqPlayerLeave);
+    m_ws_->AddReceiveCallBack(rpc::IdReqHeartBeat, this, &LogicModule::OnHeartbeat);
 
     // Lobby
     m_net_client_->AddReceiveCallBack(rpc::ST_PLAYER, this, &LogicModule::OnRecivedPlayerNodeMsg);

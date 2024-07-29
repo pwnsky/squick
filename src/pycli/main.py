@@ -21,6 +21,7 @@ header = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) Chrome/89.0.4389.82'
 }
 
+
 def login(account, password):
     try:
         login_data = {
@@ -57,7 +58,6 @@ def HandleMsg(data):
     Instance['callback'][msg_id](msg_id, msg)
 
 def OnWsRecv(ws, message):
-    print("Message:", message)
     HandleMsg(message)
 
 def OnWsError(ws, error):
@@ -97,4 +97,5 @@ if __name__ == '__main__':
 
     rel.signal(2, rel.abort)  # Keyboard Interrupt
     rel.dispatch()
-    print("run")
+    LogicExit()
+    print("\nExited!")
