@@ -5,9 +5,8 @@
 # Github: https://github.com/pwnsky/squick
 # Description: Bash script source file
 
-#build_type="Release"
-build_version="Debug"
-build_mode="dev"
+build_version="Release"
+#build_mode="dev"
 project_path=`pwd`/..
 build_path="$project_path/cache"
 sys=`uname -s`
