@@ -107,13 +107,12 @@ int main(int argc, char *argv[]) {
         strArgvList += argv[i];
     }
 
-    PrintLogo();
-
     if (argc == 1) {
 #ifdef SQUICK_DEV
         DefaultStartUp(strArgvList, serverList);
         // TutorialStartUp(strArgvList, serverList);
 #else
+        PrintLogo();
         SQUICK_PRINT("<<  Squick  Help >>\n"
                      "Squick args usage:\n"
                      "       type: Set your app type;                                    default: proxy\n"
