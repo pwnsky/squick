@@ -2,9 +2,14 @@
 
 cd $(dirname $0)
 
+if [[ $SQUICK_NOT_GEN_CONFIG == "true" ]];then
+    exit
+fi
+
 if [ -z $SQUICK_RUN_ENV ];then
     SQUICK_RUN_ENV="dev"
 fi
+
 echo "Run env: $SQUICK_RUN_ENV"
 
 out_path="../config/node"
