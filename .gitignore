@@ -43,6 +43,7 @@
 /src/lua/proto/enum.lua
 /src/lua/struct/excel.lua
 /src/pycli/proto
+/src/config/node
 # Codeblocks
 *.layout
 *.depend
