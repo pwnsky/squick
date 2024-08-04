@@ -1,0 +1,8 @@
+{
+    "is_online_version" : false,
+    "protocol_debug": true,
+    "protocol_timeout_check": true,
+    "coroutine_max_num" : 10000,
+    "is_enable_https": false,
+    "max_connection": 10000
+}

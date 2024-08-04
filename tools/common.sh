@@ -66,8 +66,6 @@ function check_err()
     if [[ $errno != 0 ]];then
         log_error "Has terminated process, The error number: $errno"
         exit $errno
-    else
-        log_info "No error"
     fi
 }
 

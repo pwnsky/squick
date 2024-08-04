@@ -7,22 +7,10 @@ services:
     user: root
     restart: always
     environment:
-      - SQUICK_ARGS=type=master id=1 area=0 ip=172.0.1.1 port=10001 web_port=8888
+      - SQUICK_ARGS=type=master id=1 area=0 ip=172.0.0.1 port=10001 web_port=8888
     networks:
       squick_net:
-        ipv4_address: 172.0.1.1
-
-  world:
-    build:
-      context: .
-    image: pwnsky/squick:1.1
-    user: root
-    restart: always
-    environment:
-      - SQUICK_ARGS=type=world id=100 area=0 ip=172.0.1.2 port=10101 master_ip=172.0.1.1 master_port=10001
-    networks:
-      squick_net:
-        ipv4_address: 172.0.1.2
+        ipv4_address: 172.0.0.10
 
   db_proxy:
     build:
@@ -31,10 +19,22 @@ services:
     user: root
     restart: always
     environment:
-      - SQUICK_ARGS=type=db_proxy id=300 area=0 ip=172.0.1.3 port=10201 master_ip=172.0.1.1 master_port=10001
+      - SQUICK_ARGS=type=db_proxy id=300 area=0 ip=172.0.0.3 port=10201 master_ip=172.0.0.1 master_port=10001
     networks:
       squick_net:
-        ipv4_address: 172.0.1.3
+        ipv4_address: 172.0.0.11
+
+  world:
+    build:
+      context: .
+    image: pwnsky/squick:1.1
+    user: root
+    restart: always
+    environment:
+      - SQUICK_ARGS=type=world id=100 area=0 ip=172.0.0.2 port=10101 master_ip=172.0.0.1 master_port=10001
+    networks:
+      squick_net:
+        ipv4_address: 172.0.0.12
 
   web:
     build:
@@ -45,10 +45,10 @@ services:
     ports:
       - 8080:80
     environment:
-      - SQUICK_ARGS=type=web id=2 area=0 ip=172.0.1.4 port=10301 web_port=80 master_ip=172.0.1.1 master_port=10001
+      - SQUICK_ARGS=type=web id=2 area=0 ip=172.0.0.4 port=10301 web_port=80 master_ip=172.0.0.1 master_port=10001
     networks:
       squick_net:
-        ipv4_address: 172.0.1.4
+        ipv4_address: 172.0.0.13
 
   player:
     build:
@@ -57,10 +57,10 @@ services:
     user: root
     restart: always
     environment:
-      - SQUICK_ARGS=type=player id=1000 area=0 ip=172.0.1.5 port=10401 master_ip=172.0.1.1 master_port=10001
+      - SQUICK_ARGS=type=player id=1000 area=0 ip=172.0.0.5 port=10401 master_ip=172.0.0.1 master_port=10001
     networks:
       squick_net:
-        ipv4_address: 172.0.1.5
+        ipv4_address: 172.0.0.14
 
   proxy1:
     build:
@@ -69,10 +69,10 @@ services:
     user: root
     restart: always
     environment:
-      - SQUICK_ARGS=type=proxy id=500 area=0 ip=172.0.1.6 port=10501 master_ip=172.0.1.1 master_port=10001
+      - SQUICK_ARGS=type=proxy id=500 area=0 ip=172.0.0.6 port=10501 master_ip=172.0.0.1 master_port=10001
     networks:
       squick_net:
-        ipv4_address: 172.0.1.6
+        ipv4_address: 172.0.0.15
 
   backstage:
     build:
@@ -83,10 +83,10 @@ services:
     ports:
       - 8888:80
     environment:
-      - SQUICK_ARGS=type=backstage id=10 area=0 ip=172.0.1.7 port=10401 web_port=80 master_ip=172.0.1.1 master_port=10001
+      - SQUICK_ARGS=type=backstage id=10 area=0 ip=172.0.0.7 port=10401 web_port=80 master_ip=172.0.0.1 master_port=10001
     networks:
       squick_net:
-        ipv4_address: 172.0.1.7
+        ipv4_address: 172.0.0.16
 
   db_mysql:
     build:
@@ -98,7 +98,7 @@ services:
       - MYSQL_ROOT_PASSWORD=pwnsky_squick
     networks:
       squick_net:
-        ipv4_address: 172.0.1.60
+        ipv4_address: 172.0.0.60
 
   db_mongo:
     build:
@@ -111,7 +111,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=pwnsky_squick
     networks:
       squick_net:
-        ipv4_address: 172.0.1.61
+        ipv4_address: 172.0.0.61
 
   db_clickhouse:
     build:
@@ -121,7 +121,7 @@ services:
     restart: always
     networks:
       squick_net:
-        ipv4_address: 172.0.1.62
+        ipv4_address: 172.0.0.62
 
   db_redis:
     build:
@@ -133,7 +133,7 @@ services:
       - REDIS_PASSWORD=pwnsky_squick
     networks:
       squick_net:
-        ipv4_address: 172.0.1.63
+        ipv4_address: 172.0.0.63
 
 networks:
     default:
@@ -142,4 +142,4 @@ networks:
     squick_net:
         ipam:
             config:
-            - subnet: 172.0.1.0/16
+            - subnet: 172.0.0.0/16
