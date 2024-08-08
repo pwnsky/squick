@@ -1,5 +1,6 @@
 // Desc: Master RPC 500 ~ 1000
 syntax = "proto3";
+import "n_node.proto";
 package rpc;
 
 enum NodeState {
@@ -108,3 +109,21 @@ message NReqAllNodesInfo { // msg_id=512;
 message NAckAllNodesInfo { // msg_id=513;
     repeated Node node_list = 1;
 }
+
+enum ReloadType {
+    ReloadTypeAll = 0;
+    ReloadNodeConfig = 1;
+    ReloadExcelConfig = 2;
+    ReloadNodeScript = 3;
+}
+
+message NReqReload { // msg_id=514;
+    ReloadType type = 1;
+}
+
+message NAckReload { // msg_id=515;
+    NErrorCode code = 1;
+    ReloadType type = 2;
+}
+
+

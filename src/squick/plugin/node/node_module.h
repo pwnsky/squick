@@ -54,6 +54,8 @@ class NodeModule : public INodeModule {
     void OnNNtfNodeRemove(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     bool RemoveNodes();
 
+    void OnNReqReload(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+
   public:
     ILogModule *m_log_;
     INetModule *m_net_;

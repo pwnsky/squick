@@ -28,9 +28,10 @@ bool LogicModule::AfterStart() {
     m_http_server_->AddRequestHandler(WEB_BASE_PATH "/all_nodes", HttpType::SQUICK_HTTP_REQ_GET, this, &LogicModule::OnGetAllNodes);
     m_http_server_->AddRequestHandler(WEB_BASE_PATH "/auth_check", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnAuthCheck);
     m_http_server_->AddRequestHandler(WEB_BASE_PATH "/auth_check", HttpType::SQUICK_HTTP_REQ_GET, this, &LogicModule::OnAuthCheck);
+    m_http_server_->AddRequestHandler(WEB_BASE_PATH "/reload", HttpType::SQUICK_HTTP_REQ_GET, this, &LogicModule::OnReload);
     m_http_server_->StartServer(pm_->GetArg("http_port=", ARG_DEFAULT_HTTP_PORT));
 
-    vector<int> node_types = {rpc::ST_GLOBAL, rpc::ST_DB_PROXY, rpc::ST_PLAYER};
+    vector<int> node_types = {rpc::ST_GLOBAL, rpc::ST_DB_PROXY, rpc::ST_PLAYER, rpc::ST_PROXY, rpc::ST_WORLD, rpc::ST_WEB};
     m_node_->AddSubscribeNode(node_types);
 
     LoadConfig();
@@ -38,7 +39,7 @@ bool LogicModule::AfterStart() {
 }
 
 bool LogicModule::LoadConfig() {
-    std::string config_path = pm_->GetWorkPath() + "/config/node/web.json";
+    std::string config_path = pm_->GetWorkPath() + "/config/node/backstage.json";
     std::ifstream config_file(config_path);
     if (!config_file.is_open()) {
         LOG_ERROR("The configure file <%v> is not exsist", config_path);
@@ -78,6 +79,38 @@ bool LogicModule::OnAuthCheck(std::shared_ptr<HttpRequest> request) {
     ajson::save_to(rep_ss, rsp);
     m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
     return true;
+}
+
+Coroutine<bool> LogicModule::OnReload(std::shared_ptr<HttpRequest> request) {
+
+    IResponse rsp;
+    rpc::NReqReload pbreq;
+    auto data = co_await m_net_client_->RequestPB(DEFAULT_MASTER_ID, rpc::IdNReqReload, pbreq, rpc::IdNAckReload);
+    if (data.error) {
+        rsp.code = IResponse::SERVER_ERROR;
+        rsp.msg = "Server get network error";
+        ajson::string_stream rep_ss;
+        ajson::save_to(rep_ss, rsp);
+        m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_ERROR);
+        co_return;
+    }
+
+    uint64_t uid;
+    rpc::NAckReload pback;
+    if (!INetModule::ReceivePB(data.ack_msg_id, data.data, data.length, pback, uid)) {
+        rsp.code = IResponse::SERVER_ERROR;
+        rsp.msg = "Parse msg is error error";
+        ajson::string_stream rep_ss;
+        ajson::save_to(rep_ss, rsp);
+        m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_ERROR);
+        co_return;
+    }
+
+    rsp.code = IResponse::SUCCESS;
+    rsp.msg = "reloaded";
+    ajson::string_stream rep_ss;
+    ajson::save_to(rep_ss, rsp);
+    m_http_server_->ResponseMsg(request, rep_ss.str(), WebStatus::WEB_OK);
 }
 
 Coroutine<bool> LogicModule::OnLogin(std::shared_ptr<HttpRequest> request) {

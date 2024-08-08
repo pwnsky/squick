@@ -135,6 +135,8 @@ bool NodeModule::AddSubscribeNode(const vector<int> &types) {
     m_net_client_->AddReceiveCallBack(rpc::ST_MASTER, rpc::IdNNtfNodeAdd, this, &NodeModule::OnNNtfNodeAdd);
     m_net_client_->AddReceiveCallBack(rpc::ST_MASTER, rpc::IdNNtfNodeRemove, this, &NodeModule::OnNNtfNodeRemove);
     m_net_client_->AddReceiveCallBack(rpc::ST_MASTER, rpc::IdNAckNodeRegister, this, &NodeModule::OnNAckNodeRegister);
+    m_net_client_->AddReceiveCallBack(rpc::ST_MASTER, rpc::IdNReqReload, this, &NodeModule::OnNReqReload);
+
     bool ret = false;
     node_info_.listen_types = types;
     ConnectData s;
@@ -285,6 +287,17 @@ bool NodeModule::AddNodes(const google::protobuf::RepeatedPtrField<rpc::Node> &l
         m_net_client_->AddNode(s);
     }
     return true;
+}
+
+// Reload config or lua script
+void NodeModule::OnNReqReload(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    uint64_t uid;
+    rpc::NReqReload req;
+    if (!m_net_->ReceivePB(msg_id, msg, len, req, uid)) {
+        return;
+    }
+
+    LOG_INFO("Reload type: %v", (int)req.type());
 }
 
 // Add node ntf

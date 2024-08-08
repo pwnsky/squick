@@ -1,14 +1,14 @@
 {
     "Mysql" : {
-        "Account" : { "ip":"127.0.0.1", "port":10400, "user":"root", "password":"pwnsky_squick", "database":"db_account" }
+        "Account" : { "ip":"9.134.247.53", "port":10400, "user":"root", "password":"pwnsky_squick", "database":"db_account" }
     },
     "Mongo" : {
-        "Player" : { "ip":"127.0.0.1", "port":10410, "user":"admin", "password":"pwnsky_squick", "database":"db_game"}
+        "Player" : { "ip":"9.134.247.53", "port":10410, "user":"admin", "password":"pwnsky_squick", "database":"db_game"}
     },
     "Redis" : {
-        "Cache" : { "ip":"127.0.0.1", "port":10420, "user":"root", "password":"pwnsky_squick", "database":""}
+        "Cache" : { "ip":"9.134.247.53", "port":10420, "user":"root", "password":"pwnsky_squick", "database":""}
     },
     "Clickhouse" : {
-        "Log" : { "ip":"127.0.0.1", "port":10431, "user":"default", "password":"pwnsky_squick", "database":"db_log"}
+        "Log" : { "ip":"9.134.247.53", "port":10431, "user":"default", "password":"pwnsky_squick", "database":"db_log"}
     }
 }

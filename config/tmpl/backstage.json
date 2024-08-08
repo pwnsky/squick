@@ -1,0 +1,14 @@
+{
+    "ResponseHttpHeader": {
+        "Access-Control-Allow-Origin" : "http://localhost:5173",
+        "Access-Control-Allow-Headers" : "Content-Type,Access-Token,X-CSRF-Token, Authorization",
+        "Access-Control-Allow-Methods" : "POST,GET,OPTIONS,PUT",
+        "Access-Control-Expose-Headers" : "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type",
+        "Access-Control-Allow-Credentials" : "true"
+    },
+    
+    "WhiteUriList" : [
+        "/api/login",
+        "/api/reload"
+    ]
+}
