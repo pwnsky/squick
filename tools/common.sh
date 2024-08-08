@@ -5,9 +5,22 @@
 # Github: https://github.com/pwnsky/squick
 # Description: Bash script source file
 
-build_version="Debug"
+# Build version
+if [ -z $SQUICK_BUILD_VERSION ];then
+        SQUICK_BUILD_VERSION="Debug"
+fi
+echo "build version: $SQUICK_BUILD_VERSION"
+
+# Build mode
+if [ -z $SQUICK_BUILD_MODE ];then
+        SQUICK_BUILD_MODE="dev"
+fi
+echo "build mode: $SQUICK_BUILD_MODE"
+
+build_version=$SQUICK_BUILD_VERSION
 #build_version="Release"
-build_mode="dev"
+
+build_mode=$SQUICK_BUILD_MODE
 project_path=`pwd`/..
 build_path="$project_path/cache"
 sys=`uname -s`
