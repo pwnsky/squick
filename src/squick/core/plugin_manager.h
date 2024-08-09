@@ -33,6 +33,8 @@ class PluginManager : public IPluginManager {
 
     virtual bool Finalize() override;
 
+    virtual bool Reload(int type) override;
+
     //////////////////////////////////////////////////////////////////////////
 
     virtual void Registered(IPlugin *pPlugin) override;

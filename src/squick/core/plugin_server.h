@@ -35,6 +35,7 @@ class PluginServer {
     void Start();
     void Update();
     void Final();
+    void Reload(int type);
 
     void SetBasicWareLoader(std::function<void(IPluginManager *p)> fun);
     void SetMidWareLoader(std::function<void(IPluginManager *p)> fun);

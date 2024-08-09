@@ -298,6 +298,7 @@ void NodeModule::OnNReqReload(const socket_t sock, const int msg_id, const char 
     }
 
     LOG_INFO("Reload type: %v", (int)req.type());
+    SetSquickReloadState(1);
 }
 
 // Add node ntf

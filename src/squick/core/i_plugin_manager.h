@@ -63,6 +63,8 @@ class IPluginManager {
 
     virtual bool OnReloadPlugin() { return true; }
 
+    virtual bool Reload(int type) { return true; }
+
     /////////////////////
 
     template <typename T> T *FindModule() {

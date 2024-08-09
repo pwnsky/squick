@@ -139,6 +139,16 @@ class IPlugin : public IModule {
         return true;
     }
 
+    virtual bool Reload(int type) {
+        for (const auto &it : mModules) {
+            IModule *pModule = it.second;
+            pm_->SetCurrentModule(pModule);
+            pModule->Reload(type);
+        }
+
+        return true;
+    }
+
     virtual bool BeforeDestroy() {
         for (const auto &it : mModules) {
             IModule *pModule = it.second;

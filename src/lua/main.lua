@@ -64,7 +64,9 @@ function Destroy()
 end
 
 function HotReload()
+    Squick:LogInfo("Lua script begin hot reload")
     Load()
+    Squick:LogInfo("Lua script end hot reload")
 end
 
 function Load() 

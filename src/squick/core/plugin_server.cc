@@ -45,6 +45,10 @@ void PluginServer::Start() {
     pm_->ReadyUpdate();
 }
 
+void  PluginServer::Reload(int type) {
+    pm_->Reload(type);
+}
+
 void PluginServer::Final() {
     pm_->BeforeDestroy();
     pm_->Destroy();

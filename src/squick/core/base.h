@@ -36,6 +36,9 @@
 SQUICK_EXPORT void SetSquickMainThreadSleep(bool is_sleep);
 SQUICK_EXPORT bool IsSquickMainThreadSleep();
 
+SQUICK_EXPORT void SetSquickReloadState(int state);
+SQUICK_EXPORT int GetSquickReloadState();
+
 //
 #define DEFAULT_MASTER_ID 1 // master_id=1, cannot set
 
