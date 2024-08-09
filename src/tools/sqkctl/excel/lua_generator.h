@@ -144,7 +144,6 @@ class LuaGenerator : public IGenerator {
         }
         std::string strFileEnd = "\n}";
         fwrite(strFileEnd.c_str(), strFileEnd.length(), 1, hppWriter);
-
         fclose(hppWriter);
         return false;
     }

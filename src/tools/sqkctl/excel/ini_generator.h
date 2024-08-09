@@ -66,9 +66,7 @@ class IniGenerator : public IGenerator {
             } else {
                 std::cout << "save for ini error!!!!!---> " << fileName << std::endl;
             }
-
-            if (!iniWriter)
-                fclose(iniWriter);
+            fclose(iniWriter);
         }
 
         return false;

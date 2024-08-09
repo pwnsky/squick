@@ -158,7 +158,6 @@ class CSGenerator : public IGenerator {
 
         std::string strFileEnd = "\n}";
         fwrite(strFileEnd.c_str(), strFileEnd.length(), 1, csWriter);
-
         fclose(csWriter);
 
         return false;
