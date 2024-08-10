@@ -87,3 +87,9 @@ function Load()
         Print("Not surppot this app type: " .. tostring(Env.app_type))
     end
 end
+
+-- Execute lua code
+function ExecuteLua(script_code)
+    local func = load(script_code)
+    return func()
+end

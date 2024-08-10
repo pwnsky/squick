@@ -1,5 +1,6 @@
 
 #include "node_module.h"
+#include <squick/plugin/lua/export.h>
 
 NodeModule::NodeModule(IPluginManager *p) {
     pm_ = p;
@@ -104,6 +105,7 @@ rpc::NodeType NodeModule::StringNodeTypeToEnum(const std::string &type) {
 bool NodeModule::Listen() {
     m_net_->AddReceiveCallBack(this, &NodeModule::InvalidMessage);
     m_net_->AddEventCallBack(this, &NodeModule::OnServerSocketEvent);
+    m_net_->AddReceiveCallBack(rpc::IdNReqExecuteLua, this, &NodeModule::OnNReqExecuteLua);
 
     node_info_.info->set_id(pm_->GetArg("id=", ARG_DEFAULT_ID));
     node_info_.info->set_type(pm_->GetAppType());
@@ -136,6 +138,7 @@ bool NodeModule::AddSubscribeNode(const vector<int> &types) {
     m_net_client_->AddReceiveCallBack(rpc::ST_MASTER, rpc::IdNNtfNodeRemove, this, &NodeModule::OnNNtfNodeRemove);
     m_net_client_->AddReceiveCallBack(rpc::ST_MASTER, rpc::IdNAckNodeRegister, this, &NodeModule::OnNAckNodeRegister);
     m_net_client_->AddReceiveCallBack(rpc::ST_MASTER, rpc::IdNReqReload, this, &NodeModule::OnNReqReload);
+    m_net_client_->AddReceiveCallBack(rpc::ST_BACKSTAGE, rpc::IdNReqExecuteLua, this, &NodeModule::OnNReqExecuteLua);
 
     bool ret = false;
     node_info_.listen_types = types;
@@ -299,6 +302,44 @@ void NodeModule::OnNReqReload(const socket_t sock, const int msg_id, const char 
 
     LOG_INFO("Reload type: %v", (int)req.type());
     SetSquickReloadState(1);
+}
+
+void NodeModule::OnNReqExecuteLua(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    uint64_t uid;
+    rpc::NReqExecuteLua req;
+    rpc::NAckExecuteLua ack;
+
+    rpc::MsgBase msg_base;
+    if (!msg_base.ParseFromArray(msg, len)) {
+        LOG_ERROR("ParseFromArray: is error, the msg len %v", len);
+        return;
+    }
+    reqid_t req_id = msg_base.req_id();
+
+    if (!req.ParseFromString(msg_base.msg_data())) {
+        LOG_ERROR("ParseFromString: is error, the msg len %v", len);
+    }
+
+    ILuaScriptModule *m_lua = pm_->FindModule<ILuaScriptModule>();
+    bool is_error = false;
+    if (m_lua) {
+        ack.set_output(m_lua->ExecuteLua(req.script(), is_error));
+        if (is_error)
+        {
+            ack.set_code(rpc::NErrorCode::NErrCommonFaild);
+        }
+        else {
+            ack.set_code(rpc::NErrorCode::NErrCommonSucc);
+        }
+    }
+    else {
+        LOG_ERROR("Find the lua script module is null", "");
+        ack.set_code(rpc::NErrorCode::NErrCommonFaild);
+    }
+
+    ack.set_node_id(req.node_id());
+    ack.set_type(req.type());
+    m_net_->SendPBToNode(rpc::IdNAckExecuteLua, ack, sock, 0, req_id);
 }
 
 // Add node ntf

@@ -109,6 +109,20 @@ bool LuaScriptModule::BeforeDestroy() {
     return true;
 }
 
+// 用于Lua 初始化
+string LuaScriptModule::ExecuteLua(const std::string script, bool &is_error) {
+    try {
+        LuaIntf::LuaRef func(mLuaContext, "ExecuteLua");
+        auto output = func.call<std::string>(script);
+        is_error = false;
+        return output;
+    } catch (LuaIntf::LuaException & e) {
+        is_error = true;
+        return e.what();
+    }
+    return "";
+}
+
 LuaIntf::LuaContext &LuaScriptModule::GetLuaEnv() { return this->mLuaContext; }
 
 Guid LuaScriptModule::CreateObject(const Guid &self, const int sceneID, const int groupID, const std::string &className, const std::string &objectIndex,

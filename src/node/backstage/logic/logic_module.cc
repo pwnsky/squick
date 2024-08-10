@@ -344,10 +344,12 @@ Coroutine<bool> LogicModule::OnLuaExecute(std::shared_ptr<HttpRequest> request) 
     util::Status status = util::JsonStringToMessage(request->body, &pbreq);
     if (!status.ok())
     {
+        LOG_ERROR("Pasrse the json string is error, status", (int)status.code());
     }
 
     auto data = co_await m_net_client_->RequestPB(pbreq.node_id(), rpc::IdNReqExecuteLua, pbreq, rpc::IdNAckExecuteLua);
     if (data.error) {
+        LOG_ERROR("Corotuine request is error", 0);
         co_return;
     }
 
@@ -357,7 +359,7 @@ Coroutine<bool> LogicModule::OnLuaExecute(std::shared_ptr<HttpRequest> request) 
     }
 
     std::string json_out;
-    status = util::MessageToJsonString(pbreq, &json_out, GetDefaultPb2JsonOptions());
+    status = util::MessageToJsonString(pback, &json_out, GetDefaultPb2JsonOptions());
     LOG_DEBUG("OnLuaExecute Protobuf to json: %v", json_out);
 
     m_http_server_->ResponseMsg(request, json_out, WebStatus::WEB_OK);
