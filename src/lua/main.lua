@@ -91,5 +91,5 @@ end
 -- Execute lua code
 function ExecuteLua(script_code)
     local func = load(script_code)
-    return func()
+    return tostring(func())
 end

@@ -5,23 +5,31 @@
 -- Description: 打印table
 -----------------------------------------------------------------------------
 
-function print_t(table)
+function print_t(table, level)
     local out_str = ""
     if table == nil then
         out_str = out_str .. "the table is nil\n"
         out_str = out_str .. debug.traceback()
         return out_str
     end
+
+    if level == nil then
+        level = 1
+    end
+
+    if level > 10 then
+        return ''
+    end 
     
     local key = ""
-    level =  1
+    
     local indent = ""
     for i = 1, level do
-    indent = indent.."  "
+        indent = indent .. "  "
     end
     
     if key ~= "" then
-        out_str = out_str .. indent..key.." ".."=".." ".."{\n"
+        out_str = out_str .. indent .. key.." ".."=".." ".."{\n"
     else
         out_str = out_str .. indent .. "{\n"
     end
@@ -31,7 +39,7 @@ function print_t(table)
     if type(v) == "table" then
         key = k
         out_str = out_str .. indent .. key .. " =\n"
-        PrintTable(v, level + 1)
+        out_str = out_str .. print_t(v, level + 1)
     else
         local content = string.format("%s%s = %s", indent .. "  ",tostring(k), tostring(v))
         out_str = out_str .. content..";\n"
