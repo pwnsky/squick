@@ -24,9 +24,9 @@ class ManagerModule : public IManagerModule {
 
   protected:
     // 创建实例
-    void InstanceCreate(const string &instanceId, const string &key);
+    // void InstanceCreate(const string &instanceId, const string &key);
     // 销毁实例
-    void InstanceDestroy(const string &instanceId);
+    // void InstanceDestroy(const string &instanceId);
 
   private:
     IClassModule *m_class_;
