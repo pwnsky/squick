@@ -23,8 +23,8 @@ echo "Current LinuxDistro $LinuxDistro"
 
 if [ $LinuxDistro == "Debian" ] || [ $LinuxDistro == "Ubuntu" ] || [ $LinuxDistro == "Raspbian" ]; then
     $sudo apt-get update
-    $sudo apt-get -y git cmake unzip automake make g++ libtool pkg-config
-    $sudo apt-get -y install libreadline-dev libssl-dev libncurses5-dev
+    $sudo apt-get -y git cmake unzip automake make gcc g++ libtool pkg-config
+    $sudo apt-get -y install libreadline-dev libssl-dev libncurses-dev
     
 elif [ $LinuxDistro == "CentOS" ] || [ $LinuxDistro == "RHEL" ] || [ $LinuxDistro == "Fedora" ]  || [ $LinuxDistro == "Aliyun" ]; then
     $sudo yum -y install cmake unzip automake make
