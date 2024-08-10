@@ -25,6 +25,7 @@ class LogicModule : public ILogicModule {
     void OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     void OnNNtfNodeMsgForward(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
     void OnNReqAllNodesInfo(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnNReqReload(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
 
     int GetLoadBanlanceNode(int type);
 

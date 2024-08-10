@@ -68,6 +68,13 @@ bool LuaScriptModule::Start() {
 
     return true;
 }
+
+bool LuaScriptModule::Reload(int type) {
+    LOG_INFO("Lua module reloaded, reload type %v", type);
+    TRY_RUN_GLOBAL_SCRIPT_FUN0("HotReload");
+    return true;
+}
+
 // 用于Lua 初始化
 bool LuaScriptModule::AfterStart() {
     TRY_RUN_GLOBAL_SCRIPT_FUN0("AfterStart");
@@ -100,6 +107,20 @@ bool LuaScriptModule::BeforeDestroy() {
     TRY_RUN_GLOBAL_SCRIPT_FUN0("BeforeDestroy");
 
     return true;
+}
+
+// 用于Lua 初始化
+string LuaScriptModule::ExecuteLua(const std::string script, bool &is_error) {
+    try {
+        LuaIntf::LuaRef func(mLuaContext, "ExecuteLua");
+        auto output = func.call<std::string>(script);
+        is_error = false;
+        return output;
+    } catch (LuaIntf::LuaException & e) {
+        is_error = true;
+        return e.what();
+    }
+    return "";
 }
 
 LuaIntf::LuaContext &LuaScriptModule::GetLuaEnv() { return this->mLuaContext; }

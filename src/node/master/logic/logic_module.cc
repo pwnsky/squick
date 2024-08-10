@@ -19,6 +19,7 @@ bool LogicModule::AfterStart() {
     m_net_->AddReceiveCallBack(rpc::IdNReqMinWorkloadNodeInfo, this, &LogicModule::OnNReqMinWorkNodeInfo);
     m_net_->AddReceiveCallBack(rpc::IdNNtfNodeMsgForward, this, &LogicModule::OnNNtfNodeMsgForward);
     m_net_->AddReceiveCallBack(rpc::IdNReqAllNodesInfo, this, &LogicModule::OnNReqAllNodesInfo);
+    m_net_->AddReceiveCallBack(rpc::IdNReqReload, this, &LogicModule::OnNReqReload);
 
     m_http_server_ = pm_->FindModule<::IHttpServerModule>();
 
@@ -282,4 +283,25 @@ bool LogicModule::OnGetNodeList(std::shared_ptr<HttpRequest> req) {
     return m_http_server_->ResponseMsg(req, statusRoot.dump(), WebStatus::WEB_OK);
 }
 
+void LogicModule::OnNReqReload(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+    rpc::MsgBase msg_base;
+    if (!msg_base.ParseFromArray(msg, len)) {
+        LOG_ERROR("ParseFromArray: is error, the msg len %v", len);
+        return;
+    }
+
+    std::cout << "Master reloading....\n";
+    reqid_t req_id = msg_base.req_id();
+    rpc::NAckReload ack;
+
+    for (auto s : node_map_) {
+        LOG_INFO("Master Req reload: [%v]", s.second.info->id());
+        m_net_->SendPBToNode(rpc::IdNReqReload, ack, s.second.fd);
+    }
+
+    m_net_->SendPBToNode(rpc::IdNAckReload, ack, sock, 0, req_id);
+
+}
+
 } // namespace master::logic
+

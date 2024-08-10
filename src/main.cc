@@ -107,13 +107,12 @@ int main(int argc, char *argv[]) {
         strArgvList += argv[i];
     }
 
-    PrintLogo();
-
     if (argc == 1) {
 #ifdef SQUICK_DEV
         DefaultStartUp(strArgvList, serverList);
         // TutorialStartUp(strArgvList, serverList);
 #else
+        PrintLogo();
         SQUICK_PRINT("<<  Squick  Help >>\n"
                      "Squick args usage:\n"
                      "       type: Set your app type;                                    default: proxy\n"
@@ -153,8 +152,17 @@ int main(int argc, char *argv[]) {
     while (squick_loop_) {
         nIndex++;
         SetSquickMainThreadSleep(true);
+        int state = GetSquickReloadState();
         for (auto item : serverList) {
             item->Update();
+            if (state > 0)
+            {
+                item->Reload(state);
+            }
+        }
+        if (state > 0)
+        {
+            SetSquickReloadState(0);
         }
         if (IsSquickMainThreadSleep()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(MAIN_THREAD_SLEEP_TIME));

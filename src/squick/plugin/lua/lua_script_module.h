@@ -26,6 +26,7 @@
 
 class ILuaScriptModule : public IModule {
   public:
+  virtual std::string ExecuteLua(const std::string script, bool &is_error) = 0;
 };
 
 class LuaScriptModule : public ILuaScriptModule {
@@ -42,6 +43,7 @@ class LuaScriptModule : public ILuaScriptModule {
 
     virtual bool Awake();
     virtual bool Start();
+    virtual bool Reload(int type) override;
     virtual bool Destroy();
     virtual bool ReadyUpdate();
     virtual bool Update();
@@ -50,6 +52,7 @@ class LuaScriptModule : public ILuaScriptModule {
     virtual bool BeforeDestroy();
 
     virtual LuaIntf::LuaContext &GetLuaEnv();
+    virtual std::string ExecuteLua(const std::string script, bool &is_error);
 
   protected:
     // FOR KERNEL MODULE

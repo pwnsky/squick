@@ -7,6 +7,9 @@
 cd $(dirname $0)
 log_path="../data/logs"
 
+bash ./gen_env_config.sh
+export SQUICK_NOT_GEN_CONFIG="true"
+
 ./squick.sh type=master id=1 area=0 ip=127.0.0.1 port=10001 http_port=50000 logshow=0 >> $log_path/master_run.log & 
 sleep 0.5
 ./squick.sh type=backstage id=10 area=0 ip=127.0.0.1 port=10010 http_port=8888 master_ip=127.0.0.1 master_port=10001 logshow=0 >> $log_path/backstage_run.log &

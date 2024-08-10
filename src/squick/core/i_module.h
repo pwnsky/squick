@@ -30,6 +30,8 @@ class IModule {
 
     virtual bool OnReloadPlugin() { return true; }
 
+    virtual bool Reload(int type) { return true; }
+
     virtual IPluginManager *GetPluginManager() const { return pm_; }
 
     std::string name_;

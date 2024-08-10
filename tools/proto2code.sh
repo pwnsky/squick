@@ -27,6 +27,7 @@ check_err
 python3 proto_enum_to_lua.py
 check_err
 python3 proto_to_lua_str.py
+check_err
 cd ..
 
 proto_files=$proto_path/*.proto
@@ -34,7 +35,9 @@ for f in $proto_files
 do
     echo $f
     $proto_bin --cpp_out=$cpp_out_path  --proto_path=$proto_path $f
+    check_err
     $proto_bin --csharp_out=$csharp_out_path  --proto_path=$proto_path $f
+    check_err
     $proto_bin --python_out=$python_out_path  --proto_path=$proto_path $f
     check_err
 done

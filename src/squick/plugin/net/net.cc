@@ -24,7 +24,6 @@ TO
 #define SQUICK_BUFFER_MAX_READ 1048576
 
 void Net::event_fatal_cb(int err) {
-    // dout << "event_fatal_cb:  " << err << std::endl;
 }
 void Net::conn_writecb(struct bufferevent *bev, void *user_data) {
 

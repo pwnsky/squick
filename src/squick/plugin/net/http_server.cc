@@ -173,7 +173,7 @@ void HttpServer::listener_cb(struct evhttp_request *req, void *arg) {
                 return;
             } else {
                 pNet->mxHttpRequestPool.push_back(pRequest);
-                pNet->ResponseMsg(pRequest, "Filter error", xWebStatus);
+                pNet->ResponseMsg(pRequest, "", xWebStatus);
                 return;
             }
         } catch (std::exception &e) {

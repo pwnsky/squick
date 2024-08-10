@@ -51,6 +51,7 @@ class LogicClassGenerator : public IGenerator {
 
         std::string strFileEnd = "</XML>";
         fwrite(strFileEnd.c_str(), strFileEnd.length(), 1, iniWriter);
+        fclose(iniWriter);
 
         return false;
     }

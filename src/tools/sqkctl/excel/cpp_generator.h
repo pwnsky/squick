@@ -173,10 +173,6 @@ class CPPGenerator : public IGenerator {
 
         std::string strFileEnd = "\n}\n#endif";
         fwrite(strFileEnd.c_str(), strFileEnd.length(), 1, hppWriter);
-        /////////////////////////////////////////////////////
-
-        /////////////////////////////////////////////////////
-
         fclose(hppWriter);
 
         return false;

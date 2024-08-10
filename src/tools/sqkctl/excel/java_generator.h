@@ -100,7 +100,6 @@ class JAVAGenerator : public IGenerator {
 
             fwrite(strClassEnd.c_str(), strClassEnd.length(), 1, javaWriter);
         }
-
         fclose(javaWriter);
 
         return false;

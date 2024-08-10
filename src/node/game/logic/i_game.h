@@ -46,14 +46,14 @@ class IGame {
     }
 
     inline void DoAwake() {
-        dout << "Game Play Parent Awake!\n";
+        // dout << "Game Play Parent Awake!\n";
         MsgBind(GameBaseRPC::REQ_GAME_JOIN, this, &IGame::OnReqGameJoin);
         Awake();
     };
 
     inline void DoStart() {
         status = RUNNING;
-        dout << "Game Play Parent Start!\n";
+        // dout << "Game Play Parent Start!\n";
         // 初始化完毕后，通过告诉房间实现加入
         // manager->m_room_->GamePlayPrepared(id, "game", "", 0);
         Start();
@@ -67,7 +67,7 @@ class IGame {
     };
 
     void OnReqGameJoin(const Guid &clientID, const int msg_id, const std::string &data) {
-        dout << "Req Game Join\n";
+        // dout << "Req Game Join\n";
         DoPlayerJoin(clientID);
     }
 
@@ -82,13 +82,11 @@ class IGame {
 
         // 判断是否重复加入
         // if (-1 != manager->m_player_manager_->GetPlayerGameplayID(player)) {
-        //    dout << "重复加入!\n";
         //    return;
         //}
 
         // 判断玩家数量是否超限
         if (onlinePlayerCount > 5) {
-            dout << "重复加入!\n";
             return;
         }
 
@@ -158,13 +156,13 @@ class IGame {
     void DoPlayerQuit(const Guid &p) {
         auto iter = base_players.find(p);
         if (iter == base_players.end()) {
-            dout << "Error not found this player\n";
+            // dout << "Error not found this player\n";
             return;
         }
         auto &player = iter->second;
         player.isOnline = false;
         onlinePlayerCount--;
-        dout << "Online Count: " << onlinePlayerCount << std::endl;
+        // dout << "Online Count: " << onlinePlayerCount << std::endl;
         PlayerQuit(player.guid);
     }
 
@@ -237,7 +235,7 @@ class IGame {
     inline void SetPlayerActive(const Guid &player, bool isActive) {
         auto iter = base_players.find(player);
         if (iter == base_players.end()) {
-            dout << "Not found this player\n";
+            // dout << "Not found this player\n";
             return;
         }
         iter->second.isActive = isActive;

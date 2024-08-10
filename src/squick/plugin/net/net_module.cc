@@ -182,9 +182,6 @@ int NetModule::FixCoroutines(time_t now_time) {
         auto co = *now_iter;
         if (co.GetHandle().done()) {
             co.GetHandle().destroy();
-#ifdef SQUICK_DEV
-            dout << "Destoy coroutine: " << co.GetHandle().address() << endl;
-#endif
             coroutines_.erase(now_iter);
             num++;
             continue;
@@ -192,7 +189,7 @@ int NetModule::FixCoroutines(time_t now_time) {
 
         if (now_time - co.GetStartTime() > NET_COROTINE_MAX_SURVIVAL_TIME) {
 #ifdef SQUICK_DEV
-            dout << " This corotine has time out: " << co.GetHandle().address() << std::endl;
+            LOG_WARN(" This corotine has time out: %v", co.GetHandle().address());
 #endif
             // do not destroy
             if (!co.GetHandle().done()) {

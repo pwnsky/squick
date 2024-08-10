@@ -37,9 +37,6 @@ int HttpServerModule::FixCoroutines(time_t now_time) {
         auto co = *now_iter;
         if (co.GetHandle().done()) {
             co.GetHandle().destroy();
-#ifdef SQUICK_DEV
-            dout << "Destoy coroutine: " << co.GetHandle().address() << endl;
-#endif
             coroutines_.erase(now_iter);
             num++;
             continue;
@@ -47,7 +44,7 @@ int HttpServerModule::FixCoroutines(time_t now_time) {
 
         if (now_time - co.GetStartTime() > HTTP_SERVER_COROTINE_MAX_SURVIVAL_TIME) {
 #ifdef SQUICK_DEV
-            dout << " This corotine has time out: " << co.GetHandle().address() << std::endl;
+            LOG_ERROR("This corotine has time out: %v", co.GetHandle().address());
 #endif
             // do not destroy
             if (!co.GetHandle().done()) {
@@ -85,13 +82,10 @@ bool HttpServerModule::OnReceiveNetPack(std::shared_ptr<HttpRequest> req) {
 
                 auto co = pFunc->operator()(req);
                 coroutines_.push_back(co);
-#ifdef SQUICK_DEV
-                dout << "Create a new coroutine: " << co.GetHandle().address() << endl;
-#endif
                 // to run this coroutine
                 co.GetHandle().resume();
             } catch (const std::exception &e) {
-                dout << "Http quest error: " << e.what() << std::endl;
+                LOG_ERROR("Http quest error: %v", e.what());
                 ResponseMsg(req, "unknow error", WebStatus::WEB_INTER_ERROR);
             }
             return true;
@@ -108,7 +102,7 @@ bool HttpServerModule::OnReceiveNetPack(std::shared_ptr<HttpRequest> req) {
             try {
                 pFunc->operator()(req);
             } catch (const std::exception &e) {
-                dout << "Http quest error: " << e.what() << std::endl;
+                LOG_ERROR("Http quest error: %v", e.what());
                 ResponseMsg(req, "unknow error", WebStatus::WEB_INTER_ERROR);
             }
             return true;

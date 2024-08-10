@@ -50,7 +50,7 @@ void LogicModule::OnReqPvpInstanceCreate(const socket_t sock, const int msg_id, 
         return;
     }
 
-    dout << "Game Server 请求创建PVP实例 from " << xMsg.game_id() << " id: " << xMsg.id() << " key: " << xMsg.key() << std::endl;
+    // dout << "Game Server 请求创建PVP实例 from " << xMsg.game_id() << " id: " << xMsg.id() << " key: " << xMsg.key() << std::endl;
     string cmd;
     // 为了测试方便，先暂时采用system来启动Gameplay服务器，后期采用docker进行管理 Gameplay 服务器
 #if PLATFORM == PLATFORM_WIN
@@ -69,9 +69,7 @@ void LogicModule::OnReqPvpInstanceCreate(const socket_t sock, const int msg_id, 
 #if PLATFORM == PLATFORM_LINUX
     cmd += " &";
 #endif
-    dout << "执行: " << cmd << std::endl;
     system(cmd.c_str());
-    dout << "执行命令结束" << std::endl;
 }
 
 } // namespace gameplay_manager::logic

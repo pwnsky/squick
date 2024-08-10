@@ -450,6 +450,16 @@ bool PluginManager::Finalize() {
     return true;
 }
 
+
+bool PluginManager::Reload(int type) {
+    PluginInstanceMap::iterator itInstance = mPluginInstanceMap.begin();
+    for (; itInstance != mPluginInstanceMap.end(); itInstance++) {
+        SetCurrentPlugin(itInstance->second);
+        itInstance->second->Reload(type);
+    }
+    return true;
+}
+
 bool PluginManager::LoadPluginLibrary(const std::string &pluginDLLName) {
     PluginLibMap::iterator it = mPluginLibMap.find(pluginDLLName);
     if (it == mPluginLibMap.end()) {
