@@ -9,9 +9,12 @@
 #include <squick/plugin/node/export.h>
 #include <struct/struct.h>
 #include <third_party/nlohmann/json.hpp>
-
+#include <google/protobuf/message.h>
+#include <google/protobuf/util/json_util.h>
+#include <google/protobuf/text_format.h>
 
 namespace backstage::logic {
+using namespace google::protobuf;
 struct LoginInfo {
     std::string account;
     std::string account_id;
@@ -42,10 +45,14 @@ class LogicModule : public ILogicModule {
     void SetToken(const std::string &account_id, const std::string &user_token);
     bool LoadConfig();
 
+    util::JsonPrintOptions GetDefaultPb2JsonOptions();
+
     // http handler
     bool OnAuthCheck(std::shared_ptr<HttpRequest> request);
     Coroutine<bool> OnGetAllNodes(std::shared_ptr<HttpRequest> request);
     Coroutine<bool> OnReload(std::shared_ptr<HttpRequest> request);
+    Coroutine<bool> OnLuaExecute(std::shared_ptr<HttpRequest> request);
+
 
   private:
     string MakeToken(string sguid);
@@ -65,5 +72,4 @@ class LogicModule : public ILogicModule {
     int player_index = 0;
     json web_config_;
 };
-
 } // namespace backstage::logic

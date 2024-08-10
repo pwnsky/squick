@@ -125,5 +125,3 @@ message NAckReload { // msg_id=515;
     NErrorCode code = 1;
     ReloadType type = 2;
 }
-
-

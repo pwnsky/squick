@@ -4,5 +4,9 @@
     "protocol_timeout_check": true,
     "coroutine_max_num" : 10000,
     "is_enable_https": false,
-    "max_connection": 10000
+    "max_connection": 10000,
+    "ssl_file" : {
+        "certificate" : "../config/ssl/certificate.pem",
+        "private_key" : "../config/ssl/private-key.pem"
+    }
 }

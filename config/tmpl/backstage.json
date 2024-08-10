@@ -9,6 +9,7 @@
     
     "WhiteUriList" : [
         "/api/login",
-        "/api/reload"
+        "/api/reload",
+        "/api/execute_lua"
     ]
 }

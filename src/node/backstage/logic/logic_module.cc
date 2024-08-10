@@ -3,13 +3,12 @@
 #include <third_party/common/base64.hpp>
 #include <third_party/common/sha256.h>
 
-#include <google/protobuf/message.h>
-#include <google/protobuf/util/json_util.h>
-#include <google/protobuf/text_format.h>
-
 #define SQUICK_HASH_SALT "7e82e88dfd98952b713c0d20170ce12b"
 #define WEB_BASE_PATH "/api"
+
+
 namespace backstage::logic {
+
 bool LogicModule::Start() {
     m_http_server_ = pm_->FindModule<IHttpServerModule>();
     m_node_ = pm_->FindModule<INodeModule>();
@@ -29,6 +28,7 @@ bool LogicModule::AfterStart() {
     m_http_server_->AddRequestHandler(WEB_BASE_PATH "/auth_check", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnAuthCheck);
     m_http_server_->AddRequestHandler(WEB_BASE_PATH "/auth_check", HttpType::SQUICK_HTTP_REQ_GET, this, &LogicModule::OnAuthCheck);
     m_http_server_->AddRequestHandler(WEB_BASE_PATH "/reload", HttpType::SQUICK_HTTP_REQ_GET, this, &LogicModule::OnReload);
+    m_http_server_->AddRequestHandler(WEB_BASE_PATH "/execute_lua", HttpType::SQUICK_HTTP_REQ_POST, this, &LogicModule::OnLuaExecute);
     m_http_server_->StartServer(pm_->GetArg("http_port=", ARG_DEFAULT_HTTP_PORT));
 
     vector<int> node_types = {rpc::ST_GLOBAL, rpc::ST_DB_PROXY, rpc::ST_PLAYER, rpc::ST_PROXY, rpc::ST_WORLD, rpc::ST_WEB};
@@ -266,6 +266,16 @@ string LogicModule::MakeToken(string account_id) {
 
 void LogicModule::SetToken(const std::string &account_id, const std::string &user_token) { auth_token_[account_id] = user_token; }
 
+util::JsonPrintOptions LogicModule::GetDefaultPb2JsonOptions() {
+    google::protobuf::util::JsonPrintOptions options;
+    options.preserve_proto_field_names = true;
+    options.always_print_primitive_fields = true;
+    options.always_print_enums_as_ints = true;
+    options.add_whitespace = true;
+    return options;
+}
+
+
 Coroutine<bool> LogicModule::OnGetAllNodes(std::shared_ptr<HttpRequest> request) {
     json rsp;
 
@@ -295,14 +305,8 @@ Coroutine<bool> LogicModule::OnGetAllNodes(std::shared_ptr<HttpRequest> request)
 	// protobuf 转 json-string
 	util::Status google::protobuf::util::MessageToJsonString(const google::protobuf::Message& message, std::string* str );
 	*/
-
-	google::protobuf::util::JsonPrintOptions options;
-    options.preserve_proto_field_names = true;
-	options.always_print_primitive_fields = true;
-	options.always_print_enums_as_ints = true;
-	options.add_whitespace = true;
 	std::string json_out;
-	google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(pback, &json_out, options);
+	google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(pback, &json_out, GetDefaultPb2JsonOptions());
 	LOG_DEBUG("Protobuf to json: %v", json_out);
 
     nlohmann::json node_list = nlohmann::json::array();
@@ -332,4 +336,31 @@ Coroutine<bool> LogicModule::OnGetAllNodes(std::shared_ptr<HttpRequest> request)
     m_http_server_->ResponseMsg(request, rsp.dump(), WebStatus::WEB_OK);
     co_return;
 }
+
+Coroutine<bool> LogicModule::OnLuaExecute(std::shared_ptr<HttpRequest> request) {
+    
+    rpc::NReqExecuteLua pbreq;
+    rpc::NAckExecuteLua pback;
+    util::Status status = util::JsonStringToMessage(request->body, &pbreq);
+    if (!status.ok())
+    {
+    }
+
+    auto data = co_await m_net_client_->RequestPB(pbreq.node_id(), rpc::IdNReqExecuteLua, pbreq, rpc::IdNAckExecuteLua);
+    if (data.error) {
+        co_return;
+    }
+
+    uint64_t uid;
+    if (!INetModule::ReceivePB(data.ack_msg_id, data.data, data.length, pback, uid)) {
+        co_return;
+    }
+
+    std::string json_out;
+    status = util::MessageToJsonString(pbreq, &json_out, GetDefaultPb2JsonOptions());
+    LOG_DEBUG("OnLuaExecute Protobuf to json: %v", json_out);
+
+    m_http_server_->ResponseMsg(request, json_out, WebStatus::WEB_OK);
+}
+
 } // namespace backstage::logic
