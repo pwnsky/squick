@@ -2,13 +2,13 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: squick-master
+  name: squick-proxy
   namespace: default
   labels:
     app: squick
 spec:
-  serviceName: "svc-squick-master"
-  replicas: 2
+  serviceName: "svc-squick-proxy"
+  replicas: 3
   selector:
     matchLabels:
       app: squick
@@ -19,12 +19,12 @@ spec:
     spec:
       containers:
         - name: squick
-          image: pwnsky/squick:1.1
+          image: pwnsky/squick:1.2
           imagePullPolicy: Never
           command: ["/bin/bash", "-c"]
           args:
             - >
-              /squick/script/squick.sh type=master id=1000${HOSTNAME##*-} area=0 ip=$(POD_IP) port=10001 http_port=50000 logshow=0
+              /squick/script/squick.sh type=proxy id=500${HOSTNAME##*-} area=0 ip=$(POD_IP) port=10501 ws_port=10502 master_ip=squick-master-0 master_port=10001 logshow=0
           env:
             - name: POD_NAME
               valueFrom:

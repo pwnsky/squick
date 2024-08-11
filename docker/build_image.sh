@@ -6,8 +6,8 @@ source ../tools/common.sh
 build_type='docker'
 is_build_third_party=0
 is_build_sqkctl=0
-src_image_tag=pwnsky/squick_src:1.1
-bin_image_tag=pwnsky/squick:1.1
+src_image_tag=pwnsky/squick_src:1.2
+bin_image_tag=pwnsky/squick:1.2
 build_container=squick_src_build
 
 cd $project_path
