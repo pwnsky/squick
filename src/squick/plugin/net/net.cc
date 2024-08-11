@@ -9,6 +9,7 @@
 
 #include <squick/core/base.h>
 #include <squick/core/exception.h>
+#include <regex>
 
 #include "net.h"
 
@@ -313,9 +314,64 @@ bool Net::AddNetObject(const socket_t sock, NetObject *pObject) {
     return mmObject.insert(std::map<socket_t, NetObject *>::value_type(sock, pObject)).second;
 }
 
+bool Net::IsValidIP(const std::string& ip) {
+    std::regex ip_regex(
+        "^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" // 1-3 numbers
+        "(?:\\."
+        "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" // 1-3 numbers
+        "){3}" // repeate 3 group
+        "(?:\\."
+        "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" // 1-3 numbers
+        ")$" // end
+    );
+ 
+    return std::regex_match(ip, ip_regex);
+}
+ 
+bool Net::IsValidDomain(const std::string& domain) {
+    std::regex domain_regex(
+        "[a-zA-Z0-9]+"
+        "(?:\\.[a-zA-Z0-9]+)+"
+    );
+ 
+    return std::regex_match(domain, domain_regex);
+}
+
+std::string Net::GetIpByDomain(std::string domain) {
+
+    struct hostent *hptr;
+    hptr = gethostbyname(domain.c_str());
+    if (hptr == NULL) {
+        printf("gethostbyname error for host: %s: %s\n", domain.c_str(), hstrerror(h_errno));
+        return "";
+    }
+
+    char **pptr;
+    char str[INET_ADDRSTRLEN];
+    for (pptr=hptr->h_aliases; *pptr!=NULL; pptr++)
+    {
+        printf("\ttalias: %s\n", *pptr);
+    }
+
+    // output ip
+    for (pptr = hptr->h_addr_list; *pptr!=NULL; pptr++)
+    {
+        std::string ip = inet_ntop(hptr->h_addrtype, *pptr, str, sizeof(str));
+        return ip;
+    }
+
+    return "";
+}
+
 int Net::StartClientNet() {
     std::string ip = mstrIP;
     int nPort = mnPort;
+
+    if (!IsValidIP(ip))
+    {
+        // domain to ip
+        ip = GetIpByDomain(ip);
+    }
 
     struct sockaddr_in addr;
     struct bufferevent *bev = NULL;
