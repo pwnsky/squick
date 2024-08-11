@@ -6,7 +6,8 @@
 -----------------------------------------------------------------------------
 
 ModuleMgr = {
-    modules = {}
+    modules = {},
+    modules_info = {}
 }
 
 -- pre_path: 模块路径
@@ -27,14 +28,15 @@ function ModuleMgr:Register(pre_path, list)
         Squick:LogInfo("lua start to load " .. name);
 
         local old_module = ModuleMgr.modules[name]
-        local object = require(path);
-        if object then
+        local new_module = require(path);
+        if new_module then
             
             if old_module ~= nil then
-                Squick:LogInfo("reload " .. path.. " succeed");
-                -- 只更新函数
+                Squick:LogInfo("Begin hot reload " .. path);
+                self:HotReload(old_module, new_module)
+                Squick:LogInfo("Hot reload " .. path.. " succeed");
             else
-                ModuleMgr.modules[name] = object -- 加载全部
+                ModuleMgr.modules[name] = new_module -- 加载全部
                 Squick:LogInfo("load " .. path .. " succeed");
             end
         else
@@ -47,8 +49,13 @@ function ModuleMgr:Register(pre_path, list)
     return true
 end
 
-function ModuleMgr:HotReload()
-
+function ModuleMgr:HotReload(old_module, new_module)
+    for key, value in pairs(new_module) do
+        if type(value) == "function" then
+            Squick:LogInfo("reloading function " .. key)
+            old_module[key] = value
+        end
+    end
 end
 
 function ModuleMgr:Start()

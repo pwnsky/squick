@@ -16,6 +16,7 @@ function Print(...)
 end
 
 function Require(file)
+    package.loaded[file] = nil
     require(file)
 end
 
