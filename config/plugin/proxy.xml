@@ -1,7 +1,6 @@
 <XML>
 	<Proxy>
 		<Plugin Name="core/net" />
-		<Plugin Name="core/config" />
         <Plugin Name="core/log" />
 		<Plugin Name="core/utils" />
         <Plugin Name="core/node" />

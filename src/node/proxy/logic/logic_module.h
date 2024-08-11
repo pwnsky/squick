@@ -95,7 +95,6 @@ class LogicModule : public ILogicModule {
 
   protected:
     ILogModule *m_log_;
-    IClassModule *m_class_;
     IScheduleModule *m_schedule_;
     INetModule *m_net_;
     IWSModule *m_ws_;
