@@ -342,16 +342,16 @@ std::string Net::GetIpByDomain(std::string domain) {
     struct hostent *hptr;
     hptr = gethostbyname(domain.c_str());
     if (hptr == NULL) {
-        printf("gethostbyname error for host: %s: %s\n", domain.c_str(), hstrerror(h_errno));
+        //printf("gethostbyname error for host: %s: %s\n", domain.c_str(), hstrerror(h_errno));
         return "";
     }
 
     char **pptr;
     char str[INET_ADDRSTRLEN];
-    for (pptr=hptr->h_aliases; *pptr!=NULL; pptr++)
-    {
-        printf("\ttalias: %s\n", *pptr);
-    }
+    // for (pptr=hptr->h_aliases; *pptr!=NULL; pptr++)
+    // {
+    //    printf("\ttalias: %s\n", *pptr);
+    // }
 
     // output ip
     for (pptr = hptr->h_addr_list; *pptr!=NULL; pptr++)
