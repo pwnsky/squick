@@ -3,17 +3,22 @@
 cd $(dirname $0)
 source ../tools/common.sh
 
-build_type='docker'
+version=$1
+if [[ $version == "" ]];then
+    version="1.2"
+fi
+
+dockerfile=./docker/src_dep
 is_build_third_party=0
 is_build_sqkctl=0
-src_image_tag=pwnsky/squick_src:1.2
-bin_image_tag=pwnsky/squick:1.2
+src_image_tag=pwnsky/squick_src:$version
+bin_image_tag=pwnsky/squick:$version
 build_container=squick_src_build
 
 cd $project_path
 
 echo "Build src image"
-docker build . -t $src_image_tag -f ./docker/src
+docker build . -t $src_image_tag -f $dockerfile
 check_err
 
 echo "Export binary files"
@@ -31,6 +36,10 @@ check_err
 
 echo "Build release image"
 docker build . -t $bin_image_tag -f ./docker/release
+check_err
+
+echo "Exporting the image"
+docker save -o ../cache/squick_$version.tar pwnsky/squick:$version
 check_err
 
 echo "Build image ok"

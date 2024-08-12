@@ -1,15 +1,8 @@
-# cd {squick_project}
-# docker build . -t i0gan/squick_src:1.1 -f ./docker/src
-# docker run -d --name squick_src i0gan/squick_src:1.1
-# rm -rf ./cache/docker_deploy
-# docker cp squick_src:/squick/deploy ./cache/docker_deploy
-
-# docker build . -t i0gan/squick:1.1 -f ./docker/release
-# docker run -it --name squick i0gan/squick:1.1
-
 FROM ubuntu:22.04
+
 # Set env
 ARG DEBIAN_FRONTEND=noninteractive
+RUN apt update && apt install -y dos2unix vim net-tools
 
 # copy from docker builded files
 COPY ./cache/docker_deploy /squick

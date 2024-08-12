@@ -1,0 +1,15 @@
+FROM pwnsky/squick_src:1.1
+
+COPY . /squick_dep
+
+RUN rm -rf /squick_dep/third_party && mv /squick/third_party /squick_dep && rm -rf /squick && mv /squick_dep /squick
+
+WORKDIR /squick
+RUN cd tools && chmod +x *.sh && dos2unix *.sh
+RUN cd script && chmod +x *.sh && dos2unix *.sh
+
+RUN bash ./tools/clean_squick.sh
+RUN bash ./tools/build_sqkctl.sh
+RUN bash ./tools/build_squick.sh
+RUN bash ./tools/generate_deploy.sh
+CMD bash /squick/script/squick.sh
