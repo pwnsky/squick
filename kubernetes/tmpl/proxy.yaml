@@ -24,7 +24,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - >
-              /squick/script/squick.sh type=proxy id=500${HOSTNAME##*-} area=0 ip=$(POD_IP) port=10501 ws_port=10502 master_ip=squick-master-0 master_port=10001 logshow=0
+              /squick/script/squick.sh type=proxy id=500${HOSTNAME##*-} area=0 ip=$(POD_IP) port=10501 ws_port=10502 master_ip=svc-squick-master.default.svc.cluster.local master_port=10001 logshow=0
           env:
             - name: POD_NAME
               valueFrom:

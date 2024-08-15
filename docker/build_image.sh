@@ -8,7 +8,7 @@ if [[ $version == "" ]];then
     version="1.2"
 fi
 
-dockerfile=./docker/src_dep
+dockerfile=./docker/src
 is_build_third_party=0
 is_build_sqkctl=0
 src_image_tag=pwnsky/squick_src:$version
@@ -24,6 +24,7 @@ check_err
 echo "Export binary files"
 docker run -d --name $build_container $src_image_tag
 check_err
+mkdir -p ./cache
 rm -rf ./cache/docker_deploy
 docker cp $build_container:/squick/deploy ./cache/docker_deploy
 check_err
@@ -39,7 +40,7 @@ docker build . -t $bin_image_tag -f ./docker/release
 check_err
 
 echo "Exporting the image"
-docker save -o ../cache/squick_$version.tar pwnsky/squick:$version
+docker save -o ./cache/squick_$version.tar pwnsky/squick:$version
 check_err
 
 echo "Build image ok"
