@@ -2,13 +2,12 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: proxy
+  name: backstage
   namespace: default
   labels:
     app: squick
 spec:
-  #serviceName: "svc-squick-proxy"
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: squick
@@ -24,7 +23,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - >
-              /squick/script/squick.sh type=proxy id=`expr 500 + ${HOSTNAME##*-}` area=0 ip=$(POD_IP) port=10501 ws_port=10502 master_ip=svc-squick-master master_port=10001 logshow=0
+              /squick/script/squick.sh type=backstage id=`expr 2500 + ${HOSTNAME##*-}` area=0 ip=$(POD_IP) port=10501 ws_port=10502 master_ip=svc-squick-master master_port=10001 logshow=0
           env:
             - name: POD_NAME
               valueFrom:

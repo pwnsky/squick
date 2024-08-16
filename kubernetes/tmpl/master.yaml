@@ -24,7 +24,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - >
-              /squick/script/squick.sh type=master id=1000${HOSTNAME##*-} area=0 ip=$(POD_IP) port=10001 http_port=50000 logshow=0
+              /squick/script/squick.sh type=master id=`expr 1 + ${HOSTNAME##*-}` area=0 ip=$(POD_IP) port=10001 http_port=50000 logshow=0
           env:
             - name: POD_NAME
               valueFrom:
@@ -38,3 +38,16 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-squick-master
+spec:
+  selector:
+    app: squick
+  ports:
+    - protocol: TCP
+      port: 10001
+      targetPort: 10001
+  type: ClusterIP
