@@ -6,11 +6,11 @@
 #include <algorithm>
 #include <iostream>
 #include <time.h>
-ClassModule::ClassModule() { mConfigFileName = "config/struct/logic_class.xml"; }
+ClassModule::ClassModule() { mConfigFileName = "config/struct/Root.xml"; }
 
 ClassModule::ClassModule(IPluginManager *p) {
     pm_ = p;
-    mConfigFileName = "config/struct/logic_class.xml";
+    mConfigFileName = "config/struct/Root.xml";
 
 #ifdef DEBUG
     std::cout << "Using [" << pm_->GetWorkPath() << "/" + mConfigFileName << "]" << std::endl;

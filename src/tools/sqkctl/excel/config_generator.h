@@ -3,15 +3,11 @@
 #include "cpp_generator.h"
 #include "cs_generator.h"
 #include "ini_generator.h"
-#include "java_generator.h"
 #include "logic_class_generator.h"
 #include "lua_generator.h"
 #include "mini_excel_reader.h"
-#include "pb_generator.h"
-#include "sql_generator.h"
 #include "struct_generator.h"
 #include "third_party/common/lexical_cast.hpp"
-#include "ts_generator.h"
 #include <squick/core/platform.h>
 
 namespace sqkctl {
@@ -50,9 +46,10 @@ class ConfigGenerator {
   private:
     bool bConvertIntoUTF8 = false;
 
-    const int nPropertyHeight = 10;  // property line
-    const int nRecordHeight = 13;    // record line
-    const int nRecordDescHeight = 9; // record line
+    // Excel base header attr line define
+    const int nPropertyHeight = 3;   // property line
+    const int nRecordHeight = 6;     // record line
+    const int nRecordDescHeight = 2; // record line
 
     std::string outPath;
     std::string strExcelIniPath;  // = "../excel/";

@@ -8,7 +8,7 @@ class LogicClassGenerator : public IGenerator {
     LogicClassGenerator(const std::string &excelPath, const std::string &outPath) { SetPath(excelPath, outPath); }
 
     virtual bool Generate(const std::map<std::string, ClassData *> &classData) override {
-        std::string fileName = strXMLStructPath + "logic_class.xml";
+        std::string fileName = strXMLStructPath + "Root.xml";
 
         FILE *iniWriter = fopen(fileName.c_str(), "w");
 
