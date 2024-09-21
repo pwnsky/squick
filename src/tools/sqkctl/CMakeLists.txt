@@ -121,6 +121,10 @@ set_target_properties( ${proName} PROPERTIES
 )
 endmacro(SquickOut)
 
+if (UNIX)
+    SET ( CMAKE_CXX_FLAGS "-g" )	
+endif()
+
 SquickOut(${ProjectName} ${ProjectName} ${SolutionDir}/tools/bin ${ProjectName})
 add_definitions(
 	-D_CRT_SECURE_NO_WARNINGS
