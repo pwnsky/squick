@@ -76,13 +76,6 @@ int SceneModule::RequestGroupScene(const int sceneID) {
                         std::shared_ptr<IProperty> xProperty =
                             pPropertyManager->AddProperty(ident, pStaticConfigPropertyInfo->GetKey(), pStaticConfigPropertyInfo->GetType());
 
-                        xProperty->SetPublic(pStaticConfigPropertyInfo->GetPublic());
-                        xProperty->SetPrivate(pStaticConfigPropertyInfo->GetPrivate());
-                        xProperty->SetSave(pStaticConfigPropertyInfo->GetSave());
-                        xProperty->SetCache(pStaticConfigPropertyInfo->GetCache());
-                        xProperty->SetRef(pStaticConfigPropertyInfo->GetRef());
-                        xProperty->SetUpload(pStaticConfigPropertyInfo->GetUpload());
-
                         PROPERTY_EVENT_FUNCTOR functor = std::bind(&SceneModule::OnScenePropertyCommonEvent, this, std::placeholders::_1, std::placeholders::_2,
                                                                    std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
                         PROPERTY_EVENT_FUNCTOR_PTR functorPtr(new PROPERTY_EVENT_FUNCTOR(functor));
@@ -96,11 +89,6 @@ int SceneModule::RequestGroupScene(const int sceneID) {
                         std::shared_ptr<IRecord> xRecord = pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(),
                                                                                      pConfigRecordInfo->GetTag(), pConfigRecordInfo->GetRows());
 
-                        xRecord->SetPublic(pConfigRecordInfo->GetPublic());
-                        xRecord->SetPrivate(pConfigRecordInfo->GetPrivate());
-                        xRecord->SetSave(pConfigRecordInfo->GetSave());
-                        xRecord->SetCache(pConfigRecordInfo->GetCache());
-                        xRecord->SetUpload(pConfigRecordInfo->GetUpload());
 
                         RECORD_EVENT_FUNCTOR functor = std::bind(&SceneModule::OnSceneRecordCommonEvent, this, std::placeholders::_1, std::placeholders::_2,
                                                                  std::placeholders::_3, std::placeholders::_4);
@@ -1250,27 +1238,27 @@ int SceneModule::GetBroadCastObject(const Guid &self, const std::string &propert
     if (bTable) {
         // upload property can not board to itself
         // if (pRecord->GetUpload())
-        {
-            if (pRecord->GetPublic()) {
-                m_pCellModule->GetCellObjectList(nObjectContainerID, nObjectGroupID, position, valueObject, true, self);
-            }
+        // {
+        //     if (pRecord->GetPublic()) {
+        //         m_pCellModule->GetCellObjectList(nObjectContainerID, nObjectGroupID, position, valueObject, true, self);
+        //     }
 
-            if (pRecord->GetPrivate()) {
-                valueObject.Add(self);
-            }
-        }
+        //     if (pRecord->GetPrivate()) {
+        //         valueObject.Add(self);
+        //     }
+        // }
     } else {
         // upload property can not board to itself
         // if (pProperty->GetUpload())
-        {
-            if (pProperty->GetPublic()) {
-                m_pCellModule->GetCellObjectList(nObjectContainerID, nObjectGroupID, position, valueObject, true, self);
-            }
+        // {
+        //     if (pProperty->GetPublic()) {
+        //         m_pCellModule->GetCellObjectList(nObjectContainerID, nObjectGroupID, position, valueObject, true, self);
+        //     }
 
-            if (pProperty->GetPrivate()) {
-                valueObject.Add(self);
-            }
-        }
+        //     if (pProperty->GetPrivate()) {
+        //         valueObject.Add(self);
+        //     }
+        // }
     }
 
     return valueObject.GetCount();

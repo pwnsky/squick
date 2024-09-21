@@ -1134,37 +1134,10 @@ bool Record::Clear() {
 
 void Record::AddRecordHook(const RECORD_EVENT_FUNCTOR_PTR &cb) { mtRecordCallback.push_back(cb); }
 
-const bool Record::GetSave() { return mbSave; }
-
-const bool Record::GetCache() { return mbCache; }
-
-const bool Record::GetRef() { return mbRef; }
-
-const bool Record::GetForce() { return mbForce; }
-
-const bool Record::GetUpload() { return mbUpload; }
-
-const bool Record::GetPublic() { return mbPublic; }
-
-const bool Record::GetPrivate() { return mbPrivate; }
 
 int Record::GetPos(int row, int col) const { return row * mVarRecordType->GetCount() + col; }
 
 const std::string &Record::GetName() const { return mstrRecordName; }
-
-void Record::SetSave(const bool bSave) { mbSave = bSave; }
-
-void Record::SetCache(const bool bCache) { mbCache = bCache; }
-
-void Record::SetRef(const bool bRef) { mbRef = bRef; }
-
-void Record::SetForce(const bool bForce) { mbForce = bForce; }
-
-void Record::SetUpload(const bool bUpload) { mbUpload = bUpload; }
-
-void Record::SetPublic(const bool bPublic) { mbPublic = bPublic; }
-
-void Record::SetPrivate(const bool bPrivate) { mbPrivate = bPrivate; }
 
 void Record::SetName(const std::string &name) { mstrRecordName = name; }
 

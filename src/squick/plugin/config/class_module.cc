@@ -116,21 +116,6 @@ bool ClassModule::AddProperties(rapidxml::xml_node<> *pPropertyRootNode, std::sh
             }
 
             const char *pstrType = pPropertyNode->first_attribute("Type")->value();
-            const char *pstrPublic = pPropertyNode->first_attribute("Public")->value();
-            const char *pstrPrivate = pPropertyNode->first_attribute("Private")->value();
-            const char *pstrSave = pPropertyNode->first_attribute("Save")->value();
-            const char *pstrCache = pPropertyNode->first_attribute("Cache")->value();
-            const char *pstrRef = pPropertyNode->first_attribute("Ref")->value();
-            const char *pstrForce = pPropertyNode->first_attribute("Force")->value();
-            const char *pstrUpload = pPropertyNode->first_attribute("Upload")->value();
-
-            bool bPublic = lexical_cast<bool>(pstrPublic);
-            bool bPrivate = lexical_cast<bool>(pstrPrivate);
-            bool bSave = lexical_cast<bool>(pstrSave);
-            bool bCache = lexical_cast<bool>(pstrCache);
-            bool bRef = lexical_cast<bool>(pstrRef);
-            bool bForce = lexical_cast<bool>(pstrForce);
-            bool bUpload = lexical_cast<bool>(pstrUpload);
 
             SquickData varProperty;
             if (TDATA_UNKNOWN == ComputerType(pstrType, varProperty)) {
@@ -142,13 +127,6 @@ bool ClassModule::AddProperties(rapidxml::xml_node<> *pPropertyRootNode, std::sh
             // printf( " Property:%s[%s]\n", propertyName, pstrType );
 
             std::shared_ptr<IProperty> xProperty = pClass->GetPropertyManager()->AddProperty(Guid(), propertyName, varProperty.GetType());
-            xProperty->SetPublic(bPublic);
-            xProperty->SetPrivate(bPrivate);
-            xProperty->SetSave(bSave);
-            xProperty->SetCache(bCache);
-            xProperty->SetRef(bRef);
-            xProperty->SetForce(bForce);
-            xProperty->SetUpload(bUpload);
         }
     }
 
@@ -170,27 +148,12 @@ bool ClassModule::AddRecords(rapidxml::xml_node<> *pRecordRootNode, std::shared_
 
             const char *pstrRow = pRecordNode->first_attribute("Row")->value();
             const char *pstrCol = pRecordNode->first_attribute("Col")->value();
-
-            const char *pstrPublic = pRecordNode->first_attribute("Public")->value();
-            const char *pstrPrivate = pRecordNode->first_attribute("Private")->value();
-            const char *pstrSave = pRecordNode->first_attribute("Save")->value();
-            const char *pstrCache = pRecordNode->first_attribute("Cache")->value();
-            const char *pstrRef = pRecordNode->first_attribute("Ref")->value();
-            const char *pstrForce = pRecordNode->first_attribute("Force")->value();
-            const char *pstrUpload = pRecordNode->first_attribute("Upload")->value();
+            
 
             std::string strView;
             if (pRecordNode->first_attribute("View") != NULL) {
                 strView = pRecordNode->first_attribute("View")->value();
             }
-
-            bool bPublic = lexical_cast<bool>(pstrPublic);
-            bool bPrivate = lexical_cast<bool>(pstrPrivate);
-            bool bSave = lexical_cast<bool>(pstrSave);
-            bool bCache = lexical_cast<bool>(pstrCache);
-            bool bRef = lexical_cast<bool>(pstrCache);
-            bool bForce = lexical_cast<bool>(pstrCache);
-            bool bUpload = lexical_cast<bool>(pstrUpload);
 
             std::shared_ptr<DataList> recordVar(new DataList());
             std::shared_ptr<DataList> recordTag(new DataList());
@@ -215,14 +178,7 @@ bool ClassModule::AddRecords(rapidxml::xml_node<> *pRecordRootNode, std::shared_
             }
 
             std::shared_ptr<IRecord> xRecord = pClass->GetRecordManager()->AddRecord(Guid(), pstrRecordName, recordVar, recordTag, atoi(pstrRow));
-
-            xRecord->SetPublic(bPublic);
-            xRecord->SetPrivate(bPrivate);
-            xRecord->SetSave(bSave);
-            xRecord->SetCache(bCache);
-            xRecord->SetRef(bRef);
-            xRecord->SetForce(bForce);
-            xRecord->SetUpload(bUpload);
+            
         }
     }
 

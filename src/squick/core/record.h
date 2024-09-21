@@ -109,35 +109,8 @@ class _SquickExport Record : public IRecord {
 
     virtual void AddRecordHook(const RECORD_EVENT_FUNCTOR_PTR &cb);
 
-    virtual const bool GetSave();
-
-    virtual const bool GetCache();
-
-    virtual const bool GetRef();
-
-    virtual const bool GetForce();
-
-    virtual const bool GetUpload();
-
-    virtual const bool GetPublic();
-
-    virtual const bool GetPrivate();
 
     virtual const std::string &GetName() const;
-
-    virtual void SetSave(const bool bSave);
-
-    virtual void SetCache(const bool bCache);
-
-    virtual void SetRef(const bool bRef);
-
-    virtual void SetForce(const bool bForce);
-
-    virtual void SetUpload(const bool bUpload);
-
-    virtual void SetPublic(const bool bPublic);
-
-    virtual void SetPrivate(const bool bPrivate);
 
     virtual void SetName(const std::string &name);
 

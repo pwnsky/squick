@@ -167,30 +167,6 @@ bool ElementModule::Load() {
 }
 
 bool ElementModule::CheckRef() {
-    std::shared_ptr<IClass> pLogicClass = m_class_->First();
-    while (pLogicClass) {
-        std::shared_ptr<IPropertyManager> pClassPropertyManager = pLogicClass->GetPropertyManager();
-        if (pClassPropertyManager) {
-            std::shared_ptr<IProperty> pProperty = pClassPropertyManager->First();
-            while (pProperty) {
-                // if one property is ref,check every config
-                if (pProperty->GetRef()) {
-                    const std::vector<std::string> &strIdList = pLogicClass->GetIDList();
-                    for (int i = 0; i < strIdList.size(); ++i) {
-                        const std::string &strId = strIdList[i];
-
-                        const std::string &strRefValue = this->GetPropertyString(strId, pProperty->GetKey());
-                        if (!strRefValue.empty() && !this->GetElement(strRefValue)) {
-                            LOG_FATAL("Check ref<%v> failed, class_name<%v> id<%v>", strRefValue, pLogicClass->GetClassName(), strId);
-                        }
-                    }
-                }
-                pProperty = pClassPropertyManager->Next();
-            }
-        }
-        //////////////////////////////////////////////////////////////////////////
-        pLogicClass = m_class_->Next();
-    }
 
     return false;
 }
@@ -242,14 +218,6 @@ bool ElementModule::Load(rapidxml::xml_node<> *attrNode, std::shared_ptr<IClass>
         while (pRecord) {
             std::shared_ptr<IRecord> xRecord =
                 pElementRecordManager->AddRecord(Guid(), pRecord->GetName(), pRecord->GetStartData(), pRecord->GetTag(), pRecord->GetRows());
-
-            xRecord->SetPublic(pRecord->GetPublic());
-            xRecord->SetPrivate(pRecord->GetPrivate());
-            xRecord->SetSave(pRecord->GetSave());
-            xRecord->SetCache(pRecord->GetCache());
-            xRecord->SetRef(pRecord->GetRef());
-            xRecord->SetForce(pRecord->GetForce());
-            xRecord->SetUpload(pRecord->GetUpload());
 
             pRecord = pClassRecordManager->Next();
         }

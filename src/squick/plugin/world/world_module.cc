@@ -125,13 +125,6 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
                             std::shared_ptr<IProperty> xProperty =
                                 pPropertyManager->AddProperty(ident, pStaticConfigPropertyInfo->GetKey(), pStaticConfigPropertyInfo->GetType());
 
-                            xProperty->SetPublic(pStaticConfigPropertyInfo->GetPublic());
-                            xProperty->SetPrivate(pStaticConfigPropertyInfo->GetPrivate());
-                            xProperty->SetSave(pStaticConfigPropertyInfo->GetSave());
-                            xProperty->SetCache(pStaticConfigPropertyInfo->GetCache());
-                            xProperty->SetRef(pStaticConfigPropertyInfo->GetRef());
-                            xProperty->SetUpload(pStaticConfigPropertyInfo->GetUpload());
-
                             //
                             pObject->AddPropertyCallBack(pStaticConfigPropertyInfo->GetKey(), this, &WorldModule::OnPropertyCommonEvent);
 
@@ -142,13 +135,6 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
                         while (pConfigRecordInfo) {
                             std::shared_ptr<IRecord> xRecord = pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(),
                                                                                          pConfigRecordInfo->GetTag(), pConfigRecordInfo->GetRows());
-
-                            xRecord->SetPublic(pConfigRecordInfo->GetPublic());
-                            xRecord->SetPrivate(pConfigRecordInfo->GetPrivate());
-                            xRecord->SetSave(pConfigRecordInfo->GetSave());
-                            xRecord->SetCache(pConfigRecordInfo->GetCache());
-                            xRecord->SetUpload(pConfigRecordInfo->GetUpload());
-
                             //
                             pObject->AddRecordCallBack(pConfigRecordInfo->GetName(), this, &WorldModule::OnRecordCommonEvent);
 
@@ -295,13 +281,6 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
                     std::shared_ptr<IProperty> xProperty =
                         pPropertyManager->AddProperty(ident, pStaticConfigPropertyInfo->GetKey(), pStaticConfigPropertyInfo->GetType());
 
-                    xProperty->SetPublic(pStaticConfigPropertyInfo->GetPublic());
-                    xProperty->SetPrivate(pStaticConfigPropertyInfo->GetPrivate());
-                    xProperty->SetSave(pStaticConfigPropertyInfo->GetSave());
-                    xProperty->SetCache(pStaticConfigPropertyInfo->GetCache());
-                    xProperty->SetRef(pStaticConfigPropertyInfo->GetRef());
-                    xProperty->SetUpload(pStaticConfigPropertyInfo->GetUpload());
-
                     pObject->AddPropertyCallBack(pStaticConfigPropertyInfo->GetKey(), this, &WorldModule::OnPropertyCommonEvent);
 
                     pStaticConfigPropertyInfo = pStaticClassPropertyManager->Next();
@@ -311,12 +290,6 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
                 while (pConfigRecordInfo) {
                     std::shared_ptr<IRecord> xRecord = pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(),
                                                                                  pConfigRecordInfo->GetTag(), pConfigRecordInfo->GetRows());
-
-                    xRecord->SetPublic(pConfigRecordInfo->GetPublic());
-                    xRecord->SetPrivate(pConfigRecordInfo->GetPrivate());
-                    xRecord->SetSave(pConfigRecordInfo->GetSave());
-                    xRecord->SetCache(pConfigRecordInfo->GetCache());
-                    xRecord->SetUpload(pConfigRecordInfo->GetUpload());
 
                     pObject->AddRecordCallBack(pConfigRecordInfo->GetName(), this, &WorldModule::OnRecordCommonEvent);
 
