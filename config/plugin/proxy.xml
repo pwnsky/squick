@@ -5,6 +5,6 @@
 		<Plugin Name="core/utils" />
         <Plugin Name="core/node" />
 		
-		<Plugin Name="node/proxy/logic" />
+		<Plugin Name="node/proxy/logic" HotReload="true" />
 	</Proxy>
 </XML>
