@@ -19,7 +19,7 @@
 #include <thread>
 
 class Class;
-
+#define CONFIG_DATA_THREADS_CAN_BE_USED_CNT 1
 class ElementConfigInfo {
   public:
     ElementConfigInfo() {
@@ -55,6 +55,7 @@ class ElementModule : public IElementModule, MapEx<std::string, ElementConfigInf
     virtual bool AfterStart() override;
     virtual bool BeforeDestroy() override;
     virtual bool Update() override;
+    virtual bool Reload(int type) override;
 
     virtual bool Load() override;
     virtual bool Save() override;

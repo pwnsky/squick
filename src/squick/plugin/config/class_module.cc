@@ -17,9 +17,7 @@ ClassModule::ClassModule(IPluginManager *p) {
 #endif
 
     if (!this->mbBackup) {
-        // IThreadPoolModule *threadPoolModule = pm_->FindModule<IThreadPoolModule>();
-        // const int threadCount = threadPoolModule->GetThreadCount();
-        for (int i = 0; i < 10; ++i) {
+        for (int i = 0; i < CONFIG_DATA_THREADS_CAN_BE_USED_CNT; ++i) {
             ThreadClassModule threadElement;
             threadElement.used = false;
             threadElement.classModule = new ClassModule();
@@ -64,6 +62,7 @@ bool ClassModule::Destroy() {
     return true;
 }
 
+// Get a free class module for find
 IClassModule *ClassModule::GetThreadClassModule() {
     std::thread::id threadID = std::this_thread::get_id();
 
@@ -73,12 +72,12 @@ IClassModule *ClassModule::GetThreadClassModule() {
                 return mThreadClasses[i].classModule;
             }
         } else {
+            // init for this thread
             mThreadClasses[i].used = true;
             mThreadClasses[i].threadID = threadID;
             return mThreadClasses[i].classModule;
         }
     }
-
     return nullptr;
 }
 

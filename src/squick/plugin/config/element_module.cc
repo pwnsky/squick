@@ -16,7 +16,7 @@ ElementModule::ElementModule(IPluginManager *p) {
     mbLoaded = false;
 
     if (!this->mbBackup) {
-        for (int i = 0; i < pm_->GetAppCPUCount(); ++i) {
+        for (int i = 0; i < CONFIG_DATA_THREADS_CAN_BE_USED_CNT; ++i) {
             ThreadElementModule threadElement;
             threadElement.used = false;
             threadElement.elementModule = new ElementModule(this);
@@ -81,6 +81,11 @@ bool ElementModule::AfterStart() {
 bool ElementModule::Destroy() {
     Clear();
 
+    return true;
+}
+
+bool ElementModule::Reload(int type)
+{
     return true;
 }
 
