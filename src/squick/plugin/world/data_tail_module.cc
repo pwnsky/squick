@@ -21,7 +21,7 @@ bool DataTailModule::Update() { return true; }
 
 bool DataTailModule::AfterStart() {
 #ifdef SQUICK_DEBUG_MODE
-    m_world_->AddClassCallBack(excel::Player::ThisName(), this, &DataTailModule::OnClassObjectEvent);
+    m_world_->AddClassCallBack(excel::Object::ThisName(), this, &DataTailModule::OnClassObjectEvent);
 #endif
     return true;
 }

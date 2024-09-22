@@ -8,6 +8,6 @@
         <Plugin Name="core/thread" />
         <Plugin Name="core/lua" />
         <Plugin Name="core/node" />
-        <Plugin Name="node/world/logic" />
+        <Plugin Name="node/world/logic" HotReload="true"/>
     </World>
 </XML>

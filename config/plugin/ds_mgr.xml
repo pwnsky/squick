@@ -3,6 +3,6 @@
         <Plugin Name="core/net" />
         <Plugin Name="core/log" />
         <Plugin Name="core/node" />
-        <Plugin Name="node/ds_mgr/logic" />
+        <Plugin Name="node/ds_mgr/logic" HotReload="true"/>
     </GameMgr>
 </XML>

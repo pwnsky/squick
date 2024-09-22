@@ -2,13 +2,12 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: squick-master
+  name: backstage
   namespace: default
   labels:
     app: squick
 spec:
-  serviceName: "svc-squick-master"
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: squick
@@ -19,12 +18,12 @@ spec:
     spec:
       containers:
         - name: squick
-          image: pwnsky/squick:1.1
+          image: pwnsky/squick:1.2
           imagePullPolicy: Never
           command: ["/bin/bash", "-c"]
           args:
             - >
-              /squick/script/squick.sh type=master id=1000${HOSTNAME##*-} area=0 ip=$(POD_IP) port=10001 http_port=50000 logshow=0
+              /squick/script/squick.sh type=backstage id=`expr 2500 + ${HOSTNAME##*-}` area=0 ip=$(POD_IP) port=10501 ws_port=10502 master_ip=svc-squick-master master_port=10001 logshow=0
           env:
             - name: POD_NAME
               valueFrom:

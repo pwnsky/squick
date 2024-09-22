@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: world
+  namespace: default
+  labels:
+    app: squick
+spec:
+  serviceName: "svc-squick-web"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: squick
+  template:
+    metadata:
+      labels:
+        app: squick
+    spec:
+      containers:
+        - name: squick
+          image: pwnsky/squick:1.2
+          imagePullPolicy: Never
+          command: ["/bin/bash", "-c"]
+          args:
+            - >
+              /squick/script/squick.sh type=world id=`expr 2000 + ${HOSTNAME##*-}` area=0 ip=$(POD_IP) port=10501 ws_port=10502 master_ip=svc-squick-master master_port=10001 logshow=0
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace

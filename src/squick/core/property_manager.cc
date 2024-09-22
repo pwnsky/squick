@@ -21,13 +21,6 @@ std::shared_ptr<IProperty> PropertyManager::AddProperty(const Guid &self, std::s
     if (!pOldProperty) {
         std::shared_ptr<IProperty> pNewProperty(new Property(self, propertyName, pProperty->GetType()));
 
-        pNewProperty->SetPublic(pProperty->GetPublic());
-        pNewProperty->SetPrivate(pProperty->GetPrivate());
-        pNewProperty->SetSave(pProperty->GetSave());
-        pNewProperty->SetCache(pProperty->GetCache());
-        pNewProperty->SetRef(pProperty->GetRef());
-        pNewProperty->SetUpload(pProperty->GetUpload());
-
         this->AddElement(propertyName, pNewProperty);
     }
 

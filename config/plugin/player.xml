@@ -9,6 +9,6 @@
         <Plugin Name="core/thread" />
         <Plugin Name="core/lua" />
         <Plugin Name="core/node" />
-        <Plugin Name="node/player/logic" />
+        <Plugin Name="node/player/logic" HotReload="true"/>
     </Player>
 </XML>

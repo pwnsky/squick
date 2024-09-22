@@ -15,12 +15,8 @@ ConfigGenerator::ConfigGenerator(const std::string &excelPath, const std::string
     mxGenerators.push_back(new CPPGenerator(excelPath, outPath));
     mxGenerators.push_back(new CSGenerator(excelPath, outPath));
     mxGenerators.push_back(new IniGenerator(excelPath, outPath));
-    mxGenerators.push_back(new JAVAGenerator(excelPath, outPath));
     mxGenerators.push_back(new LogicClassGenerator(excelPath, outPath));
-    mxGenerators.push_back(new PBGenerator(excelPath, outPath));
-    mxGenerators.push_back(new SQLGenerator(excelPath, outPath));
     mxGenerators.push_back(new StructGenerator(excelPath, outPath));
-    mxGenerators.push_back(new TSGenerator(excelPath, outPath));
     mxGenerators.push_back(new LuaGenerator(excelPath, outPath));
 
     strExcelIniPath = excelPath;

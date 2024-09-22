@@ -17,7 +17,7 @@ bool CellModule::Start() {
 }
 
 bool CellModule::AfterStart() {
-    m_world_->AddClassCallBack(excel::Player::ThisName(), this, &CellModule::OnObjectEvent);
+    m_world_->AddClassCallBack(excel::Object::ThisName(), this, &CellModule::OnObjectEvent);
 
     // NF SYNC
     /*X
@@ -376,15 +376,14 @@ int CellModule::AddMoveOutEventCallBack(CELL_MOVE_EVENT_FUNCTOR_PTR functorPtr) 
 
 int CellModule::OnObjectEvent(const Guid &self, const std::string &classNames, const CLASS_OBJECT_EVENT classEvent, const DataList &var) {
     if (CLASS_OBJECT_EVENT::COE_CREATE_FINISH == classEvent) {
-        m_world_->AddPropertyCallBack(self, excel::IObject::Position(), this, &CellModule::OnPositionEvent);
+        m_world_->AddPropertyCallBack(self, excel::Object::Position(), this, &CellModule::OnPositionEvent);
     }
-
     return 0;
 }
 
 int CellModule::OnPositionEvent(const Guid &self, const std::string &propertyName, const SquickData &oldVar, const SquickData &newVar, const INT64 reason) {
-    const int sceneID = m_world_->GetPropertyInt32(self, excel::IObject::SceneID());
-    const int groupID = m_world_->GetPropertyInt32(self, excel::IObject::GroupID());
+    const int sceneID = m_world_->GetPropertyInt32(self, excel::Object::SceneID());
+    const int groupID = m_world_->GetPropertyInt32(self, excel::Object::GroupID());
     const Vector3 &oldVec = oldVar.GetVector3();
     const Vector3 &newVec = newVar.GetVector3();
 

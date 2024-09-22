@@ -31,21 +31,6 @@ class _SquickExport Property : public IProperty {
     virtual const DATA_TYPE GetType() const;
     virtual const bool GeUsed() const;
     virtual const std::string &GetKey() const;
-    virtual const bool GetSave() const;
-    virtual const bool GetPublic() const;
-    virtual const bool GetPrivate() const;
-    virtual const bool GetCache() const;
-    virtual const bool GetRef() const;
-    virtual const bool GetForce() const;
-    virtual const bool GetUpload() const;
-
-    virtual void SetSave(bool bSave);
-    virtual void SetPublic(bool bPublic);
-    virtual void SetPrivate(bool bPrivate);
-    virtual void SetCache(bool bCache);
-    virtual void SetRef(bool bRef);
-    virtual void SetForce(bool bRef);
-    virtual void SetUpload(bool bUpload);
 
     virtual INT64 GetInt() const;
     virtual int GetInt32() const;

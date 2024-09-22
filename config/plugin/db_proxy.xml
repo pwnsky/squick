@@ -3,10 +3,10 @@
         <Plugin Name="core/net" />
         <Plugin Name="core/log" />
         <Plugin Name="core/node" />
-        <Plugin Name="node/db_proxy/mysql" />
-        <Plugin Name="node/db_proxy/mongo" />
-        <Plugin Name="node/db_proxy/redis" />
-        <Plugin Name="node/db_proxy/clickhouse" />
-        <Plugin Name="node/db_proxy/logic" />
+        <Plugin Name="node/db_proxy/mysql" HotReload="true" />
+        <Plugin Name="node/db_proxy/mongo" HotReload="true" />
+        <Plugin Name="node/db_proxy/redis" HotReload="true" />
+        <Plugin Name="node/db_proxy/clickhouse" HotReload="true"/>
+        <Plugin Name="node/db_proxy/logic" HotReload="true"/>
     </DbProxy>
 </XML>

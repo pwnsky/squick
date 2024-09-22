@@ -3,6 +3,6 @@
         <Plugin Name="core/net" />
         <Plugin Name="core/log" />
         <Plugin Name="core/node" />
-        <Plugin Name="node/master/logic" />
+        <Plugin Name="node/master/logic" HotReload="true" />
     </Master>
 </XML>

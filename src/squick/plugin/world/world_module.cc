@@ -125,13 +125,6 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
                             std::shared_ptr<IProperty> xProperty =
                                 pPropertyManager->AddProperty(ident, pStaticConfigPropertyInfo->GetKey(), pStaticConfigPropertyInfo->GetType());
 
-                            xProperty->SetPublic(pStaticConfigPropertyInfo->GetPublic());
-                            xProperty->SetPrivate(pStaticConfigPropertyInfo->GetPrivate());
-                            xProperty->SetSave(pStaticConfigPropertyInfo->GetSave());
-                            xProperty->SetCache(pStaticConfigPropertyInfo->GetCache());
-                            xProperty->SetRef(pStaticConfigPropertyInfo->GetRef());
-                            xProperty->SetUpload(pStaticConfigPropertyInfo->GetUpload());
-
                             //
                             pObject->AddPropertyCallBack(pStaticConfigPropertyInfo->GetKey(), this, &WorldModule::OnPropertyCommonEvent);
 
@@ -142,13 +135,6 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
                         while (pConfigRecordInfo) {
                             std::shared_ptr<IRecord> xRecord = pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(),
                                                                                          pConfigRecordInfo->GetTag(), pConfigRecordInfo->GetRows());
-
-                            xRecord->SetPublic(pConfigRecordInfo->GetPublic());
-                            xRecord->SetPrivate(pConfigRecordInfo->GetPrivate());
-                            xRecord->SetSave(pConfigRecordInfo->GetSave());
-                            xRecord->SetCache(pConfigRecordInfo->GetCache());
-                            xRecord->SetUpload(pConfigRecordInfo->GetUpload());
-
                             //
                             pObject->AddRecordCallBack(pConfigRecordInfo->GetName(), this, &WorldModule::OnRecordCommonEvent);
 
@@ -162,13 +148,13 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
                 {
                     Vector3 vRelivePos = m_scene_->GetRelivePosition(sceneID, 0);
 
-                    pObject->SetPropertyString(excel::IObject::ConfigID(), configIndex);
-                    pObject->SetPropertyString(excel::IObject::ClassName(), className);
-                    pObject->SetPropertyInt(excel::IObject::SceneID(), sceneID);
-                    pObject->SetPropertyInt(excel::IObject::GroupID(), groupID);
-                    pObject->SetPropertyVector3(excel::IObject::Position(), vRelivePos);
+                    pObject->SetPropertyString(excel::Object::ConfigID(), configIndex);
+                    pObject->SetPropertyString(excel::Object::ClassName(), className);
+                    pObject->SetPropertyInt(excel::Object::SceneID(), sceneID);
+                    pObject->SetPropertyInt(excel::Object::GroupID(), groupID);
+                    pObject->SetPropertyVector3(excel::Object::Position(), vRelivePos);
 
-                    pContainerInfo->AddObjectToGroup(groupID, ident, className == excel::Player::ThisName() ? true : false);
+                    pContainerInfo->AddObjectToGroup(groupID, ident, className == excel::Object::ThisName() ? true : false);
 
                     DoEvent(ident, className, pObject->GetState(), arg);
                 }
@@ -200,9 +186,9 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
                             std::shared_ptr<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
                             for (int i = 0; i < arg.GetCount() - 1; i += 2) {
                                 const std::string &propertyName = arg.String(i);
-                                if (excel::IObject::ConfigID() != propertyName && excel::IObject::ClassName() != propertyName &&
-                                    excel::IObject::SceneID() != propertyName && excel::IObject::ID() != propertyName &&
-                                    excel::IObject::GroupID() != propertyName) {
+                                if (excel::Object::ConfigID() != propertyName && excel::Object::ClassName() != propertyName &&
+                                    excel::Object::SceneID() != propertyName && excel::Object::ID() != propertyName &&
+                                    excel::Object::GroupID() != propertyName) {
                                     std::shared_ptr<IProperty> pArgProperty = pPropertyManager->GetElement(propertyName);
                                     if (pArgProperty) {
                                         switch (pArgProperty->GetType()) {
@@ -236,7 +222,7 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
                             stream << " config_name: " << configIndex;
                             stream << " scene_id: " << sceneID;
                             stream << " group_id: " << groupID;
-                            stream << " position: " << pObject->GetPropertyVector3(excel::IObject::Position()).ToString();
+                            stream << " position: " << pObject->GetPropertyVector3(excel::Object::Position()).ToString();
 
                             LOG_INFO("%v", stream.str());
 
@@ -295,13 +281,6 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
                     std::shared_ptr<IProperty> xProperty =
                         pPropertyManager->AddProperty(ident, pStaticConfigPropertyInfo->GetKey(), pStaticConfigPropertyInfo->GetType());
 
-                    xProperty->SetPublic(pStaticConfigPropertyInfo->GetPublic());
-                    xProperty->SetPrivate(pStaticConfigPropertyInfo->GetPrivate());
-                    xProperty->SetSave(pStaticConfigPropertyInfo->GetSave());
-                    xProperty->SetCache(pStaticConfigPropertyInfo->GetCache());
-                    xProperty->SetRef(pStaticConfigPropertyInfo->GetRef());
-                    xProperty->SetUpload(pStaticConfigPropertyInfo->GetUpload());
-
                     pObject->AddPropertyCallBack(pStaticConfigPropertyInfo->GetKey(), this, &WorldModule::OnPropertyCommonEvent);
 
                     pStaticConfigPropertyInfo = pStaticClassPropertyManager->Next();
@@ -311,12 +290,6 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
                 while (pConfigRecordInfo) {
                     std::shared_ptr<IRecord> xRecord = pRecordManager->AddRecord(ident, pConfigRecordInfo->GetName(), pConfigRecordInfo->GetStartData(),
                                                                                  pConfigRecordInfo->GetTag(), pConfigRecordInfo->GetRows());
-
-                    xRecord->SetPublic(pConfigRecordInfo->GetPublic());
-                    xRecord->SetPrivate(pConfigRecordInfo->GetPrivate());
-                    xRecord->SetSave(pConfigRecordInfo->GetSave());
-                    xRecord->SetCache(pConfigRecordInfo->GetCache());
-                    xRecord->SetUpload(pConfigRecordInfo->GetUpload());
 
                     pObject->AddRecordCallBack(pConfigRecordInfo->GetName(), this, &WorldModule::OnRecordCommonEvent);
 
@@ -329,14 +302,14 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
         {
             Vector3 vRelivePos = m_scene_->GetRelivePosition(sceneID, 0);
 
-            pObject->SetPropertyObject(excel::IObject::ID(), ident);
-            pObject->SetPropertyString(excel::IObject::ConfigID(), configIndex);
-            pObject->SetPropertyString(excel::IObject::ClassName(), className);
-            pObject->SetPropertyInt(excel::IObject::SceneID(), sceneID);
-            pObject->SetPropertyInt(excel::IObject::GroupID(), groupID);
-            pObject->SetPropertyVector3(excel::IObject::Position(), vRelivePos);
+            pObject->SetPropertyObject(excel::Object::ID(), ident);
+            pObject->SetPropertyString(excel::Object::ConfigID(), configIndex);
+            pObject->SetPropertyString(excel::Object::ClassName(), className);
+            pObject->SetPropertyInt(excel::Object::SceneID(), sceneID);
+            pObject->SetPropertyInt(excel::Object::GroupID(), groupID);
+            pObject->SetPropertyVector3(excel::Object::Position(), vRelivePos);
 
-            pContainerInfo->AddObjectToGroup(groupID, ident, className == excel::Player::ThisName() ? true : false);
+            pContainerInfo->AddObjectToGroup(groupID, ident, className == excel::Object::ThisName() ? true : false);
 
             DoEvent(ident, className, pObject->GetState(), arg);
         }
@@ -365,8 +338,8 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
             std::shared_ptr<IPropertyManager> pPropertyManager = pObject->GetPropertyManager();
             for (int i = 0; i < arg.GetCount() - 1; i += 2) {
                 const std::string &propertyName = arg.String(i);
-                if (excel::IObject::ConfigID() != propertyName && excel::IObject::ClassName() != propertyName && excel::IObject::SceneID() != propertyName &&
-                    excel::IObject::ID() != propertyName && excel::IObject::GroupID() != propertyName) {
+                if (excel::Object::ConfigID() != propertyName && excel::Object::ClassName() != propertyName && excel::Object::SceneID() != propertyName &&
+                    excel::Object::ID() != propertyName && excel::Object::GroupID() != propertyName) {
                     std::shared_ptr<IProperty> pArgProperty = pPropertyManager->GetElement(propertyName);
                     if (pArgProperty) {
                         switch (pArgProperty->GetType()) {
@@ -400,7 +373,7 @@ std::shared_ptr<IObject> WorldModule::CreateObject(const Guid &self, const int s
             stream << " config_name: " << configIndex;
             stream << " scene_id: " << sceneID;
             stream << " group_id: " << groupID;
-            stream << " position: " << pObject->GetPropertyVector3(excel::IObject::Position()).ToString();
+            stream << " position: " << pObject->GetPropertyVector3(excel::Object::Position()).ToString();
 
             // m_log_->LogInfo(stream);
 
@@ -448,20 +421,20 @@ bool WorldModule::DestroyObject(const Guid &self) {
         return DestroySelf(self);
     }
 
-    const int sceneID = GetPropertyInt32(self, excel::IObject::SceneID());
-    const int groupID = GetPropertyInt32(self, excel::IObject::GroupID());
+    const int sceneID = GetPropertyInt32(self, excel::Object::SceneID());
+    const int groupID = GetPropertyInt32(self, excel::Object::GroupID());
 
     std::shared_ptr<SceneInfo> pContainerInfo = m_scene_->GetElement(sceneID);
     if (pContainerInfo) {
-        const std::string &className = GetPropertyString(self, excel::IObject::ClassName());
-        if (className == excel::Player::ThisName()) {
+        const std::string &className = GetPropertyString(self, excel::Object::ClassName());
+        if (className == excel::Object::ThisName()) {
             m_scene_->LeaveSceneGroup(self);
         }
 
         DoEvent(self, className, COE_BEFOREDESTROY, DataList::Empty());
         DoEvent(self, className, COE_DESTROY, DataList::Empty());
 
-        if (className != excel::Player::ThisName()) {
+        if (className != excel::Object::ThisName()) {
             pContainerInfo->RemoveObjectFromGroup(groupID, self, false);
         }
 
@@ -1161,7 +1134,7 @@ bool WorldModule::GetGroupObjectList(const int sceneID, const int groupID, const
                 continue;
             }
 
-            if (this->GetPropertyString(xID, excel::IObject::ClassName()) == className && xID != noSelf) {
+            if (this->GetPropertyString(xID, excel::Object::ClassName()) == className && xID != noSelf) {
                 list.AddObject(xID);
             }
         }
@@ -1194,8 +1167,8 @@ bool WorldModule::LogInfo(const Guid ident) {
 
     std::shared_ptr<IObject> pObject = GetObject(ident);
     if (pObject) {
-        int sceneID = GetPropertyInt32(ident, excel::IObject::SceneID());
-        int groupID = GetPropertyInt32(ident, excel::IObject::GroupID());
+        int sceneID = GetPropertyInt32(ident, excel::Object::SceneID());
+        int groupID = GetPropertyInt32(ident, excel::Object::GroupID());
         LOG_INFO("Guid<%v> SceneID<%v>", ident.ToString(), sceneID);
     } else {
         LOG_ERROR("Guid<%v> There is no object", ident.ToString());
@@ -1218,7 +1191,7 @@ int WorldModule::OnPropertyCommonEvent(const Guid &self, const std::string &prop
                 pFun->operator()(self, propertyName, oldVar, newVar, reason);
             }
 
-            const std::string &className = xObject->GetPropertyString(excel::IObject::ClassName());
+            const std::string &className = xObject->GetPropertyString(excel::Object::ClassName());
             std::map<std::string, std::list<PROPERTY_EVENT_FUNCTOR_PTR>>::iterator itClass = mtClassPropertyCallBackList.find(className);
             if (itClass != mtClassPropertyCallBackList.end()) {
                 std::list<PROPERTY_EVENT_FUNCTOR_PTR>::iterator itList = itClass->second.begin();
@@ -1331,7 +1304,7 @@ int WorldModule::OnRecordCommonEvent(const Guid &self, const RECORD_EVENT_DATA &
             }
         }
 
-        const std::string &className = xObject->GetPropertyString(excel::IObject::ClassName());
+        const std::string &className = xObject->GetPropertyString(excel::Object::ClassName());
         std::map<std::string, std::list<RECORD_EVENT_FUNCTOR_PTR>>::iterator itClass = mtClassRecordCallBackList.find(className);
         if (itClass != mtClassRecordCallBackList.end()) {
             std::list<RECORD_EVENT_FUNCTOR_PTR>::iterator itList = itClass->second.begin();

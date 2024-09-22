@@ -41,7 +41,7 @@ bool Zip::open(const char *file) {
     char szCurrentFileName[PATH_MAX];
     unz_file_info64 fileInfo;
 
-    int err = unzGoToNextFile2(_zipFile, &fileInfo, szCurrentFileName, sizeof(szCurrentFileName) - 1, nullptr, 0, nullptr, 0);
+    int err = unzGoToFirstFile2(_zipFile, &fileInfo, szCurrentFileName, sizeof(szCurrentFileName) - 1, nullptr, 0, nullptr, 0);
     while (err == UNZ_OK) {
         unz_file_pos posInfo;
         if (unzGetFilePos(_zipFile, &posInfo) == UNZ_OK) {
@@ -52,7 +52,9 @@ bool Zip::open(const char *file) {
             entry.uncompressed_size = (uLong)fileInfo.uncompressed_size;
             _files[currentFileName] = entry;
         }
+        // std::cout << file << " loading: " << szCurrentFileName << " " << err << std::endl;     
         err = unzGoToNextFile2(_zipFile, &fileInfo, szCurrentFileName, sizeof(szCurrentFileName) - 1, nullptr, 0, nullptr, 0);
+        
     }
 
     return true;

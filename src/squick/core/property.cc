@@ -80,34 +80,6 @@ const SquickData &Property::GetValue() const {
 
 const std::string &Property::GetKey() const { return msPropertyName; }
 
-const bool Property::GetSave() const { return mbSave; }
-
-const bool Property::GetPublic() const { return mbPublic; }
-
-const bool Property::GetPrivate() const { return mbPrivate; }
-
-const bool Property::GetCache() const { return mbCache; }
-
-const bool Property::GetRef() const { return mbRef; }
-
-const bool Property::GetForce() const { return mbForce; }
-
-const bool Property::GetUpload() const { return mbUpload; }
-
-void Property::SetSave(bool bSave) { mbSave = bSave; }
-
-void Property::SetPublic(bool bPublic) { mbPublic = bPublic; }
-
-void Property::SetPrivate(bool bPrivate) { mbPrivate = bPrivate; }
-
-void Property::SetCache(bool bCache) { mbCache = bCache; }
-
-void Property::SetRef(bool bRef) { mbRef = bRef; }
-
-void Property::SetForce(bool bRef) { mbForce = bRef; }
-
-void Property::SetUpload(bool bUpload) { mbUpload = bUpload; }
-
 INT64 Property::GetInt() const {
     if (!mxData) {
         return 0;

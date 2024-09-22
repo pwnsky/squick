@@ -144,26 +144,10 @@ class _SquickExport IRecord : public MemoryCounter {
     virtual bool Clear() = 0;
 
     virtual void AddRecordHook(const RECORD_EVENT_FUNCTOR_PTR &cb) = 0;
-
-    virtual const bool GetSave() = 0;
-    virtual const bool GetPublic() = 0;
-    virtual const bool GetPrivate() = 0;
-    virtual const bool GetCache() = 0;
-    virtual const bool GetRef() = 0;
-    virtual const bool GetForce() = 0;
-    virtual const bool GetUpload() = 0;
     virtual const std::string &GetName() const = 0;
 
     virtual std::shared_ptr<DataList> GetStartData() const = 0;
     virtual const std::shared_ptr<DataList> GetTag() const = 0;
-
-    virtual void SetSave(const bool bSave) = 0;
-    virtual void SetCache(const bool bCache) = 0;
-    virtual void SetRef(const bool bRef) = 0;
-    virtual void SetForce(const bool bForce) = 0;
-    virtual void SetUpload(const bool bUpload) = 0;
-    virtual void SetPublic(const bool bPublic) = 0;
-    virtual void SetPrivate(const bool bPrivate) = 0;
     virtual void SetName(const std::string &name) = 0;
 
     virtual const TRECORDVEC &GetRecordVec() const = 0;

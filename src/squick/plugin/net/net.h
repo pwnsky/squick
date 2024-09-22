@@ -87,6 +87,9 @@ class Net : public INet {
     int StartClientNet();
     int StartServerNet();
     void CloseObject(const socket_t sock);
+    bool IsValidIP(const std::string& ip);
+    bool IsValidDomain(const std::string& domain);
+    std::string GetIpByDomain(std::string domain);
 
     static void listener_cb(struct evconnlistener *listener, evutil_socket_t fd, struct sockaddr *sa, int socklen, void *user_data);
     static void conn_readcb(struct bufferevent *bev, void *user_data);
