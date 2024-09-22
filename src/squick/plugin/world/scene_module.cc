@@ -119,8 +119,8 @@ bool SceneModule::RequestEnterScene(const Guid &self, const int sceneID, const i
         return false;
     }
 
-    const int nNowSceneID = m_world_->GetPropertyInt32(self, excel::Player::SceneID());
-    const int nNowGroupID = m_world_->GetPropertyInt32(self, excel::Player::GroupID());
+    const int nNowSceneID = m_world_->GetPropertyInt32(self, excel::Object::SceneID());
+    const int nNowGroupID = m_world_->GetPropertyInt32(self, excel::Object::GroupID());
 
     if (nNowSceneID == sceneID && nNowGroupID == groupID) {
         LOG_INFO("Guid<%v> in same scene and group but it not a clone scene<%v>, group_id<%v> ", self.ToString(), sceneID, groupID);
@@ -196,7 +196,7 @@ bool SceneModule::LeaveSceneGroup(const Guid &self) {
         }
         /////////
 
-        const Vector3 &lastPos = m_world_->GetPropertyVector3(self, excel::IObject::Position());
+        const Vector3 &lastPos = m_world_->GetPropertyVector3(self, excel::Object::Position());
         BeforeLeaveSceneGroup(self, nOldSceneID, nOldGroupID, 0, DataList::Empty());
 
         const Guid lastCell = m_pCellModule->ComputeCellID(lastPos);
@@ -394,7 +394,7 @@ bool SceneModule::CreateSceneNPC(const int sceneID, const int groupID, const Dat
         int nWeight = m_world_->Random(0, 100);
         if (nWeight <= pResource->nWeight) {
             DataList arg;
-            arg << excel::IObject::Position() << pResource->vSeedPos;
+            arg << excel::Object::Position() << pResource->vSeedPos;
             // arg << SquickProtocol::NPC::SeedID() << pResource->seedID;
             arg.Append(argList);
 
@@ -916,7 +916,7 @@ bool SceneModule::SwitchScene(const Guid &self, const int nTargetSceneID, const 
         }
         /////////
 
-        const Vector3 &lastPos = m_world_->GetPropertyVector3(self, excel::IObject::Position());
+        const Vector3 &lastPos = m_world_->GetPropertyVector3(self, excel::Object::Position());
         BeforeLeaveSceneGroup(self, nOldSceneID, nOldGroupID, type, arg);
 
         const Guid lastCell = m_pCellModule->ComputeCellID(lastPos);
@@ -944,7 +944,7 @@ bool SceneModule::SwitchScene(const Guid &self, const int nTargetSceneID, const 
         const Guid newCell = m_pCellModule->ComputeCellID(v);
         OnMoveCellEvent(self, nTargetGroupID, nTargetGroupID, Guid(), newCell);
 
-        pObject->SetPropertyVector3(excel::IObject::MoveTo(), v);
+        pObject->SetPropertyVector3(excel::Object::MoveTo(), v);
 
         /////////
         AfterEnterSceneGroup(self, nTargetSceneID, nTargetGroupID, type, arg);
@@ -1004,15 +1004,15 @@ int SceneModule::OnSceneRecordCommonEvent(const Guid &self, const RECORD_EVENT_D
 
 int SceneModule::OnPropertyCommonEvent(const Guid &self, const std::string &propertyName, const SquickData &oldVar, const SquickData &newVar,
                                        const INT64 reason) {
-    const std::string &className = m_world_->GetPropertyString(self, excel::IObject::ClassName());
-    if (className == excel::Player::ThisName()) {
+    const std::string &className = m_world_->GetPropertyString(self, excel::Object::ClassName());
+    if (className == excel::Object::ThisName()) {
         // only player can change grupid and sceneid
-        if (excel::Player::GroupID() == propertyName) {
+        if (excel::Object::GroupID() == propertyName) {
             OnPlayerGroupEvent(self, propertyName, oldVar, newVar);
             return 0;
         }
 
-        if (excel::Player::SceneID() == propertyName) {
+        if (excel::Object::SceneID() == propertyName) {
             OnPlayerSceneEvent(self, propertyName, oldVar, newVar);
             return 0;
         }
@@ -1031,7 +1031,7 @@ int SceneModule::OnPropertyCommonEvent(const Guid &self, const std::string &prop
 int SceneModule::OnRecordCommonEvent(const Guid &self, const RECORD_EVENT_DATA &eventData, const SquickData &oldVar, const SquickData &newVar) {
     const std::string &recordName = eventData.recordName;
 
-    int nObjectGroupID = m_world_->GetPropertyInt32(self, excel::Player::GroupID());
+    int nObjectGroupID = m_world_->GetPropertyInt32(self, excel::Object::GroupID());
 
     if (nObjectGroupID < 0) {
         return 0;
@@ -1047,14 +1047,14 @@ int SceneModule::OnRecordCommonEvent(const Guid &self, const RECORD_EVENT_DATA &
 
 int SceneModule::OnClassCommonEvent(const Guid &self, const std::string &className, const CLASS_OBJECT_EVENT classEvent, const DataList &var) {
     if (CLASS_OBJECT_EVENT::COE_DESTROY == classEvent) {
-        const int nObjectSceneID = m_world_->GetPropertyInt32(self, excel::IObject::SceneID());
-        const int nObjectGroupID = m_world_->GetPropertyInt32(self, excel::IObject::GroupID());
+        const int nObjectSceneID = m_world_->GetPropertyInt32(self, excel::Object::SceneID());
+        const int nObjectGroupID = m_world_->GetPropertyInt32(self, excel::Object::GroupID());
 
         if (nObjectGroupID < 0 || nObjectSceneID <= 0) {
             return 0;
         }
 
-        const Vector3 &pos = m_world_->GetPropertyVector3(self, excel::Player::Position());
+        const Vector3 &pos = m_world_->GetPropertyVector3(self, excel::Object::Position());
         DataList valueAllPlayrNoSelfList;
         m_pCellModule->GetCellObjectList(nObjectSceneID, nObjectGroupID, pos, valueAllPlayrNoSelfList, true, self);
 
@@ -1070,7 +1070,7 @@ int SceneModule::OnClassCommonEvent(const Guid &self, const std::string &classNa
         DataList selfVar;
         selfVar << self;
 
-        if (className == excel::Player::ThisName()) {
+        if (className == excel::Object::ThisName()) {
             // tell youself<client>, u want to enter this scene or this group
             OnObjectListEnter(selfVar, selfVar);
 
@@ -1080,13 +1080,13 @@ int SceneModule::OnClassCommonEvent(const Guid &self, const std::string &classNa
 
             OnObjectListEnterFinished(selfVar, selfVar);
         } else {
-            const int nObjectSceneID = m_world_->GetPropertyInt32(self, excel::IObject::SceneID());
-            const int nObjectGroupID = m_world_->GetPropertyInt32(self, excel::IObject::GroupID());
+            const int nObjectSceneID = m_world_->GetPropertyInt32(self, excel::Object::SceneID());
+            const int nObjectGroupID = m_world_->GetPropertyInt32(self, excel::Object::GroupID());
 
             if (nObjectGroupID < 0 || nObjectSceneID <= 0) {
                 return 0;
             }
-            const Vector3 &pos = m_world_->GetPropertyVector3(self, excel::Player::Position());
+            const Vector3 &pos = m_world_->GetPropertyVector3(self, excel::Object::Position());
             DataList valueAllPlayrObjectList;
             m_pCellModule->GetCellObjectList(nObjectSceneID, nObjectGroupID, pos, valueAllPlayrObjectList, true);
 
@@ -1105,8 +1105,8 @@ int SceneModule::OnClassCommonEvent(const Guid &self, const std::string &classNa
 
 int SceneModule::OnPlayerGroupEvent(const Guid &self, const std::string &propertyName, const SquickData &oldVar, const SquickData &newVar) {
     // this event only happened in the same scene
-    const int sceneID = m_world_->GetPropertyInt32(self, excel::IObject::SceneID());
-    const Vector3 position = m_world_->GetPropertyVector3(self, excel::IObject::Position());
+    const int sceneID = m_world_->GetPropertyInt32(self, excel::Object::SceneID());
+    const Vector3 position = m_world_->GetPropertyVector3(self, excel::Object::Position());
     int nOldGroupID = oldVar.GetInt32();
     int nNewGroupID = newVar.GetInt32();
 
@@ -1206,11 +1206,11 @@ int SceneModule::OnPlayerSceneEvent(const Guid &self, const std::string &propert
 }
 
 int SceneModule::GetBroadCastObject(const Guid &self, const std::string &propertyName, const bool bTable, DataList &valueObject) {
-    const int nObjectContainerID = m_world_->GetPropertyInt32(self, excel::IObject::SceneID());
-    const int nObjectGroupID = m_world_->GetPropertyInt32(self, excel::IObject::GroupID());
-    const Vector3 &position = m_world_->GetPropertyVector3(self, excel::IObject::Position());
+    const int nObjectContainerID = m_world_->GetPropertyInt32(self, excel::Object::SceneID());
+    const int nObjectGroupID = m_world_->GetPropertyInt32(self, excel::Object::GroupID());
+    const Vector3 &position = m_world_->GetPropertyVector3(self, excel::Object::Position());
 
-    const std::string &className = m_world_->GetPropertyString(self, excel::IObject::ClassName());
+    const std::string &className = m_world_->GetPropertyString(self, excel::Object::ClassName());
     std::shared_ptr<IRecordManager> pClassRecordManager = m_class_->GetClassRecordManager(className);
     std::shared_ptr<IPropertyManager> pClassPropertyManager = m_class_->GetClassPropertyManager(className);
 
