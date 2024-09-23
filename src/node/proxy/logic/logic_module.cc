@@ -195,7 +195,7 @@ bool LogicModule::SendToPlayer(uint64_t uid, const int msg_id, const string &dat
     try {
         auto pInfo = GetPlayerConnInfoByUID(uid);
         if (pInfo == nullptr) {
-            throw;
+            throw std::runtime_error("pInfo is nullptr");
         }
         if (pInfo->protocol_type == ProtocolType::Tcp) {
             m_net_->SendMsg(msg_id, data, pInfo->sock);
@@ -203,8 +203,8 @@ bool LogicModule::SendToPlayer(uint64_t uid, const int msg_id, const string &dat
             m_ws_->SendMsg(msg_id, data.data(), data.size(), pInfo->sock);
         }
         ret = true;
-    } catch (...) {
-        LOG_ERROR("Send to player failed, uid<%v>", uid);
+    } catch (const std::runtime_error &e) {
+        LOG_ERROR("Send to player failed, uid<%v>, what<%v>", uid, e.what());
     }
     return ret;
 }
