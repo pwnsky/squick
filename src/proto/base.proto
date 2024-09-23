@@ -26,6 +26,7 @@ enum ErrorCode {
     ErrCommonFaild = 1;
 }
 
+
 message PlayerData {
     string account = 1;
     string account_id = 2;

@@ -21,3 +21,5 @@
 45000 ~ 46000 : game_manager.proto
 
 50000 ~ 50200 : test.proto
+
+52000 - 62000 : cklog.proto

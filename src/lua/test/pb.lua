@@ -23,4 +23,13 @@ function Test1()
     PrintTable(test_tbl);
 end
 
-Test1()
+function Test2()
+    print("create a blank proto struct to lua table")
+    local test_tbl = Squick:GetProtoTable("rpc.PlayerData")
+    PrintTable(test_tbl)
+    print("Json encode:")
+    print(Json.encode(test_tbl))
+end
+
+--Test1()
+Test2()
