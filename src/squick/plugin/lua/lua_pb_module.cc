@@ -112,6 +112,23 @@ const std::string LuaPBModule::Encode(const std::string &strMsgTypeName, const L
     return std::string();
 }
 
+LuaIntf::LuaRef LuaPBModule::GetProtoTable(const std::string &strMsgTypeName) {
+    const google::protobuf::Descriptor *pDescriptor = m_pImporter->pool()->FindMessageTypeByName(strMsgTypeName);
+    if (!pDescriptor) {
+        LOG_ERROR("unknow message struct name: %v", strMsgTypeName);
+        return LuaIntf::LuaRef(m_pLuaState, nullptr);
+    }
+
+    const google::protobuf::Message *pProtoType = m_pFactory->GetPrototype(pDescriptor);
+    if (!pProtoType) {
+        LOG_ERROR("cannot find the message body from factory: %v", strMsgTypeName);
+        return LuaIntf::LuaRef(m_pLuaState, nullptr);
+    }
+
+    std::shared_ptr<google::protobuf::Message> xMessageBody(pProtoType->New());
+    return MessageToTbl(*xMessageBody);
+}
+
 LuaIntf::LuaRef LuaPBModule::MessageToTbl(const google::protobuf::Message &message) const {
     const google::protobuf::Descriptor *pDesc = message.GetDescriptor();
     if (pDesc) {

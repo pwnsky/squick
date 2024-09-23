@@ -141,6 +141,7 @@ class LuaScriptModule : public ILuaScriptModule {
     bool ImportProtoFile(const std::string &fileName);
     const std::string Encode(const std::string &msgTypeName, const LuaIntf::LuaRef &luaTable);
     LuaIntf::LuaRef Decode(const std::string &msgTypeName, const std::string &data);
+    LuaIntf::LuaRef GetProtoTable(const std::string &msgTypeName);
 
     void SendToServerByServerID(const int server_id, const uint16_t msg_id, const std::string &data, const uint64_t uid);
     void SendToAllServerByServerType(const int server_type, const uint16_t msg_id, const std::string &data, const uint64_t uid);
