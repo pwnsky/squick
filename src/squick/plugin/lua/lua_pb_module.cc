@@ -1,19 +1,19 @@
 
 #include "lua_pb_module.h"
 bool LuaPBModule::Awake() {
-    mSourceTree.MapPath("", "../src/proto");
+    mSourceTree.MapPath("", "../res/Proto");
     m_pImporter = new google::protobuf::compiler::Importer(&mSourceTree, &mErrorCollector);
     m_pFactory = new google::protobuf::DynamicMessageFactory();
 
     mnTime = pm_->GetNowTime();
-
+    m_log_ = this->pm_->FindModule<ILogModule>();
     return true;
 }
 
 bool LuaPBModule::Start() { return true; }
 
 bool LuaPBModule::AfterStart() {
-    m_log_ = this->pm_->FindModule<ILogModule>();
+    
     return true;
 }
 
@@ -40,9 +40,8 @@ bool LuaPBModule::ImportProtoFile(const std::string &strFile) {
         if (!pDesc) {
             LOG_ERROR("Unknow protobuf file to import struct name: %v", strFile);
         };
-
         ret = true;
-    } catch (exception e) {
+    } catch (...) {
     }
     return ret;
 }
@@ -110,6 +109,23 @@ const std::string LuaPBModule::Encode(const std::string &strMsgTypeName, const L
     }
 
     return std::string();
+}
+
+LuaIntf::LuaRef LuaPBModule::GetProtoTable(const std::string &strMsgTypeName) {
+    const google::protobuf::Descriptor *pDescriptor = m_pImporter->pool()->FindMessageTypeByName(strMsgTypeName);
+    if (!pDescriptor) {
+        LOG_ERROR("unknow message struct name: %v", strMsgTypeName);
+        return LuaIntf::LuaRef(m_pLuaState, nullptr);
+    }
+
+    const google::protobuf::Message *pProtoType = m_pFactory->GetPrototype(pDescriptor);
+    if (!pProtoType) {
+        LOG_ERROR("cannot find the message body from factory: %v", strMsgTypeName);
+        return LuaIntf::LuaRef(m_pLuaState, nullptr);
+    }
+
+    std::shared_ptr<google::protobuf::Message> xMessageBody(pProtoType->New());
+    return MessageToTbl(*xMessageBody);
 }
 
 LuaIntf::LuaRef LuaPBModule::MessageToTbl(const google::protobuf::Message &message) const {

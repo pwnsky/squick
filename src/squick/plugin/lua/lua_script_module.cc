@@ -627,6 +627,11 @@ LuaIntf::LuaRef LuaScriptModule::Decode(const std::string &msgTypeName, const st
     return p->Decode(msgTypeName, data);
 }
 
+LuaIntf::LuaRef LuaScriptModule::GetProtoTable(const std::string &msgTypeName) {
+    LuaPBModule *p = (LuaPBModule *)m_lua_pb_;
+    return p->GetProtoTable(msgTypeName);
+}
+
 void LuaScriptModule::SetScriptPath(const std::string &path) { scriptPath = path; }
 
 const std::string LuaScriptModule::GetScriptPath() { return scriptPath; }
@@ -838,6 +843,7 @@ bool LuaScriptModule::Register() {
         .addFunction("Encode", &LuaScriptModule::Encode)
         .addFunction("Decode", &LuaScriptModule::Decode)
         .addFunction("GetScriptPath", &LuaScriptModule::GetScriptPath)
+        .addFunction("GetProtoTable", &LuaScriptModule::GetProtoTable)
         .endClass();
 
     return true;

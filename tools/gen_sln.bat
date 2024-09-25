@@ -8,11 +8,14 @@ rem Description: Generate visual studio project
 set build_version="debug"
 set project_path= %~dp0\..
 set build_path=%project_path%\cache
-
 mkdir %build_path%
 rem Gen config files
-call "proto2code.bat" no_pause
-call "generate_config.bat" no_pause
+
+cd %project_path%\res
+call ".\GenProtoCode.bat" server
+call ".\ExportTable.bat" server
+
+cd %project_path%\tools
 call "init_runtime_dll.bat" no_pause
 
 rem cmake 

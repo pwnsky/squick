@@ -12,14 +12,14 @@ function init_env()
 {
     # 将Proto文件生成代码
     log_info "Generate protocol c++ files from proto files"
-    cd ${project_path}/tools
-    time bash ./proto2code.sh
+    cd ${project_path}/res
+    time bash ./GenProtoCode.sh server
     check_err
     
     # 生成配置文件
     log_info "Generate configure files"
-    cd ${project_path}/tools/
-    time bash ./generate_config.sh
+    cd ${project_path}/res
+    time bash ./ExportTable.sh server
     check_err
     
     # 初始化第三方.so
