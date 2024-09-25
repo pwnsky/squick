@@ -3,7 +3,7 @@
 
 bool PbLogModule::Awake() {
     m_log_ = pm_->FindModule<ILogModule>();
-    source_tree_.MapPath("", "../src/proto");
+    source_tree_.MapPath("", "../res/Proto");
     importer_ = new google::protobuf::compiler::Importer(&source_tree_, &error_collector_);
     factory_ = new google::protobuf::DynamicMessageFactory();
     ImportProtoFiles();

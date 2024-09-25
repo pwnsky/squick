@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <iostream>
 #include <time.h>
-ClassModule::ClassModule() { mConfigFileName = "res/XlsxXML/Root.xml"; }
+ClassModule::ClassModule() { mConfigFileName = "res/XlsxXML/Struct/Root.xml"; }
 
 ClassModule::ClassModule(IPluginManager *p) {
     pm_ = p;
@@ -218,7 +218,7 @@ bool ClassModule::AddClassInclude(const char *pstrClassFilePath, std::shared_ptr
     }
 
     //////////////////////////////////////////////////////////////////////////
-    std::string strFile = pstrClassFilePath;
+    std::string strFile = pm_->GetWorkPath() + "/res/XlsxXML" + pstrClassFilePath;
     std::string content;
     pm_->GetFileContent(strFile, content);
 
@@ -320,21 +320,15 @@ bool ClassModule::Load(rapidxml::xml_node<> *attrNode, std::shared_ptr<IClass> p
     const char *pstrPath = attrNode->first_attribute("Path")->value();
     const char *pstrInstancePath = attrNode->first_attribute("InstancePath")->value();
 
-    std::string realPath = pm_->GetWorkPath() + "/res/XlsxXML/";
-    realPath += pstrPath;
-
-    std::string realInstancePath = pm_->GetWorkPath() + "/res/XlsxXML/";
-    realInstancePath += pstrInstancePath;
-
     // printf( "-----------------------------------------------------\n");
     // printf( "%s:\n", pstrLogicClassName );
 
     std::shared_ptr<IClass> pClass(new Class(pstrLogicClassName));
     AddElement(pstrLogicClassName, pClass);
     pClass->SetParent(pParentClass);
-    pClass->SetInstancePath(realInstancePath);
+    pClass->SetInstancePath(pstrInstancePath);
 
-    AddClass(realPath.c_str(), pClass);
+    AddClass(pstrPath, pClass);
 
     for (rapidxml::xml_node<> *pDataNode = attrNode->first_node(); pDataNode; pDataNode = pDataNode->next_sibling()) {
         // her children

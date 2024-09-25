@@ -1,9 +1,0 @@
-syntax = "proto3";
-package rpc;
-import "base.proto";
-
-// CKLog
-message NCkLogPlayerLogin { // msg_id=52000;
-    int32 login_time = 1;
-}
-

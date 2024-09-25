@@ -126,7 +126,6 @@ add_definitions(-DSQUICK_LOG_OPEN_STDOUT) # Log stdout print
 add_subdirectory(src/struct)
 add_subdirectory(src/squick)
 add_subdirectory(src/node)
-add_subdirectory(src/tools/sqkcli)
 add_subdirectory(src/tutorial)
 
 

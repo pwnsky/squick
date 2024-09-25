@@ -1,19 +1,19 @@
 
 #include "lua_pb_module.h"
 bool LuaPBModule::Awake() {
-    mSourceTree.MapPath("", "../src/proto");
+    mSourceTree.MapPath("", "../res/Proto");
     m_pImporter = new google::protobuf::compiler::Importer(&mSourceTree, &mErrorCollector);
     m_pFactory = new google::protobuf::DynamicMessageFactory();
 
     mnTime = pm_->GetNowTime();
-
+    m_log_ = this->pm_->FindModule<ILogModule>();
     return true;
 }
 
 bool LuaPBModule::Start() { return true; }
 
 bool LuaPBModule::AfterStart() {
-    m_log_ = this->pm_->FindModule<ILogModule>();
+    
     return true;
 }
 
@@ -40,9 +40,8 @@ bool LuaPBModule::ImportProtoFile(const std::string &strFile) {
         if (!pDesc) {
             LOG_ERROR("Unknow protobuf file to import struct name: %v", strFile);
         };
-
         ret = true;
-    } catch (exception e) {
+    } catch (...) {
     }
     return ret;
 }
