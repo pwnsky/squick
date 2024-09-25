@@ -10,6 +10,11 @@ jobs:
         os: [ubuntu-latest, macOS-latest, windows-latest]
     steps:
       - uses: actions/checkout@v3
+      - name: Updating submodule
+        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest' || matrix.os == 'windows-latest'
+        run: |
+          git submodule update
+
       - name: Building squick third party library for linux and macos
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
         run: |
@@ -24,29 +29,29 @@ jobs:
       - name: Building sqkctl tools for linux and macos
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
         run: |
-          cd tools && ./build_sqkctl.sh
+          cd res/ToolsSrc/sqkctl && ./build.sh
 
       - name: Building sqkctl tools for windows
         if: matrix.os == 'windows-latest'
         run: |
-          cd tools
-          .\build_sqkctl.bat no_pause
+          cd res\ToolsSrc\sqkctl
+          .\build.bat no_pause
           
       - name: Building squick project for linux and macos
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
         run: |
-          cd tools && ./build_squick.sh
+          cd tools && ./build.sh
           
       - name: Building squick project for windows
         if: matrix.os == 'windows-latest'
         run: |
           cd tools
-          .\build_squick.bat no_pause
+          .\build.bat no_pause
           
       - name: Geneating deploy files for linux and macos
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
         run: |
-          cd tools && ./generate_deploy.sh
+          cd tools && ./gen_deploy.sh
           cd ../deploy
           ls -al
           
@@ -54,6 +59,6 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd tools
-          .\generate_deploy.bat no_pause
+          .\gen_deploy.bat no_pause
           cd ..\deploy
           dir
