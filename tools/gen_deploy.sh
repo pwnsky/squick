@@ -18,6 +18,11 @@ cp -r config deploy
 cp -r script deploy
 cp -r src/lua deploy/src
 
+# copy res
+mkdir -p deploy/res
+cp -r res/XlsxXML deploy/res/XlsxXML
+cp -r res/Proto deploy/res/Proto
+
 # copy lib
 cp /lib/x86_64-linux-gnu/libssl.so.1.1    deploy/bin
 cp /lib/x86_64-linux-gnu/libcrypto.so.1.1 deploy/bin
@@ -29,5 +34,6 @@ cp /lib/x86_64-linux-gnu/libcrypto.so deploy/bin
 cd deploy
 mkdir -p data/logs
 mkdir -p data/crashs
+
 
 echo "Generated all files!"
