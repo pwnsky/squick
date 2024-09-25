@@ -89,4 +89,4 @@ src/proto/msg_id.proto
 src/struct/msg_id.h
 src/struct/msg_id.cc
 src/proto/n_msg_id.proto
-src/pycli/login.cookie
+pycli/login.cookie
