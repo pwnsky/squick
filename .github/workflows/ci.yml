@@ -13,8 +13,8 @@ jobs:
       - name: Updating submodule
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest' || matrix.os == 'windows-latest'
         run: |
-          git submodule update
-
+          git submodule update --init
+          
       - name: Building squick third party library for linux and macos
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
         run: |
