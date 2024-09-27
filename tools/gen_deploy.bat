@@ -14,12 +14,14 @@ mkdir deploy\src\proto
 mkdir deploy\src\lua
 mkdir deploy\data\logs
 mkdir deploy\data\crash
+mkdir deploy\res
 
 xcopy /s /e /y bin deploy\bin
 echo d | xcopy /s /e /y script deploy\script
 xcopy /s /e /y config deploy\config
-xcopy /s /e /y src\proto deploy\src\proto
 xcopy /s /e /y src\lua deploy\src\lua
+xcopy /s /e /y res\XlsxXML deploy\res\XlsxXML
+xcopy /s /e /y res\Proto deploy\res\Proto
 
 cd deploy\bin
 del /f /q /s *.pdb

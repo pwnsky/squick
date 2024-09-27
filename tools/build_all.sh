@@ -7,7 +7,12 @@
 cd $(dirname $0)
 bash ./clean_all.sh
 bash ./build_third_party.sh
-bash ./build_sqkctl.sh
-bash ./proto2code.sh
-bash ./generate_config.sh
-bash ./build_squick.sh
+
+cur_path=`pwd`
+# build export tools
+cd $cur_path/../res/ToolsSrc/sqkctl
+bash ./build.sh
+
+# build project
+cd $cur_path
+bash ./build.sh

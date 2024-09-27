@@ -11,9 +11,12 @@ set build_path=%project_path%\cache
 
 mkdir %build_path%
 
-call "proto2code.bat no_pause"
-call "generate_config.bat no_pause"
-call "init_runtime_dll.bat no_pause"
+cd %project_path%\res
+call ".\GenProtoCode.bat" server
+call ".\ExportTable.bat" server
+
+cd %project_path%\tools
+call "init_runtime_dll.bat" no_pause
 
 rem cmake 
 cd %build_path%\
