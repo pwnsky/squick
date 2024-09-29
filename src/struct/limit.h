@@ -1,6 +1,6 @@
 #pragma once
 
-#include <squick/core/platform.h>
+#include <core/platform.h>
 
 #define SQUICK_NAME_MAXLEN 32
 #define SQUICK_BROAD_MAXLEN 64

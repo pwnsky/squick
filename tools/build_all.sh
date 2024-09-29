@@ -5,7 +5,16 @@
 # Github: https://github.com/pwnsky/squick
 # Description: build script for squick
 cd $(dirname $0)
+
 bash ./clean_all.sh
+
+if [ -d ../res ]; then
+    "Not need to clone res"
+else
+    git submodule update --init
+fi
+
+# build third party libary
 bash ./build_third_party.sh
 
 cur_path=`pwd`
