@@ -10,13 +10,12 @@ else:
 
 print('Gen env: ' + env)
 
-package_list = {}
 tmpl_path = '../config/tmpl'
 tmpl_value_path = '../config/tmpl/env'
 cfg_path = '../config/node'
 
 cfg_map = {}
-cfg_value_map = {}
+conf_content = ''
 
 def GetFileContent(path):
     fd = open(path, 'r')
@@ -29,13 +28,13 @@ for root, dirs, files in os.walk(tmpl_path):
             cfg_map[f] = GetFileContent(tmpl_path + '/' + f)
         elif f.endswith('.conf'):
             print("conf file: ", f)
-            cfg_value_map[f] = GetFileContent(tmpl_path + '/env/' + f)
+            if f == env + '.conf':
+                conf_content = GetFileContent(tmpl_path + '/env/' + f)
 
 
 # replace
-for k in cfg_value_map:
-    conf_file = cfg_value_map[k]
-    conf_arr = conf_file.split('\n')
+if (len(conf_content) > 0):
+    conf_arr = conf_content.split('\n')
     for conf_line in conf_arr:
         conf = conf_line.split('=')
         if len(conf) < 2:
@@ -46,6 +45,9 @@ for k in cfg_value_map:
             tmp = cfg_map[k2]
             tmp = tmp.replace('{' + key + '}', value)
             cfg_map[k2] = tmp 
+else:
+    print("Get " + env + " error")
+    exit(-1)
 
 # save
 for k in cfg_map:
