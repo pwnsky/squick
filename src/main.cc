@@ -139,6 +139,7 @@ int main(int argc, char *argv[]) {
     SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 #else
     signal(SIGINT, SquickExit);
+    signal(SIGTERM, SquickExit);
 #endif
 
     for (auto item : serverList) {
