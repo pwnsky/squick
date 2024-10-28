@@ -1,10 +1,10 @@
 #pragma once
 
 #include "limit.h"
-#include <squick/core/i_property_manager.h>
-#include <squick/core/i_record_manager.h>
-#include <squick/core/list.h>
-#include <squick/core/platform.h>
+#include <core/i_property_manager.h>
+#include <core/i_record_manager.h>
+#include <core/list.h>
+#include <core/platform.h>
 
 #include "excel.h"
 #include "msg_id.h"

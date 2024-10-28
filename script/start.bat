@@ -5,6 +5,9 @@ rem Date  : 2024-04-08
 rem Github: https://github.com/pwnsky/squick
 rem Description: Start all nodes
 
+call env.bat
+python gen_env_config.py %SQUICK_RUN_ENV%
+
 cd ..\bin
 
 start cmd /c " squick type=master id=1 area=0 ip=127.0.0.1 port=10001 web_port=50000"

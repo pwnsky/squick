@@ -215,6 +215,13 @@ function chmod_lib()
     fi
 }
 
+function clean_cache()
+{
+    log_debug "clean cache files"
+    cd $third_party_path/build
+    rm -rf clickhouse-cpp hiredis libevent mongo-cxx-driver mysql-connector-cpp navigation protobuf redis-plus-plus zlib mongo-c-driver
+}
+
 function main()
 {
     time reset_env
@@ -230,7 +237,7 @@ function main()
     time build_zlib
     time build_navigation
     time chmod_lib
-    
+    time clean_cache
 }
 
 time main

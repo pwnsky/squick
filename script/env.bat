@@ -1,0 +1,1 @@
+set SQUICK_RUN_ENV=ten

@@ -1,6 +1,6 @@
 #include <iostream>
-#include <squick/core/base.h>
-#include <squick/core/plugin_server.h>
+#include <core/base.h>
+#include <core/plugin_server.h>
 #include <struct/struct.h>
 
 #if PLATFORM == PLATFORM_WIN
@@ -139,6 +139,7 @@ int main(int argc, char *argv[]) {
     SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 #else
     signal(SIGINT, SquickExit);
+    signal(SIGTERM, SquickExit);
 #endif
 
     for (auto item : serverList) {

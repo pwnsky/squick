@@ -16,6 +16,12 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/lib
 # for macos
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:`pwd`
 
+echo $SQUICK_MEMORY_CHECK
+if [ "1" == "$SQUICK_MEMORY_CHECK" ];then
+        valgrind --leak-check=full ./squick $@
+        exit
+fi
+
 echo $SQUICK_ARGS
 if [ -z $SQUICK_ARGS ];then
         ./squick $@

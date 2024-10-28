@@ -6,6 +6,8 @@
 # Description: Clean all generated files
 cd $(dirname $0)
 source common.sh
+third_party_path=`pwd`/../third_party
+
 cd ..
 
 rm -rf ./cache
@@ -26,9 +28,10 @@ rm -rf ./src/struct/*.pb.h
 rm -rf ./src/struct/*.pb.cc
 rm -rf ./src/struct/excel.h
 rm -rf ./third_party/build
+rm -rf ./res
+rm -rf ./pycli/proto
 
 # clean third party
-third_party_path=`pwd`/../third_party
 cd $third_party_path
 
 rm -rf ./build
@@ -37,3 +40,4 @@ rm -rf ./lua/src/lua
 rm -rf ./lua/src/luac
 rm -rf ./lua/src/liblua.so
 rm -rf ./lua/src/liblua.a
+

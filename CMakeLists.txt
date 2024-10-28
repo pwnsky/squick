@@ -124,9 +124,8 @@ add_definitions(-D_X64 -D_CONSOLE -DSQUICK_DYNAMIC_PLUGIN -DSQUICK_ENABLE_SSL)
 add_definitions(-DSQUICK_LOG_OPEN_STDOUT) # Log stdout print
 
 add_subdirectory(src/struct)
-add_subdirectory(src/squick)
-add_subdirectory(src/node)
-add_subdirectory(src/tutorial)
+add_subdirectory(src/core)
+add_subdirectory(src/plugin)
 
 
 if( EXTRA STREQUAL "EXTRA" )
