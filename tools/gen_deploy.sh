@@ -24,6 +24,10 @@ mkdir -p deploy/res
 cp -r res/XlsxXML deploy/res/XlsxXML
 cp -r res/Proto deploy/res/Proto
 
+mkdir -p deploy/tools
+cp -r tools/flamegraph deploy/tools
+cp -r tools/binary_strip.sh deploy/tools
+
 # copy lib
 echo "Deploy for $LinuxDistro"
 if [ $LinuxDistro == "Debian" ] || [ $LinuxDistro == "Ubuntu" ] || [ $LinuxDistro == "Raspbian" ]; then
