@@ -1,5 +1,0 @@
-websocket-client
-rel 
-requests
-http
-protobuf

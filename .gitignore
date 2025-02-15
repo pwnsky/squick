@@ -42,7 +42,6 @@
 /src/lua/proto/code.lua
 /src/lua/proto/enum.lua
 /src/lua/struct/excel.lua
-/pycli/proto
 # Codeblocks
 *.layout
 *.depend
@@ -82,11 +81,7 @@ third_party/lua/src/*.exe
 tools/bin
 third_party/lua/src/liblua.so
 
-
-.pytest_cache
-__pycache__
 src/proto/msg_id.proto
 src/struct/msg_id.h
 src/struct/msg_id.cc
 src/proto/n_msg_id.proto
-pycli/login.cookie
