@@ -13,11 +13,11 @@ git reset --hard .
 cd %project_path%
 
 git clone https://github.com/pwnsky/squick-thirdparty-build.git
-del /f /q /s  ..\third_party\build
-mkdir ..\third_party\build
-xcopy /s /e /y squick-thirdparty-build\Windows\build ..\third_party\build
+del /f /q /s  %project_path%\third_party\build
+mkdir %project_path%\third_party\build
+xcopy /s /e /y %project_path%\squick-thirdparty-build\Windows\build %project_path%\third_party\build
 cd %project_path%
-del /f /q /s  .\squick-thirdparty-build
+del /f /q /s  %project_path%\squick-thirdparty-build
 
 if "%1"=="no_pause" (
     echo continue
