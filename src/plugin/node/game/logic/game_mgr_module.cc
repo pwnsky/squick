@@ -20,11 +20,11 @@ bool GameMgrModule::ReadyUpdate() { return true; }
 bool GameMgrModule::Destroy() { return true; }
 
 bool GameMgrModule::Update() {
-    static int64_t lastGameplayUpdate = SquickGetTimeMS();
-    int64_t nowTime = SquickGetTimeMS();
-    if (nowTime - lastGameplayUpdate >= 50) // 20fps
+    static int64_t last_gameplay_update_time = SquickGetTimeMS();
+    int64_t now_time = SquickGetTimeMS();
+    if (now_time - last_gameplay_update_time >= 50) // 20fps
     {
-        lastGameplayUpdate = nowTime;
+        last_gameplay_update_time = now_time;
         if (games_.size() > 0) {
             for (auto &game : games_) {
                 if (game.second == nullptr) {
