@@ -38,7 +38,7 @@ function PlayerMgr:GenUID()
 end
 
 function PlayerMgr:GetNewPlayerData(account, account_id)
-    player_data = {
+    local player_data = {
         account = account, account_id = account_id, uid = self:GenUID(), name = "none",
         age = 0, level = 0, last_login_time = os.time(), created_time = os.time(),
         online = false, platform = "none", extra = {},
