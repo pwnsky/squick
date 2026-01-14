@@ -1,1 +1,1 @@
-set SQUICK_RUN_ENV=pwnsky
+set SQUICK_RUN_ENV=dev
