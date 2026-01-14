@@ -1,0 +1,182 @@
+{
+  "auth": {
+    "agree": "我同意",
+    "createAccount": "创建账号",
+    "createNewAccount": "创建新账号",
+    "email": "电子邮箱",
+    "login": "登录",
+    "password": "密码",
+    "recover_password": "恢复密码",
+    "sign_up": "注册",
+    "keep_logged_in": "保持登录",
+    "termsOfUse": "使用条款",
+    "reset_password": "重置密码"
+  },
+  "404": {
+    "title": "此页面已去钓鱼",
+    "text": "如果您觉得这不对，请给我们发送消息",
+    "back_button": "返回仪表板"
+  },
+  "typography": {
+    "primary": "主要文本样式",
+    "secondary": "次要文本样式"
+  },
+  "dashboard": {
+    "versions": "版本",
+    "setupRemoteConnections": "设置远程连接",
+    "currentVisitors": "当前访问者",
+    "charts": {
+      "trendyTrends": "流行趋势",
+      "showInMoreDetail": "显示更多细节",
+      "showInLessDetail": "显示较少细节",
+      "loadingSpeed": "加载速度",
+      "topContributors": "主要贡献者",
+      "showNextFive": "显示接下来的五个",
+      "commits": "提交"
+    },
+    "info": {
+      "componentRichTheme": "组件丰富的主题",
+      "completedPullRequests": "已完成的拉取请求",
+      "users": "用户",
+      "points": "点数",
+      "units": "单位",
+      "exploreGallery": "探索画廊",
+      "viewLibrary": "查看库",
+      "commits": "提交",
+      "components": "组件",
+      "teamMembers": "团队成员"
+    },
+    "tabs": {
+      "overview": {
+        "title": "概述",
+        "built": "使用 Vue.js 框架构建",
+        "free": "对所有人完全免费",
+        "fresh": "新鲜和清新的设计",
+        "mobile": "响应式且优化移动",
+        "components": "大量有用的组件",
+        "nojQuery": "完全不使用 jQuery"
+      },
+      "billingAddress": {
+        "title": "账单地址",
+        "personalInfo": "个人信息",
+        "firstName": "名字 & 姓氏",
+        "email": "电子邮箱",
+        "address": "地址",
+        "companyInfo": "公司信息",
+        "city": "城市",
+        "country": "国家",
+        "infiniteConnections": "无限连接",
+        "addConnection": "添加连接"
+      },
+      "bankDetails": {
+        "title": "银行详情",
+        "detailsFields": "详情字段",
+        "bankName": "银行名称",
+        "accountName": "账户名称",
+        "sortCode": "排序代码",
+        "accountNumber": "账号",
+        "notes": "备注",
+        "sendDetails": "发送详情"
+      }
+    },
+    "navigationLayout": "导航布局",
+    "topBarButton": "顶部按钮",
+    "sideBarButton": "侧边按钮"
+  },
+  "language": {
+    "english": "英语",
+    "simplified_chinese": "简体中文"
+  },
+  "menu": {
+    "auth": "授权",
+    "nodes": "节点",
+    "buttons": "按钮",
+    "timelines": "时间线",
+    "dashboard": "仪表板",
+    "billing": "计费",
+    "login": "登录",
+    "signUp": "注册",
+    "preferences": "偏好",
+    "payments": "支付",
+    "pricing-plans": "定价计划",
+    "login-singup": "登录/注册",
+    "404": "404 页面",
+    "faq": "常见问题解答"
+  },
+  "messages": {
+    "all": "查看所有消息",
+    "new": "来自 {name} 的新消息",
+    "mark_as_read": "标记为已读"
+  },
+  "navbar": {
+    "messageUs": "需要Web开发帮助吗？请联系我们。",
+    "repository": "GitHub 仓库"
+  },
+  "notifications": {
+    "all": "查看所有通知",
+    "mark_as_read": "标为已读",
+    "sentMessage": "{name} 给你发了一条消息",
+    "uploadedZip": "{name} 上传了一个新的 Zip 文件 {type}",
+    "startedTopic": "{name} 开始了一个新话题"
+  },
+  "user": {
+    "language": "修改语言",
+    "logout": "登出",
+    "logout": "登出",
+    "profile": "我的资料",
+    "settings": "设置",
+    "billing": "账单",
+    "faq": "常见问题",
+    "helpAndSupport": "帮助与支持",
+    "projects": "项目",
+    "account": "账户",
+    "explore": "探索"
+  },
+  "treeView": {
+    "basic": "基本型",
+    "icons": "图标",
+    "selectable": "可选择",
+    "editable": "可编辑",
+    "advanced": "高级"
+  },
+  "chat": {
+    "title": "聊天"
+  },
+  "cards": {
+    "cards": "卡片",
+    "fixed": "固定的",
+    "floating": "浮动的",
+    "contentText": "独特的斑马条纹使它们成为人们最熟悉的动物之一。",
+    "rowHeight": "行高",
+    "title": {
+      "dark": "暗色背景",
+      "bright": "亮色卡片",
+      "titleOnImageNoOverlay": "图像上的标题，但没有叠加",
+      "normal": "标准卡",
+      "overlayAndTextOnImage": "图像上有覆盖和文本的卡片",
+      "stripeNoImage": "无图像条纹卡"
+    },
+    "button": {
+      "main": "主要",
+      "cancel": "取消"
+    },
+    "link": {
+      "edit": "编辑",
+      "setAsDefault": "设为默认",
+      "delete": "删除",
+      "traveling": "Traveling",
+      "france": "法国",
+      "review": "评论",
+      "feedback": "反馈信息",
+      "readFull": "阅读全文",
+      "secondaryAction": "第二行为",
+      "action1": "行为 1",
+      "action2": "行为 2"
+    }
+  },
+  "helpAndSupport": "帮助与支持",
+  "about": "关于",
+  "search": {
+    "placeholder": "搜索..."
+  }
+}

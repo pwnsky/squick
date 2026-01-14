@@ -1,0 +1,178 @@
+{
+  "auth": {
+    "agree": "I agree to",
+    "createAccount": "Create account",
+    "createNewAccount": "Create New Account",
+    "email": "Email",
+    "login": "Login",
+    "password": "Password",
+    "recover_password": "Recover password",
+    "sign_up": "Sign Up",
+    "keep_logged_in": "Keep me logged in",
+    "termsOfUse": "Terms of Use.",
+    "reset_password": "Reset password"
+  },
+  "404": {
+    "title": "This page’s gone fishing.",
+    "text": "If you feel that it’s not right, please send us a message at ",
+    "back_button": "Back to dashboard"
+  },
+  "typography": {
+    "primary": "Primary text styles",
+    "secondary": "Secondary text styles"
+  },
+  "dashboard": {
+    "versions": "Versions",
+    "setupRemoteConnections": "Setup Remote Connections",
+    "currentVisitors": "Current Visitors",
+    "navigationLayout": "navigation layout",
+    "topBarButton": "Top Bar",
+    "sideBarButton": "Side Bar"
+  },
+  "language": {
+    "brazilian_portuguese": "Português",
+    "english": "English",
+    "spanish": "Spanish",
+    "simplified_chinese": "Simplified Chinese",
+    "persian": "Persian"
+  },
+  "menu": {
+    "auth": "Auth",
+    "nodes": "Nodes",
+    "buttons": "Buttons",
+    "timelines": "Timelines",
+    "dashboard": "Dashboard",
+    "billing": "Billing",
+    "login": "Login",
+    "preferences": "Account preferences",
+    "payments": "Payments",
+    "settings": "Application settings",
+    "pricing-plans": "Pricing plans",
+    "payment-methods": "Payment methods",
+    "signup": "Signup",
+    "recover-password": "Recover password",
+    "recover-password-email": "Recover password email",
+    "404": "404",
+    "faq": "FAQ",
+    "users": "Users",
+    "projects": "Projects"
+  },
+  "messages": {
+    "all": "See all messages",
+    "new": "New messages from {name}",
+    "mark_as_read": "Mark As Read"
+  },
+  "navbar": {
+    "messageUs": "Web development inquiries:",
+    "repository": "GitHub Repo"
+  },
+  "notifications": {
+    "all": "See all notifications",
+    "less": "See less notifications",
+    "mark_as_read": "Mark as read",
+    "sentMessage": "sent you a message",
+    "uploadedZip": "uploaded a new Zip file with {type}",
+    "startedTopic": "started a new topic"
+  },
+  "user": {
+    "language": "Change language",
+    "logout": "Logout",
+    "profile": "Profile",
+    "settings": "Settings",
+    "billing": "Billing",
+    "faq": "FAQ",
+    "helpAndSupport": "Help & support",
+    "projects": "Projects",
+    "account": "Account",
+    "explore": "Explore"
+  },
+  "treeView": {
+    "basic": "Basic",
+    "icons": "Icons",
+    "selectable": "Selectable",
+    "editable": "Editable",
+    "advanced": "Advanced"
+  },
+  "chat": {
+    "title": "Chat",
+    "sendButton": "Send"
+  },
+  "spacingPlayground": {
+    "value": "Value",
+    "margin": "Margin",
+    "padding": "Padding"
+  },
+  "spacing": {
+    "title": "Spacing"
+  },
+  "cards": {
+    "cards": "Cards",
+    "fixed": "Fixed",
+    "floating": "Floating",
+    "contentText": "The unique stripes of zebras make them one of the animals most familiar to people.",
+    "contentTextLong": "The unique stripes of zebras make them one of the animals most familiar to people. They occur in a variety of habitats, such as grasslands, savannas, woodlands, thorny scrublands, mountains, and coastal hills. Various anthropogenic factors have had a severe impact on zebra populations, in particular hunting for skins and habitat destruction. Grévy's zebra and the mountain zebra are endangered. While plains zebras are much more plentiful, one subspecies, the quagga.",
+    "rowHeight": "Row height",
+    "title": {
+      "default": "Default",
+      "withControls": "With controls",
+      "customHeader": "Custom header",
+      "withoutHeader": "Without header",
+      "withImage": "With Image",
+      "withTitleOnImage": "With title on image",
+      "withCustomTitleOnImage": "With custom title on image",
+      "withStripe": "With stripe",
+      "withBackground": "With background"
+    },
+    "button": {
+      "main": "Main",
+      "cancel": "Cancel",
+      "showMore": "Show More",
+      "readMore": "Show More"
+    },
+    "link": {
+      "edit": "Edit",
+      "setAsDefault": "Set as default",
+      "delete": "Delete",
+      "traveling": "Traveling",
+      "france": "France",
+      "review": "Review",
+      "feedback": "Leave feedback",
+      "readFull": "Read full article",
+      "secondaryAction": "Secondary action",
+      "action1": "Action 1",
+      "action2": "Action 2"
+    }
+  },
+  "colors": {
+    "themeColors": "Theme Colors",
+    "extraColors": "Extra Colors",
+    "gradients": {
+      "basic": {
+        "title": "Button Gradients"
+      },
+      "hovered": {
+        "title": "Hovered Button Gradients",
+        "text": "Lighten 15% applied to an original style (gradient or flat color) for hover state."
+      },
+      "pressed": {
+        "title": "Pressed Button Gradients",
+        "text": "Darken 15% applied to an original style (gradient or flat color) for pressed state."
+      }
+    }
+  },
+  "tabs": {
+    "alignment": "Tabs alignment",
+    "overflow": "Tabs overflow",
+    "hidden": "Tabs with hidden slider",
+    "grow": "Tabs grow"
+  },
+  "helpAndSupport": "Help & support",
+  "about": "About",
+  "search": {
+    "placeholder": "Search..."
+  },
+  "buttonSelect": {
+    "dark": "Dark",
+    "light": "Light"
+  }
+}
