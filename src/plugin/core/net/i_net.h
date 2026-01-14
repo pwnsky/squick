@@ -45,7 +45,7 @@ enum SQUICK_NET_EVENT {
 
 struct IMsgHead {
     enum SQUICK_Head {
-        SQUICK_HEAD_LENGTH = 8,
+        SQUICK_HEAD_LENGTH = 9,
     };
 
     virtual int EnCode(char *strData) = 0;
@@ -136,9 +136,13 @@ class rpcHead : public IMsgHead {
         hashcode_ = 0;
     }
 
-    // Message Head[ MsgID(4) | MsgSize(4) ]
+    // Message Head[ Flag(1) | MsgID(4) | MsgSize(4) ]
     virtual int EnCode(char *data) {
         uint32_t nOffset = 0;
+
+        // 写入协议标识 'S'
+        data[nOffset] = 'S';
+        nOffset += 1;
 
         uint32_t net_msg_id = SQUICK_HTONL(msg_id_);
         memcpy(data + nOffset, (void *)(&net_msg_id), sizeof(net_msg_id));
@@ -155,9 +159,15 @@ class rpcHead : public IMsgHead {
         return nOffset;
     }
 
-    // Message Head[ MsgID(4) | MsgSize(4) ]
+    // Message Head[ Flag(1) | MsgID(4) | MsgSize(4) ]
     virtual int DeCode(const char *data) {
         uint32_t nOffset = 0;
+
+        // 验证协议标识 'S'
+        if (data[nOffset] != 'S') {
+            return nOffset; // 协议标识错误
+        }
+        nOffset += 1;
 
         uint32_t net_msg_id = 0;
         memcpy(&net_msg_id, data + nOffset, sizeof(net_msg_id));
