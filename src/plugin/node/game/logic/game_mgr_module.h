@@ -29,7 +29,7 @@ class GameMgrModule : public IGameMgrModule {
     virtual bool SingleGameCreate(int id, const string &key) override;
     virtual bool SingleGameDestroy(int id) override;
 
-    virtual void OnRecv(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) override;
+    virtual void OnRecv(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) override;
 
   private:
     std::unordered_map<int, IGame *> games_;

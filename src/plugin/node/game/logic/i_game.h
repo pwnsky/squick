@@ -66,7 +66,7 @@ class IGame {
         Destroy();
     };
 
-    void OnReqGameJoin(const Guid &clientID, const int msg_id, const std::string &data) {
+    void OnReqGameJoin(const Guid &clientID, const uint32_t msg_id, const std::string &data) {
         // dout << "Req Game Join\n";
         DoPlayerJoin(clientID);
     }
@@ -166,11 +166,11 @@ class IGame {
         PlayerQuit(player.guid);
     }
 
-    void SendToPlayer(int msg_id, google::protobuf::Message &xMsg, const Guid &player) {
+    void SendToPlayer(uint32_t msg_id, google::protobuf::Message &xMsg, const Guid &player) {
         // manager->m_node_->SendPBToPlayer(msg_id, xMsg, player);
     }
 
-    void BroadcastToPlayers(int msg_id, google::protobuf::Message &xMsg) {
+    void BroadcastToPlayers(uint32_t msg_id, google::protobuf::Message &xMsg) {
         for (auto const &iter : base_players) {
             auto &player = iter.second;
             if (player.isOnline == true) {
@@ -180,7 +180,7 @@ class IGame {
         }
     }
 
-    void BroadcastToPlayersExcept(int msg_id, google::protobuf::Message &xMsg, const Guid &exceptPlayer) {
+    void BroadcastToPlayersExcept(uint32_t msg_id, google::protobuf::Message &xMsg, const Guid &exceptPlayer) {
         for (auto const &iter : base_players) {
             auto &player = iter.second;
             if (player.guid == exceptPlayer) {
@@ -193,7 +193,7 @@ class IGame {
         }
     }
 
-    void BroadcastToActivePlayers(int msg_id, google::protobuf::Message &xMsg) {
+    void BroadcastToActivePlayers(uint32_t msg_id, google::protobuf::Message &xMsg) {
         for (auto const &iter : base_players) {
             auto &player = iter.second;
             if (player.isOnline && player.isActive) {
@@ -203,7 +203,7 @@ class IGame {
         }
     }
 
-    void BroadcastToActivePlayersExcept(int msg_id, google::protobuf::Message &xMsg, const Guid &exceptPlayer) {
+    void BroadcastToActivePlayersExcept(uint32_t msg_id, google::protobuf::Message &xMsg, const Guid &exceptPlayer) {
         for (auto const &iter : base_players) {
             auto &player = iter.second;
             if (player.guid == exceptPlayer) {
@@ -218,7 +218,7 @@ class IGame {
     inline int OnlinePlayerCount() { return onlinePlayerCount; }
 
     template <typename BaseType>
-    bool MsgBind(const int msg_id, BaseType *pBase, void (BaseType::*handleReceiver)(const Guid &clientID, const int msg_id, const std::string &data)) {
+    bool MsgBind(const uint32_t msg_id, BaseType *pBase, void (BaseType::*handleReceiver)(const Guid &clientID, const uint32_t msg_id, const std::string &data)) {
         return manager->AddReceiveCallBack(msg_id, id, pBase, handleReceiver);
     }
 

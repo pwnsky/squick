@@ -88,7 +88,7 @@ class INetModule : public IModule {
     }
 
     template <typename BaseType>
-    bool AddReceiveCallBack(const int msg_id, BaseType *pBase, void (BaseType::*handleReceiver)(const socket_t, const int, const char *, const uint32_t)) {
+    bool AddReceiveCallBack(const uint32_t msg_id, BaseType *pBase, void (BaseType::*handleReceiver)(const socket_t, const uint32_t, const char *, const uint32_t)) {
         NET_RECEIVE_FUNCTOR functor =
             std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
         NET_RECEIVE_FUNCTOR_PTR functorPtr(new NET_RECEIVE_FUNCTOR(functor));
@@ -97,7 +97,7 @@ class INetModule : public IModule {
     }
 
     template <typename BaseType>
-    bool AddReceiveCallBack(BaseType *pBase, void (BaseType::*handleReceiver)(const socket_t, const int, const char *, const uint32_t)) {
+    bool AddReceiveCallBack(BaseType *pBase, void (BaseType::*handleReceiver)(const socket_t, const uint32_t, const char *, const uint32_t)) {
         NET_RECEIVE_FUNCTOR functor =
             std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
         NET_RECEIVE_FUNCTOR_PTR functorPtr(new NET_RECEIVE_FUNCTOR(functor));
@@ -106,8 +106,8 @@ class INetModule : public IModule {
     }
 
     template <typename BaseType>
-    bool AddReceiveCallBack(const int msg_id, BaseType *pBase,
-                            Coroutine<bool> (BaseType::*handleReceiver)(const socket_t, const int, const char *, const uint32_t)) {
+    bool AddReceiveCallBack(const uint32_t msg_id, BaseType *pBase,
+                            Coroutine<bool> (BaseType::*handleReceiver)(const socket_t, const uint32_t, const char *, const uint32_t)) {
         NET_CORO_RECEIVE_FUNCTOR functor =
             std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
         NET_CORO_RECEIVE_FUNCTOR_PTR functorPtr(new NET_CORO_RECEIVE_FUNCTOR(functor));
@@ -122,7 +122,7 @@ class INetModule : public IModule {
         return AddEventCallBack(functorPtr);
     }
 
-    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, std::string &msgData, uint64_t &uid) {
+    static bool ReceivePB(const uint32_t msg_id, const char *msg, const uint32_t len, std::string &msgData, uint64_t &uid) {
         rpc::MsgBase xMsg;
         if (!xMsg.ParseFromArray(msg, len)) {
             ostringstream str;
@@ -142,11 +142,11 @@ class INetModule : public IModule {
         return true;
     }
 
-    static bool ReceivePB(const int msg_id, const std::string &strMsgData, google::protobuf::Message &xData, uint64_t &uid) {
+    static bool ReceivePB(const uint32_t msg_id, const std::string &strMsgData, google::protobuf::Message &xData, uint64_t &uid) {
         return ReceivePB(msg_id, strMsgData.c_str(), (uint32_t)strMsgData.length(), xData, uid);
     }
 
-    static bool ReceivePB(const int msg_id, const char *msg, const uint32_t len, google::protobuf::Message &xData, uint64_t &uid) {
+    static bool ReceivePB(const uint32_t msg_id, const char *msg, const uint32_t len, google::protobuf::Message &xData, uint64_t &uid) {
         rpc::MsgBase xMsg;
         if (!xMsg.ParseFromArray(msg, len)) {
 
@@ -180,10 +180,10 @@ class INetModule : public IModule {
     // as server
     virtual int Listen(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount, const uint32_t expand_buffer_size) = 0;
 
-    virtual void RemoveReceiveCallBack(const int msg_id) = 0;
+    virtual void RemoveReceiveCallBack(const uint32_t msg_id) = 0;
 
-    virtual bool AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb) = 0;
-    virtual bool AddReceiveCallBack(const int msg_id, const NET_CORO_RECEIVE_FUNCTOR_PTR &cb) = 0;
+    virtual bool AddReceiveCallBack(const uint32_t msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb) = 0;
+    virtual bool AddReceiveCallBack(const uint32_t msg_id, const NET_CORO_RECEIVE_FUNCTOR_PTR &cb) = 0;
 
     virtual bool AddReceiveCallBack(const NET_RECEIVE_FUNCTOR_PTR &cb) = 0;
 
@@ -191,12 +191,12 @@ class INetModule : public IModule {
 
     virtual bool Update() = 0;
 
-    virtual bool SendMsg(const int msg_id, const std::string &msg, const socket_t sock) = 0;
-    virtual bool SendMsgToAllClient(const int msg_id, const std::string &msg) = 0;
-    virtual bool SendPBToNode(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const uint64_t uid = 0,
+    virtual bool SendMsg(const uint32_t msg_id, const std::string &msg, const socket_t sock) = 0;
+    virtual bool SendMsgToAllClient(const uint32_t msg_id, const std::string &msg) = 0;
+    virtual bool SendPBToNode(const uint32_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const uint64_t uid = 0,
                               reqid_t req_id = 0) = 0;
-    virtual bool SendToNode(const uint16_t msg_id, const std::string &xData, const socket_t sock, const uint64_t uid = 0, reqid_t req_id = 0) = 0;
-    virtual bool SendPBToAllNodeClient(const uint16_t msg_id, const google::protobuf::Message &xData) = 0;
+    virtual bool SendToNode(const uint32_t msg_id, const std::string &xData, const socket_t sock, const uint64_t uid = 0, reqid_t req_id = 0) = 0;
+    virtual bool SendPBToAllNodeClient(const uint32_t msg_id, const google::protobuf::Message &xData) = 0;
 
     virtual INet *GetNet() = 0;
 };

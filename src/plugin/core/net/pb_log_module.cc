@@ -61,7 +61,7 @@ std::string PbLogModule::GetMessageInfo(const std::string &name, const std::stri
     return std::string();
 }
 
-void PbLogModule::Log(const std::string &prefix, const int msg_id, const char *data, const uint32_t length) {
+void PbLogModule::Log(const std::string &prefix, const uint32_t msg_id, const char *data, const uint32_t length) {
     std::ostringstream out;
     std::string msg_name = GetMessageNameByID(msg_id);
     bool is_node_msg = false;

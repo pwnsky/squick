@@ -64,7 +64,7 @@ void LogicModule::OnSocketEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, IN
     }
 }
 
-void LogicModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnReqPlayerEnter(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
 
     auto pInfo = GetPlayerConnInfo(sock);
     if (pInfo == nullptr) {
@@ -94,7 +94,7 @@ void LogicModule::OnReqPlayerEnter(const socket_t sock, const int msg_id, const 
     return;
 }
 
-void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnAckPlayerEnter(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
 
     uint64_t uid = 0;
 
@@ -139,7 +139,7 @@ void LogicModule::OnAckPlayerEnter(const socket_t sock, const int msg_id, const 
 
 int LogicModule::GetLoadBanlanceNode(int type) { return m_net_client_->GetRandomNodeID(type); }
 
-void LogicModule::OnReqPlayerLeave(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
+void LogicModule::OnReqPlayerLeave(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {}
 
 void LogicModule::OnClientDisconnected(const socket_t sock) {
     LOG_INFO("Client disconnected, sock<%v>", sock);
@@ -180,7 +180,7 @@ void LogicModule::OnClientDisconnected(const socket_t sock) {
 }
 
 // forward to client
-void LogicModule::OnRecivedPlayerNodeMsg(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnRecivedPlayerNodeMsg(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     rpc::MsgBase msg_pak;
     if (!msg_pak.ParseFromArray(msg, len)) {
         LOG_ERROR("Parse player msg failed from msg_id: <%v> ", msg_id);
@@ -189,7 +189,7 @@ void LogicModule::OnRecivedPlayerNodeMsg(const socket_t sock, const int msg_id, 
     SendToPlayer(msg_pak.uid(), msg_id, msg_pak.msg_data());
 }
 
-bool LogicModule::SendToPlayer(uint64_t uid, const int msg_id, const string &data) {
+bool LogicModule::SendToPlayer(uint64_t uid, const uint32_t msg_id, const string &data) {
 
     bool ret = false;
     try {
@@ -209,7 +209,7 @@ bool LogicModule::SendToPlayer(uint64_t uid, const int msg_id, const string &dat
     return ret;
 }
 
-void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnOtherMessage(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     auto pInfo = GetPlayerConnInfo(sock);
 
     if (pInfo == nullptr) {
@@ -236,7 +236,7 @@ void LogicModule::OnOtherMessage(const socket_t sock, const int msg_id, const ch
     }
 }
 
-void LogicModule::OnHeartbeat(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnHeartbeat(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     auto pInfo = GetPlayerConnInfo(sock);
     if (pInfo == nullptr) {
         return;
@@ -251,7 +251,7 @@ void LogicModule::OnHeartbeat(const socket_t sock, const int msg_id, const char 
     }
 }
 
-void LogicModule::OnReqTestProxy(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnReqTestProxy(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     INT64 now_time = SquickGetTimeMSEx();
     static INT64 last_time = 0;
     static INT64 request_time = 0;
@@ -319,16 +319,16 @@ bool LogicModule::RemovePlayerConnInfo(const socket_t player_sock) {
     return true;
 }
 
-Coroutine<bool> LogicModule::OnReqConnectWithTcp(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+Coroutine<bool> LogicModule::OnReqConnectWithTcp(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     OnReqConnect(ProtocolType::Tcp, sock, msg_id, msg, len);
     co_return;
 }
 
-void LogicModule::OnReqConnectWithWS(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnReqConnectWithWS(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     OnReqConnect(ProtocolType::WS, sock, msg_id, msg, len);
 }
 
-void LogicModule::OnReqConnect(ProtocolType type, const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnReqConnect(ProtocolType type, const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     NetObject *pNetObject = nullptr;
     if (type == ProtocolType::Tcp) {
         pNetObject = m_net_->GetNet()->GetNetObject(sock);
@@ -373,7 +373,7 @@ void LogicModule::OnReqConnect(ProtocolType type, const socket_t sock, const int
     m_net_client_->SendPBByID(login_node, rpc::IdNReqConnectProxyVerify, nreq);
 }
 
-void LogicModule::OnNAckConnectVerify(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnNAckConnectVerify(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     uint64_t uid;
     rpc::NAckConnectProxyVerify data;
     if (!m_net_->ReceivePB(msg_id, msg, len, data, uid)) {

@@ -130,12 +130,12 @@ class LuaScriptModule : public ILuaScriptModule {
 
     // FOR NET MODULE
     // as server
-    void RemoveCallBackAsServer(const int msg_id);
-    void AddMsgCallBackAsServer(const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
+    void RemoveCallBackAsServer(const uint32_t msg_id);
+    void AddMsgCallBackAsServer(const uint32_t msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
 
     // as client
-    void RemoveMsgCallBackAsClient(const int serverType, const int msg_id);
-    void AddMsgCallBackAsClient(const int serverType, const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
+    void RemoveMsgCallBackAsClient(const int serverType, const uint32_t msg_id);
+    void AddMsgCallBackAsClient(const int serverType, const uint32_t msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
     int GetRandomNodeID(const int node_type);
 
     bool ImportProtoFile(const std::string &fileName);
@@ -143,11 +143,11 @@ class LuaScriptModule : public ILuaScriptModule {
     LuaIntf::LuaRef Decode(const std::string &msgTypeName, const std::string &data);
     LuaIntf::LuaRef GetProtoTable(const std::string &msgTypeName);
 
-    void SendToServerByServerID(const int server_id, const uint16_t msg_id, const std::string &data, const uint64_t uid);
-    void SendToAllServerByServerType(const int server_type, const uint16_t msg_id, const std::string &data, const uint64_t uid);
+    void SendToServerByServerID(const int server_id, const uint32_t msg_id, const std::string &data, const uint64_t uid);
+    void SendToAllServerByServerType(const int server_type, const uint32_t msg_id, const std::string &data, const uint64_t uid);
 
     // for net module
-    void SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, const uint64_t uid);
+    void SendByFD(const socket_t fd, const uint32_t msg_id, const std::string &data, const uint64_t uid);
 
     // for log
     void LogInfo(const std::string &logData);
@@ -177,8 +177,8 @@ class LuaScriptModule : public ILuaScriptModule {
 
     void OnScriptReload();
 
-    void OnNetMsgCallBackAsServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnNetMsgCallBackAsClient(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnNetMsgCallBackAsServer(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnNetMsgCallBackAsClient(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
     void AddHttpServerCallBack(const int method, const std::string &path, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc);
     bool HttpServerCallBack(std::shared_ptr<HttpRequest> req);

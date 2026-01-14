@@ -17,7 +17,7 @@ class ActorMessage {
         msg_id = 0;
         index = 0;
     }
-    int msg_id;
+    uint32_t msg_id;
     uint64_t index;
     Guid id;
     std::string data;

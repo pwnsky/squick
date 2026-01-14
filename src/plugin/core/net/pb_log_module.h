@@ -23,7 +23,7 @@ class PbLogModule : public IPbLogModule {
     PbLogModule(IPluginManager *p) { pm_ = p; }
     virtual bool Awake() override;
     virtual bool Destroy() override;
-    virtual void Log(const std::string &prefix, const int msg_id, const char *data, const uint32_t length) override;
+    virtual void Log(const std::string &prefix, const uint32_t msg_id, const char *data, const uint32_t length) override;
     bool ImportProtoFiles();
     std::string GetMessageInfo(const std::string &name, const std::string &data);
 

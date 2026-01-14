@@ -219,7 +219,7 @@ string LogicModule::MakeToken(string account_id) {
 
 void LogicModule::SetToken(const std::string &account_id, const std::string &user_token) { auth_token_[account_id] = user_token; }
 
-void LogicModule::OnConnectProxyVerify(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnConnectProxyVerify(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     uint64_t uid;
 
     rpc::NReqConnectProxyVerify req;

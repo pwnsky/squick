@@ -30,9 +30,9 @@ class UDPModule : public IUDPModule {
     // as server
     virtual int Listen(const unsigned int nMaxClient, const unsigned short nPort, const int nCpuCount = 4, const uint32_t expand_buffer_size = 0) override;
 
-    virtual void RemoveReceiveCallBack(const int msg_id);
+    virtual void RemoveReceiveCallBack(const uint32_t msg_id);
 
-    virtual bool AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb);
+    virtual bool AddReceiveCallBack(const uint32_t msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb);
 
     virtual bool AddReceiveCallBack(const NET_RECEIVE_FUNCTOR_PTR &cb);
 
@@ -40,23 +40,23 @@ class UDPModule : public IUDPModule {
 
     virtual bool Update();
 
-    virtual bool SendMsgWithOutHead(const int msg_id, const std::string &msg, const socket_t sock);
-    virtual bool SendMsgToAllClientWithOutHead(const int msg_id, const std::string &msg);
+    virtual bool SendMsgWithOutHead(const uint32_t msg_id, const std::string &msg, const socket_t sock);
+    virtual bool SendMsgToAllClientWithOutHead(const uint32_t msg_id, const std::string &msg);
 
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock);
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const Guid id);
-    virtual bool SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock);
-    virtual bool SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const Guid id);
+    virtual bool SendMsgPB(const uint32_t msg_id, const google::protobuf::Message &xData, const socket_t sock);
+    virtual bool SendMsgPB(const uint32_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const Guid id);
+    virtual bool SendMsg(const uint32_t msg_id, const std::string &xData, const socket_t sock);
+    virtual bool SendMsg(const uint32_t msg_id, const std::string &xData, const socket_t sock, const Guid id);
 
-    virtual bool SendMsgPBToAllClient(const uint16_t msg_id, const google::protobuf::Message &xData);
+    virtual bool SendMsgPBToAllClient(const uint32_t msg_id, const google::protobuf::Message &xData);
 
-    virtual bool SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const std::vector<Guid> *pClientIDList);
-    virtual bool SendMsgPB(const uint16_t msg_id, const std::string &strData, const socket_t sock, const std::vector<Guid> *pClientIDList);
+    virtual bool SendMsgPB(const uint32_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const std::vector<Guid> *pClientIDList);
+    virtual bool SendMsgPB(const uint32_t msg_id, const std::string &strData, const socket_t sock, const std::vector<Guid> *pClientIDList);
 
     virtual INet *GetNet();
 
   protected:
-    void OnReceiveNetPack(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnReceiveNetPack(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
     void OnSocketNetEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 

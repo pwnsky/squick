@@ -10,7 +10,7 @@
 
 namespace game::logic {
 
-typedef std::function<void(const Guid &clientID, const int msg_id, const std::string &data)> GAME_MGR_RECEIVE_FUNCTOR;
+typedef std::function<void(const Guid &clientID, const uint32_t msg_id, const std::string &data)> GAME_MGR_RECEIVE_FUNCTOR;
 typedef std::shared_ptr<GAME_MGR_RECEIVE_FUNCTOR> GAME_MGR_RECEIVE_FUNCTOR_PTR;
 
 class IGameMgrModule : public IModule {
@@ -22,8 +22,8 @@ class IGameMgrModule : public IModule {
     virtual bool SingleGameDestroy(int id) = 0;
 
     template <typename BaseType>
-    bool AddReceiveCallBack(const int msg_id, const int id, BaseType *pBase,
-                            void (BaseType::*handleReceiver)(const Guid &clientID, const int msg_id, const std::string &data)) {
+    bool AddReceiveCallBack(const uint32_t msg_id, const int id, BaseType *pBase,
+                            void (BaseType::*handleReceiver)(const Guid &clientID, const uint32_t msg_id, const std::string &data)) {
         GAME_MGR_RECEIVE_FUNCTOR functor = std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
         GAME_MGR_RECEIVE_FUNCTOR_PTR functorPtr(new GAME_MGR_RECEIVE_FUNCTOR(functor));
 
@@ -43,9 +43,9 @@ class IGameMgrModule : public IModule {
         return true;
     }
 
-    virtual void OnRecv(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) = 0;
+    virtual void OnRecv(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) = 0;
 
-    GAME_MGR_RECEIVE_FUNCTOR_PTR &GetCallback(int msg_id, int id) {
+    GAME_MGR_RECEIVE_FUNCTOR_PTR &GetCallback(uint32_t msg_id, int id) {
         auto &group = mxReceiveCallBack[msg_id];
         return group[id];
     }
@@ -58,6 +58,6 @@ class IGameMgrModule : public IModule {
     INetClientModule *m_net_client_;
 
   private:
-    std::unordered_map<int, std::map<int, GAME_MGR_RECEIVE_FUNCTOR_PTR>> mxReceiveCallBack;
+    std::unordered_map<uint32_t, std::map<int, GAME_MGR_RECEIVE_FUNCTOR_PTR>> mxReceiveCallBack;
 };
 } // namespace game::logic

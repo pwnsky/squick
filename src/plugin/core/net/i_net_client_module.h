@@ -53,8 +53,8 @@ class INetClientModule : public IModule {
     };
 
     template <typename BaseType>
-    bool AddReceiveCallBack(const int eType, const uint16_t msg_id, BaseType *pBase,
-                            void (BaseType::*handleReceiver)(const socket_t, const int, const char *, const uint32_t)) {
+    bool AddReceiveCallBack(const int eType, const uint32_t msg_id, BaseType *pBase,
+                            void (BaseType::*handleReceiver)(const socket_t, const uint32_t, const char *, const uint32_t)) {
         NET_RECEIVE_FUNCTOR functor =
             std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
         NET_RECEIVE_FUNCTOR_PTR functorPtr(new NET_RECEIVE_FUNCTOR(functor));
@@ -65,7 +65,7 @@ class INetClientModule : public IModule {
     }
 
     template <typename BaseType>
-    int AddReceiveCallBack(const int eType, BaseType *pBase, void (BaseType::*handleReceiver)(const socket_t, const int, const char *, const uint32_t)) {
+    int AddReceiveCallBack(const int eType, BaseType *pBase, void (BaseType::*handleReceiver)(const socket_t, const uint32_t, const char *, const uint32_t)) {
         NET_RECEIVE_FUNCTOR functor =
             std::bind(handleReceiver, pBase, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
         NET_RECEIVE_FUNCTOR_PTR functorPtr(new NET_RECEIVE_FUNCTOR(functor));
@@ -86,27 +86,27 @@ class INetClientModule : public IModule {
     }
 
     virtual int AddReceiveCallBack(const int eType, NET_RECEIVE_FUNCTOR_PTR functorPtr) = 0;
-    virtual int AddReceiveCallBack(const int eType, const uint16_t msg_id, NET_RECEIVE_FUNCTOR_PTR functorPtr) = 0;
+    virtual int AddReceiveCallBack(const int eType, const uint32_t msg_id, NET_RECEIVE_FUNCTOR_PTR functorPtr) = 0;
     virtual int AddEventCallBack(const int eType, NET_EVENT_FUNCTOR_PTR functorPtr) = 0;
 
-    virtual void RemoveReceiveCallBack(const int eType, const uint16_t msg_id) = 0;
+    virtual void RemoveReceiveCallBack(const int eType, const uint32_t msg_id) = 0;
     ////////////////////////////////////////////////////////////////////////////////
 
     virtual void AddNode(const ConnectData &xInfo) = 0;
 
     ////////////////////////////////////////////////////////////////////////////////
     virtual bool IsConnected(const int node_id) = 0;
-    virtual bool SendByID(const int serverID, const uint16_t msg_id, const std::string &strData, const uint64_t uid = 0, reqid_t req_id = 0) = 0;
-    virtual bool SendPBByID(const int serverID, const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0, reqid_t req_id = 0) = 0;
-    virtual void SendToAllNode(const uint16_t msg_id, const std::string &strData, const uint64_t uid = 0) = 0;
-    virtual void SendToAllNodeByType(const int eType, const uint16_t msg_id, const std::string &strData, const uint64_t uid = 0) = 0;
-    virtual void SendPBToAllNode(const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0) = 0;
-    virtual void SendPBToAllNodeByType(const int eType, const uint16_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0) = 0;
+    virtual bool SendByID(const int serverID, const uint32_t msg_id, const std::string &strData, const uint64_t uid = 0, reqid_t req_id = 0) = 0;
+    virtual bool SendPBByID(const int serverID, const uint32_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0, reqid_t req_id = 0) = 0;
+    virtual void SendToAllNode(const uint32_t msg_id, const std::string &strData, const uint64_t uid = 0) = 0;
+    virtual void SendToAllNodeByType(const int eType, const uint32_t msg_id, const std::string &strData, const uint64_t uid = 0) = 0;
+    virtual void SendPBToAllNode(const uint32_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0) = 0;
+    virtual void SendPBToAllNodeByType(const int eType, const uint32_t msg_id, const google::protobuf::Message &xData, const uint64_t uid = 0) = 0;
     ////////////////////////////////////////////////////////////////////////////////
     // coroutine
-    virtual Awaitable<NetClientResponseData> Request(const int serverID, const uint16_t msg_id, const std::string &data, int ack_msg_id,
+    virtual Awaitable<NetClientResponseData> Request(const int serverID, const uint32_t msg_id, const std::string &data, int ack_msg_id,
                                                      const uint64_t uid = 0) = 0;
-    virtual Awaitable<NetClientResponseData> RequestPB(const int node_id, const uint16_t msg_id, const google::protobuf::Message &pb, int ack_msg_id,
+    virtual Awaitable<NetClientResponseData> RequestPB(const int node_id, const uint32_t msg_id, const google::protobuf::Message &pb, int ack_msg_id,
                                                        const uint64_t uid = 0) = 0;
 
     virtual MapEx<int, ConnectData> &GetServerList() = 0;

@@ -585,9 +585,9 @@ template <typename T> bool LuaScriptModule::AddLuaFuncToMap(Map<T, Map<Guid, Lis
     return false;
 }
 
-void LuaScriptModule::RemoveCallBackAsServer(const int msg_id) { m_net_->RemoveReceiveCallBack(msg_id); }
+void LuaScriptModule::RemoveCallBackAsServer(const uint32_t msg_id) { m_net_->RemoveReceiveCallBack(msg_id); }
 
-void LuaScriptModule::AddMsgCallBackAsServer(const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
+void LuaScriptModule::AddMsgCallBackAsServer(const uint32_t msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
     auto callbackList = mxNetMsgCallBackFuncMapAsServer.GetElement(msg_id);
     if (!callbackList) {
         callbackList = new List<LuaCallBack>();
@@ -597,10 +597,10 @@ void LuaScriptModule::AddMsgCallBackAsServer(const int msg_id, const LuaIntf::Lu
     callbackList->Add({luaTable, luaFunc});
 }
 
-void LuaScriptModule::RemoveMsgCallBackAsClient(const int serverType, const int msg_id) { m_net_client_->RemoveReceiveCallBack(serverType, msg_id); }
+void LuaScriptModule::RemoveMsgCallBackAsClient(const int serverType, const uint32_t msg_id) { m_net_client_->RemoveReceiveCallBack(serverType, msg_id); }
 
 // 做为服务器做为客户端连接的网络 回调
-void LuaScriptModule::AddMsgCallBackAsClient(const int serverType, const int msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
+void LuaScriptModule::AddMsgCallBackAsClient(const int serverType, const uint32_t msg_id, const LuaIntf::LuaRef &luaTable, const LuaIntf::LuaRef &luaFunc) {
     auto callbackList = mxNetMsgCallBackFuncMapAsClient.GetElement(msg_id);
     if (!callbackList) {
         callbackList = new List<LuaCallBack>();
@@ -636,7 +636,7 @@ void LuaScriptModule::SetScriptPath(const std::string &path) { scriptPath = path
 
 const std::string LuaScriptModule::GetScriptPath() { return scriptPath; }
 
-void LuaScriptModule::SendToServerByServerID(const int server_id, const uint16_t msg_id, const std::string &data, const uint64_t uid) {
+void LuaScriptModule::SendToServerByServerID(const int server_id, const uint32_t msg_id, const std::string &data, const uint64_t uid) {
     if (pm_->GetAppID() == server_id) {
         LOG_ERROR("you can send message to yourself, node_id<%v>", server_id);
         return;
@@ -644,11 +644,11 @@ void LuaScriptModule::SendToServerByServerID(const int server_id, const uint16_t
     m_net_client_->SendByID(server_id, msg_id, data, uid);
 }
 
-void LuaScriptModule::SendToAllServerByServerType(const int server_type, const uint16_t msg_id, const std::string &data, const uint64_t uid) {
+void LuaScriptModule::SendToAllServerByServerType(const int server_type, const uint32_t msg_id, const std::string &data, const uint64_t uid) {
     m_net_client_->SendToAllNodeByType(server_type, msg_id, data, uid);
 }
 
-void LuaScriptModule::SendByFD(const socket_t fd, const uint16_t msg_id, const std::string &data, const uint64_t uid) {
+void LuaScriptModule::SendByFD(const socket_t fd, const uint32_t msg_id, const std::string &data, const uint64_t uid) {
     m_net_->SendToNode(msg_id, data, fd, uid);
 }
 
@@ -849,7 +849,7 @@ bool LuaScriptModule::Register() {
     return true;
 }
 
-void LuaScriptModule::OnNetMsgCallBackAsServer(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LuaScriptModule::OnNetMsgCallBackAsServer(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     uint64_t uid;
     string data;
     if (!m_net_->ReceivePB(msg_id, msg, len, data, uid)) {
@@ -872,7 +872,7 @@ void LuaScriptModule::OnNetMsgCallBackAsServer(const socket_t sock, const int ms
     }
 }
 
-void LuaScriptModule::OnNetMsgCallBackAsClient(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LuaScriptModule::OnNetMsgCallBackAsClient(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     uint64_t uid;
     string data;
     if (!m_net_->ReceivePB(msg_id, msg, len, data, uid)) {

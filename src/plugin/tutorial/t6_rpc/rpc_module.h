@@ -17,7 +17,7 @@ class SimpleModule : public ISimpleModule {
     virtual bool AfterStart();
     virtual bool Update();
 
-    void OnRecivedMsg(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnRecivedMsg(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
   private:
     INetClientModule *m_net_client_;

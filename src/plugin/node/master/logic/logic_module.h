@@ -19,20 +19,20 @@ class LogicModule : public ILogicModule {
     virtual bool Destroy() override;
     virtual bool Update() override;
 
-    void OnNNtfNodeReport(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnNReqNodeRegister(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnNReqNodeUnregistered(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnNNtfNodeMsgForward(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnNReqAllNodesInfo(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnNReqReload(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnNNtfNodeReport(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnNReqNodeRegister(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnNReqNodeUnregistered(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnNReqMinWorkNodeInfo(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnNNtfNodeMsgForward(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnNReqAllNodesInfo(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnNReqReload(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
     int GetLoadBanlanceNode(int type);
 
     void AddSubscribeNode(int new_node_id, vector<int> types);
     void NtfSubscribNode(int new_node_id);
 
-    bool SendPBByID(const int node_id, const uint16_t msg_id, const google::protobuf::Message &pb);
+    bool SendPBByID(const int node_id, const uint32_t msg_id, const google::protobuf::Message &pb);
     void UpdateStatus();
 
     inline bool IsHaveThisType(const vector<int> &types, int type) {

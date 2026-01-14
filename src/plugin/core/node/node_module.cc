@@ -154,10 +154,10 @@ bool NodeModule::AddSubscribeNode(const vector<int> &types) {
     return true;
 }
 
-void NodeModule::InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) { printf("Net || umsg_id=%d\n", msg_id); }
+void NodeModule::InvalidMessage(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) { printf("Net || umsg_id=%d\n", msg_id); }
 
 // Add upper server
-void NodeModule::OnDynamicServerAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void NodeModule::OnDynamicServerAdd(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     uint64_t uid;
     rpc::NNtfNodeAdd ntf;
     if (!INetModule::ReceivePB(msg_id, msg, len, ntf, uid)) {
@@ -176,9 +176,9 @@ void NodeModule::OnDynamicServerAdd(const socket_t sock, const int msg_id, const
     }
 }
 
-void NodeModule::OnReloadConfig(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
+void NodeModule::OnReloadConfig(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {}
 
-void NodeModule::OnReloadLua(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
+void NodeModule::OnReloadLua(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {}
 
 // Report to upper server
 void NodeModule::UpdateState() {
@@ -254,7 +254,7 @@ void NodeModule::OnUpperNodeConnected(INet *pNet) {
     LOG_INFO("Register node <%v>", ts->name);
 }
 
-void NodeModule::OnNAckNodeRegister(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void NodeModule::OnNAckNodeRegister(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     uint64_t uid;
     rpc::NAckNodeRegister ack;
     if (!m_net_->ReceivePB(msg_id, msg, len, ack, uid)) {
@@ -269,7 +269,7 @@ void NodeModule::OnNAckNodeRegister(const socket_t sock, const int msg_id, const
 }
 
 // Add node ntf
-void NodeModule::OnNNtfNodeAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void NodeModule::OnNNtfNodeAdd(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     uint64_t uid;
     rpc::NNtfNodeAdd ntf;
     if (!m_net_->ReceivePB(msg_id, msg, len, ntf, uid)) {
@@ -293,7 +293,7 @@ bool NodeModule::AddNodes(const google::protobuf::RepeatedPtrField<rpc::Node> &l
 }
 
 // Reload config or lua script
-void NodeModule::OnNReqReload(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void NodeModule::OnNReqReload(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     uint64_t uid;
     rpc::NReqReload req;
     if (!m_net_->ReceivePB(msg_id, msg, len, req, uid)) {
@@ -304,7 +304,7 @@ void NodeModule::OnNReqReload(const socket_t sock, const int msg_id, const char 
     SetSquickReloadState(1);
 }
 
-void NodeModule::OnNReqExecuteLua(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void NodeModule::OnNReqExecuteLua(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     uint64_t uid;
     rpc::NReqExecuteLua req;
     rpc::NAckExecuteLua ack;
@@ -343,7 +343,7 @@ void NodeModule::OnNReqExecuteLua(const socket_t sock, const int msg_id, const c
 }
 
 // Add node ntf
-void NodeModule::OnNNtfNodeRemove(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
+void NodeModule::OnNNtfNodeRemove(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {}
 
 bool NodeModule::RemoveNodes() { return true; }
 

@@ -23,15 +23,15 @@ class NodeModule : public INodeModule {
 
     // Add upper server
     virtual bool AddSubscribeNode(const vector<int> &types) override;
-    void InvalidMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void InvalidMessage(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
     // Add upper server
-    void OnDynamicServerAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnDynamicServerAdd(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
   private:
     bool Listen();
-    virtual void OnReloadConfig(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    virtual void OnReloadLua(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    virtual void OnReloadConfig(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    virtual void OnReloadLua(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
     // Report to upper server
     void UpdateState();
@@ -44,20 +44,20 @@ class NodeModule : public INodeModule {
     // 作为客户端连接socket事件
     void OnClientSocketEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
     void OnUpperNodeConnected(INet *pNet);
-    void OnNAckNodeRegister(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnNAckNodeRegister(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
     // Add node ntf
-    void OnNNtfNodeAdd(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnNNtfNodeAdd(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
     bool AddNodes(const google::protobuf::RepeatedPtrField<rpc::Node> &list, bool from_ntf = false);
 
     // Add node ntf
-    void OnNNtfNodeRemove(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnNNtfNodeRemove(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
     bool RemoveNodes();
 
-    void OnNReqReload(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnNReqReload(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
     // Run lua code
-    void OnNReqExecuteLua(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnNReqExecuteLua(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
   public:
     ILogModule *m_log_;

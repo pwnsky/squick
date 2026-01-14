@@ -45,16 +45,16 @@ enum SQUICK_NET_EVENT {
 
 struct IMsgHead {
     enum SQUICK_Head {
-        SQUICK_HEAD_LENGTH = 6,
+        SQUICK_HEAD_LENGTH = 8,
     };
 
     virtual int EnCode(char *strData) = 0;
 
     virtual int DeCode(const char *strData) = 0;
 
-    virtual uint16_t GetMsgID() const = 0;
+    virtual uint32_t GetMsgID() const = 0;
 
-    virtual void SetMsgID(uint16_t msg_id) = 0;
+    virtual void SetMsgID(uint32_t msg_id) = 0;
 
     virtual uint32_t GetBodyLength() const = 0;
 
@@ -136,11 +136,11 @@ class rpcHead : public IMsgHead {
         hashcode_ = 0;
     }
 
-    // Message Head[ MsgID(2) | MsgSize(4) ]
+    // Message Head[ MsgID(4) | MsgSize(4) ]
     virtual int EnCode(char *data) {
         uint32_t nOffset = 0;
 
-        uint16_t net_msg_id = SQUICK_HTONS(msg_id_);
+        uint32_t net_msg_id = SQUICK_HTONL(msg_id_);
         memcpy(data + nOffset, (void *)(&net_msg_id), sizeof(net_msg_id));
         nOffset += sizeof(net_msg_id);
 
@@ -155,13 +155,13 @@ class rpcHead : public IMsgHead {
         return nOffset;
     }
 
-    // Message Head[ MsgID(2) | MsgSize(4) ]
+    // Message Head[ MsgID(4) | MsgSize(4) ]
     virtual int DeCode(const char *data) {
         uint32_t nOffset = 0;
 
-        uint16_t net_msg_id = 0;
+        uint32_t net_msg_id = 0;
         memcpy(&net_msg_id, data + nOffset, sizeof(net_msg_id));
-        msg_id_ = SQUICK_NTOHS(net_msg_id);
+        msg_id_ = SQUICK_NTOHL(net_msg_id);
         nOffset += sizeof(msg_id_);
 
         uint32_t nPackSize = 0;
@@ -176,23 +176,23 @@ class rpcHead : public IMsgHead {
         return nOffset;
     }
 
-    virtual uint16_t GetMsgID() const { return msg_id_; }
+    virtual uint32_t GetMsgID() const { return msg_id_; }
 
-    virtual void SetMsgID(uint16_t msg_id) { msg_id_ = msg_id; }
+    virtual void SetMsgID(uint32_t msg_id) { msg_id_ = msg_id; }
 
     virtual uint32_t GetBodyLength() const { return size_; }
 
     virtual void SetBodyLength(uint32_t length) { size_ = length; }
 
   protected:
-    uint16_t msg_id_;
+    uint32_t msg_id_;
     uint32_t size_;
     uint16_t hashcode_;
 };
 
 class INet;
 
-typedef std::function<void(const socket_t sock, const int msg_id, const char *msg, const uint32_t len)> NET_RECEIVE_FUNCTOR;
+typedef std::function<void(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len)> NET_RECEIVE_FUNCTOR;
 typedef std::shared_ptr<NET_RECEIVE_FUNCTOR> NET_RECEIVE_FUNCTOR_PTR;
 
 typedef std::function<void(const socket_t sock, const SQUICK_NET_EVENT nEvent, INet *pNet)> NET_EVENT_FUNCTOR;
@@ -201,7 +201,7 @@ typedef std::shared_ptr<NET_EVENT_FUNCTOR> NET_EVENT_FUNCTOR_PTR;
 typedef std::function<void(int severity, const char *msg)> NET_EVENT_LOG_FUNCTOR;
 typedef std::shared_ptr<NET_EVENT_LOG_FUNCTOR> NET_EVENT_LOG_FUNCTOR_PTR;
 
-typedef std::function<Coroutine<bool>(const socket_t sock, const int msg_id, const char *msg, const uint32_t len)> NET_CORO_RECEIVE_FUNCTOR;
+typedef std::function<Coroutine<bool>(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len)> NET_CORO_RECEIVE_FUNCTOR;
 typedef std::shared_ptr<NET_CORO_RECEIVE_FUNCTOR> NET_CORO_RECEIVE_FUNCTOR_PTR;
 
 class NetObject {
@@ -285,7 +285,7 @@ class INet {
     virtual bool Final() = 0;
 
     // send a message with out msg-head[auto add msg-head in this function]
-    virtual bool SendMsg(const int16_t msg_id, const char *msg, const size_t len, const socket_t sock = 0) = 0;
+    virtual bool SendMsg(const int32_t msg_id, const char *msg, const size_t len, const socket_t sock = 0) = 0;
 
     // send a message with out msg-head[need to add msg-head for this message by youself]
     virtual bool SendData(const char *msg, const size_t len, const socket_t sock) = 0;
@@ -294,7 +294,7 @@ class INet {
     virtual bool SendDataToAllClient(const char *msg, const size_t len) = 0;
 
     // send a message with out msg-head to all client[auto add msg-head in this function]
-    virtual bool SendMsgToAllClient(const int16_t msg_id, const char *msg, const size_t len) = 0;
+    virtual bool SendMsgToAllClient(const int32_t msg_id, const char *msg, const size_t len) = 0;
 
     virtual bool CloseNetObject(const socket_t sock) = 0;
 

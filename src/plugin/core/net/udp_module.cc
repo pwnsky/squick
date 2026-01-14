@@ -92,9 +92,9 @@ int UDPModule::Listen(const unsigned int nMaxClient, const unsigned short nPort,
     return 0;
 }
 
-void UDPModule::RemoveReceiveCallBack(const int msg_id) {}
+void UDPModule::RemoveReceiveCallBack(const uint32_t msg_id) {}
 
-bool UDPModule::AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb) { return true; }
+bool UDPModule::AddReceiveCallBack(const uint32_t msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb) { return true; }
 
 bool UDPModule::AddReceiveCallBack(const NET_RECEIVE_FUNCTOR_PTR &cb) { return true; }
 
@@ -108,28 +108,28 @@ bool UDPModule::Update() {
     return true;
 }
 
-bool UDPModule::SendMsgWithOutHead(const int msg_id, const std::string &msg, const socket_t sock) { return true; }
+bool UDPModule::SendMsgWithOutHead(const uint32_t msg_id, const std::string &msg, const socket_t sock) { return true; }
 
-bool UDPModule::SendMsgToAllClientWithOutHead(const int msg_id, const std::string &msg) { return true; }
+bool UDPModule::SendMsgToAllClientWithOutHead(const uint32_t msg_id, const std::string &msg) { return true; }
 
-bool UDPModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) { return true; }
+bool UDPModule::SendMsgPB(const uint32_t msg_id, const google::protobuf::Message &xData, const socket_t sock) { return true; }
 
-bool UDPModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const Guid id) { return true; }
+bool UDPModule::SendMsgPB(const uint32_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const Guid id) { return true; }
 
-bool UDPModule::SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock) { return true; }
+bool UDPModule::SendMsg(const uint32_t msg_id, const std::string &xData, const socket_t sock) { return true; }
 
-bool UDPModule::SendMsg(const uint16_t msg_id, const std::string &xData, const socket_t sock, const Guid id) { return true; }
+bool UDPModule::SendMsg(const uint32_t msg_id, const std::string &xData, const socket_t sock, const Guid id) { return true; }
 
-bool UDPModule::SendMsgPBToAllClient(const uint16_t msg_id, const google::protobuf::Message &xData) { return true; }
+bool UDPModule::SendMsgPBToAllClient(const uint32_t msg_id, const google::protobuf::Message &xData) { return true; }
 
-bool UDPModule::SendMsgPB(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const std::vector<Guid> *pClientIDList) {
+bool UDPModule::SendMsgPB(const uint32_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const std::vector<Guid> *pClientIDList) {
     return true;
 }
 
-bool UDPModule::SendMsgPB(const uint16_t msg_id, const std::string &strData, const socket_t sock, const std::vector<Guid> *pClientIDList) { return true; }
+bool UDPModule::SendMsgPB(const uint32_t msg_id, const std::string &strData, const socket_t sock, const std::vector<Guid> *pClientIDList) { return true; }
 
 INet *UDPModule::GetNet() { return nullptr; }
 
-void UDPModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
+void UDPModule::OnReceiveNetPack(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {}
 
 void UDPModule::OnSocketNetEvent(const socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet) {}

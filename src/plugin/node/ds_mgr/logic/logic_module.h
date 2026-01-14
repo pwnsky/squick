@@ -19,8 +19,8 @@ class LogicModule : public ILogicModule {
     virtual bool AfterStart();
 
   protected:
-    void OnLagTestProcess(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnReqPvpInstanceCreate(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnLagTestProcess(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnReqPvpInstanceCreate(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
     int GetUnbindPort();
 
   protected:

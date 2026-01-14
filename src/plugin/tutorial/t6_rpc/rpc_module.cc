@@ -12,6 +12,6 @@ bool SimpleModule::AfterStart() { return true; }
 // Update
 bool SimpleModule::Update() { return true; }
 
-void SimpleModule::OnRecivedMsg(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
+void SimpleModule::OnRecivedMsg(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {}
 
 } // namespace tutorial

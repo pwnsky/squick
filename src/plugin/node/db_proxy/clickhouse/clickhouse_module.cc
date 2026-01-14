@@ -27,9 +27,9 @@ bool ClickhouseModule::Update() { return true; }
 
 bool ClickhouseModule::Destroy() { return true; }
 
-void ClickhouseModule::OnReqQuery(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
+void ClickhouseModule::OnReqQuery(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {}
 
-void ClickhouseModule::OnReqExecute(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void ClickhouseModule::OnReqExecute(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_CLICKHOUSE_SUCCESS;
     rpc::NReqClickhouseExecute req;
     rpc::NAckClickhouseExecute ack;
@@ -49,7 +49,7 @@ void ClickhouseModule::OnReqExecute(const socket_t sock, const int msg_id, const
     m_net_->SendPBToNode(rpc::IdNAckClickhouseExecute, ack, sock);
 }
 
-void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void ClickhouseModule::OnReqInsert(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_CLICKHOUSE_SUCCESS;
     rpc::NReqClickhouseInsert req;
     rpc::NAckClickhouseInsert ack;
@@ -167,7 +167,7 @@ void ClickhouseModule::OnReqInsert(const socket_t sock, const int msg_id, const 
     m_net_->SendPBToNode(rpc::IdNAckClickhouseInsert, ack, sock);
 }
 
-void ClickhouseModule::OnReqSelect(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void ClickhouseModule::OnReqSelect(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_CLICKHOUSE_SUCCESS;
     rpc::NReqClickhouseSelect req;
     rpc::NAckClickhouseSelect ack;

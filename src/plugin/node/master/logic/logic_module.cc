@@ -46,7 +46,7 @@ bool LogicModule::Update() {
 
 void LogicModule::UpdateStatus() { node_map_[pm_->GetAppID()] = m_node_->GetNodeInfo(); }
 
-void LogicModule::OnNReqNodeRegister(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnNReqNodeRegister(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     uint64_t uid;
     rpc::NReqNodeRegister req;
     if (!m_net_->ReceivePB(msg_id, msg, len, req, uid)) {
@@ -135,7 +135,7 @@ void LogicModule::NtfSubscribNode(int new_node_id) {
     }
 }
 
-bool LogicModule::SendPBByID(const int node_id, const uint16_t msg_id, const google::protobuf::Message &pb) {
+bool LogicModule::SendPBByID(const int node_id, const uint32_t msg_id, const google::protobuf::Message &pb) {
 
     auto iter = node_map_.find(node_id);
     if (iter == node_map_.end()) {
@@ -145,7 +145,7 @@ bool LogicModule::SendPBByID(const int node_id, const uint16_t msg_id, const goo
     return m_net_->SendPBToNode(msg_id, pb, iter->second.fd);
 }
 
-void LogicModule::OnNReqNodeUnregistered(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnNReqNodeUnregistered(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     uint64_t uid;
     rpc::NReqNodeUnregister req;
     if (!m_net_->ReceivePB(msg_id, msg, len, req, uid)) {
@@ -161,7 +161,7 @@ void LogicModule::OnNReqNodeUnregistered(const socket_t sock, const int msg_id, 
 }
 
 // Master
-void LogicModule::OnNNtfNodeReport(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnNNtfNodeReport(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
 
     uint64_t uid;
     rpc::NNtfNodeReport ntf;
@@ -193,7 +193,7 @@ void LogicModule::OnNNtfNodeReport(const socket_t sock, const int msg_id, const 
     } while (false);
 }
 
-void LogicModule::OnNReqMinWorkNodeInfo(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnNReqMinWorkNodeInfo(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     rpc::NReqMinWorkloadNodeInfo req;
     rpc::NAckMinWorkloadNodeInfo ack;
     string guid;
@@ -234,9 +234,9 @@ int LogicModule::GetLoadBanlanceNode(int type) {
     return node_id;
 }
 
-void LogicModule::OnNNtfNodeMsgForward(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
+void LogicModule::OnNNtfNodeMsgForward(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {}
 
-void LogicModule::OnNReqAllNodesInfo(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnNReqAllNodesInfo(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     rpc::MsgBase msg_base;
     if (!msg_base.ParseFromArray(msg, len)) {
         LOG_ERROR("ParseFromArray: is error, the msg len %v", len);
@@ -283,7 +283,7 @@ bool LogicModule::OnGetNodeList(std::shared_ptr<HttpRequest> req) {
     return m_http_server_->ResponseMsg(req, statusRoot.dump(), WebStatus::WEB_OK);
 }
 
-void LogicModule::OnNReqReload(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void LogicModule::OnNReqReload(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     rpc::MsgBase msg_base;
     if (!msg_base.ParseFromArray(msg, len)) {
         LOG_ERROR("ParseFromArray: is error, the msg len %v", len);

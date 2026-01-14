@@ -44,7 +44,7 @@ class LogicModule : public ILogicModule {
     bool CheckAuth(const std::string &guid, const std::string &token);
 
     void SetToken(const std::string &account_id, const std::string &user_token);
-    virtual void OnConnectProxyVerify(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    virtual void OnConnectProxyVerify(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
   private:
     string MakeToken(string sguid);

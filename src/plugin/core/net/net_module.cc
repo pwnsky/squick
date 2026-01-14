@@ -37,14 +37,14 @@ int NetModule::Listen(const unsigned int nMaxClient, const unsigned short nPort,
     return m_pNet->Listen(nMaxClient, nPort, nCpuCount, expand_buffer_size);
 }
 
-void NetModule::RemoveReceiveCallBack(const int msg_id) {
+void NetModule::RemoveReceiveCallBack(const uint32_t msg_id) {
     std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msg_id);
     if (mxReceiveCallBack.end() != it) {
         mxReceiveCallBack.erase(it);
     }
 }
 
-bool NetModule::AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb) {
+bool NetModule::AddReceiveCallBack(const uint32_t msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb) {
     if (mxReceiveCallBack.find(msg_id) == mxReceiveCallBack.end()) {
         std::list<NET_RECEIVE_FUNCTOR_PTR> xList;
         xList.push_back(cb);
@@ -58,7 +58,7 @@ bool NetModule::AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_P
     return true;
 }
 
-bool NetModule::AddReceiveCallBack(const int msg_id, const NET_CORO_RECEIVE_FUNCTOR_PTR &cb) {
+bool NetModule::AddReceiveCallBack(const uint32_t msg_id, const NET_CORO_RECEIVE_FUNCTOR_PTR &cb) {
     if (coro_funcs_.find(msg_id) == coro_funcs_.end()) {
         std::list<NET_CORO_RECEIVE_FUNCTOR_PTR> xList;
         xList.push_back(cb);
@@ -100,7 +100,7 @@ bool NetModule::Update() {
     return true;
 }
 
-bool NetModule::SendMsg(const int msg_id, const std::string &msg, const socket_t sock) {
+bool NetModule::SendMsg(const uint32_t msg_id, const std::string &msg, const socket_t sock) {
     bool bRet = m_pNet->SendMsg(msg_id, msg.c_str(), (uint32_t)msg.length(), sock);
     if (!bRet) {
         LOG_ERROR("Failed to send msg msg_id <%v> ", msg_id);
@@ -111,7 +111,7 @@ bool NetModule::SendMsg(const int msg_id, const std::string &msg, const socket_t
     return bRet;
 }
 
-bool NetModule::SendMsgToAllClient(const int msg_id, const std::string &msg) {
+bool NetModule::SendMsgToAllClient(const uint32_t msg_id, const std::string &msg) {
     bool bRet = m_pNet->SendMsgToAllClient(msg_id, msg.c_str(), (uint32_t)msg.length());
     if (!bRet) {
         LOG_ERROR("Failed to send msg msg_id <%v> ", msg_id);
@@ -120,7 +120,7 @@ bool NetModule::SendMsgToAllClient(const int msg_id, const std::string &msg) {
     return bRet;
 }
 
-bool NetModule::SendPBToNode(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const uint64_t uid, reqid_t req_id) {
+bool NetModule::SendPBToNode(const uint32_t msg_id, const google::protobuf::Message &xData, const socket_t sock, const uint64_t uid, reqid_t req_id) {
     rpc::MsgBase xMsg;
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
         std::ostringstream stream;
@@ -140,7 +140,7 @@ bool NetModule::SendPBToNode(const uint16_t msg_id, const google::protobuf::Mess
     return SendMsg(msg_id, msg, sock);
 }
 
-bool NetModule::SendToNode(const uint16_t msg_id, const std::string &xData, const socket_t sock, const uint64_t uid, reqid_t req_id) {
+bool NetModule::SendToNode(const uint32_t msg_id, const std::string &xData, const socket_t sock, const uint64_t uid, reqid_t req_id) {
     rpc::MsgBase xMsg;
     xMsg.set_msg_data(xData.data(), xData.length());
     xMsg.set_uid(uid);
@@ -154,7 +154,7 @@ bool NetModule::SendToNode(const uint16_t msg_id, const std::string &xData, cons
     return SendMsg(msg_id, msg, sock);
 }
 
-bool NetModule::SendPBToAllNodeClient(const uint16_t msg_id, const google::protobuf::Message &xData) {
+bool NetModule::SendPBToAllNodeClient(const uint32_t msg_id, const google::protobuf::Message &xData) {
     rpc::MsgBase xMsg;
     xMsg.set_id(pm_->GetAppID());
     if (!xData.SerializeToString(xMsg.mutable_msg_data())) {
@@ -201,7 +201,7 @@ int NetModule::FixCoroutines(time_t now_time) {
     return num;
 }
 
-void NetModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void NetModule::OnReceiveNetPack(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     // m_log_->LogInfo(pm_->GetAppName() + std::to_string(pm_->GetAppID()) + " NetModule::OnReceiveNetPack " +
     // std::to_string(msg_id), __FILE__, __LINE__);
 

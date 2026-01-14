@@ -29,7 +29,7 @@ class LogicModule : public ILogicModule {
 
   protected:
     bool LuaBind();
-    void Test(const uint16_t msg_id, string &msg, int a);
+    void Test(const uint32_t msg_id, string &msg, int a);
 
   private:
     ILuaScriptModule *m_lua_script_;

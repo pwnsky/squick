@@ -56,9 +56,9 @@ bool MongoModule::Connect() {
     return true;
 }
 
-void MongoModule::OnReqQuery(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
+void MongoModule::OnReqQuery(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {}
 
-void MongoModule::OnReqInsert(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void MongoModule::OnReqInsert(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
     rpc::NReqMongoInsert req;
     rpc::NAckMongoInsert ack;
@@ -84,7 +84,7 @@ void MongoModule::OnReqInsert(const socket_t sock, const int msg_id, const char 
     m_net_->SendPBToNode(rpc::IdNAckMongoInsert, ack, sock);
 }
 // Ref: http://mongocxx.org/mongocxx-v3/tutorial/#specify-a-query-filter
-void MongoModule::OnReqFind(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void MongoModule::OnReqFind(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
     rpc::NReqMongoFind req;
     rpc::NAckMongoFind ack;
@@ -115,7 +115,7 @@ void MongoModule::OnReqFind(const socket_t sock, const int msg_id, const char *m
     m_net_->SendPBToNode(rpc::IdNAckMongoFind, ack, sock);
 }
 
-void MongoModule::OnReqUpdate(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void MongoModule::OnReqUpdate(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
     rpc::NReqMongoUpdate req;
     rpc::NAckMongoUpdate ack;
@@ -141,7 +141,7 @@ void MongoModule::OnReqUpdate(const socket_t sock, const int msg_id, const char 
     m_net_->SendPBToNode(rpc::IdNAckMongoUpdate, ack, sock);
 }
 
-void MongoModule::OnReqDelete(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void MongoModule::OnReqDelete(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
     rpc::NReqMongoDelete req;
     rpc::NAckMongoDelete ack;
@@ -164,7 +164,7 @@ void MongoModule::OnReqDelete(const socket_t sock, const int msg_id, const char 
     m_net_->SendPBToNode(rpc::IdNAckMongoDelete, ack, sock);
 }
 
-void MongoModule::OnReqCreateIndex(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void MongoModule::OnReqCreateIndex(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_MONGO_SUCCESS;
     rpc::NReqMongoCreateIndex req;
     rpc::NAckMongoCreateIndex ack;

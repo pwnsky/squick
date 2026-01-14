@@ -30,7 +30,7 @@ bool RedisModule::Update() { return true; }
 
 bool RedisModule::Destroy() { return true; }
 
-void RedisModule::OnReqRedisGet(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void RedisModule::OnReqRedisGet(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_SUCCESS;
     rpc::NReqRedisGet req;
     rpc::NAckRedisGet ack;
@@ -56,7 +56,7 @@ void RedisModule::OnReqRedisGet(const socket_t sock, const int msg_id, const cha
     m_net_->SendPBToNode(rpc::IdNAckRedisGet, ack, sock);
 }
 
-void RedisModule::OnReqRedisSet(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void RedisModule::OnReqRedisSet(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_SUCCESS;
     rpc::NReqRedisSet req;
     rpc::NAckRedisSet ack;
@@ -74,7 +74,7 @@ void RedisModule::OnReqRedisSet(const socket_t sock, const int msg_id, const cha
     m_net_->SendPBToNode(rpc::IdNAckRedisSet, ack, sock);
 }
 
-void RedisModule::OnReqRedisHGet(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void RedisModule::OnReqRedisHGet(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_SUCCESS;
     rpc::NReqRedisHGet req;
     rpc::NAckRedisHGet ack;
@@ -98,7 +98,7 @@ void RedisModule::OnReqRedisHGet(const socket_t sock, const int msg_id, const ch
     m_net_->SendPBToNode(rpc::IdNAckRedisHGet, ack, sock);
 }
 
-void RedisModule::OnReqRedisHSet(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void RedisModule::OnReqRedisHSet(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_REDIS_SUCCESS;
     rpc::NReqRedisHSet req;
     rpc::NAckRedisHSet ack;
@@ -116,11 +116,11 @@ void RedisModule::OnReqRedisHSet(const socket_t sock, const int msg_id, const ch
     m_net_->SendPBToNode(rpc::IdNAckRedisHSet, ack, sock);
 }
 
-void RedisModule::OnReqRedisHGetAll(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
+void RedisModule::OnReqRedisHGetAll(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {}
 
-void RedisModule::OnReqRedisHMSet(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
+void RedisModule::OnReqRedisHMSet(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {}
 
-void RedisModule::OnReqQuery(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {}
+void RedisModule::OnReqQuery(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {}
 
 bool RedisModule::Connect() {
     if (!InitConnectDataFromConfig(DbType::Redis, "Cache")) {

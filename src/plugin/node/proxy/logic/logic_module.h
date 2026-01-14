@@ -61,26 +61,26 @@ class LogicModule : public ILogicModule {
     virtual bool AfterStart() override;
 
   protected:
-    void OnOtherMessage(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnHeartbeat(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnReqTestProxy(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnOtherMessage(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnHeartbeat(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnReqTestProxy(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
-    Coroutine<bool> OnReqConnectWithTcp(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnReqConnectWithWS(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnReqConnect(ProtocolType type, const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnNAckConnectVerify(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    Coroutine<bool> OnReqConnectWithTcp(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnReqConnectWithWS(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnReqConnect(ProtocolType type, const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnNAckConnectVerify(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
-    void OnReqPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnAckPlayerEnter(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnReqPlayerLeave(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnReqPlayerEnter(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnAckPlayerEnter(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnReqPlayerLeave(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
-    bool SendToPlayer(uint64_t uid, const int msg_id, const string &data);
+    bool SendToPlayer(uint64_t uid, const uint32_t msg_id, const string &data);
     virtual void OnClientDisconnected(socket_t sock) override;
 
-    void OnRecivedPlayerNodeMsg(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnRecivedPlayerNodeMsg(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
     int OnHeatbeatCheck(const Guid &self, const std::string &heartBeat, const float time, const int count);
 
-    void OnWS(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnWS(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
     void OnSocketEvent(socket_t sock, const SQUICK_NET_EVENT eEvent, INet *pNet);
 
     int GetLoadBanlanceNode(int type);

@@ -541,7 +541,7 @@ bool Net::Log(int severity, const char *msg) {
 }
 
 // Rpc send
-bool Net::SendMsg(const int16_t msg_id, const char *msg, const size_t len, const socket_t sock /*= 0*/) {
+bool Net::SendMsg(const int32_t msg_id, const char *msg, const size_t len, const socket_t sock /*= 0*/) {
     std::string strOutData;
     int nAllLen = EnCode(msg_id, msg, len, strOutData);
     if (nAllLen == len + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
@@ -551,7 +551,7 @@ bool Net::SendMsg(const int16_t msg_id, const char *msg, const size_t len, const
     return false;
 }
 
-bool Net::SendMsg(const int16_t msg_id, const char *msg, const size_t len, const std::list<socket_t> &fdList) {
+bool Net::SendMsg(const int32_t msg_id, const char *msg, const size_t len, const std::list<socket_t> &fdList) {
     std::string strOutData;
     int nAllLen = EnCode(msg_id, msg, len, strOutData);
     if (nAllLen == len + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
@@ -561,7 +561,7 @@ bool Net::SendMsg(const int16_t msg_id, const char *msg, const size_t len, const
     return false;
 }
 
-bool Net::SendMsgToAllClient(const int16_t msg_id, const char *msg, const size_t len) {
+bool Net::SendMsgToAllClient(const int32_t msg_id, const char *msg, const size_t len) {
     std::string strOutData;
     int nAllLen = EnCode(msg_id, msg, len, strOutData);
     if (nAllLen == len + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
@@ -573,7 +573,7 @@ bool Net::SendMsgToAllClient(const int16_t msg_id, const char *msg, const size_t
 
 int Net::GetConnections() { return mmObject.size(); }
 
-int Net::EnCode(const uint16_t umsg_id, const char *strData, const uint32_t unDataLen, std::string &strOutData) {
+int Net::EnCode(const uint32_t umsg_id, const char *strData, const uint32_t unDataLen, std::string &strOutData) {
     rpcHead xHead;
     xHead.SetMsgID(umsg_id);
     xHead.SetBodyLength(unDataLen);

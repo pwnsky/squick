@@ -24,12 +24,12 @@ class MongoModule : public IMongoModule {
     virtual bool Destroy();
     virtual bool Connect();
 
-    void OnReqQuery(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnReqInsert(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnReqFind(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnReqUpdate(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnReqDelete(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
-    void OnReqCreateIndex(const socket_t sock, const int msg_id, const char *msg, const uint32_t len);
+    void OnReqQuery(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnReqInsert(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnReqFind(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnReqUpdate(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnReqDelete(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
+    void OnReqCreateIndex(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len);
 
   private:
     client *client_ = nullptr;

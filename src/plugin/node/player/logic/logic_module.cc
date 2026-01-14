@@ -42,9 +42,9 @@ bool LogicModule::LuaBind() {
 // 发送数据给客户端，用于给player.cc使用
 // 由于core/lua 插件中未编译参数表进入，在运行时由 core/lua 在动态链接库内部进行匹配，
 // 所以在该动态链接库的函数参数 类型，顺序需要符合 core/lua 中已定义的函数参数顺序
-// const Guid player, const uint16_t msg_id, const std::string& data
+// const Guid player, const uint32_t msg_id, const std::string& data
 // 由于是跨dll进行解析，无法对已在core/lua上的Guid进行解析，所以只能传普通类型的数据。
 
-void LogicModule::Test(const uint16_t msg_id, string &msg, int a) { std::cout << "LogicModule::Test\n" << msg_id << "   " << msg << a << std::endl; }
+void LogicModule::Test(const uint32_t msg_id, string &msg, int a) { std::cout << "LogicModule::Test\n" << msg_id << "   " << msg << a << std::endl; }
 
 } // namespace player::logic

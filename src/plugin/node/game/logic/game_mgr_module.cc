@@ -117,7 +117,7 @@ bool GameMgrModule::SingleGameCreate(int id, const string &key) {
 
 bool GameMgrModule::SingleGameDestroy(int id) { return true; }
 
-void GameMgrModule::OnRecv(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void GameMgrModule::OnRecv(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     rpc::MsgBase xMsg;
     if (!xMsg.ParseFromArray(msg, len)) {
         char szData[MAX_PATH] = {0};

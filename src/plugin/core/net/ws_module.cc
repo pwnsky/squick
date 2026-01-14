@@ -85,14 +85,14 @@ int WSModule::Listen(const unsigned int nMaxClient, const unsigned short nPort, 
     return m_pNet->Listen(nMaxClient, nPort, nCpuCount, expand_buffer_size);
 }
 
-void WSModule::RemoveReceiveCallBack(const int msg_id) {
+void WSModule::RemoveReceiveCallBack(const uint32_t msg_id) {
     std::map<int, std::list<NET_RECEIVE_FUNCTOR_PTR>>::iterator it = mxReceiveCallBack.find(msg_id);
     if (mxReceiveCallBack.end() != it) {
         mxReceiveCallBack.erase(it);
     }
 }
 
-bool WSModule::AddReceiveCallBack(const int msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb) {
+bool WSModule::AddReceiveCallBack(const uint32_t msg_id, const NET_RECEIVE_FUNCTOR_PTR &cb) {
     if (mxReceiveCallBack.find(msg_id) == mxReceiveCallBack.end()) {
         std::list<NET_RECEIVE_FUNCTOR_PTR> xList;
         xList.push_back(cb);
@@ -128,7 +128,7 @@ bool WSModule::Update() {
     return m_pNet->Update();
 }
 
-bool WSModule::SendPBMsg(const uint16_t msg_id, const google::protobuf::Message &xData, const socket_t sock) {
+bool WSModule::SendPBMsg(const uint32_t msg_id, const google::protobuf::Message &xData, const socket_t sock) {
     std::string msg;
     if (!xData.SerializeToString(&msg)) {
         LOG_ERROR("SendPBMsg failed serialize to string, msg_id<%v>", msg_id);
@@ -138,7 +138,7 @@ bool WSModule::SendPBMsg(const uint16_t msg_id, const google::protobuf::Message 
     return SendMsg(msg_id, msg.c_str(), msg.length(), sock);
 }
 
-bool WSModule::SendMsg(const int16_t msg_id, const char *msg, const size_t len, const socket_t sock /*= 0*/) {
+bool WSModule::SendMsg(const int32_t msg_id, const char *msg, const size_t len, const socket_t sock /*= 0*/) {
     std::string strOutData;
     int nAllLen = EnCode(msg_id, msg, len, strOutData);
     if (nAllLen == len + IMsgHead::SQUICK_Head::SQUICK_HEAD_LENGTH) {
@@ -153,7 +153,7 @@ bool WSModule::SendMsg(const int16_t msg_id, const char *msg, const size_t len, 
     return false;
 }
 
-int WSModule::EnCode(const uint16_t umsg_id, const char *strData, const uint32_t unDataLen, std::string &strOutData) {
+int WSModule::EnCode(const uint32_t umsg_id, const char *strData, const uint32_t unDataLen, std::string &strOutData) {
     rpcHead xHead;
     xHead.SetMsgID(umsg_id);
     xHead.SetBodyLength(unDataLen);
@@ -215,7 +215,7 @@ bool WSModule::SendRawMsg(const std::string &msg, const socket_t sock) {
     return bRet;
 }
 
-void WSModule::OnReceiveNetPack(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void WSModule::OnReceiveNetPack(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     if (msg_id < 0) {
         NetObject *pNetObject = m_pNet->GetNetObject(sock);
         if (nullptr != pNetObject) {

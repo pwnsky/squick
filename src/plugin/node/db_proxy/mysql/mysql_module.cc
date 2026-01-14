@@ -48,7 +48,7 @@ bool MysqlModule::Connect() {
     LogInfoConnected();
     return true;
 }
-void MysqlModule::OnReqExecute(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void MysqlModule::OnReqExecute(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_MYSQL_SUCCESS;
     rpc::NReqMysqlExecute req;
     rpc::NAckMysqlExecute ack;
@@ -69,7 +69,7 @@ void MysqlModule::OnReqExecute(const socket_t sock, const int msg_id, const char
     m_net_->SendPBToNode(rpc::IdNAckMysqlExecute, ack, sock);
 }
 
-void MysqlModule::OnReqSelect(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void MysqlModule::OnReqSelect(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_MYSQL_SUCCESS;
     rpc::NReqMysqlSelect req;
     rpc::NAckMysqlSelect ack;
@@ -139,7 +139,7 @@ void MysqlModule::OnReqSelect(const socket_t sock, const int msg_id, const char 
     m_net_->SendPBToNode(rpc::IdNAckMysqlSelect, ack, sock);
 }
 
-void MysqlModule::OnReqInsert(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void MysqlModule::OnReqInsert(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_MYSQL_SUCCESS;
     rpc::NReqMysqlInsert req;
     rpc::NAckMysqlInsert ack;
@@ -196,7 +196,7 @@ void MysqlModule::OnReqInsert(const socket_t sock, const int msg_id, const char 
     m_net_->SendPBToNode(rpc::IdNAckMysqlInsert, ack, sock);
 }
 
-void MysqlModule::OnReqUpdate(const socket_t sock, const int msg_id, const char *msg, const uint32_t len) {
+void MysqlModule::OnReqUpdate(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
     int code = rpc::DbProxyCode::DB_PROXY_CODE_MYSQL_SUCCESS;
     rpc::NReqMysqlUpdate req;
     rpc::NAckMysqlUpdate ack;
