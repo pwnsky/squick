@@ -148,7 +148,7 @@ class rpcHead : public IMsgHead {
         memcpy(data + nOffset, (void *)(&net_msg_id), sizeof(net_msg_id));
         nOffset += sizeof(net_msg_id);
 
-        uint32_t nPackSize = size_ + SQUICK_HEAD_LENGTH;
+        uint32_t nPackSize = size_;
         uint32_t net_size = SQUICK_HTONL(nPackSize);
         memcpy(data + nOffset, (void *)(&net_size), sizeof(net_size));
         nOffset += sizeof(net_size);
@@ -176,7 +176,7 @@ class rpcHead : public IMsgHead {
 
         uint32_t nPackSize = 0;
         memcpy(&nPackSize, data + nOffset, sizeof(nPackSize));
-        size_ = SQUICK_NTOHL(nPackSize) - SQUICK_HEAD_LENGTH;
+        size_ = SQUICK_NTOHL(nPackSize);
         nOffset += sizeof(nPackSize);
 
         if (nOffset != SQUICK_HEAD_LENGTH) {
