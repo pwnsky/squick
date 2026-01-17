@@ -3,7 +3,6 @@
   "private": true,
   "version": "3.1.0",
   "scripts": {
-    "prepare": "husky install",
     "dev": "vite",
     "build": "npm run lint && vue-tsc --noEmit && vite build",
     "build:ci": "vite build",
@@ -62,7 +61,6 @@
     "eslint-plugin-prettier": "^5.0.1",
     "eslint-plugin-storybook": "^0.6.15",
     "eslint-plugin-vue": "^9.18.1",
-    "husky": "^8.0.1",
     "lint-staged": "^15.1.0",
     "postcss": "^8.4.21",
     "prettier": "^3.1.0",
