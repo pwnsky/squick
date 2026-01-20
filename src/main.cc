@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <core/base.h>
 #include <core/plugin_server.h>
 #include <struct/struct.h>
@@ -68,14 +70,37 @@ void AddPluginServer(std::vector<std::shared_ptr<PluginServer>> &serverList, con
 }
 // Just for debug or dev
 void DefaultStartUp(std::string strArgvList, std::vector<std::shared_ptr<PluginServer>> &serverList) {
-    AddPluginServer(serverList, "type=master id=1 area=0 ip=127.0.0.1 port=10001 http_port=50000");
-    AddPluginServer(serverList, "type=backstage id=10 area=0 ip=127.0.0.1 port=10010 http_port=8888 master_ip=127.0.0.1 master_port=10001");
-    AddPluginServer(serverList, "type=world id=100 area=0 ip=127.0.0.1 port=10101 master_ip=127.0.0.1 master_port=10001");
-    AddPluginServer(serverList, "type=db_proxy id=300 area=0 ip=127.0.0.1 port=10201 master_ip=127.0.0.1 master_port=10001");
-    AddPluginServer(serverList, "type=web id=2 area=0 ip=127.0.0.1 port=10301 http_port=8088 master_ip=127.0.0.1 master_port=10001");
-    AddPluginServer(serverList, "type=player id=1000 area=0 ip=127.0.0.1 port=10401 master_ip=127.0.0.1 master_port=10001");
-    AddPluginServer(serverList, "type=player id=1001 area=0 ip=127.0.0.1 port=10402 master_ip=127.0.0.1 master_port=10001");
-    AddPluginServer(serverList, "type=proxy id=500 area=0 ip=127.0.0.1 port=10501 ws_port=10502 master_ip=127.0.0.1 master_port=10001");
+    std::string configFile = "../config/default_startup.conf";
+    std::ifstream file(configFile);
+    
+    if (!file.is_open()) {
+        SQUICK_PRINT("Warning: Cannot open config file: " + configFile + ", using default hardcoded configuration");
+        return;
+    }
+    
+    std::string line;
+    int loadedCount = 0;
+    while (std::getline(file, line)) {
+        // Trim leading and trailing whitespace
+        size_t start = line.find_first_not_of(" \t\r\n");
+        if (start == std::string::npos) {
+            continue; // Skip empty lines
+        }
+        size_t end = line.find_last_not_of(" \t\r\n");
+        line = line.substr(start, end - start + 1);
+        
+        // Skip comment lines (lines starting with #)
+        if (line.empty() || line[0] == '#') {
+            continue;
+        }
+        
+        // Add plugin server with configuration from file
+        AddPluginServer(serverList, line);
+        loadedCount++;
+    }
+    
+    file.close();
+    SQUICK_PRINT("Loaded " + std::to_string(loadedCount) + " plugin server(s) from " + configFile);
 }
 
 void TutorialStartUp(std::string strArgvList, std::vector<std::shared_ptr<PluginServer>> &serverList) {
