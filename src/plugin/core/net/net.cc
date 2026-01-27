@@ -140,7 +140,7 @@ void Net::conn_readcb(struct bufferevent *bev, void *user_data) {
         int len = pObject->GetBuffLen();
         if (len > 0) {
             if (pNet->mRecvCB) {
-                pNet->mRecvCB(pObject->GetRealFD(), -1, pObject->GetBuff(), len);
+                pNet->mRecvCB(pObject->GetRealFD(), 0, pObject->GetBuff(), len);
                 pNet->mnReceiveMsgTotal++;
             }
 

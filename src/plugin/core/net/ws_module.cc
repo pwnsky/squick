@@ -216,7 +216,7 @@ bool WSModule::SendRawMsg(const std::string &msg, const socket_t sock) {
 }
 
 void WSModule::OnReceiveNetPack(const socket_t sock, const uint32_t msg_id, const char *msg, const uint32_t len) {
-    if (msg_id < 0) {
+    if (msg_id == 0) {
         NetObject *pNetObject = m_pNet->GetNetObject(sock);
         if (nullptr != pNetObject) {
             switch (pNetObject->GetConnectState()) {
