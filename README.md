@@ -2,7 +2,7 @@
 
 <img src="https://github.com/pwnsky/squick/wiki/images/logo.jpg" alt="logo" style="zoom: 33%;" />
 
-​	A highly scalable, high-performance, high-availability, cross-platform (Windows, Linux, MacOS) server-side framework. This framework is co-written using C++23 and Lua5.3 languages, surport c++ & lua coroutine feature, and the framework is split into the kernel layer, node layer and business layer to improve the scalability and maintainability of the program. Split business functions to run on different nodes to achieve decoupling of different functions and efficient utilization of resources. Using dynamic load balancing algorithms, tasks can be effectively distributed among different nodes to ensure system stability and performance. This project based on the [NoahGameFrame](https://github.com/ketoo/NoahGameFrame). Although [Ketoo](https://github.com/ketoo) has left us forever, his thoughts and soul will always be there.
+​	A highly scalable, high-performance, high-availability, cross-platform (Windows, Linux, MacOS) server-side framework. This framework is co-written using C++23 and Lua5.5 languages, surport c++ & lua coroutine feature, and the framework is split into the kernel layer, node layer and business layer to improve the scalability and maintainability of the program. Split business functions to run on different nodes to achieve decoupling of different functions and efficient utilization of resources. Using dynamic load balancing algorithms, tasks can be effectively distributed among different nodes to ensure system stability and performance. This project based on the [NoahGameFrame](https://github.com/ketoo/NoahGameFrame). Although [Ketoo](https://github.com/ketoo) has left us forever, his thoughts and soul will always be there.
 
 **Wiki**: https://github.com/pwnsky/squick/wiki
 
@@ -18,7 +18,7 @@
 
 **QQ Group：739065686**
 
-**Version:** 1.1.1
+**Version:** 2.1.1
 
 <div>
 <a target="_blank" href="https://discord.gg/vrdGbKqj">

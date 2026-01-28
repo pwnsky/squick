@@ -283,7 +283,7 @@ public:
         { return luaL_newstate(); }
 
     static LuaState newState(lua_Alloc func, void* userdata = nullptr)
-        { return lua_newstate(func, userdata); }
+        { return lua_newstate(func, userdata, 0); }
 
     void close()
         { if (L) { lua_close(L); L = nullptr; } }
@@ -300,7 +300,7 @@ public:
     void setAllocFunc(lua_Alloc func, void* userdata = nullptr) const
         { lua_setallocf(L, func, userdata);}
 
-    const lua_Number* version() const
+    const lua_Number version() const
         { return lua_version(L); }
 
     void checkVersion() const
@@ -428,7 +428,29 @@ public:
 
 #if LUA_VERSION_NUM >= 503
     bool numberToInteger(lua_Number n, lua_Integer* p) const
-        { return lua_numbertointeger(n, p); }
+    {
+        int isnum = 0;
+        // 步骤 1：先记录当前栈顶位置（避免影响原有栈数据）
+        int top = lua_gettop(L);
+
+        // 步骤 2：将 lua_Number 入栈
+        lua_pushnumber(L, n);
+
+        // 步骤 3：调用 3 参数 lua_tointegerx() 转换栈顶元素
+        *p = lua_tointegerx(L, -1, &isnum); // 栈顶索引为 -1
+
+        // 步骤 4：恢复栈顶位置（弹出临时入栈的 my_num，不影响原有逻辑）
+        lua_settop(L, top);
+
+        // 步骤 5：判断转换结果（逻辑与 5.3 一致）
+        if (isnum == 1) {
+            // 转换成功，my_int 为有效数值
+            return true;
+        } else {
+            // 转换失败，my_int 为 0（无实际意义）
+            return false;
+        }
+    }
 
     bool getNumber(const char* s) const
         { return lua_stringtonumber(L, s) != 0; }
@@ -725,7 +747,10 @@ public:
         { return lua_resume(L, num_args); }
 #else
     int resume(int num_args, lua_State* from = nullptr) const
-        { return lua_resume(L, from, num_args); }
+    {
+        int nres = 0;
+        return lua_resume(L, from, num_args, &nres);
+    }
 #endif
 
     int status() const

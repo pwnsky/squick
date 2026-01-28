@@ -1,6 +1,7 @@
 /*
+** $Id: lua.h $
 ** Lua - A Scripting Language
-** Lua.org, PUC-Rio, Brazil (http://www.lua.org)
+** Lua.org, PUC-Rio, Brazil (www.lua.org)
 ** See Copyright Notice at the end of this file
 */
 
@@ -12,18 +13,19 @@
 #include <stddef.h>
 
 
-#include "luaconf.h"
-
-
-#define LUA_VERSION_MAJOR	"5"
-#define LUA_VERSION_MINOR	"3"
-#define LUA_VERSION_NUM		503
-#define LUA_VERSION_RELEASE	"6"
-
-#define LUA_VERSION	"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR
-#define LUA_RELEASE	LUA_VERSION "." LUA_VERSION_RELEASE
-#define LUA_COPYRIGHT	LUA_RELEASE "  Copyright (C) 1994-2020 Lua.org, PUC-Rio"
+#define LUA_COPYRIGHT	LUA_RELEASE "  Copyright (C) 1994-2025 Lua.org, PUC-Rio"
 #define LUA_AUTHORS	"R. Ierusalimschy, L. H. de Figueiredo, W. Celes"
+
+
+#define LUA_VERSION_MAJOR_N	5
+#define LUA_VERSION_MINOR_N	5
+#define LUA_VERSION_RELEASE_N	0
+
+#define LUA_VERSION_NUM  (LUA_VERSION_MAJOR_N * 100 + LUA_VERSION_MINOR_N)
+#define LUA_VERSION_RELEASE_NUM  (LUA_VERSION_NUM * 100 + LUA_VERSION_RELEASE_N)
+
+
+#include "luaconf.h"
 
 
 /* mark for precompiled code ('<esc>Lua') */
@@ -35,10 +37,10 @@
 
 /*
 ** Pseudo-indices
-** (-LUAI_MAXSTACK is the minimum valid index; we keep some free empty
-** space after that to help overflow detection)
+** (The stack size is limited to INT_MAX/2; we keep some free empty
+** space after that to help overflow detection.)
 */
-#define LUA_REGISTRYINDEX	(-LUAI_MAXSTACK - 1000)
+#define LUA_REGISTRYINDEX	(-(INT_MAX/2 + 1000))
 #define lua_upvalueindex(i)	(LUA_REGISTRYINDEX - (i))
 
 
@@ -48,8 +50,7 @@
 #define LUA_ERRRUN	2
 #define LUA_ERRSYNTAX	3
 #define LUA_ERRMEM	4
-#define LUA_ERRGCMM	5
-#define LUA_ERRERR	6
+#define LUA_ERRERR	5
 
 
 typedef struct lua_State lua_State;
@@ -70,7 +71,7 @@ typedef struct lua_State lua_State;
 #define LUA_TUSERDATA		7
 #define LUA_TTHREAD		8
 
-#define LUA_NUMTAGS		9
+#define LUA_NUMTYPES		9
 
 
 
@@ -79,9 +80,10 @@ typedef struct lua_State lua_State;
 
 
 /* predefined values in the registry */
-#define LUA_RIDX_MAINTHREAD	1
+/* index 1 is reserved for the reference mechanism */
 #define LUA_RIDX_GLOBALS	2
-#define LUA_RIDX_LAST		LUA_RIDX_GLOBALS
+#define LUA_RIDX_MAINTHREAD	3
+#define LUA_RIDX_LAST		3
 
 
 /* type of numbers in Lua */
@@ -123,6 +125,23 @@ typedef int (*lua_Writer) (lua_State *L, const void *p, size_t sz, void *ud);
 typedef void * (*lua_Alloc) (void *ud, void *ptr, size_t osize, size_t nsize);
 
 
+/*
+** Type for warning functions
+*/
+typedef void (*lua_WarnFunction) (void *ud, const char *msg, int tocont);
+
+
+/*
+** Type used by the debug API to collect debug information
+*/
+typedef struct lua_Debug lua_Debug;
+
+
+/*
+** Functions to be called by the debugger in specific events
+*/
+typedef void (*lua_Hook) (lua_State *L, lua_Debug *ar);
+
 
 /*
 ** generic extra include file
@@ -141,14 +160,15 @@ extern const char lua_ident[];
 /*
 ** state manipulation
 */
-LUA_API lua_State *(lua_newstate) (lua_Alloc f, void *ud);
+LUA_API lua_State *(lua_newstate) (lua_Alloc f, void *ud, unsigned seed);
 LUA_API void       (lua_close) (lua_State *L);
 LUA_API lua_State *(lua_newthread) (lua_State *L);
+LUA_API int        (lua_closethread) (lua_State *L, lua_State *from);
 
 LUA_API lua_CFunction (lua_atpanic) (lua_State *L, lua_CFunction panicf);
 
 
-LUA_API const lua_Number *(lua_version) (lua_State *L);
+LUA_API lua_Number (lua_version) (lua_State *L);
 
 
 /*
@@ -181,7 +201,7 @@ LUA_API lua_Number      (lua_tonumberx) (lua_State *L, int idx, int *isnum);
 LUA_API lua_Integer     (lua_tointegerx) (lua_State *L, int idx, int *isnum);
 LUA_API int             (lua_toboolean) (lua_State *L, int idx);
 LUA_API const char     *(lua_tolstring) (lua_State *L, int idx, size_t *len);
-LUA_API size_t          (lua_rawlen) (lua_State *L, int idx);
+LUA_API lua_Unsigned    (lua_rawlen) (lua_State *L, int idx);
 LUA_API lua_CFunction   (lua_tocfunction) (lua_State *L, int idx);
 LUA_API void	       *(lua_touserdata) (lua_State *L, int idx);
 LUA_API lua_State      *(lua_tothread) (lua_State *L, int idx);
@@ -224,6 +244,8 @@ LUA_API void        (lua_pushnil) (lua_State *L);
 LUA_API void        (lua_pushnumber) (lua_State *L, lua_Number n);
 LUA_API void        (lua_pushinteger) (lua_State *L, lua_Integer n);
 LUA_API const char *(lua_pushlstring) (lua_State *L, const char *s, size_t len);
+LUA_API const char *(lua_pushexternalstring) (lua_State *L,
+		const char *s, size_t len, lua_Alloc falloc, void *ud);
 LUA_API const char *(lua_pushstring) (lua_State *L, const char *s);
 LUA_API const char *(lua_pushvfstring) (lua_State *L, const char *fmt,
                                                       va_list argp);
@@ -246,9 +268,9 @@ LUA_API int (lua_rawgeti) (lua_State *L, int idx, lua_Integer n);
 LUA_API int (lua_rawgetp) (lua_State *L, int idx, const void *p);
 
 LUA_API void  (lua_createtable) (lua_State *L, int narr, int nrec);
-LUA_API void *(lua_newuserdata) (lua_State *L, size_t sz);
+LUA_API void *(lua_newuserdatauv) (lua_State *L, size_t sz, int nuvalue);
 LUA_API int   (lua_getmetatable) (lua_State *L, int objindex);
-LUA_API int  (lua_getuservalue) (lua_State *L, int idx);
+LUA_API int  (lua_getiuservalue) (lua_State *L, int idx, int n);
 
 
 /*
@@ -262,7 +284,7 @@ LUA_API void  (lua_rawset) (lua_State *L, int idx);
 LUA_API void  (lua_rawseti) (lua_State *L, int idx, lua_Integer n);
 LUA_API void  (lua_rawsetp) (lua_State *L, int idx, const void *p);
 LUA_API int   (lua_setmetatable) (lua_State *L, int objindex);
-LUA_API void  (lua_setuservalue) (lua_State *L, int idx);
+LUA_API int   (lua_setiuservalue) (lua_State *L, int idx, int n);
 
 
 /*
@@ -287,7 +309,8 @@ LUA_API int (lua_dump) (lua_State *L, lua_Writer writer, void *data, int strip);
 */
 LUA_API int  (lua_yieldk)     (lua_State *L, int nresults, lua_KContext ctx,
                                lua_KFunction k);
-LUA_API int  (lua_resume)     (lua_State *L, lua_State *from, int narg);
+LUA_API int  (lua_resume)     (lua_State *L, lua_State *from, int narg,
+                               int *nres);
 LUA_API int  (lua_status)     (lua_State *L);
 LUA_API int (lua_isyieldable) (lua_State *L);
 
@@ -295,7 +318,14 @@ LUA_API int (lua_isyieldable) (lua_State *L);
 
 
 /*
-** garbage-collection function and options
+** Warning-related functions
+*/
+LUA_API void (lua_setwarnf) (lua_State *L, lua_WarnFunction f, void *ud);
+LUA_API void (lua_warning)  (lua_State *L, const char *msg, int tocont);
+
+
+/*
+** garbage-collection options
 */
 
 #define LUA_GCSTOP		0
@@ -304,11 +334,30 @@ LUA_API int (lua_isyieldable) (lua_State *L);
 #define LUA_GCCOUNT		3
 #define LUA_GCCOUNTB		4
 #define LUA_GCSTEP		5
-#define LUA_GCSETPAUSE		6
-#define LUA_GCSETSTEPMUL	7
-#define LUA_GCISRUNNING		9
+#define LUA_GCISRUNNING		6
+#define LUA_GCGEN		7
+#define LUA_GCINC		8
+#define LUA_GCPARAM		9
 
-LUA_API int (lua_gc) (lua_State *L, int what, int data);
+
+/*
+** garbage-collection parameters
+*/
+/* parameters for generational mode */
+#define LUA_GCPMINORMUL		0  /* control minor collections */
+#define LUA_GCPMAJORMINOR	1  /* control shift major->minor */
+#define LUA_GCPMINORMAJOR	2  /* control shift minor->major */
+
+/* parameters for incremental mode */
+#define LUA_GCPPAUSE		3  /* size of pause between successive GCs */
+#define LUA_GCPSTEPMUL		4  /* GC "speed" */
+#define LUA_GCPSTEPSIZE		5  /* GC granularity */
+
+/* number of parameters */
+#define LUA_GCPN		6
+
+
+LUA_API int (lua_gc) (lua_State *L, int what, ...);
 
 
 /*
@@ -322,11 +371,15 @@ LUA_API int   (lua_next) (lua_State *L, int idx);
 LUA_API void  (lua_concat) (lua_State *L, int n);
 LUA_API void  (lua_len)    (lua_State *L, int idx);
 
-LUA_API size_t   (lua_stringtonumber) (lua_State *L, const char *s);
+#define LUA_N2SBUFFSZ	64
+LUA_API unsigned  (lua_numbertocstring) (lua_State *L, int idx, char *buff);
+LUA_API size_t  (lua_stringtonumber) (lua_State *L, const char *s);
 
 LUA_API lua_Alloc (lua_getallocf) (lua_State *L, void **ud);
 LUA_API void      (lua_setallocf) (lua_State *L, lua_Alloc f, void *ud);
 
+LUA_API void (lua_toclose) (lua_State *L, int idx);
+LUA_API void (lua_closeslot) (lua_State *L, int idx);
 
 
 /*
@@ -376,16 +429,16 @@ LUA_API void      (lua_setallocf) (lua_State *L, lua_Alloc f, void *ud);
 
 /*
 ** {==============================================================
-** compatibility macros for unsigned conversions
+** compatibility macros
 ** ===============================================================
 */
-#if defined(LUA_COMPAT_APIINTCASTS)
 
-#define lua_pushunsigned(L,n)	lua_pushinteger(L, (lua_Integer)(n))
-#define lua_tounsignedx(L,i,is)	((lua_Unsigned)lua_tointegerx(L,i,is))
-#define lua_tounsigned(L,i)	lua_tounsignedx(L,(i),NULL)
+#define lua_newuserdata(L,s)	lua_newuserdatauv(L,s,1)
+#define lua_getuservalue(L,idx)	lua_getiuservalue(L,idx,1)
+#define lua_setuservalue(L,idx)	lua_setiuservalue(L,idx,1)
 
-#endif
+#define lua_resetthread(L)	lua_closethread(L,NULL)
+
 /* }============================================================== */
 
 /*
@@ -413,12 +466,6 @@ LUA_API void      (lua_setallocf) (lua_State *L, lua_Alloc f, void *ud);
 #define LUA_MASKLINE	(1 << LUA_HOOKLINE)
 #define LUA_MASKCOUNT	(1 << LUA_HOOKCOUNT)
 
-typedef struct lua_Debug lua_Debug;  /* activation record */
-
-
-/* Functions to be called by the debugger in specific events */
-typedef void (*lua_Hook) (lua_State *L, lua_Debug *ar);
-
 
 LUA_API int (lua_getstack) (lua_State *L, int level, lua_Debug *ar);
 LUA_API int (lua_getinfo) (lua_State *L, const char *what, lua_Debug *ar);
@@ -443,13 +490,17 @@ struct lua_Debug {
   const char *namewhat;	/* (n) 'global', 'local', 'field', 'method' */
   const char *what;	/* (S) 'Lua', 'C', 'main', 'tail' */
   const char *source;	/* (S) */
+  size_t srclen;	/* (S) */
   int currentline;	/* (l) */
   int linedefined;	/* (S) */
   int lastlinedefined;	/* (S) */
   unsigned char nups;	/* (u) number of upvalues */
   unsigned char nparams;/* (u) number of parameters */
   char isvararg;        /* (u) */
+  unsigned char extraargs;  /* (t) number of extra arguments */
   char istailcall;	/* (t) */
+  int ftransfer;   /* (r) index of first value transferred */
+  int ntransfer;   /* (r) number of transferred values */
   char short_src[LUA_IDSIZE]; /* (S) */
   /* private part */
   struct CallInfo *i_ci;  /* active function */
@@ -458,8 +509,19 @@ struct lua_Debug {
 /* }====================================================================== */
 
 
+#define LUAI_TOSTRAUX(x)	#x
+#define LUAI_TOSTR(x)		LUAI_TOSTRAUX(x)
+
+#define LUA_VERSION_MAJOR	LUAI_TOSTR(LUA_VERSION_MAJOR_N)
+#define LUA_VERSION_MINOR	LUAI_TOSTR(LUA_VERSION_MINOR_N)
+#define LUA_VERSION_RELEASE	LUAI_TOSTR(LUA_VERSION_RELEASE_N)
+
+#define LUA_VERSION	"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR
+#define LUA_RELEASE	LUA_VERSION "." LUA_VERSION_RELEASE
+
+
 /******************************************************************************
-* Copyright (C) 1994-2020 Lua.org, PUC-Rio.
+* Copyright (C) 1994-2025 Lua.org, PUC-Rio.
 *
 * Permission is hereby granted, free of charge, to any person obtaining
 * a copy of this software and associated documentation files (the
