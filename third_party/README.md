@@ -8,8 +8,8 @@
 | redis-plus-plus | 1.3.10 | https://github.com/sewenew/redis-plus-plus |
 | kcp | 1.7 | https://github.com/skywind3000/kcp |
 | libevent | 2.1.12-stable | https://github.com/libevent/libevent |
-| lua | 5.3.6 | https://github.com/lua/lua |
-| lua-intf |  | https://github.com/SteveKChiu/lua-intf/tree/master/LuaIntf |
+| lua | 5.5.0 | https://github.com/lua/lua |
+| lua-intf | patch fixed | https://github.com/SteveKChiu/lua-intf/tree/master/LuaIntf |
 | minizip | 1.2 | https://github.com/zlib-ng/minizip-ng/tree/1.2 |
 | recastnavigation |               | https://github.com/recastnavigation/recastnavigation |
 | nlohmann/json | 3.11.3 | https://github.com/nlohmann/json |
