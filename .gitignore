@@ -85,3 +85,5 @@ src/proto/msg_id.proto
 src/struct/msg_id.h
 src/struct/msg_id.cc
 src/proto/n_msg_id.proto
+third_party/libevent/test/regress.gen.c
+third_party/libevent/test/regress.gen.h

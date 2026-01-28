@@ -148,7 +148,7 @@ function build_lua()
         check_err
         cp ./src/*.dylib ../build/lib
     else
-        make linux
+        make linux CFLAGS="-fPIC"
         check_err
         cp ./src/*.so ../build/lib
     fi
