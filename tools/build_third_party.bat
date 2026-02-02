@@ -27,6 +27,7 @@ mkdir build\mongo-cxx-driver
 mkdir build\hiredis
 mkdir build\redis-plus-plus
 mkdir build\clickhouse-cpp
+mkdir build\lua
 
 rem build clickhouse-cpp
 cd build/clickhouse-cpp
@@ -87,16 +88,22 @@ cmake --install . --prefix=./install --config Debug
 xcopy /s /e /y install ..
 cd %third_party_path%
 
+cd build/lua
+mkdir install
+cmake ..\..\lua -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=install
+cmake --build . 
+xcopy /s /e /y lib\Debug install
+xcopy /s /e /y install ..\lib
+cd %third_party_path%
 
-rem build lua, not surport mingw32 to link vs project
-rem cd lua/src
-rem mingw32-make.exe mingw
-rem xcopy /s /e /y lua.dll ..\..\build\lib
-rem xcopy /s /e /y lua.lib ..\..\build\lib
-rem cd %third_party_path%
-
-rem build mysqlx
-
+@REM rem build mysql-connector-cpp
+@REM cd build/mysql-connector-cpp
+@REM mkdir install
+@REM cmake ..\..\mysql-connector-cpp -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=install -D WITH_SSL=no
+@REM cmake --build . 
+@REM cmake --install . --prefix=install --config Debug
+@REM xcopy /s /e /y install ..
+@REM cd %third_party_path%
 
 rem  build zlib
 cd build/zlib
