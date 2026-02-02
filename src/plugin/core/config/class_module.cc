@@ -6,16 +6,16 @@
 #include <algorithm>
 #include <iostream>
 #include <time.h>
-ClassModule::ClassModule() { mConfigFileName = "res/XlsxXML/Root.xml"; }
+#define XML_CONFIG_PATH "res/XlsxGen/XML"
+ClassModule::ClassModule() { mConfigFileName = XML_CONFIG_PATH "/Root.xml"; }
 
 ClassModule::ClassModule(IPluginManager *p) {
     pm_ = p;
-    mConfigFileName = "res/XlsxXML/Root.xml";
-
+    mConfigFileName = XML_CONFIG_PATH "/Root.xml";
 #ifdef DEBUG
     std::cout << "Using [" << pm_->GetWorkPath() << "/" + mConfigFileName << "]" << std::endl;
 #endif
-
+    
     if (!this->mbBackup) {
         for (int i = 0; i < CONFIG_DATA_THREADS_CAN_BE_USED_CNT; ++i) {
             ThreadClassModule threadElement;
@@ -320,10 +320,12 @@ bool ClassModule::Load(rapidxml::xml_node<> *attrNode, std::shared_ptr<IClass> p
     const char *pstrPath = attrNode->first_attribute("Path")->value();
     const char *pstrInstancePath = attrNode->first_attribute("InstancePath")->value();
 
-    std::string realPath = pm_->GetWorkPath() + "/res/XlsxXML/";
+    std::string realPath = pm_->GetWorkPath() + "/" + XML_CONFIG_PATH;
+    realPath += "/";
     realPath += pstrPath;
 
-    std::string realInstancePath = pm_->GetWorkPath() + "/res/XlsxXML/";
+    std::string realInstancePath = pm_->GetWorkPath()  + "/" +XML_CONFIG_PATH;
+    realInstancePath += "/";
     realInstancePath += pstrInstancePath;
 
     // printf( "-----------------------------------------------------\n");
