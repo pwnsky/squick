@@ -21,7 +21,7 @@ cp -r src/lua deploy/src
 
 # copy res
 mkdir -p deploy/res
-cp -r res/XlsxXML deploy/res/XlsxXML
+cp -r res/XlsxGen deploy/res/XlsxGen
 cp -r res/Proto deploy/res/Proto
 
 mkdir -p deploy/tools

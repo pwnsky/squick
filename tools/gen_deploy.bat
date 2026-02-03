@@ -20,7 +20,7 @@ xcopy /s /e /y bin deploy\bin
 echo d | xcopy /s /e /y script deploy\script
 xcopy /s /e /y config deploy\config
 xcopy /s /e /y src\lua deploy\src\lua
-xcopy /s /e /y res\XlsxXML deploy\res\XlsxXML
+xcopy /s /e /y res\XlsxGen deploy\res\XlsxGen
 xcopy /s /e /y res\Proto deploy\res\Proto
 
 cd deploy\bin
