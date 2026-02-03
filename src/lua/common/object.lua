@@ -17,7 +17,7 @@ function Object(super)
     inst.super = super
 
     inst.__index = inst
-    function inst.new(...) 
+    function inst.New(...) 
         local t = {}
         --update_table(t, inst)
         setmetatable(t, {__index = inst})

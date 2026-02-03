@@ -5,7 +5,7 @@
 -- Description: async mysql cli
 -----------------------------------------------------------------------------
 
-Mysql = Mysql and Mysql or Object(QueryAsync).new()
+Mysql = Mysql and Mysql or Object(QueryAsync).New()
 
 function Mysql:Bind()
     Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMysqlExecute, self, self.AckExecute)

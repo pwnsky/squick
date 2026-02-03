@@ -5,7 +5,7 @@
 -- Description: async redis cli
 -----------------------------------------------------------------------------
 
-Redis = Redis and Redis or Object(QueryAsync).new()
+Redis = Redis and Redis or Object(QueryAsync).New()
 
 function Redis:Bind()
     Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckRedisGet, self, self.AckGetString)

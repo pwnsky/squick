@@ -1,4 +1,4 @@
-local PlayerMgr = Object(Module).new()
+local PlayerMgr = Object(Module).New()
 
 function PlayerMgr:Init()
     if self.players == nil then

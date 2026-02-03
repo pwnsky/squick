@@ -5,7 +5,7 @@
 -- Description: async mongo cli
 -----------------------------------------------------------------------------
 
-Mongo = Mongo and Mongo or Object(QueryAsync).new()
+Mongo = Mongo and Mongo or Object(QueryAsync).New()
 
 function Mongo:Bind()
     Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckMongoInsert, self, self.AckInsert)

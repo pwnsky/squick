@@ -5,7 +5,7 @@
 -- Description: async clickhouse cli
 -----------------------------------------------------------------------------
 
-Clickhouse = Clickhouse and Clickhouse or Object(QueryAsync).new()
+Clickhouse = Clickhouse and Clickhouse or Object(QueryAsync).New()
 
 function Clickhouse:Bind()
     Net:ClientRegister(NodeType.ST_DB_PROXY, NMsgId.IdNAckClickhouseExecute, self, self.AckExecute)
