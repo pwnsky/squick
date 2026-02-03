@@ -239,16 +239,6 @@ bool ElementModule::Load(rapidxml::xml_node<> *attrNode, std::shared_ptr<IClass>
         SquickData var;
         const DATA_TYPE eType = temProperty->GetType();
         switch (eType) {
-        case TDATA_BOOL: {
-                if (pstrConfigValue == "True")
-                {
-                    var.SetBool(true);
-                }else
-                {
-                    // False
-                    var.SetBool(false);
-                }
-        } break;
         case TDATA_INT: {
             if (!LegalNumber(pstrConfigValue)) {
                 SQUICK_ASSERT(0, temProperty->GetKey(), __FILE__, __FUNCTION__);

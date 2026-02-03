@@ -27,7 +27,6 @@
 
 enum DATA_TYPE {
     TDATA_UNKNOWN,
-    TDATA_BOOL,
     TDATA_INT,
     TDATA_FLOAT,
     TDATA_STRING,

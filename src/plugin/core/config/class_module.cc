@@ -82,10 +82,7 @@ IClassModule *ClassModule::GetThreadClassModule() {
 }
 
 DATA_TYPE ClassModule::ComputerType(const char *pstrTypeName, SquickData &var) {
-    if (0 == strcmp(pstrTypeName, "Bool")) {
-        var.SetBool(false);
-        return var.GetType();
-    }else if (0 == strcmp(pstrTypeName, "Int")) {
+    if (0 == strcmp(pstrTypeName, "Int")) {
         var.SetInt(NULL_INT);
         return var.GetType();
     } else if (0 == strcmp(pstrTypeName, "String")) {
