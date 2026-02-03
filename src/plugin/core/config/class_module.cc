@@ -82,22 +82,25 @@ IClassModule *ClassModule::GetThreadClassModule() {
 }
 
 DATA_TYPE ClassModule::ComputerType(const char *pstrTypeName, SquickData &var) {
-    if (0 == strcmp(pstrTypeName, "int")) {
+    if (0 == strcmp(pstrTypeName, "Bool")) {
+        var.SetBool(false);
+        return var.GetType();
+    }else if (0 == strcmp(pstrTypeName, "Int")) {
         var.SetInt(NULL_INT);
         return var.GetType();
-    } else if (0 == strcmp(pstrTypeName, "string")) {
+    } else if (0 == strcmp(pstrTypeName, "String")) {
         var.SetString("");
         return var.GetType();
-    } else if (0 == strcmp(pstrTypeName, "float")) {
+    } else if (0 == strcmp(pstrTypeName, "Float")) {
         var.SetFloat(NULL_FLOAT);
         return var.GetType();
-    } else if (0 == strcmp(pstrTypeName, "object")) {
+    } else if (0 == strcmp(pstrTypeName, "Object")) {
         var.SetObject(NULL_OBJECT);
         return var.GetType();
-    } else if (0 == strcmp(pstrTypeName, "vector2")) {
+    } else if (0 == strcmp(pstrTypeName, "Vector2")) {
         var.SetVector2(NULL_VECTOR2);
         return var.GetType();
-    } else if (0 == strcmp(pstrTypeName, "vector3")) {
+    } else if (0 == strcmp(pstrTypeName, "Vector3")) {
         var.SetVector3(NULL_VECTOR3);
         return var.GetType();
     }
